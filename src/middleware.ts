@@ -1,17 +1,35 @@
 import { NextRequest, NextResponse } from "next/server"
+import { decrypt } from "@/lib/session"
 
 export async function middleware(request: NextRequest) {
-  const session = request.cookies.get("session")
   const { pathname } = request.nextUrl
+  const sessionCookie = request.cookies.get("session")?.value
 
-  // If trying to access protected routes without a session, redirect to login
-  if (pathname.startsWith("/dashboard") && !session) {
+  // Protected app routes
+  const isAppRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/matches") || pathname.startsWith("/players")
+  
+  // Auth routes  
+  const isAuthRoute = ["/login", "/signup"].includes(pathname)
+
+  // Check if user has valid session
+  let hasValidSession = false
+  if (sessionCookie) {
+    try {
+      const sessionData = await decrypt(sessionCookie)
+      hasValidSession = !!sessionData?.userId
+    } catch {
+      hasValidSession = false
+    }
+  }
+
+  // Redirect logic
+  if (isAppRoute && !hasValidSession) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  // If user is logged in, and tries to access login page, let them.
-  // This prevents the redirect loop if the session cookie is invalid.
-  // The login/signup pages themselves will handle redirecting if the user is *validly* logged in.
+  if (isAuthRoute && hasValidSession) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
 
   return NextResponse.next()
 }
@@ -24,7 +42,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - live (public live match page)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|live).*)",
   ],
 } 

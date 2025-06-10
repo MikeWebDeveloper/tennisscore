@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
+import { useFormState, useFormStatus } from "react-dom"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,27 +13,27 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signIn } from "@/lib/actions/auth"
+import { signInAction } from "@/lib/actions/auth"
 import { toast } from "sonner"
+import { useEffect } from "react"
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <Button type="submit" className="w-full" aria-disabled={pending}>
+      {pending ? "Signing in..." : "Sign In"}
+    </Button>
+  )
+}
 
 export function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [state, formAction] = useFormState(signInAction, undefined)
 
-  async function handleSubmit(formData: FormData) {
-    setIsLoading(true)
-    
-    try {
-      const result = await signIn(formData)
-      
-      if (result?.error) {
-        toast.error(result.error)
-      }
-    } catch {
-      toast.error("An unexpected error occurred")
-    } finally {
-      setIsLoading(false)
+  useEffect(() => {
+    if (state?.error) {
+      toast.error(state.error)
     }
-  }
+  }, [state])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -44,7 +44,7 @@ export function LoginForm() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <motion.h1 
+          <motion.h1
             className="text-4xl font-bold text-foreground mb-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -52,7 +52,7 @@ export function LoginForm() {
           >
             TennisScore
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -70,14 +70,7 @@ export function LoginForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                handleSubmit(formData);
-              }} 
-              className="space-y-4"
-            >
+            <form action={formAction} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -86,10 +79,9 @@ export function LoginForm() {
                   type="email"
                   placeholder="Enter your email"
                   required
-                  disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -98,24 +90,17 @@ export function LoginForm() {
                   type="password"
                   placeholder="Enter your password"
                   required
-                  disabled={isLoading}
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
+              <SubmitButton />
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
-                <Link 
-                  href="/signup" 
+                <Link
+                  href="/signup"
                   className="font-medium text-primary hover:underline"
                 >
                   Sign up
