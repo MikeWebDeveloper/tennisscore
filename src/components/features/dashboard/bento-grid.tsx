@@ -31,429 +31,352 @@ interface BentoGridProps {
   }
   matches: Array<{
     $id: string
-    matchDate: string
     status: string
+    winnerId?: string
+    matchDate: string
   }>
   players: Array<{
     $id: string
     firstName: string
     lastName: string
-    rating?: string
   }>
 }
 
-// CSS-based chart components
-function WinRateChart({ winRate }: { winRate: number }) {
-  const segments = [
-    { label: "Jan", value: 65 },
-    { label: "Feb", value: 72 },
-    { label: "Mar", value: 68 },
-    { label: "Apr", value: 75 },
-    { label: "May", value: winRate || 70 },
-  ]
-
-  return (
-    <div className="flex items-end justify-between h-32 px-2">
-      {segments.map((segment, index) => (
-        <div key={segment.label} className="flex flex-col items-center gap-2">
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: `${(segment.value / 100) * 80}%` }}
-            transition={{ duration: 0.8, delay: index * 0.1 }}
-            className="w-8 bg-gradient-to-t from-primary/60 to-primary rounded-t-sm min-h-[4px]"
-          />
-          <span className="text-xs text-muted-foreground">{segment.label}</span>
-        </div>
-      ))}
-    </div>
-  )
+// Ensure we always have safe default values
+const getStats = (matches: BentoGridProps['matches'], players: BentoGridProps['players']) => {
+  const safeMatches = Array.isArray(matches) ? matches : []
+  const safePlayers = Array.isArray(players) ? players : []
+  
+  const completedMatches = safeMatches.filter(m => m.status === 'Completed')
+  const inProgressMatches = safeMatches.filter(m => m.status === 'In Progress')
+  
+  return {
+    totalMatches: safeMatches.length,
+    winRate: completedMatches.length > 0 ? 
+      Math.round((completedMatches.filter(m => m.winnerId).length / completedMatches.length) * 100) : 0,
+    totalPlayers: safePlayers.length,
+    completedMatches: completedMatches.length,
+    inProgressMatches: inProgressMatches.length,
+  }
 }
 
-function ErrorDistribution() {
-  const errors = [
-    { label: "Winners", value: 45, color: "bg-green-500" },
-    { label: "Unforced", value: 35, color: "bg-red-500" },
-    { label: "Forced", value: 20, color: "bg-orange-500" },
+// Generate safe demo data for empty states
+const getDemoData = () => ({
+  winRateData: Array.from({ length: 7 }, (_, i) => ({
+    date: `Day ${i + 1}`,
+    winRate: Math.floor(Math.random() * 30) + 50 + (i * 2)
+  })),
+  errorData: [
+    { name: "Unforced Errors", value: 35, color: "#ef4444" },
+    { name: "Double Faults", value: 20, color: "#f97316" },
+    { name: "Net Errors", value: 45, color: "#eab308" },
   ]
+})
 
-  return (
-    <div className="space-y-3">
-      {errors.map((error, index) => (
-        <div key={error.label} className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${error.color}`} />
-          <div className="flex-1">
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground">{error.label}</span>
-              <span className="text-muted-foreground">{error.value}%</span>
-            </div>
+export function BentoGrid({ matches, players }: BentoGridProps) {
+  // Safely calculate stats with fallbacks
+  const stats = getStats(matches, players)
+  const { winRateData, errorData } = getDemoData()
+  const hasData = stats.totalMatches > 0 || stats.totalPlayers > 0
+
+  // Custom animated chart component
+  const WinRateChart = () => (
+    <div className="h-[140px] w-full relative">
+      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-1 h-full px-2">
+        {winRateData.map((data, index) => (
+          <motion.div
+            key={index}
+            className="flex flex-col items-center flex-1"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
             <motion.div
+              className="bg-gradient-to-t from-primary to-primary/60 rounded-t-sm w-full min-h-[20px]"
+              initial={{ height: 0 }}
+              animate={{ height: `${(data.winRate / 100) * 80}%` }}
+              transition={{ delay: index * 0.1 + 0.2, duration: 0.6, ease: "easeOut" }}
+            />
+            <span className="text-xs text-muted-foreground mt-1 truncate">
+              {data.date.slice(0, 3)}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // Custom error distribution component
+  const ErrorDistribution = () => (
+    <div className="space-y-3">
+      {errorData.map((error, index) => (
+        <motion.div
+          key={error.name}
+          className="space-y-1"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.1 }}
+        >
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">{error.name}</span>
+            <span className="text-foreground">{error.value}%</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ backgroundColor: error.color }}
               initial={{ width: 0 }}
               animate={{ width: `${error.value}%` }}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-              className={`h-1.5 rounded-full mt-1 ${error.color}`}
+              transition={{ delay: index * 0.1 + 0.3, duration: 0.8, ease: "easeOut" }}
             />
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   )
-}
 
-export function BentoGrid({ stats, matches, players }: BentoGridProps) {
   return (
-    <motion.div 
+    <motion.div
       variants={listVariants}
       initial="hidden"
       animate="show"
-      className="w-full max-w-7xl mx-auto p-6"
+      className="w-full max-w-7xl mx-auto p-4 md:p-6"
     >
       {/* Mobile Layout */}
-      <div className="grid grid-cols-1 gap-6 md:hidden">
-        {/* Main Card - Mobile */}
-        <motion.div variants={itemVariants}>
-          <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-xl border-slate-700/50 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
-                  <Trophy className="h-6 w-6 text-primary" />
-                </div>
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {/* Quick Stats Cards */}
+        <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+          <Card className="glass-effect">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Trophy className="h-5 w-5 text-primary" />
                 <div>
-                  <h2 className="text-xl font-heading font-bold text-foreground">Welcome Back, Mike</h2>
-                  <p className="text-sm text-muted-foreground">Track your tennis performance and manage your matches</p>
+                  <p className="text-2xl font-bold font-mono">{stats.totalMatches}</p>
+                  <p className="text-xs text-muted-foreground">Total Matches</p>
                 </div>
               </div>
-              
-              <div className="space-y-6">
-                <div className="text-center">
-                  <div className="text-4xl font-mono font-bold text-primary mb-1 tracking-tight">
-                    {stats.completedMatches > 0 ? `${stats.winRate}%` : "-"}
-                  </div>
-                  <p className="text-sm font-heading font-medium text-foreground">Current Win Rate</p>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.completedMatches} completed matches
-                  </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-effect">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Zap className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">{stats.winRate}%</p>
+                  <p className="text-xs text-muted-foreground">Win Rate</p>
                 </div>
-                
-                <WinRateChart winRate={stats.winRate} />
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Mobile KPI Cards */}
-        <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4">
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-mono font-bold text-primary mb-1">85%</div>
-              <p className="text-xs font-medium text-muted-foreground">1st Serve</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-mono font-bold text-blue-400 mb-1">62%</div>
-              <p className="text-xs font-medium text-muted-foreground">Break Pts</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-mono font-bold text-green-400 mb-1">23</div>
-              <p className="text-xs font-medium text-muted-foreground">Aces</p>
+        {/* Performance Chart */}
+        <motion.div variants={itemVariants}>
+          <Card className="glass-effect">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-heading flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Performance Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <WinRateChart />
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Additional mobile cards... */}
+        {/* Quick Actions */}
+        <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+          <Link href="/players">
+            <Card className="glass-effect h-full interactive-scale">
+              <CardContent className="p-4 text-center">
+                <Users className="h-6 w-6 text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium">{stats.totalPlayers} Players</p>
+                <p className="text-xs text-muted-foreground">Manage</p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/matches/new">
+            <Card className="glass-effect h-full interactive-scale">
+              <CardContent className="p-4 text-center">
+                <Plus className="h-6 w-6 text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium">New Match</p>
+                <p className="text-xs text-muted-foreground">Start Scoring</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </motion.div>
       </div>
 
-      {/* Desktop Layout */}
-      <div className="hidden md:grid md:grid-cols-4 md:auto-rows-[180px] md:gap-6">
-        
-        {/* Large Main Card (2x2): Primary Win Rate + Chart */}
-        <motion.div 
-          variants={itemVariants}
-          className="col-span-2 row-span-2"
-        >
-          <Card className="h-full bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-xl border-slate-700/50 shadow-2xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
-            <CardContent className="relative z-10 p-8 h-full flex flex-col">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-4 rounded-2xl bg-primary/20 border border-primary/30 backdrop-blur-sm">
-                  <Trophy className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-heading font-bold text-foreground">Welcome Back, Mike</h2>
-                  <p className="text-sm text-muted-foreground">Track your tennis performance and manage your matches</p>
-                </div>
-              </div>
-              
-              <div className="flex-1 flex flex-col">
-                <div className="text-center mb-6">
-                  <div className="text-5xl font-mono font-bold text-primary mb-2 tracking-tight">
-                    {stats.completedMatches > 0 ? `${stats.winRate}%` : "-"}
-                  </div>
-                  <p className="text-lg font-heading font-medium text-foreground">Current Win Rate</p>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.completedMatches} completed matches
-                  </p>
-                </div>
-                
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="w-full max-w-md">
-                    <WinRateChart winRate={stats.winRate} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Wide Card (2x1): Key Performance Indicators */}
-        <motion.div 
-          variants={itemVariants}
-          className="col-span-2 row-span-1"
-        >
-          <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
+      {/* Desktop Bento Grid Layout */}
+      <div className="hidden md:grid grid-cols-4 auto-rows-[180px] gap-4 max-w-7xl mx-auto">
+        {/* Large Main Card - Performance Overview (2x2) */}
+        <motion.div variants={itemVariants} className="col-span-2 row-span-2">
+          <Card className="h-full glass-effect">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-heading flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                Key Performance Indicators
+                Performance Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 h-[calc(100%-4rem)] flex flex-col">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-3xl font-bold font-mono text-primary">{stats.winRate}%</p>
+                  <p className="text-sm text-muted-foreground">Win Rate</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold font-mono">{stats.totalMatches}</p>
+                  <p className="text-sm text-muted-foreground">Total Matches</p>
+                </div>
+              </div>
+              <div className="flex-1">
+                <WinRateChart />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Wide KPI Card - Match Stats (2x1) */}
+        <motion.div variants={itemVariants} className="col-span-2">
+          <Card className="h-full glass-effect">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-heading flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-primary" />
+                Match Statistics
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="grid grid-cols-3 gap-6 h-full">
+              <div className="grid grid-cols-3 gap-4 h-[calc(180px-5rem)]">
                 <div className="text-center">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-3xl font-mono font-bold text-primary mb-1"
+                  <motion.p 
+                    className="text-2xl font-bold font-mono text-primary"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
                   >
-                    85%
-                  </motion.div>
-                  <p className="text-sm font-medium text-muted-foreground">1st Serve %</p>
+                    {stats.completedMatches}
+                  </motion.p>
+                  <p className="text-xs text-muted-foreground">Completed</p>
                 </div>
                 <div className="text-center">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="text-3xl font-mono font-bold text-blue-400 mb-1"
+                  <motion.p 
+                    className="text-2xl font-bold font-mono text-amber-500"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    62%
-                  </motion.div>
-                  <p className="text-sm font-medium text-muted-foreground">Break Points</p>
+                    {stats.inProgressMatches}
+                  </motion.p>
+                  <p className="text-xs text-muted-foreground">In Progress</p>
                 </div>
                 <div className="text-center">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                    className="text-3xl font-mono font-bold text-green-400 mb-1"
+                  <motion.p 
+                    className="text-2xl font-bold font-mono"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    68%
-                  </motion.div>
-                  <p className="text-sm font-medium text-muted-foreground">Return Points</p>
+                    {stats.totalPlayers}
+                  </motion.p>
+                  <p className="text-xs text-muted-foreground">Players</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Square Card (1x1): Serve Weapon */}
-        <motion.div variants={itemVariants} className="col-span-1 row-span-1">
-          <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
-                <Zap className="h-5 w-5 text-yellow-400" />
-                Serve Weapon
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Aces</span>
-                  <motion.span 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-2xl font-mono font-bold text-green-400"
-                  >
-                    23
-                  </motion.span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Double Faults</span>
-                  <motion.span 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="text-2xl font-mono font-bold text-red-400"
-                  >
-                    7
-                  </motion.span>
-                </div>
-                <div className="pt-2 border-t border-border/50">
-                  <div className="text-center">
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      className="text-lg font-mono font-bold text-primary"
-                    >
-                      3.3:1
-                    </motion.div>
-                    <p className="text-xs text-muted-foreground">Ace/DF Ratio</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Square Card - Players (1x1) */}
+        <motion.div variants={itemVariants}>
+          <Link href="/players">
+            <Card className="h-full glass-effect interactive-scale">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
+                <Users className="h-8 w-8 text-primary mb-3" />
+                <p className="text-xl font-bold font-mono">{stats.totalPlayers}</p>
+                <p className="text-sm text-muted-foreground">Players</p>
+                <Button size="sm" className="mt-2 text-xs">
+                  Manage
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
 
-        {/* Square Card (1x1): Error Analysis */}
-        <motion.div variants={itemVariants} className="col-span-1 row-span-1">
-          <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-400" />
-                Shot Analysis
+        {/* Square Card - Error Analysis (1x1) */}
+        <motion.div variants={itemVariants}>
+          <Card className="h-full glass-effect">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-heading flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                Error Analysis
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 h-[calc(100%-4rem)]">
               <ErrorDistribution />
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Call-to-Action Card (1x1): Start New Match */}
-        <motion.div 
-          variants={itemVariants}
-          className="col-span-1 row-span-1"
-        >
-          <Card className="h-full bg-gradient-to-br from-primary/20 to-primary/10 border-primary/30 hover:border-primary/50 transition-all duration-300 group cursor-pointer">
-            <Link href="/matches/new" className="h-full block">
-              <CardContent className="h-full p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent group-hover:from-primary/10 transition-all duration-300" />
-                <div className="relative z-10">
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 90 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <Plus className="h-10 w-10 text-primary mb-3" />
-                  </motion.div>
-                  <h3 className="text-lg font-heading font-bold text-foreground group-hover:text-primary transition-colors mb-1">
-                    Start New Match
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Begin scoring
-                  </p>
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
-        </motion.div>
-
-        {/* Players Management (1x1) */}
-        <motion.div variants={itemVariants} className="col-span-1 row-span-1">
-          <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                Players
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {players.length === 0 ? (
-                <div className="text-center py-2">
-                  <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2 opacity-50" />
-                  <p className="text-muted-foreground text-sm mb-3">No players</p>
-                  <Button asChild variant="outline" size="sm" className="border-primary/50 hover:bg-primary/10">
-                    <Link href="/players">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add
-                    </Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-center">
-                    <motion.div 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                      className="text-2xl font-mono font-bold text-foreground"
-                    >
-                      {stats.totalPlayers}
-                    </motion.div>
-                    <p className="text-xs text-muted-foreground">Total Players</p>
-                  </div>
-                  <Button asChild variant="outline" size="sm" className="w-full border-primary/50 hover:bg-primary/10">
-                    <Link href="/players">
-                      Manage
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Recent Matches (2x1) */}
-        <motion.div 
-          variants={itemVariants}
-          className="col-span-2 row-span-1"
-        >
-          <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-green-400" />
-                  Recent Matches
-                </CardTitle>
-                <Button asChild variant="ghost" size="sm" className="hover:text-primary">
-                  <Link href="/matches" className="text-muted-foreground hover:text-foreground">
-                    View All
-                  </Link>
+        {/* Square Card - Quick Match (1x1) */}
+        <motion.div variants={itemVariants}>
+          <Link href="/matches/new">
+            <Card className="h-full glass-effect interactive-scale">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
+                <Plus className="h-8 w-8 text-primary mb-3" />
+                <p className="text-lg font-medium">New Match</p>
+                <p className="text-sm text-muted-foreground">Start Scoring</p>
+                <Button size="sm" className="mt-2 text-xs">
+                  Begin
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {matches.length === 0 ? (
-                <div className="text-center py-4">
-                  <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                  <p className="text-muted-foreground text-sm mb-3">No matches yet</p>
-                  <p className="text-xs text-muted-foreground">Ready to elevate your game? Start by creating players and tracking matches.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {matches.slice(0, 3).map((match, index) => (
-                    <motion.div 
-                      key={match.$id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="flex items-center justify-between p-2 rounded-lg bg-background/50 border border-border/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          match.status === 'Completed' ? 'bg-green-400' : 'bg-yellow-400'
-                        }`} />
-                        <span className="text-sm font-medium text-foreground">
-                          Match vs Opponent
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(match.matchDate).toLocaleDateString()}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
 
+        {/* Square Card - Schedule (1x1) */}
+        <motion.div variants={itemVariants}>
+          <Link href="/matches">
+            <Card className="h-full glass-effect interactive-scale">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
+                <Calendar className="h-8 w-8 text-primary mb-3" />
+                <p className="text-lg font-medium">Schedule</p>
+                <p className="text-sm text-muted-foreground">View Matches</p>
+                <Button size="sm" className="mt-2 text-xs">
+                  View All
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
+        </motion.div>
       </div>
+
+      {/* Empty State Message */}
+      {!hasData && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center"
+        >
+          <div className="max-w-md mx-auto">
+            <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-heading mb-2">Welcome to TennisScore!</h3>
+            <p className="text-muted-foreground mb-4">
+              Get started by adding players and creating your first match to see statistics here.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button asChild size="sm">
+                <Link href="/players">Add Players</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/matches/new">Start Match</Link>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   )
 } 
