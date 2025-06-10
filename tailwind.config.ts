@@ -68,11 +68,12 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        'satoshi': ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
-        'inter': ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        'jetbrains-mono': ['var(--font-jetbrains-mono)', 'Consolas', 'Monaco', 'monospace'],
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-jetbrains-mono)', 'Consolas', 'Monaco', 'monospace'],
+        'satoshi': ['Satoshi', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        'inter': ['Inter', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        'jetbrains-mono': ['JetBrains Mono', 'var(--font-jetbrains-mono)', 'Consolas', 'Monaco', 'monospace'],
+        sans: ['Inter', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'var(--font-jetbrains-mono)', 'Consolas', 'Monaco', 'monospace'],
+        heading: ['Satoshi', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],

@@ -1,7 +1,7 @@
 /* Typography - Import fonts first */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,25 +10,25 @@
 @layer base {
   :root {
     /* Light mode colors (secondary theme) */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 27%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 27%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 122 100% 54%;
-    --primary-foreground: 210 40% 98%;
+    --popover-foreground: 215 25% 27%;
+    --primary: 122 100% 54%; /* Electric Green #39FF14 */
+    --primary-foreground: 215 25% 27%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary-foreground: 215 25% 27%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent-foreground: 215 25% 27%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 122 100% 54%;
+    --ring: 122 100% 54%; /* Electric Green for focus rings */
     --radius: 0.75rem;
     
     /* Font variables */
@@ -39,25 +39,25 @@
 
   .dark {
     /* Dark mode colors (primary theme) - Electric Green accent */
-    --background: 222.2 84% 4.9%;
+    --background: 215 28% 6%; /* slate-950 equivalent */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 215 28% 8%; /* slate-900 equivalent */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 215 28% 8%;
     --popover-foreground: 210 40% 98%;
     --primary: 122 100% 54%; /* Electric Green #39FF14 */
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary-foreground: 215 28% 6%;
+    --secondary: 215 20% 13%; /* slate-800 equivalent */
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 215 20% 13%;
+    --muted-foreground: 215 20.2% 65.1%; /* slate-400 equivalent */
+    --accent: 215 20% 13%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 122 100% 54%;
+    --border: 215 20% 13%;
+    --input: 215 20% 13%;
+    --ring: 122 100% 54%; /* Electric Green for focus rings */
   }
 }
 
@@ -69,6 +69,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -104,8 +105,13 @@
 }
 
 @keyframes pulse-primary {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .8;
+    box-shadow: 0 0 0 4px hsla(122, 100%, 54%, 0.3);
+  }
 }
 
 .score-flip {
@@ -129,4 +135,20 @@
   -webkit-backdrop-filter: blur(10px);
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@layer components {
+  .pulse-primary {
+    animation: pulse-primary 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-satoshi), 'Satoshi', system-ui, sans-serif;
+  }
+  
+  .font-mono {
+    font-family: var(--font-jetbrains-mono), 'JetBrains Mono', Consolas, Monaco, monospace;
+  }
 }
