@@ -71,10 +71,10 @@ export function AppShell({ children, user }: AppShellProps) {
     .toUpperCase()
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950 text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-72 md:overflow-y-auto">
-        <div className="flex h-full flex-col bg-slate-900/80 backdrop-blur-xl border-r border-slate-800">
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-72 md:overflow-y-auto md:border-r md:border-slate-800 bg-slate-900/95 backdrop-blur-xl">
+        <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center px-6 py-8 border-b border-slate-800">
             <div className="flex items-center space-x-3">
@@ -160,10 +160,23 @@ export function AppShell({ children, user }: AppShellProps) {
         </div>
       </aside>
 
+      {/* Main Content */}
+      <main className="md:pl-72 pt-20 md:pt-8 pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {children}
+          </motion.div>
+        </div>
+      </main>
+
       {/* Mobile Navigation */}
       <div className="md:hidden">
         {/* Top Bar */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
+        <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
           <div className="flex items-center justify-between px-4 py-4">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -345,21 +358,6 @@ export function AppShell({ children, user }: AppShellProps) {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Main Content */}
-      <main className="md:pl-72">
-        <div className="min-h-screen bg-slate-950">
-          <div className="pt-16 pb-20 md:pt-0 md:pb-0 px-4 md:px-8 py-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              {children}
-            </motion.div>
-          </div>
-        </div>
-      </main>
     </div>
   )
 } 
