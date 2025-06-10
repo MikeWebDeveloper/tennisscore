@@ -243,18 +243,29 @@
   }
 
   .gradient-border {
-    @apply relative overflow-hidden;
+    position: relative;
+    overflow: hidden;
   }
 
   .gradient-border::before {
     content: '';
-    @apply absolute inset-0 p-[1px] bg-gradient-to-r from-primary/50 via-primary to-primary/50 rounded-lg;
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(to right, hsl(var(--primary) / 0.5), hsl(var(--primary)), hsl(var(--primary) / 0.5));
+    border-radius: var(--radius);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: subtract;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: subtract;
+    pointer-events: none;
   }
 
   .glass-effect {
-    @apply bg-background/80 backdrop-blur-xl border border-border/50;
+    background-color: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 
   .glow-primary {
@@ -262,20 +273,37 @@
   }
 
   .text-gradient {
-    @apply bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent;
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.8), hsl(var(--primary)));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   /* Focus styles for accessibility */
-  .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  .focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
   }
 
   /* Hover effects for interactive elements */
   .interactive-scale {
-    @apply transition-transform duration-200 ease-out hover:scale-105 active:scale-95;
+    transition: transform 200ms ease-out;
+  }
+  
+  .interactive-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  .interactive-scale:active {
+    transform: scale(0.95);
   }
 
   .interactive-glow {
-    @apply transition-shadow duration-200 ease-out hover:shadow-glow;
+    transition: box-shadow 200ms ease-out;
+  }
+  
+  .interactive-glow:hover {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
   }
 }
