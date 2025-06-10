@@ -149,7 +149,7 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
       {/* Desktop Bento Grid */}
       <div className="hidden lg:block">
         <motion.div
-          className="grid grid-cols-4 gap-6 min-h-[500px]"
+          className="grid grid-cols-4 grid-rows-4 gap-6 h-[600px]"
           variants={containerVariants}
           initial="hidden"
           animate="show"
@@ -159,17 +159,20 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
             variants={itemVariants}
             className="col-span-2 row-span-2"
           >
-            <Card className="h-full bg-gradient-to-br from-primary/20 to-primary/10 border-primary/30">
-              <CardContent className="h-full p-8 flex flex-col justify-center items-center text-center">
-                <Trophy className="h-16 w-16 text-primary mb-6" />
-                <div className="space-y-2">
-                  <div className="text-6xl font-bold text-primary font-mono">
-                    {stats.completedMatches > 0 ? `${stats.winRate}%` : "-"}
+            <Card className="h-full bg-gradient-to-br from-primary/20 to-primary/10 border-primary/30 overflow-hidden">
+              <CardContent className="h-full p-8 flex flex-col justify-center items-center text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+                <div className="relative z-10">
+                  <Trophy className="h-16 w-16 text-primary mb-6" />
+                  <div className="space-y-2">
+                    <div className="text-6xl font-bold text-primary font-mono tracking-tight">
+                      {stats.completedMatches > 0 ? `${stats.winRate}%` : "-"}
+                    </div>
+                    <p className="text-xl font-semibold text-foreground">Win Rate</p>
+                    <p className="text-sm text-muted-foreground">
+                      {stats.completedMatches} completed matches
+                    </p>
                   </div>
-                  <p className="text-xl font-semibold text-foreground">Win Rate</p>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.completedMatches} completed matches
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -177,12 +180,12 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
 
           {/* Total Matches */}
           <motion.div variants={itemVariants} className="col-span-1 row-span-1">
-            <Card className="h-full bg-muted/20 border-muted">
+            <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50">
               <CardContent className="h-full p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-3">
                   <Calendar className="h-6 w-6 text-blue-400" />
                   {stats.inProgressMatches > 0 && (
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 pulse-primary">
                       Live
                     </Badge>
                   )}
@@ -202,7 +205,7 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
 
           {/* Total Players */}
           <motion.div variants={itemVariants} className="col-span-1 row-span-1">
-            <Card className="h-full bg-muted/20 border-muted">
+            <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50">
               <CardContent className="h-full p-6 flex flex-col justify-center">
                 <div className="flex items-center mb-3">
                   <Users className="h-6 w-6 text-green-400" />
@@ -225,13 +228,13 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
             variants={itemVariants}
             className="col-span-2 row-span-1"
           >
-            <Card className="h-full bg-gradient-to-br from-card to-muted border-border">
+            <Card className="h-full bg-gradient-to-r from-card to-card/80 border-border hover:border-primary/50 transition-all duration-300 group">
               <CardContent className="h-full p-6 flex items-center justify-between">
                 <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-foreground">Start New Match</h3>
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">Start New Match</h3>
                   <p className="text-sm text-muted-foreground">Begin scoring a live tennis match</p>
                 </div>
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-primary/25 transition-all">
                   <Link href="/matches/new">
                     <Plus className="h-5 w-5 mr-2" />
                     New Match
@@ -246,23 +249,23 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
             variants={itemVariants}
             className="col-span-2 row-span-2"
           >
-            <Card className="h-full bg-muted/20 border-muted">
-              <CardHeader>
+            <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-foreground">Recent Matches</CardTitle>
-                  <Button asChild variant="ghost" size="sm">
+                  <Button asChild variant="ghost" size="sm" className="hover:text-primary">
                     <Link href="/matches" className="text-muted-foreground hover:text-foreground">
                       View All
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="h-full pt-0">
                 {recentMatches.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="text-center py-8 flex flex-col items-center justify-center h-full">
+                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <p className="text-muted-foreground mb-4">No matches yet</p>
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild variant="outline" size="sm" className="border-primary/50 hover:bg-primary/10">
                       <Link href="/matches/new">
                         <Play className="h-4 w-4 mr-2" />
                         Start Your First Match
@@ -270,11 +273,13 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 overflow-y-auto max-h-[280px] pr-2">
                     {recentMatches.map((match) => (
-                      <div
+                      <motion.div
                         key={match.$id}
-                        className="flex items-center justify-between p-4 rounded-lg bg-card border border-border"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-border/50 hover:border-primary/30 transition-colors"
                       >
                         <div>
                           <p className="text-sm font-medium text-foreground">
@@ -288,12 +293,12 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                           className={
                             match.status === "Completed"
                               ? "bg-green-500/20 text-green-400 border-green-500/30"
-                              : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                              : "bg-amber-500/20 text-amber-400 border-amber-500/30 pulse-primary"
                           }
                         >
                           {match.status}
                         </Badge>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -306,23 +311,23 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
             variants={itemVariants}
             className="col-span-2 row-span-1"
           >
-            <Card className="h-full bg-muted/20 border-muted">
-              <CardHeader>
+            <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-foreground">Players</CardTitle>
-                  <Button asChild variant="ghost" size="sm">
+                  <Button asChild variant="ghost" size="sm" className="hover:text-primary">
                     <Link href="/players" className="text-muted-foreground hover:text-foreground">
                       Manage
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {players.length === 0 ? (
                   <div className="text-center py-4">
-                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                     <p className="text-muted-foreground text-sm mb-3">No players created</p>
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild variant="outline" size="sm" className="border-primary/50 hover:bg-primary/10">
                       <Link href="/players">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Players
@@ -330,11 +335,14 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-4 overflow-x-auto">
-                    {players.slice(0, 3).map((player) => (
-                      <div
+                  <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+                    {players.slice(0, 3).map((player, index) => (
+                      <motion.div
                         key={player.$id}
-                        className="flex-shrink-0 flex items-center space-x-3 p-3 rounded-lg bg-card border border-border min-w-[180px]"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex-shrink-0 flex items-center space-x-3 p-3 rounded-lg bg-background/50 border border-border/50 hover:border-primary/30 transition-colors min-w-[180px]"
                       >
                         <div className="h-10 w-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
                           <span className="text-primary font-semibold text-sm">
@@ -349,11 +357,11 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                             <p className="text-xs text-muted-foreground">Rating: {player.rating}</p>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                     {players.length > 3 && (
                       <div className="flex-shrink-0 text-center p-3">
-                        <Button asChild variant="ghost" size="sm">
+                        <Button asChild variant="ghost" size="sm" className="hover:text-primary">
                           <Link href="/players" className="text-muted-foreground hover:text-foreground">
                             +{players.length - 3} more
                           </Link>
