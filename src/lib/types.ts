@@ -13,6 +13,7 @@ export interface Player {
   yearOfBirth?: number
   rating?: string
   profilePictureId?: string
+  isMainPlayer?: boolean
   userId: string
   $createdAt: string
   $updatedAt: string

@@ -120,6 +120,34 @@ export async function getMatchesByUser(): Promise<Match[]> {
   }
 }
 
+export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return []
+    }
+
+    const { databases } = await createAdminClient()
+
+    const response = await databases.listDocuments(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      [
+        Query.equal("userId", user.$id),
+        Query.or([
+          Query.equal("playerOneId", playerId),
+          Query.equal("playerTwoId", playerId)
+        ])
+      ]
+    )
+
+    return response.documents as unknown as Match[]
+  } catch (error) {
+    console.error("Error fetching player matches:", error)
+    return []
+  }
+}
+
 export async function getMatch(matchId: string) {
   const { databases } = await createAdminClient()
   

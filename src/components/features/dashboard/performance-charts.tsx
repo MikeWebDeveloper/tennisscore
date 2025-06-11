@@ -38,17 +38,19 @@ interface Player {
   $id: string
   firstName: string
   lastName: string
+  isMainPlayer?: boolean
+  profilePictureId?: string
 }
 
 interface PerformanceChartsProps {
   matches: Match[]
-  players: Player[]
+  mainPlayer: Player | null
   userId: string
 }
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
 
-export function PerformanceCharts({ matches }: PerformanceChartsProps) {
+export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceChartsProps) {
   // Prepare win/loss trend data
   const winLossTrend = useMemo(() => {
     const completedMatches = matches

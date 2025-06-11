@@ -40,6 +40,8 @@ interface Player {
   firstName: string
   lastName: string
   rating?: string
+  isMainPlayer?: boolean
+  profilePictureId?: string
 }
 
 interface User {
@@ -57,7 +59,7 @@ interface EnhancedBentoGridProps {
     inProgressMatches: number
   }
   matches: Match[]
-  players: Player[]
+  mainPlayer: Player | null
   user: User
 }
 
@@ -96,21 +98,21 @@ function ChartSkeleton() {
   )
 }
 
-export function EnhancedBentoGrid({ stats, matches, players, user }: EnhancedBentoGridProps) {
+export function EnhancedBentoGrid({ stats, matches, mainPlayer, user }: EnhancedBentoGridProps) {
   const recentMatches = matches.slice(0, 3)
   const hasData = stats.completedMatches > 0
   
-  // Enhanced player display with better error handling
-  const getPlayerDisplay = (match: Match) => {
-    const player1 = players.find(p => p.$id === match.playerOneId)
-    const player2 = players.find(p => p.$id === match.playerTwoId)
-    
-    if (!player1 || !player2) {
-      return "Match Data Loading..."
+      // Enhanced player display with better error handling
+    const getPlayerDisplay = (match: Match) => {
+      const player1Name = mainPlayer && mainPlayer.$id === match.playerOneId 
+        ? `${mainPlayer.firstName} ${mainPlayer.lastName}` 
+        : "Player 1"
+      const player2Name = mainPlayer && mainPlayer.$id === match.playerTwoId 
+        ? `${mainPlayer.firstName} ${mainPlayer.lastName}` 
+        : "Player 2"
+      
+      return `${player1Name} vs ${player2Name}`
     }
-    
-    return `${player1.firstName} vs ${player2.firstName}`
-  }
 
   return (
     <motion.div
@@ -245,7 +247,7 @@ export function EnhancedBentoGrid({ stats, matches, players, user }: EnhancedBen
           <Suspense fallback={<ChartSkeleton />}>
             <PerformanceCharts 
               matches={matches}
-              players={players}
+              mainPlayer={mainPlayer}
               userId={user.$id}
             />
           </Suspense>
@@ -345,7 +347,7 @@ export function EnhancedBentoGrid({ stats, matches, players, user }: EnhancedBen
               </div>
             </CardHeader>
             <CardContent>
-              {players.length === 0 ? (
+              {mainPlayer === null ? (
                 <div className="text-center py-12">
                   <Users className="h-12 w-12 text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-500 mb-4">No players created</p>
@@ -358,12 +360,11 @@ export function EnhancedBentoGrid({ stats, matches, players, user }: EnhancedBen
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3">
-                  {players.slice(0, 6).map((player, index) => (
+                  {mainPlayer && (
                     <motion.div
-                      key={player.$id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 + index * 0.1 }}
+                      transition={{ delay: 0.6 }}
                       className="group"
                     >
                       <Link href="/players">
@@ -371,30 +372,21 @@ export function EnhancedBentoGrid({ stats, matches, players, user }: EnhancedBen
                           <div className="flex items-center space-x-3">
                             <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
                               <span className="text-sm font-medium text-primary">
-                                {player.firstName?.[0]}{player.lastName?.[0]}
+                                {mainPlayer.firstName?.[0]}{mainPlayer.lastName?.[0]}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-slate-200 truncate group-hover:text-primary transition-colors">
-                                {player.firstName} {player.lastName}
+                                {mainPlayer.firstName} {mainPlayer.lastName}
                               </p>
-                              {player.rating && (
-                                <p className="text-sm text-slate-400">Rating: {player.rating}</p>
+                              {mainPlayer.rating && (
+                                <p className="text-sm text-slate-400">Rating: {mainPlayer.rating}</p>
                               )}
                             </div>
                           </div>
                         </div>
                       </Link>
                     </motion.div>
-                  ))}
-                  {players.length > 6 && (
-                    <div className="text-center pt-2">
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href="/players" className="text-slate-400 hover:text-slate-200">
-                          +{players.length - 6} more players
-                        </Link>
-                      </Button>
-                    </div>
                   )}
                 </div>
               )}
