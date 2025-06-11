@@ -69,9 +69,14 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
 
     const { databases } = await createAdminClient()
 
+    // Serialize pointLog objects to strings since Appwrite expects string arrays
+    const serializedPointLog = scoreUpdate.pointLog.map(point => 
+      typeof point === 'string' ? point : JSON.stringify(point)
+    )
+
     const updateData: Record<string, unknown> = {
       score: JSON.stringify(scoreUpdate.score),
-      pointLog: scoreUpdate.pointLog,
+      pointLog: serializedPointLog,
     }
     
     if (scoreUpdate.status) {
