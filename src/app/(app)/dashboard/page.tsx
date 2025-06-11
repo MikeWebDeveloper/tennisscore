@@ -12,18 +12,18 @@ export default async function DashboardPage() {
       redirect("/login")
     }
 
-    // Fetch user's data with more explicit error logging
-    const players = await getPlayersByUser().catch((err) => {
-      console.error("Dashboard Page - Failed to fetch players:", err.message)
-      return [] // Return empty array on failure
-    })
+    // Fetch user's data
+    const [players, matches] = await Promise.all([
+      getPlayersByUser().catch((err) => {
+        console.log("Dashboard - Players fetch error:", err.message)
+        return []
+      }),
+      getMatchesByUser().catch((err) => {
+        console.log("Dashboard - Matches fetch error:", err.message)
+        return []
+      })
+    ])
 
-    const matches = await getMatchesByUser().catch((err) => {
-      console.error("Dashboard Page - Failed to fetch matches:", err.message)
-      return [] // Return empty array on failure
-    })
-
-    // Pass the potentially empty arrays to the client
     return (
       <DashboardClient 
         user={user}
@@ -32,8 +32,7 @@ export default async function DashboardPage() {
       />
     )
   } catch (error) {
-    // This top-level catch will handle errors from getCurrentUser or redirection
-    console.error("Dashboard Page - Unrecoverable error:", error)
+    console.log("Dashboard - Error:", error)
     redirect("/login")
   }
 } 

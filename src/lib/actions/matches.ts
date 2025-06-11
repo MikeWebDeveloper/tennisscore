@@ -36,11 +36,13 @@ export async function createMatch(matchData: {
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       ID.unique(),
       {
-        ...matchData,
+        playerOneId: matchData.playerOneId,
+        playerTwoId: matchData.playerTwoId,
+        matchFormat: JSON.stringify(matchData.matchFormat),
         matchDate: new Date().toISOString(),
         status: "In Progress",
         score: JSON.stringify(initialScore),
-        pointLog: "[]",
+        pointLog: [],
         userId: user.$id,
       }
     )

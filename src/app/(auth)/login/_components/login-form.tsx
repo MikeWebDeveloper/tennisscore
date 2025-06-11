@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useActionState, useEffect } from "react"
-import { useFormStatus } from "react-dom"
+import { useFormState, useFormStatus } from "react-dom"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signInAction } from "@/lib/actions/auth"
 import { toast } from "sonner"
+import { useEffect } from "react"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -27,7 +27,7 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(signInAction, undefined)
+  const [state, formAction] = useFormState(signInAction, undefined)
 
   useEffect(() => {
     if (state?.error) {
