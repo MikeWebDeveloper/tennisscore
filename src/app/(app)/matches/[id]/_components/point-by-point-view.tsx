@@ -4,14 +4,14 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PointDetail } from "@/lib/types"
 
 interface PointByPointViewProps {
   pointLog: string[] | PointDetail[]
+  playerNames: { p1: string; p2: string }
 }
 
-export function PointByPointView({ pointLog }: PointByPointViewProps) {
+export function PointByPointView({ pointLog, playerNames }: PointByPointViewProps) {
   const [selectedSet, setSelectedSet] = useState<number | null>(null)
   
   // Parse point log if it's an array of strings
@@ -41,20 +41,39 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
     ? parsedPoints.filter(p => p.setNumber === selectedSet)
     : parsedPoints
 
-  const getPointTypeIcon = (point: PointDetail) => {
-    if (point.serveOutcome === "ace") return "🎯"
-    if (point.pointOutcome === "winner") return "⚡"
-    if (point.pointOutcome === "double_fault") return "❌"
-    if (point.isBreakPoint) return "🔥"
-    return "🎾"
+  // Group points by games
+  const gameGroups = filteredPoints.reduce((acc, point) => {
+    const key = `${point.setNumber}-${point.gameNumber}`
+    if (!acc[key]) {
+      acc[key] = []
+    }
+    acc[key].push(point)
+    return acc
+  }, {} as Record<string, PointDetail[]>)
+
+  const getPointDisplay = (point: PointDetail) => {
+    const winner = point.winner === "p1" ? playerNames.p1.split(' ')[0] : playerNames.p2.split(' ')[0]
+    let display = point.gameScore
+    
+    // Add outcome indicator
+    if (point.pointOutcome === "ace") return `${display} (ACE)`
+    if (point.pointOutcome === "double_fault") return `${display} (DF)`
+    if (point.pointOutcome === "winner") return `${display} (W)`
+    if (point.pointOutcome === "unforced_error") return `${display} (UE)`
+    
+    return display
   }
 
-  const getWinnerColor = (winner: string) => {
-    return winner === "p1" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"
+  const getPointColor = (point: PointDetail) => {
+    if (point.pointOutcome === "ace") return "text-green-600"
+    if (point.pointOutcome === "double_fault") return "text-red-600"
+    if (point.pointOutcome === "winner") return "text-blue-600"
+    if (point.pointOutcome === "unforced_error") return "text-orange-600"
+    return "text-gray-700"
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Set Filter */}
       <div className="flex flex-wrap gap-2">
         <Button
@@ -76,125 +95,75 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
         ))}
       </div>
 
-      {/* Points Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Point-by-Point Timeline
-            <Badge variant="secondary">
-              {filteredPoints.length} Points
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {filteredPoints.map((point, index) => (
-              <Dialog key={point.id}>
-                <DialogTrigger asChild>
-                  <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{getPointTypeIcon(point)}</span>
-                      <div>
-                        <div className="font-mono text-sm">
-                          Point {point.pointNumber} • Set {point.setNumber}, Game {point.gameNumber}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {point.gameScore}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {point.isBreakPoint && (
-                        <Badge variant="destructive" className="text-xs">
-                          Break Point
-                        </Badge>
-                      )}
-                      {point.isSetPoint && (
-                        <Badge variant="secondary" className="text-xs">
-                          Set Point
-                        </Badge>
-                      )}
-                      {point.isMatchPoint && (
-                        <Badge variant="default" className="text-xs">
-                          Match Point
-                        </Badge>
-                      )}
-                      <Badge className={getWinnerColor(point.winner)}>
-                        {point.winner === "p1" ? "P1" : "P2"}
-                      </Badge>
-                    </div>
+      {/* Summary Header */}
+      <div className="grid grid-cols-3 gap-4 text-center text-sm font-medium bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
+        <div>{playerNames.p1.split(' ')[0]}</div>
+        <div>Score</div>
+        <div>{playerNames.p2.split(' ')[0]}</div>
+      </div>
+
+      {/* Point by Point Display */}
+      <div className="space-y-6">
+        {Object.entries(gameGroups).map(([gameKey, gamePoints]) => {
+          const [setNum, gameNum] = gameKey.split('-')
+          const lastPoint = gamePoints[gamePoints.length - 1]
+          
+          return (
+            <Card key={gameKey} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span>Set {setNum}, Game {gameNum}</span>
+                  <div className="flex items-center gap-2">
+                    {lastPoint.isBreakPoint && (
+                      <Badge variant="destructive" className="text-xs">BP</Badge>
+                    )}
+                    {lastPoint.isSetPoint && (
+                      <Badge variant="secondary" className="text-xs">SP</Badge>
+                    )}
+                    {lastPoint.isMatchPoint && (
+                      <Badge variant="default" className="text-xs">MP</Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs">
+                      {lastPoint.server === "p1" ? `${playerNames.p1.split(' ')[0]} serves` : `${playerNames.p2.split(' ')[0]} serves`}
+                    </Badge>
                   </div>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      Point {point.pointNumber} Details
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <strong>Set:</strong> {point.setNumber}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid gap-2">
+                  {gamePoints.map((point, idx) => (
+                    <div key={idx} className="grid grid-cols-3 gap-4 items-center py-1 text-sm border-b border-slate-100 dark:border-slate-800 last:border-b-0">
+                      <div className="text-center">
+                        {point.winner === "p1" && (
+                          <div className={`font-mono ${getPointColor(point)}`}>
+                            {getPointDisplay(point)}
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <strong>Game:</strong> {point.gameNumber}
+                      <div className="text-center text-xs text-muted-foreground">
+                        {point.gameScore}
                       </div>
-                      <div>
-                        <strong>Score:</strong> {point.gameScore}
-                      </div>
-                      <div>
-                        <strong>Winner:</strong> {point.winner === "p1" ? "Player 1" : "Player 2"}
-                      </div>
-                      <div>
-                        <strong>Server:</strong> {point.server === "p1" ? "Player 1" : "Player 2"}
-                      </div>
-                      <div>
-                        <strong>Serve Type:</strong> {point.serveType}
+                      <div className="text-center">
+                        {point.winner === "p2" && (
+                          <div className={`font-mono ${getPointColor(point)}`}>
+                            {getPointDisplay(point)}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
-                    {point.serveOutcome && (
-                      <div>
-                        <strong>Serve Outcome:</strong> {point.serveOutcome}
-                      </div>
-                    )}
-                    
-                    {point.pointOutcome && (
-                      <div>
-                        <strong>Point Outcome:</strong> {point.pointOutcome}
-                      </div>
-                    )}
-                    
-                    {point.rallyLength && (
-                      <div>
-                        <strong>Rally Length:</strong> {point.rallyLength} shots
-                      </div>
-                    )}
-                    
-                    {point.notes && (
-                      <div>
-                        <strong>Notes:</strong> {point.notes}
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {point.isBreakPoint && (
-                        <Badge variant="destructive">Break Point</Badge>
-                      )}
-                      {point.isSetPoint && (
-                        <Badge variant="secondary">Set Point</Badge>
-                      )}
-                      {point.isMatchPoint && (
-                        <Badge variant="default">Match Point</Badge>
-                      )}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Point Count Summary */}
+      <div className="text-center text-sm text-muted-foreground">
+        Total Points: {filteredPoints.length}
+        {selectedSet && ` in Set ${selectedSet}`}
+      </div>
     </div>
   )
 } 
