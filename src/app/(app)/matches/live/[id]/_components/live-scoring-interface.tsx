@@ -1,26 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
   Share2, 
   ArrowLeft,
   Target,
   Zap,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Circle
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
+import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { reconstructMatchScore } from "@/lib/utils/tennis-scoring"
 import { Player, PointDetail, ServeType, PointOutcome, ShotType } from "@/lib/types"
-import { ServeSelection } from "./serve-selection"
-import { generatePointContext, calculateMatchStats } from "@/lib/utils/match-stats"
-import { reconstructGameProgression, getServer, reconstructMatchScore } from "@/lib/utils/tennis-scoring"
 
 interface PointContext {
   pointNumber: number
@@ -53,6 +54,7 @@ interface LiveScoringInterfaceProps {
       noAd: boolean
     }
     status: "In Progress" | "Completed"
+    pointLog?: string
   }
 }
 
@@ -75,150 +77,54 @@ function StatRow({
   player2Detail,
   delay = 0
 }: StatRowProps) {
-  const p1Num = typeof player1Value === 'string' ? parseFloat(player1Value) : player1Value
-  const p2Num = typeof player2Value === 'string' ? parseFloat(player2Value) : player2Value
-  
-  let p1Percentage = 50
-  let p2Percentage = 50
-  
-  if (isPercentage) {
-    p1Percentage = Math.min(Math.max(p1Num, 0), 100)
-    p2Percentage = Math.min(Math.max(p2Num, 0), 100)
-  } else if (p1Num + p2Num > 0) {
-    const total = p1Num + p2Num
-    p1Percentage = (p1Num / total) * 100
-    p2Percentage = (p2Num / total) * 100
-  }
-
-  const displayValue1 = isPercentage ? `${p1Num}%` : player1Value.toString()
-  const displayValue2 = isPercentage ? `${p2Num}%` : player2Value.toString()
-
-  const hasMaxValue = (isPercentage && (p1Num === 100 || p2Num === 100)) || 
-                     (!isPercentage && (p1Percentage === 100 || p2Percentage === 100))
-
   return (
     <motion.div 
-      className="py-2"
+      className="space-y-3"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.15, duration: 0.4 }}
+      transition={{ delay: delay * 0.1 }}
     >
-      <div className="text-center mb-1.5">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          {label}
-        </h3>
-      </div>
-
-      <div className="relative flex items-center">
-        <div className={`text-right pr-3 ${hasMaxValue ? 'w-14' : 'w-12'}`}>
-          <div className="text-base font-bold">{displayValue1}</div>
-          {player1Detail && (
-            <div className="text-xs text-muted-foreground">({player1Detail})</div>
-          )}
-        </div>
-        
-        <div className="flex-1 flex items-center">
-          <div className="flex-1 h-1 bg-muted overflow-hidden">
-            <motion.div 
-              className="h-full bg-blue-500 origin-right"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: p1Percentage / 100 }}
-              transition={{ 
-                delay: delay * 0.15 + 0.4, 
-                duration: 1.0, 
-                ease: "easeOut" 
-              }}
-            />
-          </div>
-          
-          <div className="w-px h-3 bg-border mx-1" />
-          
-          <div className="flex-1 h-1 bg-muted overflow-hidden">
-            <motion.div 
-              className="h-full bg-red-500 origin-left"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: p2Percentage / 100 }}
-              transition={{ 
-                delay: delay * 0.15 + 0.4, 
-                duration: 1.0, 
-                ease: "easeOut" 
-              }}
-            />
-          </div>
-        </div>
-
-        <div className={`text-left pl-3 ${hasMaxValue ? 'w-14' : 'w-12'}`}>
-          <div className="text-base font-bold">{displayValue2}</div>
-          {player2Detail && (
-            <div className="text-xs text-muted-foreground">({player2Detail})</div>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
-interface PointPopupProps {
-  score: string
-  serveType: string
-  pointOutcome: string
-  winnerName: string
-  setNumber: number
-  gameNumber: number
-  server: "p1" | "p2"
-  playerNames: { p1: string; p2: string }
-}
-
-function PointPopup({ 
-  score, 
-  serveType, 
-  pointOutcome, 
-  winnerName, 
-  setNumber, 
-  gameNumber, 
-  server,
-  playerNames 
-}: PointPopupProps) {
-  const serverName = server === "p1" ? playerNames.p1 : playerNames.p2
-  
-  const getPointOutcomeText = () => {
-    switch (pointOutcome) {
-      case "ace": return "Ace"
-      case "winner": return "Winner"
-      case "unforced_error": return "Unforced Error"
-      case "forced_error": return "Forced Error"
-      case "double_fault": return "Double Fault"
-      default: return pointOutcome
-    }
-  }
-
-  return (
-    <div className="p-6 space-y-4 max-w-md">
-      <div className="text-center">
-        <div className="text-3xl font-bold text-primary mb-2">{score}</div>
-        <p className="text-sm text-muted-foreground">
-          Set {setNumber}, Game {gameNumber}
-        </p>
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-muted-foreground">{label}</h3>
       </div>
       
-      <div className="space-y-2 text-center">
-        <div className="text-lg font-semibold text-blue-500">
-          {serveType === "first" ? "1st" : "2nd"} Serve
+      <div className="grid grid-cols-2 gap-4">
+        <div className="text-center">
+          <div className="text-lg font-mono font-bold">
+            {isPercentage ? `${player1Value}%` : player1Value}
+          </div>
+          {player1Detail && (
+            <div className="text-xs text-muted-foreground mt-1">
+              {player1Detail}
+            </div>
+          )}
         </div>
         
-        <div className="text-lg font-semibold text-green-500">
-          {getPointOutcomeText()}
-        </div>
-        
-        <div className="text-lg font-semibold text-orange-500">
-          {winnerName}
-        </div>
-        
-        <div className="text-base text-muted-foreground">
-          {serverName} serving
+        <div className="text-center">
+          <div className="text-lg font-mono font-bold">
+            {isPercentage ? `${player2Value}%` : player2Value}
+          </div>
+          {player2Detail && (
+            <div className="text-xs text-muted-foreground mt-1">
+              {player2Detail}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+      
+      <div className="grid grid-cols-2 gap-2">
+        <Progress 
+          value={isPercentage ? Number(player1Value) : 
+            Number(player1Value) / (Number(player1Value) + Number(player2Value)) * 100} 
+          className="h-2"
+        />
+        <Progress 
+          value={isPercentage ? Number(player2Value) : 
+            Number(player2Value) / (Number(player1Value) + Number(player2Value)) * 100} 
+          className="h-2"
+        />
+      </div>
+    </motion.div>
   )
 }
 
@@ -227,7 +133,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [score, setScore] = useState(match.scoreParsed)
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [currentServer, setCurrentServer] = useState<"p1" | "p2" | null>(null)
-  const [showServeSelection, setShowServeSelection] = useState(true)
   const [serveType, setServeType] = useState<ServeType>("first")
   const [isUpdating, setIsUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState("statistics")
@@ -239,10 +144,46 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   } | null>(null)
   const [showPointOutcome, setShowPointOutcome] = useState(false)
 
+  // Initialize from existing match data
+  useEffect(() => {
+    // Parse existing point log if available
+    if (match.pointLog) {
+      try {
+        const existingPointLog = JSON.parse(match.pointLog)
+        setPointLog(existingPointLog)
+        
+        // Determine current server from last point or default to p1
+        if (existingPointLog.length > 0) {
+          const lastPoint = existingPointLog[existingPointLog.length - 1]
+          // Server switches after each game, so check if we're in a new game
+          const totalGames = score.games[0] + score.games[1]
+          const isNewGame = score.points[0] === 0 && score.points[1] === 0
+          
+          if (isNewGame && totalGames > 0) {
+            // New game, so server has switched
+            setCurrentServer(lastPoint.server === "p1" ? "p2" : "p1")
+          } else {
+            // Same game, same server
+            setCurrentServer(lastPoint.server)
+          }
+        } else {
+          // No points played yet, default to p1
+          setCurrentServer("p1")
+        }
+      } catch (error) {
+        console.error("Failed to parse point log:", error)
+        setCurrentServer("p1") // Default if no valid data
+      }
+    } else {
+      // New match, default to p1
+      setCurrentServer("p1")
+    }
+  }, [match.pointLog, score.games, score.points])
+
   // Calculate live stats
   const matchStats = calculateMatchStats(pointLog)
   const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
+    p1: `${match.playerOne.firstName} ${match.playerTwo.lastName}`,
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
   }
 
@@ -252,9 +193,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     return "40"
   }
 
-  const handleServeSelected = (servingPlayer: "p1" | "p2") => {
-    setCurrentServer(servingPlayer)
-    setShowServeSelection(false)
+  const getGameScore = () => {
+    const p1Points = getPointDisplay(score.points[0])
+    const p2Points = getPointDisplay(score.points[1])
+    
+    // Handle deuce situation
+    if (score.points[0] >= 3 && score.points[1] >= 3) {
+      if (score.points[0] === score.points[1]) return "DEUCE"
+      if (score.points[0] > score.points[1]) return "AD-" + playerNames.p1.split(' ')[0].toUpperCase()
+      return "AD-" + playerNames.p2.split(' ')[0].toUpperCase()
+    }
+    
+    return `${p1Points} - ${p2Points}`
   }
 
   const awardPoint = async (playerIndex: number) => {
@@ -263,12 +213,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setIsUpdating(true)
 
     // Generate point context
-    const context = generatePointContext(
-      pointLog.length + 1,
-      score,
-      playerIndex === 0 ? "p1" : "p2",
+    const context: PointContext = {
+      pointNumber: pointLog.length + 1,
+      setNumber: score.sets.length + 1,
+      gameNumber: score.games[0] + score.games[1] + 1,
+      gameScore: getGameScore(),
+      winner: playerIndex === 0 ? "p1" : "p2",
+      server: currentServer,
+      isBreakPoint: false, // Simplified for now
+      isSetPoint: false,
+      isMatchPoint: false,
       playerNames
-    )
+    }
 
     // Set pending point and show outcome selection
     setPendingPoint({
@@ -390,7 +346,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     return playerGames >= 6 && playerGames >= opponentGames + 2
   }
 
-  // Point-by-Point component similar to the finished match
+  // Point-by-Point component
   const PointByPointTab = () => {
     const matchScore = reconstructMatchScore(pointLog.map(p => ({
       winner: p.winner,
@@ -447,312 +403,350 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* Games for selected set */}
         {setGroups[selectedSet] && (
-          <div className="space-y-3">
-            {Object.entries(setGroups[selectedSet]).map(([gameNum, gamePoints]) => {
-              const gameNumber = Number(gameNum)
-              const server = getServer(gameNumber)
-              
-              const scoreProgression = reconstructGameProgression(gamePoints, match.matchFormatParsed.noAd)
-              const lastPoint = gamePoints[gamePoints.length - 1]
-              const gameWinner = lastPoint.winner
-              
-              const thisSetGames = Object.entries(setGroups[selectedSet])
-                .filter(([gNum]) => Number(gNum) <= gameNumber)
-                .reduce((acc, [, gPoints]) => {
-                  const gWinner = gPoints[gPoints.length - 1].winner
-                  if (gWinner === "p1") acc.p1++
-                  else acc.p2++
-                  return acc
-                }, { p1: 0, p2: 0 })
-
-              const gameScore = `${thisSetGames.p1}-${thisSetGames.p2}`
-              
-              return (
-                <motion.div 
-                  key={`${selectedSet}-${gameNumber}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: gameNumber * 0.05 }}
-                  className="bg-muted/50 rounded-lg p-3"
-                >
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-3">
-                      SET {selectedSet} • GAME {gameNumber}
-                      <span className="ml-2">
-                        🎾 {server === "p1" ? playerNames.p1 : playerNames.p2} serving
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-wrap justify-center gap-1 mb-3">
-                      {scoreProgression.slice(1, -1).map((score, index) => {
-                        const point = gamePoints[index]
-                        if (!point) return null
-                        
-                        return (
-                          <Dialog key={`${gameNumber}-${index}`}>
-                            <DialogTrigger asChild>
-                              <motion.button
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: index * 0.03 }}
-                                className="px-2 py-1 text-xs border border-primary rounded hover:bg-primary hover:text-primary-foreground transition-colors"
-                              >
-                                {score}
-                              </motion.button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
-                              <PointPopup
-                                score={score}
-                                serveType={point.serveType || "first"}
-                                pointOutcome={point.pointOutcome || "other"}
-                                winnerName={point.winner === "p1" ? playerNames.p1 : playerNames.p2}
-                                setNumber={point.setNumber}
-                                gameNumber={point.gameNumber}
-                                server={point.server}
-                                playerNames={playerNames}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        )
-                      })}
-                    </div>
-                    
-                    <div className="text-lg font-bold">{gameScore}</div>
+          <div className="space-y-6">
+            {Object.entries(setGroups[selectedSet])
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .map(([gameNumber, gamePoints]) => (
+                <div key={gameNumber} className="space-y-3">
+                  <h3 className="font-medium text-sm">
+                    Game {gameNumber}
+                  </h3>
+                  
+                  <div className="flex flex-wrap gap-1">
+                    {gamePoints.map((point, pointIndex) => (
+                      <Dialog key={point.id}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 font-mono text-xs"
+                          >
+                            {point.winner === "p1" ? 
+                              playerNames.p1.split(' ')[0] : 
+                              playerNames.p2.split(' ')[0]
+                            }
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-sm">
+                          <div className="space-y-4">
+                            <div className="text-center">
+                              <h4 className="font-semibold">Point {point.pointNumber}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Game {point.gameNumber}, Set {point.setNumber}
+                              </p>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span>Score:</span>
+                                <span className="font-mono">{point.gameScore}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Server:</span>
+                                <span>{point.server === "p1" ? playerNames.p1 : playerNames.p2}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Serve:</span>
+                                <span>{point.serveType === "first" ? "1st Serve" : "2nd Serve"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Outcome:</span>
+                                <span className="capitalize">{point.pointOutcome.replace('_', ' ')}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Winner:</span>
+                                <span>{point.winner === "p1" ? playerNames.p1 : playerNames.p2}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ))}
                   </div>
-                </motion.div>
-              )
-            })}
+                </div>
+              ))}
           </div>
         )}
       </div>
     )
   }
 
-  // Statistics component similar to the finished match
   const StatisticsTab = () => (
-    <div className="max-w-md mx-auto">
-      <div className="space-y-0.5">
-        <StatRow
-          label="Aces"
-          player1Value={matchStats.player1.aces}
-          player2Value={matchStats.player2.aces}
-          delay={0}
-        />
-        
-        <StatRow
-          label="Double Faults"
-          player1Value={matchStats.player1.doubleFaults}
-          player2Value={matchStats.player2.doubleFaults}
-          delay={1}
-        />
-        
-        <StatRow
-          label="1st Serve Percentage"
-          player1Value={Math.round(matchStats.player1.firstServePercentage)}
-          player2Value={Math.round(matchStats.player2.firstServePercentage)}
-          isPercentage={true}
-          delay={2}
-        />
-        
-        <StatRow
-          label="1st Serve Points Won"
-          player1Value={Math.round(matchStats.player1.firstServeWinPercentage)}
-          player2Value={Math.round(matchStats.player2.firstServeWinPercentage)}
-          isPercentage={true}
-          player1Detail={`${Math.round(matchStats.player1.firstServePointsWon)}/${Math.round(matchStats.player1.firstServePointsPlayed)}`}
-          player2Detail={`${Math.round(matchStats.player2.firstServePointsWon)}/${Math.round(matchStats.player2.firstServePointsPlayed)}`}
-          delay={3}
-        />
-        
-        <StatRow
-          label="2nd Serve Points Won"
-          player1Value={Math.round(matchStats.player1.secondServeWinPercentage)}
-          player2Value={Math.round(matchStats.player2.secondServeWinPercentage)}
-          isPercentage={true}
-          player1Detail={`${Math.round(matchStats.player1.secondServePointsWon)}/${Math.round(matchStats.player1.secondServePointsPlayed)}`}
-          player2Detail={`${Math.round(matchStats.player2.secondServePointsWon)}/${Math.round(matchStats.player2.secondServePointsPlayed)}`}
-          delay={4}
-        />
-        
-        <StatRow
-          label="Winners"
-          player1Value={matchStats.player1.winners}
-          player2Value={matchStats.player2.winners}
-          delay={5}
-        />
-
-        <StatRow
-          label="Unforced Errors"
-          player1Value={matchStats.player1.unforcedErrors}
-          player2Value={matchStats.player2.unforcedErrors}
-          delay={6}
-        />
-
-        <StatRow
-          label="Net Points Won"
-          player1Value={Math.round(matchStats.player1.pointWinPercentage)}
-          player2Value={Math.round(matchStats.player2.pointWinPercentage)}
-          isPercentage={true}
-          player1Detail={`${matchStats.player1.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
-          player2Detail={`${matchStats.player2.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
-          delay={7}
-        />
-      </div>
+    <div className="space-y-6">
+      <StatRow
+        label="Aces"
+        player1Value={matchStats.player1.aces}
+        player2Value={matchStats.player2.aces}
+        delay={1}
+      />
+      
+      <StatRow
+        label="Double Faults"
+        player1Value={matchStats.player1.doubleFaults}
+        player2Value={matchStats.player2.doubleFaults}
+        delay={2}
+      />
+      
+      <StatRow
+        label="Winners"
+        player1Value={matchStats.player1.winners}
+        player2Value={matchStats.player2.winners}
+        delay={3}
+      />
+      
+      <StatRow
+        label="Unforced Errors"
+        player1Value={matchStats.player1.unforcedErrors}
+        player2Value={matchStats.player2.unforcedErrors}
+        delay={4}
+      />
+      
+      <StatRow
+        label="1st Serve %"
+        player1Value={Math.round(matchStats.player1.firstServePercentage)}
+        player2Value={Math.round(matchStats.player2.firstServePercentage)}
+        isPercentage={true}
+        player1Detail={`${matchStats.player1.firstServesMade}/${matchStats.player1.firstServesAttempted}`}
+        player2Detail={`${matchStats.player2.firstServesMade}/${matchStats.player2.firstServesAttempted}`}
+        delay={5}
+      />
+      
+      <StatRow
+        label="1st Serve Points Won"
+        player1Value={Math.round(matchStats.player1.firstServeWinPercentage)}
+        player2Value={Math.round(matchStats.player2.firstServeWinPercentage)}
+        isPercentage={true}
+        player1Detail={`${matchStats.player1.firstServePointsWon}/${matchStats.player1.firstServePointsPlayed}`}
+        player2Detail={`${matchStats.player2.firstServePointsWon}/${matchStats.player2.firstServePointsPlayed}`}
+        delay={6}
+      />
+      
+      <StatRow
+        label="Points Won"
+        player1Value={Math.round(matchStats.player1.pointWinPercentage)}
+        player2Value={Math.round(matchStats.player2.pointWinPercentage)}
+        isPercentage={true}
+        player1Detail={`${matchStats.player1.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
+        player2Detail={`${matchStats.player2.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
+        delay={7}
+      />
     </div>
   )
 
-  // Show serve selection if not set yet
-  if (showServeSelection || !currentServer) {
-    return (
-      <ServeSelection
-        playerOne={match.playerOne}
-        playerTwo={match.playerTwo}
-        onServeSelected={handleServeSelected}
-      />
-    )
-  }
-
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          <span className="hidden sm:inline">Back</span>
-        </Button>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={shareMatch}>
-            <Share2 className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Share</span>
-          </Button>
-          
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={undoLastPoint} 
-            disabled={pointLog.length === 0}
+      <div className="border-b bg-card">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
           >
-            <RotateCcw className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </Button>
-        </div>
-      </div>
 
-      {/* Compact Scoreboard */}
-      <div className="bg-card border-b p-3">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Player</div>
-            <div className="font-medium text-sm truncate flex items-center justify-center gap-1">
-              {currentServer === "p1" && "🎾"} {playerNames.p1}
-            </div>
-            <div className="font-medium text-sm truncate flex items-center justify-center gap-1">
-              {currentServer === "p2" && "🎾"} {playerNames.p2}
-            </div>
-          </div>
-          
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Games</div>
-            <div className="text-lg font-mono">{score.games[0]}</div>
-            <div className="text-lg font-mono">{score.games[1]}</div>
-          </div>
-          
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Points</div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-lg font-mono h-auto p-1"
-              onClick={() => awardPoint(0)}
-              disabled={isUpdating || match.status === "Completed"}
-            >
-              {getPointDisplay(score.points[0])}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-lg font-mono h-auto p-1"
-              onClick={() => awardPoint(1)}
-              disabled={isUpdating || match.status === "Completed"}
-            >
-              {getPointDisplay(score.points[1])}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Serve Type Selection */}
-      <div className="p-3 border-b bg-muted/10">
-        <div className="flex items-center justify-center gap-4">
-          <Label className="text-sm font-medium">Serve Type:</Label>
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={undoLastPoint}
+              disabled={pointLog.length === 0}
+            >
+              <RotateCcw className="h-4 w-4 text-red-500" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={shareMatch}
+              className="gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+          </div>
+        </div>
+
+        {/* Match Header - Player Names, Photos, and Scores */}
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between">
+            {/* Player 1 */}
+            <div className="flex items-center gap-3 flex-1">
+              <Avatar className="h-12 w-12">
+                {match.playerOne.profilePictureId ? (
+                  <AvatarImage 
+                    src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/profile-pictures/files/${match.playerOne.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`}
+                    alt={`${match.playerOne.firstName} ${match.playerOne.lastName}`}
+                  />
+                ) : null}
+                <AvatarFallback>
+                  {match.playerOne.firstName[0]}{match.playerOne.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="text-left">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-lg">
+                    {match.playerOne.firstName} {match.playerOne.lastName}
+                  </h2>
+                  {currentServer === "p1" && (
+                    <Circle className="h-3 w-3 fill-primary text-primary" />
+                  )}
+                </div>
+                {match.playerOne.rating && (
+                  <p className="text-sm text-muted-foreground">
+                    {match.playerOne.rating}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Set and Game Scores */}
+            <div className="flex flex-col items-center gap-2">
+              {/* Sets */}
+              <div className="flex gap-4 text-sm">
+                {score.sets.map((set, index) => (
+                  <div key={index} className="flex gap-1">
+                    <span className="w-6 text-center font-mono">{set.p1}</span>
+                    <span className="w-6 text-center font-mono">{set.p2}</span>
+                  </div>
+                ))}
+                {/* Current set */}
+                <div className="flex gap-1 font-semibold">
+                  <span className="w-6 text-center font-mono">{score.games[0]}</span>
+                  <span className="w-6 text-center font-mono">{score.games[1]}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Player 2 */}
+            <div className="flex items-center gap-3 flex-1 justify-end">
+              <div className="text-right">
+                <div className="flex items-center gap-2 justify-end">
+                  {currentServer === "p2" && (
+                    <Circle className="h-3 w-3 fill-primary text-primary" />
+                  )}
+                  <h2 className="font-semibold text-lg">
+                    {match.playerTwo.firstName} {match.playerTwo.lastName}
+                  </h2>
+                </div>
+                {match.playerTwo.rating && (
+                  <p className="text-sm text-muted-foreground">
+                    {match.playerTwo.rating}
+                  </p>
+                )}
+              </div>
+              
+              <Avatar className="h-12 w-12">
+                {match.playerTwo.profilePictureId ? (
+                  <AvatarImage 
+                    src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/profile-pictures/files/${match.playerTwo.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`}
+                    alt={`${match.playerTwo.firstName} ${match.playerTwo.lastName}`}
+                  />
+                ) : null}
+                <AvatarFallback>
+                  {match.playerTwo.firstName[0]}{match.playerTwo.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Current Game Score */}
+      <div className="p-4 bg-muted/30">
+        <div className="text-center">
+          <h3 className="text-3xl font-mono font-bold mb-2">
+            {getGameScore()}
+          </h3>
+          
+          {/* Serve Type Selection */}
+          <div className="flex justify-center gap-2 mb-4">
             <Button
               variant={serveType === "first" ? "default" : "outline"}
               size="sm"
               onClick={() => setServeType("first")}
-              className={serveType === "first" ? "bg-primary text-primary-foreground" : ""}
+              className="relative"
             >
-              {serveType === "first" && "✓ "}1st Serve
+              1st Serve
+              {serveType === "first" && <span className="ml-1">✓</span>}
             </Button>
             <Button
               variant={serveType === "second" ? "default" : "outline"}
               size="sm"
               onClick={() => setServeType("second")}
-              className={serveType === "second" ? "bg-primary text-primary-foreground" : ""}
+              className="relative"
             >
-              {serveType === "second" && "✓ "}2nd Serve
+              2nd Serve
+              {serveType === "second" && <span className="ml-1">✓</span>}
+            </Button>
+          </div>
+
+          {/* Point Buttons */}
+          <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+            <Button
+              onClick={() => awardPoint(0)}
+              disabled={isUpdating || !currentServer}
+              size="lg"
+              className="h-20 text-lg font-semibold"
+            >
+              Point {match.playerOne.firstName}
+            </Button>
+            <Button
+              onClick={() => awardPoint(1)}
+              disabled={isUpdating || !currentServer}
+              size="lg"
+              className="h-20 text-lg font-semibold"
+            >
+              Point {match.playerTwo.firstName}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Tabs for Statistics and Point-by-Point */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-          <TabsList className="grid w-full grid-cols-2 mx-3 mt-3">
+      <div className="p-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="statistics">Statistics</TabsTrigger>
             <TabsTrigger value="point-by-point">Point by Point</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="statistics" className="flex-1 overflow-y-auto p-4">
+          <TabsContent value="statistics" className="mt-6">
             <StatisticsTab />
           </TabsContent>
           
-          <TabsContent value="point-by-point" className="flex-1 overflow-y-auto p-4">
+          <TabsContent value="point-by-point" className="mt-6">
             <PointByPointTab />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Point Outcome Selection Modal */}
-      <AnimatePresence>
-        {showPointOutcome && pendingPoint && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-card rounded-lg p-6 w-full max-w-sm"
-            >
-              <h3 className="text-lg font-semibold text-center mb-4">
-                Point won by {pendingPoint.player === 0 ? playerNames.p1 : playerNames.p2}
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={() => savePointWithOutcome("ace")}
-                  variant="outline"
-                  className="h-12 flex flex-col items-center justify-center"
-                >
-                  <Target className="h-4 w-4 mb-1" />
-                  Ace
-                </Button>
-                
+      <Dialog open={showPointOutcome} onOpenChange={setShowPointOutcome}>
+        <DialogContent className="max-w-sm bg-background/95 backdrop-blur">
+          <div className="space-y-4">
+            <div className="text-center">
+              <h4 className="font-semibold">How was the point won?</h4>
+              <p className="text-sm text-muted-foreground">
+                {serveType === "first" ? "1st Serve" : "2nd Serve"}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => savePointWithOutcome("ace")}
+                variant="default"
+                className="h-12 flex flex-col items-center justify-center"
+              >
+                <Target className="h-4 w-4 mb-1" />
+                Ace
+              </Button>
+
+              {serveType === "second" && (
                 <Button
                   onClick={() => savePointWithOutcome("double_fault")}
                   variant="destructive"
@@ -761,55 +755,28 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   <AlertTriangle className="h-4 w-4 mb-1" />
                   Double Fault
                 </Button>
-                
-                <Button
-                  onClick={() => savePointWithOutcome("winner")}
-                  variant="outline"
-                  className="h-12 flex flex-col items-center justify-center"
-                >
-                  <Zap className="h-4 w-4 mb-1" />
-                  Winner
-                </Button>
-                
-                <Button
-                  onClick={() => savePointWithOutcome("unforced_error")}
-                  variant="outline"
-                  className="h-12 flex flex-col items-center justify-center"
-                >
-                  Unforced Error
-                </Button>
-                
-                <Button
-                  onClick={() => savePointWithOutcome("forced_error")}
-                  variant="outline"
-                  className="h-12 flex flex-col items-center justify-center"
-                >
-                  Forced Error
-                </Button>
-                
-                                 <Button
-                   onClick={() => savePointWithOutcome("forced_error")}
-                   variant="outline"
-                   className="h-12 flex flex-col items-center justify-center"
-                 >
-                   Other
-                 </Button>
-              </div>
+              )}
 
               <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowPointOutcome(false)
-                  setPendingPoint(null)
-                }}
-                className="w-full mt-4"
+                onClick={() => savePointWithOutcome("winner")}
+                variant="default"
+                className="h-12 flex flex-col items-center justify-center"
               >
-                Cancel
+                <Zap className="h-4 w-4 mb-1" />
+                Winner
               </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              
+              <Button
+                onClick={() => savePointWithOutcome("unforced_error")}
+                variant="outline"
+                className="h-12 flex flex-col items-center justify-center"
+              >
+                Unforced Error
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
