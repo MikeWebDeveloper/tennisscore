@@ -35,8 +35,12 @@ export interface Match {
 }
 
 export interface MatchFormat {
-  sets: number
-  noAd: boolean
+  sets: 1 | 3 | 5 // Best of 1, 3, or 5 sets
+  noAd: boolean // No-advantage scoring
+  tiebreak: boolean // Tiebreak at 6-6
+  finalSetTiebreak: boolean // Tiebreak in final set
+  finalSetTiebreakAt?: number // Points for final set tiebreak (e.g., 10)
+  shortSets?: boolean // First to 4 games (for practice)
 }
 
 export interface Score {

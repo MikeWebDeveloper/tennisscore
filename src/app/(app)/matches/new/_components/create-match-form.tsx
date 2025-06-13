@@ -39,7 +39,11 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
   const [selectedPlayerTwo, setSelectedPlayerTwo] = useState<string>("")
   const [matchFormat, setMatchFormat] = useState<MatchFormat>({
     sets: 3,
-    noAd: false
+    noAd: false,
+    tiebreak: true,
+    finalSetTiebreak: false,
+    finalSetTiebreakAt: 10,
+    shortSets: false
   })
 
   const steps = [
@@ -72,7 +76,7 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
         setIsCreatePlayerOpen(false)
         toast.success("Player created successfully!")
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create player")
     }
   }
@@ -101,7 +105,7 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
         toast.success("Match created successfully!")
         router.push(`/matches/live/${result.matchId}`)
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create match")
     } finally {
       setIsCreatingMatch(false)
@@ -174,7 +178,7 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
                       <SelectTrigger>
                         <SelectValue placeholder="Select Player 1" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background/95 backdrop-blur-sm">
                         {players.map((player) => (
                           <SelectItem 
                             key={player.$id} 
@@ -200,7 +204,7 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
                       <SelectTrigger>
                         <SelectValue placeholder="Select Player 2" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background/95 backdrop-blur-sm">
                         {players.map((player) => (
                           <SelectItem 
                             key={player.$id} 
@@ -229,7 +233,7 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
                         Create New Player
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="bg-background/95 backdrop-blur-sm">
                       <DialogHeader>
                         <DialogTitle>Create New Player</DialogTitle>
                       </DialogHeader>
@@ -266,35 +270,127 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
             {/* Step 1: Match Format */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Best of Sets</Label>
-                    <Select 
-                      value={matchFormat.sets.toString()} 
-                      onValueChange={(value) => setMatchFormat(prev => ({ ...prev, sets: parseInt(value) }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Best of 1 Set</SelectItem>
-                        <SelectItem value="3">Best of 3 Sets</SelectItem>
-                        <SelectItem value="5">Best of 5 Sets</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-6">
+                  {/* Match Length */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Match Length</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div 
+                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                          matchFormat.sets === 1 ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 1 }))}
+                      >
+                        <div className="font-medium">Best of 1 Set</div>
+                        <div className="text-sm text-muted-foreground">Quick match format</div>
+                      </div>
+                      <div 
+                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                          matchFormat.sets === 3 ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 3 }))}
+                      >
+                        <div className="font-medium">Best of 3 Sets</div>
+                        <div className="text-sm text-muted-foreground">Standard match</div>
+                      </div>
+                      <div 
+                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                          matchFormat.sets === 5 ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 5 }))}
+                      >
+                        <div className="font-medium">Best of 5 Sets</div>
+                        <div className="text-sm text-muted-foreground">Professional format</div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>No-Ad Scoring</Label>
-                      <p className="text-sm text-muted-foreground">
-                        When enabled, games are decided by sudden death deuce
-                      </p>
+                  {/* Scoring Rules */}
+                  <div className="space-y-4">
+                    <Label className="text-base font-medium">Scoring Rules</Label>
+                    
+                    {/* No-Ad Scoring */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <Label className="font-medium">No-Ad Scoring</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Games decided by sudden death at deuce (next point wins)
+                        </p>
+                      </div>
+                      <Switch 
+                        checked={matchFormat.noAd} 
+                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, noAd: checked }))}
+                      />
                     </div>
-                    <Switch 
-                      checked={matchFormat.noAd} 
-                      onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, noAd: checked }))}
-                    />
+
+                    {/* Short Sets */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <Label className="font-medium">Short Sets</Label>
+                        <p className="text-sm text-muted-foreground">
+                          First to 4 games wins set (instead of 6) - great for practice
+                        </p>
+                      </div>
+                      <Switch 
+                        checked={matchFormat.shortSets || false} 
+                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, shortSets: checked }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tiebreak Rules */}
+                  <div className="space-y-4">
+                    <Label className="text-base font-medium">Tiebreak Rules</Label>
+                    
+                    {/* Regular Tiebreak */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <Label className="font-medium">Set Tiebreak</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Play tiebreak at {matchFormat.shortSets ? '4-4' : '6-6'} (first to 7 points, win by 2)
+                        </p>
+                      </div>
+                      <Switch 
+                        checked={matchFormat.tiebreak} 
+                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, tiebreak: checked }))}
+                      />
+                    </div>
+
+                    {/* Final Set Tiebreak */}
+                    {matchFormat.sets > 1 && (
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                          <Label className="font-medium">Final Set Tiebreak</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Play tiebreak in deciding set at {matchFormat.shortSets ? '4-4' : '6-6'}
+                          </p>
+                        </div>
+                        <Switch 
+                          checked={matchFormat.finalSetTiebreak || false} 
+                          onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, finalSetTiebreak: checked }))}
+                        />
+                      </div>
+                    )}
+
+                    {/* Final Set Tiebreak Points */}
+                    {matchFormat.finalSetTiebreak && (
+                      <div className="space-y-2">
+                        <Label>Final Set Tiebreak Points</Label>
+                        <Select 
+                          value={matchFormat.finalSetTiebreakAt?.toString() || "10"} 
+                          onValueChange={(value) => setMatchFormat(prev => ({ ...prev, finalSetTiebreakAt: parseInt(value) }))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background/95 backdrop-blur-sm">
+                            <SelectItem value="7">First to 7 points (win by 2)</SelectItem>
+                            <SelectItem value="10">First to 10 points (win by 2)</SelectItem>
+                            <SelectItem value="12">First to 12 points (win by 2)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -322,10 +418,17 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-muted-foreground">MATCH FORMAT</Label>
                     <div className="p-3 bg-muted rounded-lg space-y-2">
-                      <p className="font-medium">Best of {matchFormat.sets} Sets</p>
-                      <p className="text-sm text-muted-foreground">
-                        {matchFormat.noAd ? "No-Ad scoring" : "Traditional Ad scoring"}
+                      <p className="font-medium">
+                        Best of {matchFormat.sets} Set{matchFormat.sets > 1 ? 's' : ''}
+                        {matchFormat.shortSets && ' (Short Sets)'}
                       </p>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>{matchFormat.noAd ? "No-Ad scoring" : "Traditional Ad scoring"}</p>
+                        <p>{matchFormat.tiebreak ? "Tiebreak enabled" : "No tiebreak"}</p>
+                        {matchFormat.finalSetTiebreak && matchFormat.sets > 1 && (
+                          <p>Final set tiebreak to {matchFormat.finalSetTiebreakAt}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

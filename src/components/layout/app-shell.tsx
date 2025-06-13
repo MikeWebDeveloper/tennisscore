@@ -116,7 +116,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
             {/* New Match CTA */}
             <div className="p-4 border-t border-slate-800">
-              <Button asChild className="w-full bg-primary hover:bg-primary/90 text-black font-medium">
+              <Button asChild className="w-full bg-primary hover:bg-primary/90 text-slate-900 font-medium">
                 <Link href="/matches/new">
                   <Plus className="h-4 w-4 mr-2" />
                   New Match

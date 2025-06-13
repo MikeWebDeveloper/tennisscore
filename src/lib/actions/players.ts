@@ -205,6 +205,45 @@ export async function updatePlayer(playerId: string, formData: FormData) {
   }
 }
 
+export async function getPlayersByIds(playerIds: string[]): Promise<Record<string, Player>> {
+  try {
+    const { databases } = await createAdminClient()
+    
+    const players: Record<string, Player> = {}
+    
+    // Fetch all players that match the IDs
+    for (const playerId of playerIds) {
+      try {
+        const player = await databases.getDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+          playerId
+        )
+        players[playerId] = player as unknown as Player
+      } catch (error) {
+        console.error(`Error fetching player ${playerId}:`, error)
+        // Create a fallback player name
+        players[playerId] = {
+          $id: playerId,
+          firstName: `Player`,
+          lastName: playerId.slice(-4),
+          userId: '',
+          $createdAt: '',
+          $updatedAt: '',
+          $permissions: [],
+          $databaseId: '',
+          $collectionId: ''
+        } as Player
+      }
+    }
+    
+    return players
+  } catch (error: unknown) {
+    console.error("Error fetching players by IDs:", error)
+    return {}
+  }
+}
+
 export async function deletePlayer(playerId: string): Promise<{ success?: boolean; error?: string }> {
   try {
     const user = await getCurrentUser()

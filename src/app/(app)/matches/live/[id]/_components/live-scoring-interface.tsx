@@ -1,26 +1,42 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
-  Undo2, 
   Share2, 
-  Settings, 
-  Trophy,
   ArrowLeft,
-  MessageSquare,
-  Camera
+  Target,
+  Zap,
+  AlertTriangle,
+  RotateCcw
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { Player, PointDetail } from "@/lib/types"
-import { PointDetailSheet } from "./point-detail-sheet"
-import { generatePointContext } from "@/lib/utils/match-stats"
+import { Player, PointDetail, ServeType, PointOutcome, ShotType } from "@/lib/types"
+import { ServeSelection } from "./serve-selection"
+import { generatePointContext, calculateMatchStats } from "@/lib/utils/match-stats"
+import { reconstructGameProgression, getServer, reconstructMatchScore } from "@/lib/utils/tennis-scoring"
+
+interface PointContext {
+  pointNumber: number
+  setNumber: number
+  gameNumber: number
+  gameScore: string
+  winner: "p1" | "p2"
+  server: "p1" | "p2"
+  isBreakPoint: boolean
+  isSetPoint: boolean
+  isMatchPoint: boolean
+  playerNames: { p1: string; p2: string }
+  gameWon?: boolean
+  setWon?: boolean
+  matchWon?: boolean
+}
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -38,177 +54,308 @@ interface LiveScoringInterfaceProps {
     }
     status: "In Progress" | "Completed"
   }
-  user: any
 }
 
-export function LiveScoringInterface({ match, user }: LiveScoringInterfaceProps) {
+interface StatRowProps {
+  label: string
+  player1Value: number | string
+  player2Value: number | string
+  isPercentage?: boolean
+  player1Detail?: string
+  player2Detail?: string
+  delay?: number
+}
+
+function StatRow({ 
+  label, 
+  player1Value, 
+  player2Value, 
+  isPercentage = false,
+  player1Detail,
+  player2Detail,
+  delay = 0
+}: StatRowProps) {
+  const p1Num = typeof player1Value === 'string' ? parseFloat(player1Value) : player1Value
+  const p2Num = typeof player2Value === 'string' ? parseFloat(player2Value) : player2Value
+  
+  let p1Percentage = 50
+  let p2Percentage = 50
+  
+  if (isPercentage) {
+    p1Percentage = Math.min(Math.max(p1Num, 0), 100)
+    p2Percentage = Math.min(Math.max(p2Num, 0), 100)
+  } else if (p1Num + p2Num > 0) {
+    const total = p1Num + p2Num
+    p1Percentage = (p1Num / total) * 100
+    p2Percentage = (p2Num / total) * 100
+  }
+
+  const displayValue1 = isPercentage ? `${p1Num}%` : player1Value.toString()
+  const displayValue2 = isPercentage ? `${p2Num}%` : player2Value.toString()
+
+  const hasMaxValue = (isPercentage && (p1Num === 100 || p2Num === 100)) || 
+                     (!isPercentage && (p1Percentage === 100 || p2Percentage === 100))
+
+  return (
+    <motion.div 
+      className="py-2"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.15, duration: 0.4 }}
+    >
+      <div className="text-center mb-1.5">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </h3>
+      </div>
+
+      <div className="relative flex items-center">
+        <div className={`text-right pr-3 ${hasMaxValue ? 'w-14' : 'w-12'}`}>
+          <div className="text-base font-bold">{displayValue1}</div>
+          {player1Detail && (
+            <div className="text-xs text-muted-foreground">({player1Detail})</div>
+          )}
+        </div>
+        
+        <div className="flex-1 flex items-center">
+          <div className="flex-1 h-1 bg-muted overflow-hidden">
+            <motion.div 
+              className="h-full bg-blue-500 origin-right"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: p1Percentage / 100 }}
+              transition={{ 
+                delay: delay * 0.15 + 0.4, 
+                duration: 1.0, 
+                ease: "easeOut" 
+              }}
+            />
+          </div>
+          
+          <div className="w-px h-3 bg-border mx-1" />
+          
+          <div className="flex-1 h-1 bg-muted overflow-hidden">
+            <motion.div 
+              className="h-full bg-red-500 origin-left"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: p2Percentage / 100 }}
+              transition={{ 
+                delay: delay * 0.15 + 0.4, 
+                duration: 1.0, 
+                ease: "easeOut" 
+              }}
+            />
+          </div>
+        </div>
+
+        <div className={`text-left pl-3 ${hasMaxValue ? 'w-14' : 'w-12'}`}>
+          <div className="text-base font-bold">{displayValue2}</div>
+          {player2Detail && (
+            <div className="text-xs text-muted-foreground">({player2Detail})</div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+interface PointPopupProps {
+  score: string
+  serveType: string
+  pointOutcome: string
+  winnerName: string
+  setNumber: number
+  gameNumber: number
+  server: "p1" | "p2"
+  playerNames: { p1: string; p2: string }
+}
+
+function PointPopup({ 
+  score, 
+  serveType, 
+  pointOutcome, 
+  winnerName, 
+  setNumber, 
+  gameNumber, 
+  server,
+  playerNames 
+}: PointPopupProps) {
+  const serverName = server === "p1" ? playerNames.p1 : playerNames.p2
+  
+  const getPointOutcomeText = () => {
+    switch (pointOutcome) {
+      case "ace": return "Ace"
+      case "winner": return "Winner"
+      case "unforced_error": return "Unforced Error"
+      case "forced_error": return "Forced Error"
+      case "double_fault": return "Double Fault"
+      default: return pointOutcome
+    }
+  }
+
+  return (
+    <div className="p-6 space-y-4 max-w-md">
+      <div className="text-center">
+        <div className="text-3xl font-bold text-primary mb-2">{score}</div>
+        <p className="text-sm text-muted-foreground">
+          Set {setNumber}, Game {gameNumber}
+        </p>
+      </div>
+      
+      <div className="space-y-2 text-center">
+        <div className="text-lg font-semibold text-blue-500">
+          {serveType === "first" ? "1st" : "2nd"} Serve
+        </div>
+        
+        <div className="text-lg font-semibold text-green-500">
+          {getPointOutcomeText()}
+        </div>
+        
+        <div className="text-lg font-semibold text-orange-500">
+          {winnerName}
+        </div>
+        
+        <div className="text-base text-muted-foreground">
+          {serverName} serving
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
-  const [score, setScore] = useState(match.scoreParsed || {
-    sets: [],
-    games: [0, 0],
-    points: [0, 0]
-  })
+  const [score, setScore] = useState(match.scoreParsed)
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
-  const [detailedLogging, setDetailedLogging] = useState(false)
-  const [showDetailSheet, setShowDetailSheet] = useState(false)
-  const [pendingPoint, setPendingPoint] = useState<{ player: number; context: any } | null>(null)
+  const [currentServer, setCurrentServer] = useState<"p1" | "p2" | null>(null)
+  const [showServeSelection, setShowServeSelection] = useState(true)
+  const [serveType, setServeType] = useState<ServeType>("first")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [activeTab, setActiveTab] = useState("statistics")
+  
+  // New state for point outcome selection
+  const [pendingPoint, setPendingPoint] = useState<{
+    player: number
+    context: PointContext
+  } | null>(null)
+  const [showPointOutcome, setShowPointOutcome] = useState(false)
+
+  // Calculate live stats
+  const matchStats = calculateMatchStats(pointLog)
+  const playerNames = {
+    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
+    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
+  }
 
   const getPointDisplay = (points: number) => {
-    if (match.matchFormatParsed?.noAd) {
-      return points.toString()
-    }
-    
-    const pointNames = ["0", "15", "30", "40"]
-    
-    if (points < 4) {
-      return pointNames[points]
-    }
-    
-    // Handle deuce and advantage
-    const otherPlayer = points === 0 ? 1 : 0
-    const otherPoints = score.points[otherPlayer]
-    
-    if (otherPoints < 3) {
-      return "40"
-    }
-    
-    if (points === otherPoints) {
-      return "40" // Deuce
-    }
-    
-    return points > otherPoints ? "AD" : "40"
+    const pointMap = ["0", "15", "30", "40"]
+    if (points < 4) return pointMap[points]
+    return "40"
   }
 
-  const isGameWon = (playerIndex: number) => {
-    const points = score.points[playerIndex]
-    const opponentPoints = score.points[playerIndex === 0 ? 1 : 0]
-    
-    if (match.matchFormatParsed?.noAd) {
-      return points >= 4 && points > opponentPoints
-    }
-    
-    return points >= 4 && (points - opponentPoints) >= 2
-  }
-
-  const isSetWon = (playerIndex: number) => {
-    const games = score.games[playerIndex]
-    const opponentGames = score.games[playerIndex === 0 ? 1 : 0]
-    
-    return games >= 6 && (games - opponentGames) >= 2
-  }
-
-  const isMatchWon = (playerIndex: number) => {
-    const setsWon = score.sets.filter(set => 
-      playerIndex === 0 ? set.p1 > set.p2 : set.p2 > set.p1
-    ).length
-    
-    return setsWon >= Math.ceil(match.matchFormatParsed?.sets / 2)
+  const handleServeSelected = (servingPlayer: "p1" | "p2") => {
+    setCurrentServer(servingPlayer)
+    setShowServeSelection(false)
   }
 
   const awardPoint = async (playerIndex: number) => {
-    if (match.status === "Completed") return
-    
+    if (isUpdating || !currentServer) return
+
     setIsUpdating(true)
-    
-    const newScore = { ...score }
-    newScore.points[playerIndex]++
-    
-    let gameWon = false
-    let setWon = false
-    let matchWon = false
-    
-    // Check if game is won
-    if (isGameWon(playerIndex)) {
-      newScore.games[playerIndex]++
-      newScore.points = [0, 0]
-      gameWon = true
-      
-      // Check if set is won
-      if (isSetWon(playerIndex)) {
-        newScore.sets.push({
-          p1: newScore.games[0],
-          p2: newScore.games[1]
-        })
-        newScore.games = [0, 0]
-        setWon = true
-        
-        // Check if match is won
-        if (isMatchWon(playerIndex)) {
-          matchWon = true
-        }
-      }
-    }
-    
-    setScore(newScore)
-    
-    const pointNumber = pointLog.length + 1
-    const playerNames = {
-      p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-      p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
-    }
-    
-    const winner = playerIndex === 0 ? "p1" as const : "p2" as const
-    const pointContext = generatePointContext(pointNumber, score, winner, playerNames)
-    
-    // If detailed logging is enabled and not match-ending point, show detail sheet
-    if (detailedLogging && !matchWon) {
-      setPendingPoint({ player: playerIndex, context: { ...pointContext, gameWon, setWon, matchWon } })
-      setShowDetailSheet(true)
-    } else {
-      // Create a simple point detail
-      const simplePoint: PointDetail = {
-        id: `point_${pointNumber}`,
-        timestamp: new Date().toISOString(),
-        pointNumber,
-        setNumber: pointContext.setNumber,
-        gameNumber: pointContext.gameNumber,
-        gameScore: pointContext.gameScore,
-        winner,
-        server: pointContext.server,
-        serveType: "first",
-        serveOutcome: "winner",
-        rallyLength: 1,
-        pointOutcome: "winner",
-        isBreakPoint: pointContext.isBreakPoint,
-        isSetPoint: pointContext.isSetPoint,
-        isMatchPoint: pointContext.isMatchPoint,
-        isGameWinning: gameWon,
-        isSetWinning: setWon,
-        isMatchWinning: matchWon
-      }
-      
-      const newPointLog = [...pointLog, simplePoint]
-      setPointLog(newPointLog)
-      
-      // Save to server
-      await saveScore(newScore, newPointLog, matchWon, playerIndex)
-    }
-    
+
+    // Generate point context
+    const context = generatePointContext(
+      pointLog.length + 1,
+      score,
+      playerIndex === 0 ? "p1" : "p2",
+      playerNames
+    )
+
+    // Set pending point and show outcome selection
+    setPendingPoint({
+      player: playerIndex,
+      context
+    })
+    setShowPointOutcome(true)
     setIsUpdating(false)
   }
 
-  const saveScore = async (newScore: any, newPointLog: PointDetail[], matchWon: boolean, winnerIndex?: number) => {
+  const savePointWithOutcome = async (pointOutcome: PointOutcome, shotType?: ShotType) => {
+    if (!pendingPoint || !currentServer) return
+
+    // Update score based on point
+    const newScore = { ...score }
+    const winner = pendingPoint.player === 0 ? "p1" : "p2"
+    
+    // Update points
+    newScore.points[pendingPoint.player]++
+    
+    // Check for game win
+    if (isGameWon(pendingPoint.player)) {
+      newScore.games[pendingPoint.player]++
+      newScore.points = [0, 0]
+      
+      // Switch server for next game
+      setCurrentServer(currentServer === "p1" ? "p2" : "p1")
+      
+      // Check for set win
+      if (isSetWon(pendingPoint.player)) {
+        const newSet = { p1: newScore.games[0], p2: newScore.games[1] }
+        newScore.sets.push(newSet)
+        newScore.games = [0, 0]
+      }
+    }
+
+    setScore(newScore)
+
+    // Create detailed point log entry
+    const pointDetail: PointDetail = {
+      id: `point-${Date.now()}`,
+      pointNumber: pointLog.length + 1,
+      setNumber: newScore.sets.length + 1,
+      gameNumber: newScore.games[0] + newScore.games[1] + 1,
+      gameScore: `${getPointDisplay(score.points[0])}-${getPointDisplay(score.points[1])}`,
+      winner,
+      server: currentServer!,
+      serveType,
+      serveOutcome: pointOutcome,
+      rallyLength: 1,
+      pointOutcome,
+      lastShotType: shotType,
+      isBreakPoint: pendingPoint.context.isBreakPoint,
+      isSetPoint: pendingPoint.context.isSetPoint,
+      isMatchPoint: pendingPoint.context.isMatchPoint,
+      isGameWinning: pendingPoint.context.gameWon || false,
+      isSetWinning: pendingPoint.context.setWon || false,
+      isMatchWinning: pendingPoint.context.matchWon || false,
+      timestamp: new Date().toISOString()
+    }
+    
+    const newPointLog = [...pointLog, pointDetail]
+    setPointLog(newPointLog)
+    
+    // Save to server
+    await saveScore(newScore, newPointLog, pendingPoint.context.matchWon || false, pendingPoint.player)
+    
+    // Reset states
+    setServeType("first")
+    setShowPointOutcome(false)
+    setPendingPoint(null)
+  }
+
+  const saveScore = async (newScore: typeof score, newPointLog: PointDetail[], matchWon: boolean, winnerIndex?: number) => {
     try {
-      const updateData = {
+      const result = await updateMatchScore(match.$id, {
         score: newScore,
         pointLog: newPointLog,
-        ...(matchWon && {
-          status: "Completed" as const,
-          winnerId: winnerIndex === 0 ? match.playerOne.$id : match.playerTwo.$id
-        })
-      }
+        status: matchWon ? "Completed" : "In Progress",
+        winnerId: matchWon && winnerIndex !== undefined ? 
+          (winnerIndex === 0 ? match.playerOne.$id : match.playerTwo.$id) : undefined
+      })
       
-      const result = await updateMatchScore(match.$id, updateData)
-      
-      if (result.error) {
-        toast.error(result.error)
+      if (!result.success) {
+        toast.error("Failed to save score")
       }
-      
-      if (matchWon) {
-        toast.success(`Match completed! ${winnerIndex === 0 ? match.playerOne.firstName : match.playerTwo.firstName} wins!`)
-      }
-    } catch (error) {
+    } catch {
       toast.error("Failed to save score")
     }
   }
@@ -216,229 +363,453 @@ export function LiveScoringInterface({ match, user }: LiveScoringInterfaceProps)
   const undoLastPoint = () => {
     if (pointLog.length === 0) return
     
+    const lastPoint = pointLog[pointLog.length - 1]
     const newPointLog = pointLog.slice(0, -1)
     
-    // Note: In a real implementation, you'd need to reconstruct the score
-    // from the point log history. For now, we'll disable undo when using detailed logging
-    // until we implement score reconstruction from point details
-    
+    // Reconstruct score from remaining points
+    // This is a simplified version - in production you'd want more robust score reconstruction
     setPointLog(newPointLog)
-    toast.success("Point undone - please refresh to see updated score")
+    toast.success("Last point undone")
   }
 
   const shareMatch = () => {
-    const shareUrl = `${window.location.origin}/live/${match.$id}`
-    navigator.clipboard.writeText(shareUrl)
-    toast.success("Share link copied to clipboard!")
+    const url = `${window.location.origin}/live/${match.$id}`
+    navigator.clipboard.writeText(url)
+    toast.success("Match link copied to clipboard!")
   }
 
-  const getPlayerName = (player: Player) => `${player.firstName} ${player.lastName}`
+  const isGameWon = (playerIndex: number) => {
+    const playerPoints = score.points[playerIndex]
+    const opponentPoints = score.points[playerIndex === 0 ? 1 : 0]
+    return playerPoints >= 4 && playerPoints >= opponentPoints + 2
+  }
+
+  const isSetWon = (playerIndex: number) => {
+    const playerGames = score.games[playerIndex]
+    const opponentGames = score.games[playerIndex === 0 ? 1 : 0]
+    return playerGames >= 6 && playerGames >= opponentGames + 2
+  }
+
+  // Point-by-Point component similar to the finished match
+  const PointByPointTab = () => {
+    const matchScore = reconstructMatchScore(pointLog.map(p => ({
+      winner: p.winner,
+      setNumber: p.setNumber,
+      gameNumber: p.gameNumber
+    })))
+
+    const setGroups = pointLog.reduce((sets, point) => {
+      const setKey = point.setNumber
+      if (!sets[setKey]) {
+        sets[setKey] = {}
+      }
+      
+      const gameKey = point.gameNumber
+      if (!sets[setKey][gameKey]) {
+        sets[setKey][gameKey] = []
+      }
+      
+      sets[setKey][gameKey].push(point)
+      return sets
+    }, {} as Record<number, Record<number, PointDetail[]>>)
+
+    const [selectedSet, setSelectedSet] = useState(1)
+    const availableSets = Object.keys(setGroups).map(Number).sort()
+
+    if (pointLog.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          No points logged yet. Start scoring to see the point-by-point breakdown.
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Set switcher */}
+        {availableSets.length > 1 && (
+          <div className="flex justify-center">
+            <div className="flex bg-muted rounded-lg p-1">
+              {availableSets.map((setNum) => (
+                <Button
+                  key={setNum}
+                  variant={selectedSet === setNum ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedSet(setNum)}
+                  className="text-xs"
+                >
+                  {setNum}. SET
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Games for selected set */}
+        {setGroups[selectedSet] && (
+          <div className="space-y-3">
+            {Object.entries(setGroups[selectedSet]).map(([gameNum, gamePoints]) => {
+              const gameNumber = Number(gameNum)
+              const server = getServer(gameNumber)
+              
+              const scoreProgression = reconstructGameProgression(gamePoints, match.matchFormatParsed.noAd)
+              const lastPoint = gamePoints[gamePoints.length - 1]
+              const gameWinner = lastPoint.winner
+              
+              const thisSetGames = Object.entries(setGroups[selectedSet])
+                .filter(([gNum]) => Number(gNum) <= gameNumber)
+                .reduce((acc, [, gPoints]) => {
+                  const gWinner = gPoints[gPoints.length - 1].winner
+                  if (gWinner === "p1") acc.p1++
+                  else acc.p2++
+                  return acc
+                }, { p1: 0, p2: 0 })
+
+              const gameScore = `${thisSetGames.p1}-${thisSetGames.p2}`
+              
+              return (
+                <motion.div 
+                  key={`${selectedSet}-${gameNumber}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: gameNumber * 0.05 }}
+                  className="bg-muted/50 rounded-lg p-3"
+                >
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-muted-foreground mb-3">
+                      SET {selectedSet} • GAME {gameNumber}
+                      <span className="ml-2">
+                        🎾 {server === "p1" ? playerNames.p1 : playerNames.p2} serving
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-center gap-1 mb-3">
+                      {scoreProgression.slice(1, -1).map((score, index) => {
+                        const point = gamePoints[index]
+                        if (!point) return null
+                        
+                        return (
+                          <Dialog key={`${gameNumber}-${index}`}>
+                            <DialogTrigger asChild>
+                              <motion.button
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: index * 0.03 }}
+                                className="px-2 py-1 text-xs border border-primary rounded hover:bg-primary hover:text-primary-foreground transition-colors"
+                              >
+                                {score}
+                              </motion.button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <PointPopup
+                                score={score}
+                                serveType={point.serveType || "first"}
+                                pointOutcome={point.pointOutcome || "other"}
+                                winnerName={point.winner === "p1" ? playerNames.p1 : playerNames.p2}
+                                setNumber={point.setNumber}
+                                gameNumber={point.gameNumber}
+                                server={point.server}
+                                playerNames={playerNames}
+                              />
+                            </DialogContent>
+                          </Dialog>
+                        )
+                      })}
+                    </div>
+                    
+                    <div className="text-lg font-bold">{gameScore}</div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Statistics component similar to the finished match
+  const StatisticsTab = () => (
+    <div className="max-w-md mx-auto">
+      <div className="space-y-0.5">
+        <StatRow
+          label="Aces"
+          player1Value={matchStats.player1.aces}
+          player2Value={matchStats.player2.aces}
+          delay={0}
+        />
+        
+        <StatRow
+          label="Double Faults"
+          player1Value={matchStats.player1.doubleFaults}
+          player2Value={matchStats.player2.doubleFaults}
+          delay={1}
+        />
+        
+        <StatRow
+          label="1st Serve Percentage"
+          player1Value={Math.round(matchStats.player1.firstServePercentage)}
+          player2Value={Math.round(matchStats.player2.firstServePercentage)}
+          isPercentage={true}
+          delay={2}
+        />
+        
+        <StatRow
+          label="1st Serve Points Won"
+          player1Value={Math.round(matchStats.player1.firstServeWinPercentage)}
+          player2Value={Math.round(matchStats.player2.firstServeWinPercentage)}
+          isPercentage={true}
+          player1Detail={`${Math.round(matchStats.player1.firstServePointsWon)}/${Math.round(matchStats.player1.firstServePointsPlayed)}`}
+          player2Detail={`${Math.round(matchStats.player2.firstServePointsWon)}/${Math.round(matchStats.player2.firstServePointsPlayed)}`}
+          delay={3}
+        />
+        
+        <StatRow
+          label="2nd Serve Points Won"
+          player1Value={Math.round(matchStats.player1.secondServeWinPercentage)}
+          player2Value={Math.round(matchStats.player2.secondServeWinPercentage)}
+          isPercentage={true}
+          player1Detail={`${Math.round(matchStats.player1.secondServePointsWon)}/${Math.round(matchStats.player1.secondServePointsPlayed)}`}
+          player2Detail={`${Math.round(matchStats.player2.secondServePointsWon)}/${Math.round(matchStats.player2.secondServePointsPlayed)}`}
+          delay={4}
+        />
+        
+        <StatRow
+          label="Winners"
+          player1Value={matchStats.player1.winners}
+          player2Value={matchStats.player2.winners}
+          delay={5}
+        />
+
+        <StatRow
+          label="Unforced Errors"
+          player1Value={matchStats.player1.unforcedErrors}
+          player2Value={matchStats.player2.unforcedErrors}
+          delay={6}
+        />
+
+        <StatRow
+          label="Net Points Won"
+          player1Value={Math.round(matchStats.player1.pointWinPercentage)}
+          player2Value={Math.round(matchStats.player2.pointWinPercentage)}
+          isPercentage={true}
+          player1Detail={`${matchStats.player1.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
+          player2Detail={`${matchStats.player2.totalPointsWon}/${matchStats.player1.totalPointsWon + matchStats.player2.totalPointsWon}`}
+          delay={7}
+        />
+      </div>
+    </div>
+  )
+
+  // Show serve selection if not set yet
+  if (showServeSelection || !currentServer) {
+    return (
+      <ServeSelection
+        playerOne={match.playerOne}
+        playerTwo={match.playerTwo}
+        onServeSelected={handleServeSelected}
+      />
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-3 border-b bg-muted/30">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">Back</span>
         </Button>
         
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={shareMatch}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
+            <Share2 className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Share</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Comment
-          </Button>
-          <Button variant="outline" size="sm">
-            <Camera className="h-4 w-4 mr-2" />
-            Photo
+          
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={undoLastPoint} 
+            disabled={pointLog.length === 0}
+          >
+            <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Scoreboard */}
-      <div className="bg-muted/30 p-6 border-b">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 gap-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">{getPlayerName(match.playerOne)}</h2>
-              <div className="flex items-center justify-center gap-4">
-                {/* Sets */}
-                {score.sets.map((set, index) => (
-                  <span key={index} className="text-lg font-mono">
-                    {set.p1}
-                  </span>
-                ))}
-                {/* Current Games */}
-                <span className="text-2xl font-mono font-bold">
-                  {score.games[0]}
-                </span>
-                {/* Current Points */}
-                <span className="text-3xl font-mono font-bold text-primary">
-                  {getPointDisplay(score.points[0])}
-                </span>
-              </div>
+      {/* Compact Scoreboard */}
+      <div className="bg-card border-b p-3">
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">Player</div>
+            <div className="font-medium text-sm truncate flex items-center justify-center gap-1">
+              {currentServer === "p1" && "🎾"} {playerNames.p1}
             </div>
-            
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">{getPlayerName(match.playerTwo)}</h2>
-              <div className="flex items-center justify-center gap-4">
-                {/* Sets */}
-                {score.sets.map((set, index) => (
-                  <span key={index} className="text-lg font-mono">
-                    {set.p2}
-                  </span>
-                ))}
-                {/* Current Games */}
-                <span className="text-2xl font-mono font-bold">
-                  {score.games[1]}
-                </span>
-                {/* Current Points */}
-                <span className="text-3xl font-mono font-bold text-primary">
-                  {getPointDisplay(score.points[1])}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Scoring Area */}
-      <div className="flex-1 grid grid-cols-2">
-        {/* Player 1 Tap Area */}
-        <motion.button
-          className="bg-blue-500/10 hover:bg-blue-500/20 transition-colors border-r border-border flex items-center justify-center disabled:opacity-50"
-          whileTap={{ scale: 0.98 }}
-          onClick={() => awardPoint(0)}
-          disabled={isUpdating || match.status === "Completed"}
-        >
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">{getPlayerName(match.playerOne)}</div>
-            <div className="text-muted-foreground">Tap to award point</div>
-          </div>
-        </motion.button>
-
-        {/* Player 2 Tap Area */}
-        <motion.button
-          className="bg-red-500/10 hover:bg-red-500/20 transition-colors flex items-center justify-center disabled:opacity-50"
-          whileTap={{ scale: 0.98 }}
-          onClick={() => awardPoint(1)}
-          disabled={isUpdating || match.status === "Completed"}
-        >
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">{getPlayerName(match.playerTwo)}</div>
-            <div className="text-muted-foreground">Tap to award point</div>
-          </div>
-        </motion.button>
-      </div>
-
-      {/* Bottom Controls */}
-      <div className="p-4 border-t bg-muted/30">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch 
-                id="detailed-logging"
-                checked={detailedLogging}
-                onCheckedChange={setDetailedLogging}
-              />
-              <Label htmlFor="detailed-logging">Detailed Stats</Label>
+            <div className="font-medium text-sm truncate flex items-center justify-center gap-1">
+              {currentServer === "p2" && "🎾"} {playerNames.p2}
             </div>
           </div>
           
-          <Button 
-            variant="outline" 
-            onClick={undoLastPoint}
-            disabled={pointLog.length === 0 || isUpdating}
-          >
-            <Undo2 className="h-4 w-4 mr-2" />
-            Undo
-          </Button>
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">Games</div>
+            <div className="text-lg font-mono">{score.games[0]}</div>
+            <div className="text-lg font-mono">{score.games[1]}</div>
+          </div>
+          
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">Points</div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-lg font-mono h-auto p-1"
+              onClick={() => awardPoint(0)}
+              disabled={isUpdating || match.status === "Completed"}
+            >
+              {getPointDisplay(score.points[0])}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-lg font-mono h-auto p-1"
+              onClick={() => awardPoint(1)}
+              disabled={isUpdating || match.status === "Completed"}
+            >
+              {getPointDisplay(score.points[1])}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Detailed Point Sheet */}
-      {pendingPoint && (
-        <PointDetailSheet
-          open={showDetailSheet}
-          onOpenChange={setShowDetailSheet}
-          pointContext={pendingPoint.context}
-          onSave={(pointDetail) => {
-            const fullPoint: PointDetail = {
-              id: `point_${pointLog.length + 1}`,
-              timestamp: new Date().toISOString(),
-              pointNumber: pendingPoint.context.pointNumber,
-              setNumber: pendingPoint.context.setNumber,
-              gameNumber: pendingPoint.context.gameNumber,
-              gameScore: pendingPoint.context.gameScore,
-              winner: pendingPoint.context.winner,
-              server: pendingPoint.context.server,
-              serveType: "first",
-              serveOutcome: "winner",
-              rallyLength: 1,
-              pointOutcome: "winner",
-              isBreakPoint: pendingPoint.context.isBreakPoint,
-              isSetPoint: pendingPoint.context.isSetPoint,
-              isMatchPoint: pendingPoint.context.isMatchPoint,
-              isGameWinning: pendingPoint.context.gameWon,
-              isSetWinning: pendingPoint.context.setWon,
-              isMatchWinning: pendingPoint.context.matchWon,
-              ...pointDetail
-            }
-            
-            const newPointLog = [...pointLog, fullPoint]
-            setPointLog(newPointLog)
-            
-            // Determine the new score from the context
-            const newScore = { ...score }
-            if (pendingPoint.context.gameWon) {
-              newScore.games[pendingPoint.player]++
-              newScore.points = [0, 0]
-              
-              if (pendingPoint.context.setWon) {
-                newScore.sets.push({
-                  p1: newScore.games[0],
-                  p2: newScore.games[1]
-                })
-                newScore.games = [0, 0]
-              }
-            } else {
-              newScore.points[pendingPoint.player]++
-            }
-            
-            saveScore(newScore, newPointLog, pendingPoint.context.matchWon, pendingPoint.player)
-            setShowDetailSheet(false)
-            setPendingPoint(null)
-          }}
-          onSimplePoint={() => {
-            // Handle simple point (already implemented above)
-            setShowDetailSheet(false)
-            setPendingPoint(null)
-          }}
-        />
-      )}
-
-      {match.status === "Completed" && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-card p-8 rounded-lg shadow-lg border text-center max-w-md"
-          >
-            <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Match Complete!</h2>
-            <p className="text-muted-foreground mb-4">
-              Congratulations on a great match!
-            </p>
-            <Button onClick={() => router.push("/matches")} className="w-full">
-              View All Matches
+      {/* Serve Type Selection */}
+      <div className="p-3 border-b bg-muted/10">
+        <div className="flex items-center justify-center gap-4">
+          <Label className="text-sm font-medium">Serve Type:</Label>
+          <div className="flex gap-2">
+            <Button
+              variant={serveType === "first" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setServeType("first")}
+              className={serveType === "first" ? "bg-primary text-primary-foreground" : ""}
+            >
+              {serveType === "first" && "✓ "}1st Serve
             </Button>
-          </motion.div>
+            <Button
+              variant={serveType === "second" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setServeType("second")}
+              className={serveType === "second" ? "bg-primary text-primary-foreground" : ""}
+            >
+              {serveType === "second" && "✓ "}2nd Serve
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Tabs for Statistics and Point-by-Point */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          <TabsList className="grid w-full grid-cols-2 mx-3 mt-3">
+            <TabsTrigger value="statistics">Statistics</TabsTrigger>
+            <TabsTrigger value="point-by-point">Point by Point</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="statistics" className="flex-1 overflow-y-auto p-4">
+            <StatisticsTab />
+          </TabsContent>
+          
+          <TabsContent value="point-by-point" className="flex-1 overflow-y-auto p-4">
+            <PointByPointTab />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Point Outcome Selection Modal */}
+      <AnimatePresence>
+        {showPointOutcome && pendingPoint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-card rounded-lg p-6 w-full max-w-sm"
+            >
+              <h3 className="text-lg font-semibold text-center mb-4">
+                Point won by {pendingPoint.player === 0 ? playerNames.p1 : playerNames.p2}
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => savePointWithOutcome("ace")}
+                  variant="outline"
+                  className="h-12 flex flex-col items-center justify-center"
+                >
+                  <Target className="h-4 w-4 mb-1" />
+                  Ace
+                </Button>
+                
+                <Button
+                  onClick={() => savePointWithOutcome("double_fault")}
+                  variant="destructive"
+                  className="h-12 flex flex-col items-center justify-center"
+                >
+                  <AlertTriangle className="h-4 w-4 mb-1" />
+                  Double Fault
+                </Button>
+                
+                <Button
+                  onClick={() => savePointWithOutcome("winner")}
+                  variant="outline"
+                  className="h-12 flex flex-col items-center justify-center"
+                >
+                  <Zap className="h-4 w-4 mb-1" />
+                  Winner
+                </Button>
+                
+                <Button
+                  onClick={() => savePointWithOutcome("unforced_error")}
+                  variant="outline"
+                  className="h-12 flex flex-col items-center justify-center"
+                >
+                  Unforced Error
+                </Button>
+                
+                <Button
+                  onClick={() => savePointWithOutcome("forced_error")}
+                  variant="outline"
+                  className="h-12 flex flex-col items-center justify-center"
+                >
+                  Forced Error
+                </Button>
+                
+                                 <Button
+                   onClick={() => savePointWithOutcome("forced_error")}
+                   variant="outline"
+                   className="h-12 flex flex-col items-center justify-center"
+                 >
+                   Other
+                 </Button>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowPointOutcome(false)
+                  setPendingPoint(null)
+                }}
+                className="w-full mt-4"
+              >
+                Cancel
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 } 

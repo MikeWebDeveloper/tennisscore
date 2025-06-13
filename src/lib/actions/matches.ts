@@ -4,7 +4,7 @@ import { ID, Query } from "node-appwrite"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
-import { Match, MatchFormat, PointDetail, ServeType, PointOutcome, ShotType, CourtPosition } from "@/lib/types"
+import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition } from "@/lib/types"
 
 interface Score {
   sets: number[][]
@@ -173,22 +173,32 @@ export async function getMatch(matchId: string) {
 export async function deleteMatch(matchId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error("Unauthorized")
-  
+
+  const { databases } = await createAdminClient()
+
   try {
-    const { databases } = await createAdminClient()
-    
+    // First verify the user owns this match
+    const match = await databases.getDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId
+    )
+
+    if (match.userId !== user.$id) {
+      throw new Error("Unauthorized to delete this match")
+    }
+
+    // Delete the match
     await databases.deleteDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       matchId
     )
-    
-    revalidatePath("/matches")
+
     return { success: true }
   } catch (error) {
     console.error("Error deleting match:", error)
-    const message = error instanceof Error ? error.message : "Failed to delete match"
-    return { error: message }
+    return { error: error instanceof Error ? error.message : "Failed to delete match" }
   }
 }
 
@@ -297,29 +307,67 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
   const gameWinner: "p1" | "p2" = gameResult.p1 > (gameResult.p2 || 0) ? "p1" : "p2"
   const server: "p1" | "p2" = gameNumber % 2 === 1 ? "p1" : "p2" // Alternate serve each game
   
-  // Generate 4-6 points per game (realistic tennis game length)
-  const numPoints = Math.floor(Math.random() * 3) + 4 // 4-6 points
+  // Track actual tennis score progression
+  const currentScore = { p1: 0, p2: 0 }
+  let pointIndex = 0
   
-  for (let i = 0; i < numPoints; i++) {
-    const isLastPoint = i === numPoints - 1
-    const winner: "p1" | "p2" = isLastPoint ? gameWinner : (Math.random() > 0.5 ? "p1" : "p2")
+  // Play points until someone wins the game
+  while (true) {
+    // Get the game score BEFORE this point is played
+    const gameScore = getTennisScore(currentScore.p1, currentScore.p2)
     
-    const point = {
+    const isGameWinningPoint = isGameComplete(currentScore)
+    if (isGameWinningPoint) break
+    
+    // Determine point winner based on realistic probability
+    // If this is the last point needed to reach our target, award to gameWinner
+    const shouldGameWinnerWin = isNearGameEnd(currentScore, gameWinner)
+    const winner: "p1" | "p2" = shouldGameWinnerWin ? gameWinner : 
+                                (Math.random() > 0.5 ? "p1" : "p2")
+    
+    // **REALISTIC SERVE PATTERNS**
+    const isFirstServeIn = Math.random() < 0.65 // 65% first serve success rate
+    const isDoubleFault = !isFirstServeIn && Math.random() < 0.08 // 8% chance of double fault when first serve misses
+    
+    let serveType: "first" | "second"
+    let serveOutcome: PointOutcome
+    let pointOutcome: PointOutcome
+    
+    if (isFirstServeIn) {
+      serveType = "first"
+      serveOutcome = generateRealisticPointOutcome(true, winner === server)
+      pointOutcome = serveOutcome
+    } else if (isDoubleFault) {
+      serveType = "second"
+      serveOutcome = "double_fault"
+      pointOutcome = "double_fault"
+    } else {
+      serveType = "second"
+      serveOutcome = generateRealisticPointOutcome(false, winner === server)
+      pointOutcome = serveOutcome
+    }
+    
+    // Award the point AFTER creating the point detail
+    currentScore[winner]++
+    
+    const isLastPoint = isGameComplete(currentScore)
+    
+    const point: PointDetail = {
       id: `point_${pointNumber}`,
-      timestamp: new Date(Date.now() + pointNumber * 30000).toISOString(), // 30 seconds between points
+      timestamp: new Date(Date.now() + pointNumber * 30000).toISOString(),
       pointNumber,
       setNumber,
       gameNumber,
-      gameScore: generateGameScore(i, numPoints),
+      gameScore, // This is the score BEFORE the point
       winner,
       server,
-      serveType: Math.random() > 0.7 ? "second" : "first" as ServeType,
-      serveOutcome: generateServeOutcome(),
+      serveType,
+      serveOutcome,
       servePlacement: ["wide", "body", "t"][Math.floor(Math.random() * 3)] as "wide" | "body" | "t",
       serveSpeed: Math.floor(Math.random() * 40) + 160, // 160-200 km/h
-      rallyLength: Math.floor(Math.random() * 8) + 1, // 1-8 shots
-      pointOutcome: generatePointOutcome(),
-      lastShotType: generateShotType(),
+      rallyLength: generateRealisticRallyLength(pointOutcome),
+      pointOutcome,
+      lastShotType: generateRealisticLastShot(pointOutcome),
       lastShotPlayer: winner,
       isBreakPoint: server !== gameWinner && isLastPoint,
       isSetPoint: isLastGameOfSet && isLastPoint,
@@ -333,20 +381,130 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
     
     points.push(point)
     pointNumber++
+    pointIndex++
+    
+    // Safety check to prevent infinite loops
+    if (pointIndex > 20) break
   }
   
   return points
 }
 
-function generateGameScore(pointIndex: number, totalPoints: number): string {
-  // Simplified game score progression
-  const scores = ["0-0", "15-0", "30-0", "40-0", "15-15", "30-15", "40-15", "30-30", "40-30", "Deuce", "Ad-In", "Ad-Out"]
-  return scores[pointIndex % scores.length] || "0-0"
+// Helper function to check if game is complete
+function isGameComplete(score: { p1: number, p2: number }): boolean {
+  const { p1, p2 } = score
+  
+  // Standard game: win by 2, at least 4 points
+  if (Math.max(p1, p2) >= 4) {
+    return Math.abs(p1 - p2) >= 2
+  }
+  
+  return false
+}
+
+// Helper function to determine if we should bias toward game winner
+function isNearGameEnd(score: { p1: number, p2: number }, gameWinner: "p1" | "p2"): boolean {
+  const winnerScore = score[gameWinner]
+  const loserScore = score[gameWinner === "p1" ? "p2" : "p1"]
+  
+  // If winner is close to winning, bias heavily toward them
+  if (winnerScore >= 3) return true
+  
+  // If it's close, 50/50
+  if (Math.abs(winnerScore - loserScore) <= 1) return Math.random() > 0.5
+  
+  // Otherwise, slight bias toward winner
+  return Math.random() > 0.3
+}
+
+// Proper tennis scoring function
+function getTennisScore(p1Points: number, p2Points: number): string {
+  // Tennis scoring: 0, 15, 30, 40, deuce, advantage
+  const scoreNames = ["0", "15", "30", "40"]
+  
+  // Both players under 40 (less than 3 points)
+  if (p1Points < 3 && p2Points < 3) {
+    return `${scoreNames[p1Points]}-${scoreNames[p2Points]}`
+  }
+  
+  // At least one player has 40 (3+ points)
+  if (p1Points >= 3 && p2Points >= 3) {
+    // Deuce situation
+    if (p1Points === p2Points) {
+      return "40-40"
+    }
+    // Advantage situation
+    else if (p1Points > p2Points) {
+      return "Ad-40"
+    } else {
+      return "40-Ad"
+    }
+  }
+  
+  // One player has less than 40, other has 40 or more
+  const p1Display = p1Points >= 3 ? "40" : scoreNames[p1Points]
+  const p2Display = p2Points >= 3 ? "40" : scoreNames[p2Points]
+  
+  return `${p1Display}-${p2Display}`
+}
+
+function generateRealisticPointOutcome(isFirstServe: boolean, serverWins: boolean): PointOutcome {
+  if (isFirstServe) {
+    // First serve outcomes
+    if (Math.random() < 0.08) return "ace" // 8% ace rate on first serves
+    if (serverWins) {
+      return Math.random() < 0.6 ? "winner" : "forced_error"
+    } else {
+      return Math.random() < 0.4 ? "unforced_error" : "winner"
+    }
+  } else {
+    // Second serve outcomes (no aces, more conservative)
+    if (serverWins) {
+      return Math.random() < 0.3 ? "winner" : "forced_error"
+    } else {
+      return Math.random() < 0.5 ? "unforced_error" : "winner"
+    }
+  }
+}
+
+function generateRealisticRallyLength(pointOutcome: string): number {
+  switch (pointOutcome) {
+    case "ace":
+    case "double_fault":
+      return 1
+    case "winner":
+      return Math.floor(Math.random() * 3) + 1 // 1-3 shots
+    case "unforced_error":
+      return Math.floor(Math.random() * 5) + 2 // 2-6 shots
+    case "forced_error":
+      return Math.floor(Math.random() * 6) + 3 // 3-8 shots
+    default:
+      return Math.floor(Math.random() * 8) + 1 // 1-8 shots
+  }
+}
+
+function generateRealisticLastShot(pointOutcome: string): ShotType {
+  if (pointOutcome === "ace" || pointOutcome === "double_fault") {
+    return "serve"
+  }
+  
+  const shots: ShotType[] = ["forehand", "backhand", "volley", "overhead"]
+  const weights = [0.45, 0.35, 0.15, 0.05] // Realistic shot distribution
+  const random = Math.random()
+  let sum = 0
+  
+  for (let i = 0; i < shots.length; i++) {
+    sum += weights[i]
+    if (random <= sum) return shots[i]
+  }
+  
+  return "forehand"
 }
 
 function generateServeOutcome(): PointOutcome {
+  // This function is no longer used but kept for compatibility
   const outcomes: PointOutcome[] = ["winner", "unforced_error", "forced_error", "ace", "double_fault"]
-  const weights = [0.3, 0.25, 0.2, 0.15, 0.1] // Weighted probability
+  const weights = [0.3, 0.25, 0.2, 0.15, 0.1]
   const random = Math.random()
   let sum = 0
   
@@ -359,6 +517,7 @@ function generateServeOutcome(): PointOutcome {
 }
 
 function generatePointOutcome(): PointOutcome {
+  // This function is no longer used but kept for compatibility
   const outcomes: PointOutcome[] = ["winner", "unforced_error", "forced_error", "ace", "double_fault"]
   const weights = [0.35, 0.3, 0.2, 0.1, 0.05]
   const random = Math.random()
@@ -373,6 +532,7 @@ function generatePointOutcome(): PointOutcome {
 }
 
 function generateShotType(): ShotType {
+  // This function is no longer used but kept for compatibility
   const shots: ShotType[] = ["forehand", "backhand", "volley", "overhead", "serve"]
   const weights = [0.35, 0.3, 0.15, 0.1, 0.1]
   const random = Math.random()

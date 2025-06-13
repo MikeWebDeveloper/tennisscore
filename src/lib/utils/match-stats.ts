@@ -15,16 +15,37 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
   const playerServes = points.filter(p => p.server === playerId)
   const playerReturns = points.filter(p => p.server !== playerId)
 
-  // Serve Stats
-  const firstServes = playerServes.filter(p => p.serveType === "first")
-  const secondServes = playerServes.filter(p => p.serveType === "second")
+  // **CORRECTED SERVE STATS CALCULATION**
+  // In tennis, first serve % = (first serves in) / (total service points)
+  // When a player double faults, they attempted both first and second serves
   
-  const firstServesMade = firstServes.filter(p => p.serveOutcome !== "double_fault").length
-  const firstServePointsWon = firstServes.filter(p => p.winner === playerId).length
-  const secondServePointsWon = secondServes.filter(p => p.winner === playerId).length
+  // Count actual serve attempts
+  const totalServicePoints = playerServes.length
+  const doubleFaults = playerServes.filter(p => p.pointOutcome === "double_fault").length
+  
+  // First serves that went in (not double faults or second serves)
+  const firstServesIn = playerServes.filter(p => 
+    p.serveType === "first" && p.serveOutcome !== "double_fault"
+  ).length
+  
+  // Second serves that went in (not double faults)
+  const secondServesIn = playerServes.filter(p => 
+    p.serveType === "second" && p.serveOutcome !== "double_fault"
+  ).length
+  
+  // Points played after successful first serves
+  const firstServePoints = playerServes.filter(p => 
+    p.serveType === "first" && p.serveOutcome !== "double_fault"
+  )
+  const firstServePointsWon = firstServePoints.filter(p => p.winner === playerId).length
+  
+  // Points played after successful second serves  
+  const secondServePoints = playerServes.filter(p => 
+    p.serveType === "second" && p.serveOutcome !== "double_fault"
+  )
+  const secondServePointsWon = secondServePoints.filter(p => p.winner === playerId).length
 
   const aces = playerServes.filter(p => p.pointOutcome === "ace").length
-  const doubleFaults = playerServes.filter(p => p.pointOutcome === "double_fault").length
 
   // Return Stats  
   const firstReturnPoints = playerReturns.filter(p => p.serveType === "first")
@@ -80,19 +101,19 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
   const netPointsWon = netPoints.filter(p => p.winner === playerId).length
 
   return {
-    // Serve Stats
-    firstServesMade,
-    firstServesAttempted: firstServes.length,
-    firstServePercentage: firstServes.length > 0 ? (firstServesMade / firstServes.length) * 100 : 0,
+    // **CORRECTED SERVE STATS**
+    firstServesMade: firstServesIn,
+    firstServesAttempted: totalServicePoints, // All service points are first serve attempts
+    firstServePercentage: totalServicePoints > 0 ? (firstServesIn / totalServicePoints) * 100 : 0,
     firstServePointsWon,
-    firstServePointsPlayed: firstServes.length,
-    firstServeWinPercentage: firstServes.length > 0 ? (firstServePointsWon / firstServes.length) * 100 : 0,
+    firstServePointsPlayed: firstServePoints.length,
+    firstServeWinPercentage: firstServePoints.length > 0 ? (firstServePointsWon / firstServePoints.length) * 100 : 0,
 
-    secondServesMade: secondServes.length,
-    secondServesAttempted: secondServes.length,
+    secondServesMade: secondServesIn,
+    secondServesAttempted: totalServicePoints - firstServesIn, // Second serves attempted when first serve missed
     secondServePointsWon,
-    secondServePointsPlayed: secondServes.length,
-    secondServeWinPercentage: secondServes.length > 0 ? (secondServePointsWon / secondServes.length) * 100 : 0,
+    secondServePointsPlayed: secondServePoints.length,
+    secondServeWinPercentage: secondServePoints.length > 0 ? (secondServePointsWon / secondServePoints.length) * 100 : 0,
 
     aces,
     doubleFaults,

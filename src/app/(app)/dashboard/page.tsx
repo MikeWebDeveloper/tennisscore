@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const mainPlayer = await getMainPlayer()
   
   // If no main player is set, we'll show a prompt to set one
-  let matches = []
+  let matches = [] as any[]
   if (mainPlayer) {
     try {
       matches = await getMatchesByPlayer(mainPlayer.$id)

@@ -61,7 +61,7 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       status: match.status
     }
 
-    return <LiveScoringInterface match={enhancedMatch} user={user} />
+    return <LiveScoringInterface match={enhancedMatch} />
   } catch (error) {
     console.error("Error loading match:", error)
     redirect("/matches")
