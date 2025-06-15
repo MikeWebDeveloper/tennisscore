@@ -69,9 +69,13 @@ export function SimplifiedCreateMatchForm({ players }: SimplifiedCreateMatchForm
         finalSetTiebreakAt: 10
       }
 
+      // Use actual player IDs if selected, otherwise use default names
+      const playerOneId = playerOne === "Player 1" ? "Player 1" : playerOne
+      const playerTwoId = playerTwo === "Player 2" ? "Player 2" : playerTwo
+
       const result = await createMatch({
-        playerOneId: playerOne,
-        playerTwoId: playerTwo,
+        playerOneId,
+        playerTwoId,
         matchFormat
       })
 

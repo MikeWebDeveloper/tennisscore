@@ -282,6 +282,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setIsUpdating(true)
 
     try {
+      // Store current state for rollback if needed
+      const previousScore = { ...score }
+      const previousPointLog = [...pointLog]
+      const previousServer = currentServer
+
       // Remove the last point from the log
       const newPointLog = pointLog.slice(0, -1)
       setPointLog(newPointLog)
@@ -290,22 +295,34 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const recalculatedScore = calculateScoreFromPointLog(newPointLog, match.matchFormatParsed)
       setScore(recalculatedScore)
 
-      // Recalculate current server
+      // Recalculate current server based on total games played
       const totalGamesPlayed = recalculatedScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + 
                               recalculatedScore.games[0] + recalculatedScore.games[1]
       const newServer = getServer(totalGamesPlayed + 1)
       setCurrentServer(newServer)
 
-      // Save to database
-      await updateMatchScore(match.$id, {
+      // Save to database with proper error handling
+      const result = await updateMatchScore(match.$id, {
         score: recalculatedScore,
         pointLog: newPointLog
       })
 
-      toast.success("Point undone")
+      if (result.error) {
+        // Rollback on server error
+        setScore(previousScore)
+        setPointLog(previousPointLog)
+        setCurrentServer(previousServer)
+        toast.error("Failed to undo point - changes reverted")
+      } else {
+        toast.success("Point undone successfully")
+      }
     } catch (error) {
       console.error("Failed to undo point:", error)
       toast.error("Failed to undo point")
+      
+      // Attempt to restore previous state
+      const recalculatedScore = calculateScoreFromPointLog(pointLog, match.matchFormatParsed)
+      setScore(recalculatedScore)
     }
 
     setIsUpdating(false)
