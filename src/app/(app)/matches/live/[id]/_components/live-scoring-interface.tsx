@@ -393,8 +393,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-red-500">LIVE</span>
+                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-muted-foreground">LIVE</span>
           </div>
         </div>
 
@@ -432,7 +432,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <div className="font-semibold flex items-center gap-2">
                 {playerNames.p1}
                 {currentServer === "p1" && (
-                  <TennisBall className="w-4 h-4 text-yellow-500" />
+                  <TennisBall className="w-4 h-4 text-muted-foreground" />
                 )}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -452,14 +452,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           onClick={() => awardPoint(1)}
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+            <div className="w-8 h-8 bg-muted text-muted-foreground rounded-full flex items-center justify-center font-bold text-sm">
               {match.playerTwo.firstName[0]}
             </div>
             <div>
               <div className="font-semibold flex items-center gap-2">
                 {playerNames.p2}
                 {currentServer === "p2" && (
-                  <TennisBall className="w-4 h-4 text-yellow-500" />
+                  <TennisBall className="w-4 h-4 text-muted-foreground" />
                 )}
               </div>
               <div className="text-sm text-muted-foreground">

@@ -283,7 +283,7 @@ export function PlayersClient({ players }: PlayersClientProps) {
                               {player.firstName} {player.lastName}
                             </span>
                             {player.isMainPlayer && (
-                              <Star className="h-4 w-4 text-yellow-500 flex-shrink-0" fill="currentColor" />
+                              <Star className="h-4 w-4 text-muted-foreground flex-shrink-0" fill="currentColor" />
                             )}
                           </div>
                         </div>

@@ -215,9 +215,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                       <div className={`w-2 h-2 rounded-full ${
                         match.status === "Completed" 
                           ? match.winnerId === mainPlayer?.$id 
-                            ? "bg-green-500" 
-                            : "bg-red-500"
-                          : "bg-yellow-500"
+                                                          ? "bg-muted-foreground" 
+                              : "bg-muted-foreground"
+                          : "bg-muted-foreground"
                       }`} />
                       <div>
                         <p className="text-sm font-medium">

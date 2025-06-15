@@ -251,7 +251,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </div>
                   {match.winner && (
                     <div className="flex items-center justify-center gap-2 text-lg">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
+                      <Trophy className="h-5 w-5 text-muted-foreground" />
                       Winner: {match.winner.firstName} {match.winner.lastName}
                     </div>
                   )}
