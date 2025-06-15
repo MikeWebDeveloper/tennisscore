@@ -28,7 +28,7 @@ export interface Match {
   status: "In Progress" | "Completed"
   winnerId?: string
   score: string
-  pointLog?: string
+  pointLog?: string[]
   userId: string
   $createdAt: string
   $updatedAt: string

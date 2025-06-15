@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { getMatchesByUser } from "@/lib/actions/matches"
@@ -18,7 +17,7 @@ export default async function MatchesPage() {
     const playerTwo = playersMap.get(match.playerTwoId)
     const winner = match.winnerId ? playersMap.get(match.winnerId) : null
 
-    let scoreParsed: any = null
+    let scoreParsed: { sets: { p1: number; p2: number }[] } | undefined = undefined
     try {
       scoreParsed = JSON.parse(match.score)
     } catch (e) {
@@ -38,7 +37,7 @@ export default async function MatchesPage() {
     <div className="p-4">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Your Matches</h1>
-        <Button asChild>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
           <Link href="/matches/new">
             <Plus className="h-4 w-4 mr-2" />
             New Match

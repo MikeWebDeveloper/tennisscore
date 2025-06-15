@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { PointDetail } from "@/lib/types"
 import { reconstructGameProgression, getServer, reconstructMatchScore } from "@/lib/utils/tennis-scoring"
+// Removed unused imports
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -47,7 +48,7 @@ function PointPopup({
       case "unforced_error": return "Unforced Error"
       case "forced_error": return "Forced Error"
       case "double_fault": return "Double Fault"
-      default: return pointOutcome
+      default: return pointOutcome.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
     }
   }
 
@@ -62,7 +63,7 @@ function PointPopup({
       
       <div className="space-y-2 text-center">
         <div className="text-lg font-semibold text-blue-500">
-          {serveType === "first" ? "1st" : "2nd"} Serve
+          {serveType === "first" ? "1st Serve" : "2nd Serve"}
         </div>
         
         <div className="text-lg font-semibold text-green-500">
@@ -78,6 +79,21 @@ function PointPopup({
         </div>
       </div>
     </div>
+  )
+}
+
+// Tennis Ball SVG Component
+function TennisBall({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      className={className}
+      fill="currentColor"
+    >
+      <circle cx="12" cy="12" r="10" fill="#9ACD32" stroke="#228B22" strokeWidth="1"/>
+      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
+      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
+    </svg>
   )
 }
 
@@ -113,7 +129,7 @@ export function PointByPointView({ pointLog, playerNames, matchFormat = {} }: Po
       <div className="bg-card rounded-lg p-4 md:p-6">
         <div className="text-center mb-6">
           <h2 className="text-xl font-semibold mb-2">Point by Point</h2>
-          <div className="text-2xl font-bold text-destructive">
+          <div className="text-2xl font-bold text-primary">
             {matchScore.finalScore || "No score available"}
           </div>
           <div className="text-sm text-muted-foreground mt-1">
@@ -180,8 +196,9 @@ export function PointByPointView({ pointLog, playerNames, matchFormat = {} }: Po
                   <div className="text-center">
                     <div className="text-sm font-medium text-muted-foreground mb-3">
                       SET {selectedSet} • GAME {gameNumber}
-                      <span className="ml-2">
-                        🎾 {server === "p1" ? playerNames.p1 : playerNames.p2} serving
+                      <span className="inline-flex items-center ml-2">
+                        {server === "p1" ? playerNames.p1 : playerNames.p2} serving
+                        <TennisBall className="h-3 w-3 inline-block ml-1 text-primary" />
                       </span>
                     </div>
                     
@@ -228,7 +245,7 @@ export function PointByPointView({ pointLog, playerNames, matchFormat = {} }: Po
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="text-xl font-bold text-destructive hover:text-destructive/80 cursor-pointer transition-colors mb-2"
+                          className="text-xl font-bold text-primary hover:text-primary/80 cursor-pointer transition-colors mb-2"
                         >
                           {gameScore}
                         </motion.button>
@@ -249,9 +266,14 @@ export function PointByPointView({ pointLog, playerNames, matchFormat = {} }: Po
                     
                     {/* Serve broken indicator */}
                     {serveWasBroken && (
-                      <div className="text-xs text-red-500 font-semibold">
-                        BREAK
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                        className="text-xs text-red-500 font-semibold uppercase tracking-wider"
+                      >
+                        Serve Broken!
+                      </motion.div>
                     )}
                   </div>
                 </motion.div>
@@ -260,9 +282,15 @@ export function PointByPointView({ pointLog, playerNames, matchFormat = {} }: Po
           </div>
         )}
 
+        {!setGroups[selectedSet] && pointLog.length > 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No games found for this set.
+          </div>
+        )}
+
         {pointLog.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No point-by-point data available for this match.</p>
+          <div className="text-center py-8 text-muted-foreground">
+            No points logged yet. Start scoring to see the point-by-point breakdown.
           </div>
         )}
       </div>

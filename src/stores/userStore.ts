@@ -5,6 +5,8 @@ export interface User {
   $id: string
   email: string
   name?: string
+  $createdAt: string
+  $updatedAt: string
 }
 
 export interface Player {
@@ -14,7 +16,10 @@ export interface Player {
   yearOfBirth?: number
   rating?: string
   profilePictureId?: string
+  isMainPlayer?: boolean
   userId: string
+  $createdAt: string
+  $updatedAt: string
 }
 
 interface UserState {

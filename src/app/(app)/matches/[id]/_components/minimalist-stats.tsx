@@ -82,9 +82,9 @@ function StatRow({
         {/* Progress bar container */}
         <div className="flex-1 flex items-center">
           {/* Player 1 bar (left side, grows from center) */}
-          <div className="flex-1 h-1 bg-gray-100 overflow-hidden">
+          <div className="flex-1 h-1 bg-gray-200 overflow-hidden rounded-l-sm">
             <motion.div 
-              className="h-full bg-blue-500 origin-right"
+              className="h-full bg-primary origin-right"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: p1Percentage / 100 }}
               transition={{ 
@@ -99,9 +99,9 @@ function StatRow({
           <div className="w-px h-3 bg-gray-400 mx-1" />
           
           {/* Player 2 bar (right side, grows from center) */}
-          <div className="flex-1 h-1 bg-gray-100 overflow-hidden">
+          <div className="flex-1 h-1 bg-gray-200 overflow-hidden rounded-r-sm">
             <motion.div 
-              className="h-full bg-red-500 origin-left"
+              className="h-full bg-blue-500 origin-left"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: p2Percentage / 100 }}
               transition={{ 

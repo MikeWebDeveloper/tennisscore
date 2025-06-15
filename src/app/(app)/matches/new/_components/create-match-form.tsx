@@ -270,125 +270,132 @@ export function CreateMatchForm({ players: initialPlayers }: CreateMatchFormProp
             {/* Step 1: Match Format */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <div className="space-y-6">
+                {/* Quick Format Presets */}
+                <div className="space-y-4">
+                  <Label className="text-base font-medium">Quick Setup</Label>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button
+                      variant={matchFormat.sets === 1 && !matchFormat.noAd && matchFormat.tiebreak ? "default" : "outline"}
+                      className="p-4 h-auto justify-start"
+                      onClick={() => setMatchFormat({
+                        sets: 1 as const,
+                        noAd: false,
+                        tiebreak: true,
+                        finalSetTiebreak: false,
+                        finalSetTiebreakAt: 10,
+                        shortSets: false
+                      })}
+                    >
+                      <div className="text-left">
+                        <div className="font-semibold">Practice Match</div>
+                        <div className="text-sm text-muted-foreground">Best of 1 set • Regular scoring • Tiebreak at 6-6</div>
+                      </div>
+                    </Button>
+                    
+                    <Button
+                      variant={matchFormat.sets === 3 && !matchFormat.noAd && matchFormat.tiebreak ? "default" : "outline"}
+                      className="p-4 h-auto justify-start"
+                      onClick={() => setMatchFormat({
+                        sets: 3 as const,
+                        noAd: false,
+                        tiebreak: true,
+                        finalSetTiebreak: true,
+                        finalSetTiebreakAt: 10,
+                        shortSets: false
+                      })}
+                    >
+                      <div className="text-left">
+                        <div className="font-semibold">Tournament Match</div>
+                        <div className="text-sm text-muted-foreground">Best of 3 sets • Regular scoring • Match tiebreak at 1-1</div>
+                      </div>
+                    </Button>
+                    
+                    <Button
+                      variant={matchFormat.sets === 1 && matchFormat.noAd && matchFormat.shortSets ? "default" : "outline"}
+                      className="p-4 h-auto justify-start"
+                      onClick={() => setMatchFormat({
+                        sets: 1 as const,
+                        noAd: true,
+                        tiebreak: true,
+                        finalSetTiebreak: false,
+                        finalSetTiebreakAt: 10,
+                        shortSets: true
+                      })}
+                    >
+                      <div className="text-left">
+                        <div className="font-semibold">Quick Match</div>
+                        <div className="text-sm text-muted-foreground">First to 4 games • No-Ad scoring • Fast format</div>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Custom Options */}
+                <div className="space-y-4 pt-4 border-t">
+                  <Label className="text-base font-medium">Custom Format</Label>
+                  
                   {/* Match Length */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Match Length</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div 
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                          matchFormat.sets === 1 ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 1 }))}
-                      >
-                        <div className="font-medium">Best of 1 Set</div>
-                        <div className="text-sm text-muted-foreground">Quick match format</div>
-                      </div>
-                      <div 
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                          matchFormat.sets === 3 ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 3 }))}
-                      >
-                        <div className="font-medium">Best of 3 Sets</div>
-                        <div className="text-sm text-muted-foreground">Standard match</div>
-                      </div>
-                      <div 
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                          matchFormat.sets === 5 ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                        onClick={() => setMatchFormat(prev => ({ ...prev, sets: 5 }))}
-                      >
-                        <div className="font-medium">Best of 5 Sets</div>
-                        <div className="text-sm text-muted-foreground">Professional format</div>
-                      </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Match Length</Label>
+                    <div className="flex gap-2">
+                      {([1, 3, 5] as const).map((sets) => (
+                        <Button
+                          key={sets}
+                          variant={matchFormat.sets === sets ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setMatchFormat(prev => ({ ...prev, sets }))}
+                        >
+                          Best of {sets}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Scoring Rules */}
-                  <div className="space-y-4">
-                    <Label className="text-base font-medium">Scoring Rules</Label>
-                    
-                    {/* No-Ad Scoring */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <Label className="font-medium">No-Ad Scoring</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Games decided by sudden death at deuce (next point wins)
-                        </p>
+                  {/* Scoring Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">No-Ad Scoring</Label>
+                        <p className="text-xs text-muted-foreground">Sudden death at deuce</p>
                       </div>
                       <Switch 
                         checked={matchFormat.noAd} 
-                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, noAd: checked }))}
+                        onCheckedChange={(checked) => setMatchFormat(prev => ({ ...prev, noAd: checked }))}
                       />
                     </div>
 
-                    {/* Short Sets */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <Label className="font-medium">Short Sets</Label>
-                        <p className="text-sm text-muted-foreground">
-                          First to 4 games wins set (instead of 6) - great for practice
-                        </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Short Sets</Label>
+                        <p className="text-xs text-muted-foreground">First to 4 games wins</p>
                       </div>
                       <Switch 
                         checked={matchFormat.shortSets || false} 
-                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, shortSets: checked }))}
+                        onCheckedChange={(checked) => setMatchFormat(prev => ({ ...prev, shortSets: checked }))}
                       />
                     </div>
-                  </div>
 
-                  {/* Tiebreak Rules */}
-                  <div className="space-y-4">
-                    <Label className="text-base font-medium">Tiebreak Rules</Label>
-                    
-                    {/* Regular Tiebreak */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <Label className="font-medium">Set Tiebreak</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Play tiebreak at {matchFormat.shortSets ? '4-4' : '6-6'} (first to 7 points, win by 2)
-                        </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Tiebreaks</Label>
+                        <p className="text-xs text-muted-foreground">Play tiebreak at {matchFormat.shortSets ? '4-4' : '6-6'}</p>
                       </div>
                       <Switch 
                         checked={matchFormat.tiebreak} 
-                        onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, tiebreak: checked }))}
+                        onCheckedChange={(checked) => setMatchFormat(prev => ({ ...prev, tiebreak: checked }))}
                       />
                     </div>
 
-                    {/* Final Set Tiebreak */}
                     {matchFormat.sets > 1 && (
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                          <Label className="font-medium">Final Set Tiebreak</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Play tiebreak in deciding set at {matchFormat.shortSets ? '4-4' : '6-6'}
-                          </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-sm font-medium">Match Tiebreak</Label>
+                          <p className="text-xs text-muted-foreground">10-point tiebreak in deciding set</p>
                         </div>
                         <Switch 
                           checked={matchFormat.finalSetTiebreak || false} 
-                          onCheckedChange={(checked: boolean) => setMatchFormat(prev => ({ ...prev, finalSetTiebreak: checked }))}
+                          onCheckedChange={(checked) => setMatchFormat(prev => ({ ...prev, finalSetTiebreak: checked }))}
                         />
-                      </div>
-                    )}
-
-                    {/* Final Set Tiebreak Points */}
-                    {matchFormat.finalSetTiebreak && (
-                      <div className="space-y-2">
-                        <Label>Final Set Tiebreak Points</Label>
-                        <Select 
-                          value={matchFormat.finalSetTiebreakAt?.toString() || "10"} 
-                          onValueChange={(value) => setMatchFormat(prev => ({ ...prev, finalSetTiebreakAt: parseInt(value) }))}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background/95 backdrop-blur-sm">
-                            <SelectItem value="7">First to 7 points (win by 2)</SelectItem>
-                            <SelectItem value="10">First to 10 points (win by 2)</SelectItem>
-                            <SelectItem value="12">First to 12 points (win by 2)</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                     )}
                   </div>

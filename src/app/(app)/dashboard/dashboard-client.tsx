@@ -1,37 +1,13 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { Star } from "lucide-react"
 import { EnhancedBentoGrid } from "@/components/features/dashboard/enhanced-bento-grid"
 import { MainPlayerSetupPrompt } from "@/components/features/dashboard/main-player-setup-prompt"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Star, User, Plus } from "lucide-react"
-import Link from "next/link"
-import { Player } from "@/lib/types"
-
-interface PointLogEntry {
-  pointNumber: number
-  winner: string
-  shotType?: string
-  timestamp: string
-}
-
-interface Match {
-  $id: string
-  playerOneId: string
-  playerTwoId: string
-  matchDate: string
-  status: string
-  winnerId?: string
-  pointLog?: PointLogEntry[]
-}
+import { Match, Player, User, DashboardStats } from "@/lib/types"
 
 interface DashboardClientProps {
-  user: {
-    $id: string
-    name?: string
-    email: string
-  }
+  user: User | null
   mainPlayer: Player | null
   matches: Match[]
 }
@@ -42,10 +18,28 @@ const pageVariants = {
   exit: { opacity: 0, y: -10 }
 }
 
+export default function DashboardClient({
+  user,
+  mainPlayer,
+  matches,
+}: DashboardClientProps) {
+  const stats: DashboardStats = {
+    totalMatches: matches.length,
+    winRate: 0,
+    totalPlayers: 1, // Main player focused view
+    completedMatches: matches.filter(m => m.status === 'Completed').length,
+    inProgressMatches: matches.filter(m => m.status === 'In Progress').length,
+  }
 
+  // Calculate win rate for main player
+  let winRate = 0
+  if (stats.completedMatches > 0) {
+    const wonMatches = matches.filter(m => m.winnerId === mainPlayer?.$id).length
+    winRate = Math.round((wonMatches / stats.completedMatches) * 100)
+  }
+  stats.winRate = winRate;
 
-export function DashboardClient({ user, mainPlayer, matches }: DashboardClientProps) {
-  const firstName = user.name?.split(' ')[0] || mainPlayer?.firstName || 'User'
+  const firstName = user?.name?.split(' ')[0] || mainPlayer?.firstName || 'User'
 
   // If no main player is set, show setup prompt
   if (!mainPlayer) {
@@ -78,25 +72,6 @@ export function DashboardClient({ user, mainPlayer, matches }: DashboardClientPr
     )
   }
 
-  // Calculate comprehensive statistics for main player
-  const completedMatches = matches.filter(m => m.status === "Completed")
-  const inProgressMatches = matches.filter(m => m.status === "In Progress")
-  
-  // Calculate win rate for main player
-  let winRate = 0
-  if (completedMatches.length > 0) {
-    const wonMatches = completedMatches.filter(m => m.winnerId === mainPlayer.$id).length
-    winRate = Math.round((wonMatches / completedMatches.length) * 100)
-  }
-
-  const stats = {
-    totalMatches: matches.length,
-    completedMatches: completedMatches.length,
-    inProgressMatches: inProgressMatches.length,
-    totalPlayers: 1, // Main player focused view
-    winRate
-  }
-
   return (
     <motion.div
       variants={pageVariants}
@@ -104,7 +79,7 @@ export function DashboardClient({ user, mainPlayer, matches }: DashboardClientPr
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="space-y-6 md:space-y-8"
+      className="space-y-8"
     >
       {/* Header */}
       <motion.div
@@ -113,24 +88,22 @@ export function DashboardClient({ user, mainPlayer, matches }: DashboardClientPr
         transition={{ duration: 0.4, delay: 0.1 }}
         className="space-y-2"
       >
-        <h1 className="text-2xl md:text-4xl font-bold text-slate-100">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-sm md:text-lg text-slate-400">
-          {mainPlayer && (
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-4 w-4 text-primary" fill="currentColor" />
-              Tracking stats for {mainPlayer.firstName} {mainPlayer.lastName}
-            </span>
-          )}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Star className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
+              Welcome back, {firstName}
+            </h1>
+          </div>
+        </div>
+        <p className="text-lg text-slate-400">
+          Track your tennis performance and improve your game
         </p>
       </motion.div>
 
-      {/* Mobile-Optimized Enhanced Bento Grid Dashboard */}
+      {/* Enhanced Bento Grid */}
       <EnhancedBentoGrid 
-        stats={stats}
         matches={matches}
-        user={user}
         mainPlayer={mainPlayer}
       />
 

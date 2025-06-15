@@ -15,44 +15,28 @@ import {
   Cell
 } from "recharts"
 import { TrendingUp, Target } from "lucide-react"
-import { useMemo } from "react"
-
-interface PointLogEntry {
-  pointNumber: number
-  winner: string
-  shotType?: string
-  timestamp: string
-}
-
-interface Match {
-  $id: string
-  matchDate: string
-  status: string
-  winnerId?: string
-  playerOneId: string
-  playerTwoId: string
-  pointLog?: PointLogEntry[]
-}
-
-interface Player {
-  $id: string
-  firstName: string
-  lastName: string
-  isMainPlayer?: boolean
-  profilePictureId?: string
-}
+import { useMemo, useState, useEffect } from "react"
+import { Match, Player } from "@/lib/types"
 
 interface PerformanceChartsProps {
   matches: Match[]
   mainPlayer: Player | null
-  userId: string
 }
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
 
-export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceChartsProps) {
+export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProps) {
+  const [isClient, setIsClient] = useState(false)
+
+  // Ensure this only runs on the client to prevent hydration mismatches
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // Prepare win/loss trend data
   const winLossTrend = useMemo(() => {
+    if (!isClient || !mainPlayer) return []
+    
     const completedMatches = matches
       .filter(m => m.status === "Completed")
       .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
@@ -63,8 +47,8 @@ export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceCh
     
     return completedMatches.map((match, index) => {
       total++
-      // Check if current user won (simplified logic - you'd need proper player tracking)
-      const userWon = Math.random() > 0.4 // Simulated for demo
+      // Check if main player won this match
+      const userWon = match.winnerId === mainPlayer.$id
       if (userWon) wins++
       
       return {
@@ -76,35 +60,56 @@ export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceCh
         })
       }
     })
-  }, [matches])
+  }, [matches, mainPlayer, isClient])
 
   // Prepare performance breakdown data
   const performanceBreakdown = useMemo(() => {
+    if (!isClient) return []
+    
     const completedMatches = matches.filter(m => m.status === "Completed")
     if (completedMatches.length === 0) return []
 
-    // Simulate performance metrics (in real app, this would come from pointLog analysis)
+    // Since pointLog is string[] in the actual Match type, we'll use default values
+    // In a real implementation, you'd parse the string array or use a different data structure
     return [
       { name: 'Winners', value: 45, fill: COLORS[0] },
       { name: 'Unforced Errors', value: 25, fill: '#ef4444' },
       { name: 'Forced Errors', value: 20, fill: '#f97316' },
       { name: 'Aces', value: 10, fill: '#22c55e' }
     ]
-  }, [matches])
+  }, [matches, isClient])
 
   // Recent form data
   const recentForm = useMemo(() => {
+    if (!isClient || !mainPlayer) return []
+    
     const recent = matches
       .filter(m => m.status === "Completed")
       .slice(-5)
       .map((match, index) => ({
         match: `M${index + 1}`,
-        result: Math.random() > 0.4 ? 'W' : 'L',
-        score: Math.random() > 0.5 ? '6-4' : '4-6'
+        result: match.winnerId === mainPlayer.$id ? 'W' : 'L',
+        score: '6-4' // This would come from actual match score
       }))
 
     return recent
-  }, [matches])
+  }, [matches, mainPlayer, isClient])
+
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+            <div className="animate-pulse space-y-4 w-full">
+              <div className="h-4 bg-slate-700/50 rounded w-1/4 mx-auto"></div>
+              <div className="h-48 bg-slate-700/30 rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (matches.filter(m => m.status === "Completed").length === 0) {
     return (
@@ -210,17 +215,16 @@ export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceCh
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="mt-4 space-y-2">
-              {performanceBreakdown.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="text-slate-300">{item.name}</span>
-                  </div>
-                  <span className="font-medium text-slate-200">{item.value}%</span>
+            
+            {/* Legend */}
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {performanceBreakdown.map((entry) => (
+                <div key={entry.name} className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: entry.fill }}
+                  />
+                  <span className="text-xs text-slate-400">{entry.name}</span>
                 </div>
               ))}
             </div>
@@ -233,42 +237,30 @@ export function PerformanceCharts({ matches, mainPlayer, userId }: PerformanceCh
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="lg:col-span-1"
+        className="xl:col-span-1 lg:col-span-2"
       >
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-200">
-              <Target className="h-5 w-5 text-primary" />
-              Recent Form
-            </CardTitle>
+            <CardTitle className="text-slate-200">Recent Form</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentForm.length === 0 ? (
-                <p className="text-slate-500 text-sm">No recent matches</p>
-              ) : (
-                recentForm.map((match, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50"
-                  >
-                    <span className="text-sm text-slate-400">{match.match}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-300">{match.score}</span>
-                      <div 
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          match.result === 'W' 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}
-                      >
-                        {match.result}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+            <div className="flex gap-2 justify-center mb-4">
+              {recentForm.map((match, index) => (
+                <div
+                  key={index}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    match.result === 'W' 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}
+                >
+                  {match.result}
+                </div>
+              ))}
             </div>
+            <p className="text-center text-xs text-slate-500">
+              Last {recentForm.length} matches
+            </p>
           </CardContent>
         </Card>
       </motion.div>

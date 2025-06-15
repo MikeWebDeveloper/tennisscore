@@ -7,7 +7,7 @@ export interface TennisScore {
 }
 
 export interface MatchFormat {
-  sets: 3 | 5 // Best of 3 or 5 sets
+  sets: 1 | 3 | 5 // Best of 1, 3, or 5 sets
   noAd: boolean // No-advantage scoring
   tiebreak: boolean // Tiebreak at 6-6
   finalSetTiebreak: boolean // Tiebreak in final set
@@ -163,7 +163,7 @@ export function getGameScoreAfterWin(
   return `${newP1Games}-${newP2Games}`
 }
 
-export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat): boolean {
+export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat, currentSets: number[][]): boolean {
   const targetGames = format.shortSets ? 4 : 6
   
   // Standard set: first to target games, must win by 2
@@ -177,10 +177,23 @@ export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat):
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
   
+  // Final set tiebreak (different rule for final set only)
+  // Check if this is potentially the final set based on current sets already won
+  const setsWonCount = currentSets.filter(set => set[0] > set[1]).length + currentSets.filter(set => set[1] > set[0]).length
+  if (format.finalSetTiebreak && setsWonCount === format.sets - 1) { 
+    if (format.finalSetTiebreakAt) { // Check if tiebreak is to a specific number (e.g., 10 points)
+      return (p1Games === format.finalSetTiebreakAt && p1Games - p2Games >= 2) ||
+             (p2Games === format.finalSetTiebreakAt && p2Games - p1Games >= 2)
+    } else { // Standard tiebreak rules (to 7 by 2)
+      return (p1Games >= 7 && p1Games - p2Games >= 2) ||
+             (p2Games >= 7 && p2Games - p1Games >= 2)
+    }
+  }
+  
   return false
 }
 
-export function getSetWinner(p1Games: number, p2Games: number, format: MatchFormat): "p1" | "p2" | null {
+export function getSetWinner(p1Games: number, p2Games: number, format: MatchFormat, currentSets: number[][]): "p1" | "p2" | null {
   const targetGames = format.shortSets ? 4 : 6
   
   if (p1Games >= targetGames && p1Games - p2Games >= 2) return "p1"
@@ -191,6 +204,18 @@ export function getSetWinner(p1Games: number, p2Games: number, format: MatchForm
     const tiebreakAt = format.shortSets ? 4 : 6
     if (p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) return "p1"
     if (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt) return "p2"
+  }
+
+  // Final set tiebreak (different rule for final set only)
+  const setsWonCount = currentSets.filter(set => set[0] > set[1]).length + currentSets.filter(set => set[1] > set[0]).length
+  if (format.finalSetTiebreak && setsWonCount === format.sets - 1) { 
+    if (format.finalSetTiebreakAt) {
+      if (p1Games === format.finalSetTiebreakAt && p1Games - p2Games >= 2) return "p1"
+      if (p2Games === format.finalSetTiebreakAt && p2Games - p1Games >= 2) return "p2"
+    } else {
+      if (p1Games >= 7 && p1Games - p2Games >= 2) return "p1"
+      if (p2Games >= 7 && p2Games - p1Games >= 2) return "p2"
+    }
   }
   
   return null

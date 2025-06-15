@@ -3,14 +3,27 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Player } from "@/lib/types"
 
 interface ServeSelectionProps {
   playerOne: Player
   playerTwo: Player
   onServeSelected: (servingPlayer: "p1" | "p2") => void
+}
+
+// Tennis Ball SVG Component
+function TennisBall({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      className={className}
+      fill="currentColor"
+    >
+      <circle cx="12" cy="12" r="10" fill="#9ACD32" stroke="#228B22" strokeWidth="1"/>
+      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
+      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
+    </svg>
+  )
 }
 
 export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeSelectionProps) {
@@ -29,92 +42,103 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
   const getPlayerName = (player: Player) => `${player.firstName} ${player.lastName}`
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md space-y-6"
+        className="w-full max-w-sm space-y-6"
       >
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Who Serves First?</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Select the player who will serve the first game
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Player Selection */}
-            <div className="grid grid-cols-1 gap-3">
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handlePlayerSelect("p1")}
-                className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                  selectedServer === "p1"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">{getPlayerName(playerOne)}</h3>
-                    <p className="text-sm text-muted-foreground">Player 1</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedServer === "p1" && (
-                      <Badge variant="default" className="gap-1">
-                        🎾 Serving
-                      </Badge>
-                    )}
-                    <div className={`h-4 w-4 rounded-full border-2 ${
-                      selectedServer === "p1" 
-                        ? "border-primary bg-primary" 
-                        : "border-muted-foreground"
-                    }`} />
-                  </div>
-                </div>
-              </motion.div>
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold">Who Serves First?</h1>
+          <p className="text-muted-foreground">
+            Select the player who will serve the first game
+          </p>
+        </div>
 
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handlePlayerSelect("p2")}
-                className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                  selectedServer === "p2"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">{getPlayerName(playerTwo)}</h3>
-                    <p className="text-sm text-muted-foreground">Player 2</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedServer === "p2" && (
-                      <Badge variant="default" className="gap-1">
-                        🎾 Serving
-                      </Badge>
-                    )}
-                    <div className={`h-4 w-4 rounded-full border-2 ${
-                      selectedServer === "p2" 
-                        ? "border-primary bg-primary" 
-                        : "border-muted-foreground"
-                    }`} />
-                  </div>
+        {/* Player Selection */}
+        <div className="space-y-3">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handlePlayerSelect("p1")}
+            className={`w-full p-6 rounded-xl border-2 transition-all ${
+              selectedServer === "p1"
+                ? "border-primary bg-primary/10 shadow-lg"
+                : "border-border hover:border-primary/50 bg-card"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                  {playerOne.firstName[0]}
                 </div>
-              </motion.div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-lg">{getPlayerName(playerOne)}</h3>
+                  <p className="text-sm text-muted-foreground">{playerOne.rating || "Unrated"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedServer === "p1" && (
+                  <TennisBall className="w-6 h-6 text-yellow-500" />
+                )}
+                <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
+                  selectedServer === "p1" 
+                    ? "border-primary bg-primary" 
+                    : "border-muted-foreground"
+                }`} />
+              </div>
             </div>
+          </motion.button>
 
-            {/* Start Match Button */}
-            <Button 
-              onClick={handleStartMatch}
-              disabled={!selectedServer}
-              className="w-full"
-              size="lg"
-            >
-              Start Match
-            </Button>
-          </CardContent>
-        </Card>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handlePlayerSelect("p2")}
+            className={`w-full p-6 rounded-xl border-2 transition-all ${
+              selectedServer === "p2"
+                ? "border-primary bg-primary/10 shadow-lg"
+                : "border-border hover:border-primary/50 bg-card"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                  {playerTwo.firstName[0]}
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-lg">{getPlayerName(playerTwo)}</h3>
+                  <p className="text-sm text-muted-foreground">{playerTwo.rating || "Unrated"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedServer === "p2" && (
+                  <TennisBall className="w-6 h-6 text-yellow-500" />
+                )}
+                <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
+                  selectedServer === "p2" 
+                    ? "border-primary bg-primary" 
+                    : "border-muted-foreground"
+                }`} />
+              </div>
+            </div>
+          </motion.button>
+        </div>
+
+        {/* Start Match Button */}
+        <Button 
+          onClick={handleStartMatch}
+          disabled={!selectedServer}
+          className="w-full py-4 text-lg font-semibold"
+          size="lg"
+        >
+          Start Match
+        </Button>
+
+        {/* Tip */}
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground">
+            Tip: In tennis, the server alternates every game
+          </p>
+        </div>
       </motion.div>
     </div>
   )

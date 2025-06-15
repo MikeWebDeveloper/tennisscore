@@ -2,7 +2,8 @@ import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import { getMainPlayer } from "@/lib/actions/players"
 import { getMatchesByPlayer } from "@/lib/actions/matches"
-import { DashboardClient } from "./dashboard-client"
+import { Match } from "@/lib/types"
+import DashboardClient from "./dashboard-client"
 
 export default async function DashboardPage() {
   const user = await getCurrentUser()
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
   const mainPlayer = await getMainPlayer()
   
   // If no main player is set, we'll show a prompt to set one
-  let matches = [] as any[]
+  let matches: Match[] = []
   if (mainPlayer) {
     try {
       matches = await getMatchesByPlayer(mainPlayer.$id)
