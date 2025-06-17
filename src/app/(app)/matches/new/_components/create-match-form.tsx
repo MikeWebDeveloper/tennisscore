@@ -367,7 +367,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         </motion.div>
 
         {/* Submit Button */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="pb-24 md:pb-6">
           <Button 
             type="submit" 
             className="w-full h-12 text-base font-medium"

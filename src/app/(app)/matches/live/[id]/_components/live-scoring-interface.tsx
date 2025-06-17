@@ -415,7 +415,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-4 pb-24">
+          <div className="h-full overflow-y-auto px-4 pb-32 md:pb-24">
             {/* Score Display - Prominent */}
             <div className="py-6">
               <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">

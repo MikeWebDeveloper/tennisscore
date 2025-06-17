@@ -16,12 +16,18 @@ interface PointByPointViewProps {
   }
 }
 
+interface PointProgression {
+  p1Score: string
+  p2Score: string
+  pointWinner: 'p1' | 'p2'
+}
+
 interface GameResult {
   gameNumber: number
   setNumber: number
   winner: 'p1' | 'p2'
-  pointProgression: string[]
-  finalScore: string
+  pointProgression: PointProgression[]
+  finalGameScore: string
   isBreakGame?: boolean
 }
 
@@ -47,13 +53,25 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
     return groups
   }, {} as Record<string, PointDetail[]>)
 
+  // Convert tennis points to display score
+  const getTennisScore = (points: number): string => {
+    switch (points) {
+      case 0: return "0"
+      case 1: return "15"
+      case 2: return "30"
+      case 3: return "40"
+      default: return "40"
+    }
+  }
+
   // Process each game to show progression
   Object.entries(gameGroups).forEach(([gameKey, points]) => {
     const [setNumber, gameNumber] = gameKey.split('-').map(Number)
+    const firstPoint = points[0]
     const lastPoint = points[points.length - 1]
     
-    // Simulate point progression (simplified for display)
-    const pointProgression: string[] = []
+    // Simulate point progression with actual tennis scoring
+    const pointProgression: PointProgression[] = []
     let p1Points = 0
     let p2Points = 0
     
@@ -64,32 +82,42 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
         p2Points++
       }
       
-      // Convert to tennis scoring
-      const getDisplayScore = (p1: number, p2: number) => {
-        if (p1 < 3 && p2 < 3) {
-          const scoreMap = ['0', '15', '30']
-          return `${scoreMap[p1] || '40'}, ${scoreMap[p2] || '40'}`
+      // Handle deuce situation
+      let p1Display: string
+      let p2Display: string
+      
+      if (p1Points >= 3 && p2Points >= 3) {
+        if (p1Points === p2Points) {
+          p1Display = "DEUCE"
+          p2Display = "DEUCE"
+        } else if (p1Points > p2Points) {
+          p1Display = "AD"
+          p2Display = ""
+        } else {
+          p1Display = ""
+          p2Display = "AD"
         }
-        if (p1 >= 3 && p2 >= 3) {
-          if (p1 === p2) return 'Deuce'
-          return p1 > p2 ? `Ad ${playerNames.p1.split(' ')[0]}` : `Ad ${playerNames.p2.split(' ')[0]}`
-        }
-        const scoreMap = ['0', '15', '30', '40']
-        return `${scoreMap[Math.min(p1, 3)]}, ${scoreMap[Math.min(p2, 3)]}`
+      } else {
+        p1Display = getTennisScore(p1Points)
+        p2Display = getTennisScore(p2Points)
       }
       
-      pointProgression.push(getDisplayScore(p1Points, p2Points))
+      pointProgression.push({
+        p1Score: p1Display,
+        p2Score: p2Display,
+        pointWinner: point.winner
+      })
     })
 
     // Determine if this was a break game (server lost)
-    const isBreakGame = (points[0]?.server !== lastPoint.winner)
+    const isBreakGame = (firstPoint?.server !== lastPoint.winner)
 
     gameResults.push({
       gameNumber,
       setNumber,
       winner: lastPoint.winner,
       pointProgression,
-      finalScore: lastPoint.gameScore || `${gameNumber}`,
+      finalGameScore: `${playerNames[lastPoint.winner === 'p1' ? 'p1' : 'p2'].split(' ')[0]} wins`,
       isBreakGame
     })
   })
@@ -104,7 +132,6 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
       </CardHeader>
       <CardContent className="space-y-3">
                  {gameResults.slice(-8).map((game, index) => {
-           const winnerName = game.winner === 'p1' ? playerNames.p1 : playerNames.p2
           
           return (
             <motion.div
@@ -123,7 +150,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                   </div>
                   <div>
                     <div className="text-white font-semibold">
-                      {winnerName.split(' ')[0]} wins
+                      {game.finalGameScore}
                       {game.isBreakGame && (
                         <Badge variant="outline" className="ml-2 text-xs bg-primary/10 text-primary border-primary">
                           BREAK
@@ -137,12 +164,61 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                   <div className="text-primary font-bold text-lg">
                     {game.winner === 'p1' ? '1' : '0'} - {game.winner === 'p2' ? '1' : '0'}
                   </div>
-                  <div className="text-slate-400 text-sm">
-                    {game.pointProgression.length > 0 
-                      ? game.pointProgression.slice(-1)[0] || '15, 30, 40'
-                      : '15, 30, 40'
-                    }
+                  <div className="text-slate-400 text-sm font-mono">
+                    {game.pointProgression.length > 0 ? (
+                      (() => {
+                        const lastPoint = game.pointProgression[game.pointProgression.length - 1]
+                        if (lastPoint.p1Score === "DEUCE" && lastPoint.p2Score === "DEUCE") {
+                          return "DEUCE"
+                        }
+                        if (lastPoint.p1Score === "AD") {
+                          return `AD ${playerNames.p1.split(' ')[0]}`
+                        }
+                        if (lastPoint.p2Score === "AD") {
+                          return `AD ${playerNames.p2.split(' ')[0]}`
+                        }
+                        return `${lastPoint.p1Score} - ${lastPoint.p2Score}`
+                      })()
+                    ) : (
+                      "0 - 0"
+                    )}
                   </div>
+                </div>
+              </div>
+              
+              {/* Point progression details */}
+              <div className="mt-3 pt-3 border-t border-slate-700">
+                <div className="text-xs text-slate-500 mb-2">Point progression:</div>
+                <div className="flex flex-wrap gap-1">
+                  {game.pointProgression.slice(0, 8).map((point, pointIndex) => {
+                    let scoreDisplay = ""
+                    if (point.p1Score === "DEUCE" && point.p2Score === "DEUCE") {
+                      scoreDisplay = "DEUCE"
+                    } else if (point.p1Score === "AD") {
+                      scoreDisplay = `AD-${playerNames.p1.split(' ')[0]}`
+                    } else if (point.p2Score === "AD") {
+                      scoreDisplay = `AD-${playerNames.p2.split(' ')[0]}`
+                    } else {
+                      scoreDisplay = `${point.p1Score}-${point.p2Score}`
+                    }
+                    
+                    return (
+                      <Badge 
+                        key={pointIndex}
+                        variant="outline" 
+                        className={`text-xs ${
+                          point.pointWinner === 'p1' 
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500' 
+                            : 'bg-red-500/10 text-red-400 border-red-500'
+                        }`}
+                      >
+                        {scoreDisplay}
+                      </Badge>
+                    )
+                  })}
+                  {game.pointProgression.length > 8 && (
+                    <span className="text-xs text-slate-500">...</span>
+                  )}
                 </div>
               </div>
             </motion.div>

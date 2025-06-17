@@ -1,7 +1,7 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { MatchStats, Player } from "@/lib/types"
@@ -18,7 +18,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
   const player1Name = `${playerOne.firstName} ${playerOne.lastName}`
   const player2Name = `${playerTwo.firstName} ${playerTwo.lastName}`
 
-  // Professional Tennis Stats Component
+  // Animated Professional Tennis Stats Component
   const StatBar = ({ 
     label, 
     player1Value, 
@@ -26,7 +26,8 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
     player1Detailed, 
     player2Detailed,
     showPercentage = false,
-    isCount = false
+    isCount = false,
+    delay = 0
   }: {
     label: string
     player1Value: number | string
@@ -35,6 +36,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
     player2Detailed?: string
     showPercentage?: boolean
     isCount?: boolean
+    delay?: number
   }) => {
     const p1Val = typeof player1Value === 'number' ? player1Value : parseFloat(String(player1Value))
     const p2Val = typeof player2Value === 'number' ? player2Value : parseFloat(String(player2Value))
@@ -55,51 +57,125 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
     }
 
     return (
-      <div className="py-3">
+      <motion.div 
+        className="py-3"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay }}
+      >
         <div className="flex justify-between items-center mb-2">
-          <div className="text-center flex-1">
-            <div className="text-lg font-bold font-mono">
+          <motion.div 
+            className="text-center flex-1"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: delay + 0.2 }}
+          >
+            <motion.div 
+              className="text-lg font-bold font-mono"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 200, 
+                damping: 15,
+                delay: delay + 0.4 
+              }}
+            >
               {showPercentage ? `${player1Value}%` : player1Value}
-            </div>
+            </motion.div>
             {player1Detailed && (
-              <div className="text-xs text-muted-foreground">
+              <motion.div 
+                className="text-xs text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: delay + 0.6 }}
+              >
                 {player1Detailed}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
           
           <div className="flex-1 text-center px-4">
-            <div className="text-sm font-medium text-muted-foreground mb-1">
+            <motion.div 
+              className="text-sm font-medium text-muted-foreground mb-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: delay + 0.1 }}
+            >
               {label}
-            </div>
+            </motion.div>
             {(showPercentage || isCount) && (
               <div className="flex items-center gap-2">
-                <div className="w-full bg-muted rounded-full h-2 relative overflow-hidden">
-                  <div 
-                    className="bg-blue-500 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${p1Progress}%` }}
+                <div className="w-full bg-muted rounded-full h-3 relative overflow-hidden">
+                  <motion.div 
+                    className="bg-gradient-to-r from-blue-500 to-blue-400 h-full rounded-full absolute top-0 left-0"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p1Progress}%` }}
+                    transition={{ 
+                      duration: 1.2, 
+                      delay: delay + 0.3,
+                      ease: "easeOut"
+                    }}
                   />
-                  <div 
-                    className="bg-red-500 h-full rounded-full absolute top-0 right-0 transition-all duration-500"
-                    style={{ width: `${p2Progress}%` }}
+                  <motion.div 
+                    className="bg-gradient-to-l from-red-500 to-red-400 h-full rounded-full absolute top-0 right-0"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p2Progress}%` }}
+                    transition={{ 
+                      duration: 1.2, 
+                      delay: delay + 0.3,
+                      ease: "easeOut"
+                    }}
+                  />
+                  
+                  {/* Animated shine effect */}
+                  <motion.div
+                    className="absolute top-0 left-0 h-full w-8 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "400%" }}
+                    transition={{
+                      duration: 1.5,
+                      delay: delay + 1.0,
+                      ease: "easeInOut"
+                    }}
                   />
                 </div>
               </div>
             )}
           </div>
           
-          <div className="text-center flex-1">
-            <div className="text-lg font-bold font-mono">
+          <motion.div 
+            className="text-center flex-1"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: delay + 0.2 }}
+          >
+            <motion.div 
+              className="text-lg font-bold font-mono"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 200, 
+                damping: 15,
+                delay: delay + 0.4 
+              }}
+            >
               {showPercentage ? `${player2Value}%` : player2Value}
-            </div>
+            </motion.div>
             {player2Detailed && (
-              <div className="text-xs text-muted-foreground">
+              <motion.div 
+                className="text-xs text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: delay + 0.6 }}
+              >
                 {player2Detailed}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -140,6 +216,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Value={stats.player1.aces}
             player2Value={stats.player2.aces}
             isCount
+            delay={0.1}
           />
           
           <StatBar
@@ -147,6 +224,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Value={stats.player1.doubleFaults}
             player2Value={stats.player2.doubleFaults}
             isCount
+            delay={0.2}
           />
           
           <StatBar
@@ -156,6 +234,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.firstServesMade}/${stats.player1.firstServesAttempted})`}
             player2Detailed={`(${stats.player2.firstServesMade}/${stats.player2.firstServesAttempted})`}
             showPercentage
+            delay={0.3}
           />
           
           <StatBar
@@ -165,6 +244,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.firstServePointsWon}/${stats.player1.firstServePointsPlayed})`}
             player2Detailed={`(${stats.player2.firstServePointsWon}/${stats.player2.firstServePointsPlayed})`}
             showPercentage
+            delay={0.4}
           />
           
           <StatBar
@@ -174,6 +254,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.secondServePointsWon}/${stats.player1.secondServePointsPlayed})`}
             player2Detailed={`(${stats.player2.secondServePointsWon}/${stats.player2.secondServePointsPlayed})`}
             showPercentage
+            delay={0.5}
           />
         </CardContent>
       </Card>
@@ -194,6 +275,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.firstReturnPointsWon}/${stats.player1.firstReturnPointsPlayed})`}
             player2Detailed={`(${stats.player2.firstReturnPointsWon}/${stats.player2.firstReturnPointsPlayed})`}
             showPercentage
+            delay={0.6}
           />
           
           <StatBar
@@ -203,6 +285,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.secondReturnPointsWon}/${stats.player1.secondReturnPointsPlayed})`}
             player2Detailed={`(${stats.player2.secondReturnPointsWon}/${stats.player2.secondReturnPointsPlayed})`}
             showPercentage
+            delay={0.7}
           />
           
           <StatBar
@@ -212,6 +295,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.breakPointsSaved}/${stats.player1.breakPointsFaced})`}
             player2Detailed={`(${stats.player2.breakPointsSaved}/${stats.player2.breakPointsFaced})`}
             showPercentage
+            delay={0.8}
           />
           
           <StatBar
@@ -221,6 +305,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.breakPointsWon}/${stats.player1.breakPointsPlayed})`}
             player2Detailed={`(${stats.player2.breakPointsWon}/${stats.player2.breakPointsPlayed})`}
             showPercentage
+            delay={0.9}
           />
         </CardContent>
       </Card>
@@ -239,6 +324,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Value={stats.player1.winners}
             player2Value={stats.player2.winners}
             isCount
+            delay={1.0}
           />
           
           <StatBar
@@ -246,6 +332,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Value={stats.player1.unforcedErrors}
             player2Value={stats.player2.unforcedErrors}
             isCount
+            delay={1.1}
           />
           
           <StatBar
@@ -255,6 +342,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.netPointsWon}/${stats.player1.netPointsPlayed})`}
             player2Detailed={`(${stats.player2.netPointsWon}/${stats.player2.netPointsPlayed})`}
             showPercentage
+            delay={1.2}
           />
           
           <StatBar
@@ -264,6 +352,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo, winner }: Mat
             player1Detailed={`(${stats.player1.totalPointsWon}/${stats.player1.totalPointsPlayed})`}
             player2Detailed={`(${stats.player2.totalPointsWon}/${stats.player2.totalPointsPlayed})`}
             showPercentage
+            delay={1.3}
           />
         </CardContent>
       </Card>
