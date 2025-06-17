@@ -8,9 +8,7 @@ import { Share2, Trophy, Clock } from "lucide-react"
 import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
-import createClient from "@/lib/appwrite-client"
-
-const client = createClient()
+import { useRealtimeMatch } from "@/hooks/use-realtime-match"
 
 interface PublicLiveMatchProps {
   match: {
@@ -50,8 +48,8 @@ const itemVariants = {
 
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const [match, setMatch] = useState(initialMatch)
-  const [connected, setConnected] = useState(false)
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
+  const { connected, lastUpdate } = useRealtimeMatch(match.$id)
 
   // Parse point log
   useEffect(() => {
@@ -65,30 +63,18 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     }
   }, [match.pointLog])
 
-  // Set up real-time subscription
+  // Update match when real-time data changes
   useEffect(() => {
-    const unsubscribe = client.subscribe(
-      `databases.${process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID}.documents.${match.$id}`,
-      (response) => {
-        if (response.events.includes('databases.*.collections.*.documents.*.update')) {
-          const updatedMatch = response.payload
-          setMatch({
-            ...match,
-            scoreParsed: JSON.parse(updatedMatch.score),
-            status: updatedMatch.status,
-            pointLog: updatedMatch.pointLog || [],
-            winnerId: updatedMatch.winnerId
-          })
-          setConnected(true)
-        }
-      }
-    )
-
-    return () => {
-      unsubscribe()
-      setConnected(false)
+    if (lastUpdate) {
+      setMatch(prev => ({
+        ...prev,
+        scoreParsed: lastUpdate.score ? JSON.parse(lastUpdate.score) : prev.scoreParsed,
+        status: lastUpdate.status || prev.status,
+        pointLog: lastUpdate.pointLog || prev.pointLog,
+        winnerId: lastUpdate.winnerId || prev.winnerId
+      }))
     }
-  }, [match.$id])
+  }, [lastUpdate])
 
   const getPointDisplay = (points: number) => {
     const pointMap = ["0", "15", "30", "40"]
@@ -120,10 +106,6 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   }
 
   const matchStats = calculateMatchStats(pointLog)
-  const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
-  }
 
   return (
     <motion.div

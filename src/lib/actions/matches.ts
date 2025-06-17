@@ -43,6 +43,7 @@ export async function createMatch(matchData: {
         status: "In Progress",
         score: JSON.stringify(initialScore),
         pointLog: [],
+        events: [],
         userId: user.$id,
       }
     )
@@ -199,6 +200,57 @@ export async function deleteMatch(matchId: string) {
   } catch (error) {
     console.error("Error deleting match:", error)
     return { error: error instanceof Error ? error.message : "Failed to delete match" }
+  }
+}
+
+export async function addMatchComment(matchId: string, comment: string): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { error: "Unauthorized" }
+    }
+
+    const { databases } = await createAdminClient()
+
+    // Get current match to retrieve existing events
+    const match = await databases.getDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId
+    )
+
+    // Verify user owns this match
+    if (match.userId !== user.$id) {
+      return { error: "Unauthorized to add comment to this match" }
+    }
+
+    // Create new comment event
+    const newEvent = {
+      type: 'comment',
+      content: comment,
+      timestamp: new Date().toISOString(),
+      author: `${user.name || user.email}`
+    }
+
+    // Get existing events and add new one
+    const existingEvents = match.events || []
+    const updatedEvents = [...existingEvents, JSON.stringify(newEvent)]
+
+    // Update match with new events array
+    await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId,
+      {
+        events: updatedEvents
+      }
+    )
+
+    revalidatePath(`/live/${matchId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error adding match comment:", error)
+    return { error: error instanceof Error ? error.message : "Failed to add comment" }
   }
 }
 
@@ -501,47 +553,4 @@ function generateRealisticLastShot(pointOutcome: string): ShotType {
   return "forehand"
 }
 
-function generateServeOutcome(): PointOutcome {
-  // This function is no longer used but kept for compatibility
-  const outcomes: PointOutcome[] = ["winner", "unforced_error", "forced_error", "ace", "double_fault"]
-  const weights = [0.3, 0.25, 0.2, 0.15, 0.1]
-  const random = Math.random()
-  let sum = 0
-  
-  for (let i = 0; i < outcomes.length; i++) {
-    sum += weights[i]
-    if (random <= sum) return outcomes[i]
-  }
-  
-  return "winner"
-}
-
-function generatePointOutcome(): PointOutcome {
-  // This function is no longer used but kept for compatibility
-  const outcomes: PointOutcome[] = ["winner", "unforced_error", "forced_error", "ace", "double_fault"]
-  const weights = [0.35, 0.3, 0.2, 0.1, 0.05]
-  const random = Math.random()
-  let sum = 0
-  
-  for (let i = 0; i < outcomes.length; i++) {
-    sum += weights[i]
-    if (random <= sum) return outcomes[i]
-  }
-  
-  return "winner"
-}
-
-function generateShotType(): ShotType {
-  // This function is no longer used but kept for compatibility
-  const shots: ShotType[] = ["forehand", "backhand", "volley", "overhead", "serve"]
-  const weights = [0.35, 0.3, 0.15, 0.1, 0.1]
-  const random = Math.random()
-  let sum = 0
-  
-  for (let i = 0; i < shots.length; i++) {
-    sum += weights[i]
-    if (random <= sum) return shots[i]
-  }
-  
-  return "forehand"
-} 
+ 

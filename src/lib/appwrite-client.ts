@@ -1,15 +1,20 @@
 import { Client, Account, Databases, Storage } from "appwrite"
 
-const createClient = () => {
+// Create a singleton client instance  
+const createClient = (): Client => {
     const client = new Client()
         .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-        .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
+        .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
 
-    return client;
-};
+    return client
+}
 
-export default createClient;
+// Export the client instance for real-time subscriptions
+export const client = createClient()
 
-export const account = new Account(createClient())
-export const databases = new Databases(createClient())
-export const storage = new Storage(createClient()) 
+// Create service instances
+export const account = new Account(client)
+export const databases = new Databases(client)
+export const storage = new Storage(client)
+
+export default createClient 

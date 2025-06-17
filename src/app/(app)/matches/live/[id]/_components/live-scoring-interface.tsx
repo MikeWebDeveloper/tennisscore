@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,10 +14,11 @@ import {
   RotateCcw,
   MessageSquare,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from "lucide-react"
 import { toast } from "sonner"
-import { updateMatchScore } from "@/lib/actions/matches"
+import { updateMatchScore, addMatchComment } from "@/lib/actions/matches"
 import { Player, PointDetail, Score } from "@/lib/types"
 import { ServeSelection } from "./serve-selection"
 
@@ -167,13 +169,17 @@ function StatsCard({ title, player1Value, player2Value }: {
 function SwipeableCards({ 
   pointLog, 
   comments,
-  matchStats 
+  matchStats,
+  onAddComment 
 }: { 
   pointLog: PointDetail[]
   comments: Comment[]
   matchStats: MatchStats
+  onAddComment: (comment: string) => Promise<void>
 }) {
   const [currentCard, setCurrentCard] = useState(0)
+  const [newComment, setNewComment] = useState("")
+  const [isAddingComment, setIsAddingComment] = useState(false)
   const cards = ['stats', 'points', 'commentary']
   
   const nextCard = () => {
@@ -182,6 +188,20 @@ function SwipeableCards({
   
   const prevCard = () => {
     setCurrentCard((prev) => (prev - 1 + cards.length) % cards.length)
+  }
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return
+    
+    setIsAddingComment(true)
+    try {
+      await onAddComment(newComment.trim())
+      setNewComment("")
+      toast.success("Comment added!")
+    } catch {
+      toast.error("Failed to add comment")
+    }
+    setIsAddingComment(false)
   }
 
   return (
@@ -245,21 +265,50 @@ function SwipeableCards({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-2 max-h-48 overflow-y-auto"
+              className="space-y-3"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="h-4 w-4" />
-                <span className="text-sm text-muted-foreground">Live Commentary</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="text-sm text-muted-foreground">Live Commentary</span>
+                </div>
               </div>
-              {comments.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No comments yet</p>
-              ) : (
-                comments.map((comment, index) => (
-                  <div key={index} className="text-sm p-2 bg-muted/50 rounded">
-                    {comment.text}
-                  </div>
-                ))
-              )}
+              
+              {/* Add Comment Section */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                  className="flex-1"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim() || isAddingComment}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* Comments List */}
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {comments.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No comments yet</p>
+                ) : (
+                  comments.map((comment, index) => (
+                    <div key={index} className="text-sm p-2 bg-muted/50 rounded">
+                      <div className="font-medium">{comment.text}</div>
+                      {comment.timestamp && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {new Date(comment.timestamp).toLocaleTimeString()}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -284,7 +333,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setNumber: 1
   })
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
-  const [comments] = useState<Comment[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
   const [isInGame, setIsInGame] = useState(false)
   
   // Initialize match data
@@ -556,6 +605,32 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
+  const shareMatch = () => {
+    const liveUrl = `${window.location.origin}/live/${match.$id}`
+    navigator.clipboard.writeText(liveUrl).then(() => {
+      toast.success("Live match link copied to clipboard!")
+    }).catch(() => {
+      toast.error("Failed to copy link")
+    })
+  }
+
+  const handleAddComment = async (comment: string) => {
+    try {
+      const result = await addMatchComment(match.$id, comment)
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      // Add comment to local state
+      setComments(prev => [...prev, {
+        text: comment,
+        timestamp: new Date().toISOString(),
+        author: 'You'
+      }])
+    } catch (error) {
+      throw error
+    }
+  }
+
   const matchStats = calculateMatchStats(pointLog)
 
   return (
@@ -570,7 +645,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <Badge variant="secondary" className="bg-red-500 text-white">
             LIVE
           </Badge>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={shareMatch}>
             <Share2 className="h-4 w-4 mr-2" />
             Share
           </Button>
@@ -673,7 +748,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </div>
 
         {/* Swipeable Cards */}
-        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} />
+        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} onAddComment={handleAddComment} />
       </div>
 
       {/* Initial Serve Selection Dialog */}
