@@ -125,16 +125,40 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       updateData.winnerId = scoreUpdate.winnerId
     }
 
-    const match = await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      matchId,
-      updateData
-    )
+    // Add retry logic for network issues
+    let retries = 3
+    while (retries > 0) {
+      try {
+        const match = await databases.updateDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+          matchId,
+          updateData
+        )
 
-    revalidatePath("/matches")
-    revalidatePath(`/live/${matchId}`)
-    return { success: true, match: match as unknown as Match }
+        revalidatePath("/matches")
+        revalidatePath(`/live/${matchId}`)
+        return { success: true, match: match as unknown as Match }
+      } catch (error: unknown) {
+        retries--
+        if (retries === 0) throw error
+        
+        // Check if it's a network error
+        if (error instanceof Error && (
+          error.message.includes('ECONNRESET') || 
+          error.message.includes('fetch failed') ||
+          error.message.includes('network')
+        )) {
+          console.warn(`Network error updating match score, retrying... (${3 - retries}/3)`)
+          await new Promise(resolve => setTimeout(resolve, 1000 * (3 - retries))) // Exponential backoff
+          continue
+        }
+        
+        throw error
+      }
+    }
+
+    return { error: "Failed to update match score after retries" }
   } catch (error) {
     console.error("Error updating match score:", error)
     return { error: error instanceof Error ? error.message : "Failed to update match score" }

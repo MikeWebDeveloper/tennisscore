@@ -1,32 +1,12 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import localFont from "next/font/local";
 
-const satoshi = localFont({
-  src: [
-    {
-      path: "../styles/fonts/Satoshi-Variable.woff2",
-      weight: "300 900",
-      style: "normal",
-    },
-  ],
-  variable: "--font-satoshi",
-  display: "swap",
-});
-
-const inter = localFont({
-  src: [
-    {
-      path: "../styles/fonts/Inter-Variable.woff2",
-      weight: "100 900",
-      style: "normal",
-    },
-  ],
+const inter = Inter({
+  subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -68,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body 
-        className={`${satoshi.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>

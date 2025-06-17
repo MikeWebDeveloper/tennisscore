@@ -19,19 +19,75 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
   const { id } = await params
 
   try {
-    const [match, players] = await Promise.all([
+    // Use Promise.allSettled to handle network failures more gracefully
+    const [matchResult, playersResult] = await Promise.allSettled([
       getMatch(id),
       getPlayersByUser()
     ])
 
+    // Handle match fetch failure
+    if (matchResult.status === 'rejected') {
+      console.error("Failed to fetch match:", matchResult.reason)
+      redirect("/matches")
+      return
+    }
+
+    const match = matchResult.value
+
+    // Handle players fetch failure - create fallback players if needed
+    let players = []
+    if (playersResult.status === 'fulfilled') {
+      players = playersResult.value
+    } else {
+      console.warn("Failed to fetch players, using fallback:", playersResult.reason)
+      // Create fallback anonymous players
+      players = [
+        {
+          $id: match.playerOneId,
+          firstName: "Player",
+          lastName: "1",
+          userId: user.$id,
+          $createdAt: new Date().toISOString(),
+          $updatedAt: new Date().toISOString()
+        },
+        {
+          $id: match.playerTwoId,
+          firstName: "Player", 
+          lastName: "2",
+          userId: user.$id,
+          $createdAt: new Date().toISOString(),
+          $updatedAt: new Date().toISOString()
+        }
+      ]
+    }
+
     // Create a players lookup map
     const playersMap = new Map(players.map(player => [player.$id, player]))
 
-    const playerOne = playersMap.get(match.playerOneId)
-    const playerTwo = playersMap.get(match.playerTwoId)
+    let playerOne = playersMap.get(match.playerOneId)
+    let playerTwo = playersMap.get(match.playerTwoId)
 
-    if (!playerOne || !playerTwo) {
-      throw new Error("Players not found")
+    // Create fallback players if still not found
+    if (!playerOne) {
+      playerOne = {
+        $id: match.playerOneId,
+        firstName: "Player",
+        lastName: "1",
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      }
+    }
+
+    if (!playerTwo) {
+      playerTwo = {
+        $id: match.playerTwoId,
+        firstName: "Player",
+        lastName: "2", 
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      }
     }
 
     // Parse the score
@@ -56,9 +112,12 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       $id: match.$id,
       playerOne,
       playerTwo,
+      matchFormat: match.matchFormat,
+      score: match.score,
+      pointLog: match.pointLog,
+      status: match.status,
       scoreParsed,
-      matchFormatParsed: matchFormat,
-      status: match.status
+      matchFormatParsed: matchFormat
     }
 
     return <LiveScoringInterface match={enhancedMatch} />
