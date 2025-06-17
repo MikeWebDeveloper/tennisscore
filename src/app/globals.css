@@ -188,11 +188,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Touch-friendly improvements */
-@media (hover: none) and (pointer: coarse) {
+@layer components {
   .touch-target {
-    @apply min-h-[44px] min-w-[44px];
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
-  
+}
+
+@media (hover: none) and (pointer: coarse) {
   button, [role="button"], .radio-option {
     @apply touch-target;
   }

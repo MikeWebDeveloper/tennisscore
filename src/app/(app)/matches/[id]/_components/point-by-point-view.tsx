@@ -85,14 +85,10 @@ function PointPopup({
 // Tennis Ball SVG Component
 function TennisBall({ className }: { className?: string }) {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      className={className}
-      fill="currentColor"
-    >
-      <circle cx="12" cy="12" r="10" fill="#9ACD32" stroke="#228B22" strokeWidth="1"/>
-      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
-      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="12" cy="12" r="10" fill="rgb(var(--muted))" stroke="rgb(var(--border))" strokeWidth="1"/>
+      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="rgb(var(--border))" strokeWidth="1.5"/>
+      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="rgb(var(--border))" strokeWidth="1.5"/>
     </svg>
   )
 }

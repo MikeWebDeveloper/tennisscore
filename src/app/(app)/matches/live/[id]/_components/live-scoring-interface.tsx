@@ -2,649 +2,713 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { 
   Share2, 
   ArrowLeft,
   RotateCcw,
-  Zap
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { calculateMatchStats } from "@/lib/utils/match-stats"
-import { isBreakPoint, isGameWon as getGameWon, isSetWon as getSetWon, getGameWinner, getServer } from "@/lib/utils/tennis-scoring"
-import { Player, PointDetail, ServeType, PointOutcome, MatchFormat, Score } from "@/lib/types"
+import { Player, PointDetail, Score } from "@/lib/types"
 import { ServeSelection } from "./serve-selection"
-
-interface PointContext {
-  pointNumber: number
-  setNumber: number
-  gameNumber: number
-  gameScore: string
-  winner: "p1" | "p2"
-  server: "p1" | "p2"
-  isBreakPoint: boolean
-  isSetPoint: boolean
-  isMatchPoint: boolean
-  playerNames: { p1: string; p2: string }
-  gameWon?: boolean
-  setWon?: boolean
-  matchWon?: boolean
-}
 
 interface LiveScoringInterfaceProps {
   match: {
     $id: string
     playerOne: Player
     playerTwo: Player
-    scoreParsed: Score
-    matchFormatParsed: MatchFormat
-    status: "In Progress" | "Completed"
+    matchFormat: string
+    score: string
     pointLog?: string[]
-    winnerId?: string
+    status: string
+    scoreParsed: Score
   }
 }
 
-// Tennis Ball SVG Component
-function TennisBall({ className }: { className?: string }) {
+interface Comment {
+  text: string
+  timestamp: string
+  author?: string
+}
+
+interface TennisScore {
+  sets: number[][]
+  games: number[]
+  points: number[]
+  server: 'p1' | 'p2'
+  gameNumber: number
+  setNumber: number
+}
+
+interface MatchStats {
+  player1: {
+    aces: number
+    doubleFaults: number
+    winners: number
+    unforcedErrors: number
+    breakPointsWon: number
+    totalBreakPoints: number
+  }
+  player2: {
+    aces: number
+    doubleFaults: number
+    winners: number
+    unforcedErrors: number
+    breakPointsWon: number
+    totalBreakPoints: number
+  }
+}
+
+// Green Tennis Ball Icon Component
+function TennisBall({ className, onClick }: { className?: string; onClick?: () => void }) {
   return (
-    <svg 
+    <motion.svg 
+      width="16" 
+      height="16" 
       viewBox="0 0 24 24" 
-      className={className}
-      fill="currentColor"
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg" 
+      className={`cursor-pointer ${className}`}
+      onClick={onClick}
+      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.1 }}
     >
-      <circle cx="12" cy="12" r="10" fill="#9ACD32" stroke="#228B22" strokeWidth="1"/>
-      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
-      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="#228B22" strokeWidth="1.5"/>
-    </svg>
+      <circle cx="12" cy="12" r="10" fill="#39FF14" stroke="#2DD00A" strokeWidth="1"/>
+      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="#2DD00A" strokeWidth="1.5"/>
+      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="#2DD00A" strokeWidth="1.5"/>
+    </motion.svg>
+  )
+}
+
+// Serve Switcher Component
+function ServeSwitcher({ 
+  currentServe, 
+  onServeChange 
+}: { 
+  currentServe: 'first' | 'second'
+  onServeChange: (serve: 'first' | 'second') => void 
+}) {
+  return (
+    <div className="flex bg-muted rounded-lg p-1 w-fit mx-auto">
+      <Button
+        variant={currentServe === 'first' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onServeChange('first')}
+        className="text-xs"
+      >
+        1st Serve
+      </Button>
+      <Button
+        variant={currentServe === 'second' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onServeChange('second')}
+        className="text-xs"
+      >
+        2nd Serve
+      </Button>
+    </div>
+  )
+}
+
+// Point Score Display Component - Large tennis scores
+function PointScore({ 
+  score, 
+  isServing, 
+  onTap 
+}: { 
+  score: string
+  isServing: boolean
+  onTap: () => void 
+}) {
+  return (
+    <motion.div
+      className={`text-8xl font-bold cursor-pointer select-none p-6 rounded-xl transition-colors ${
+        isServing ? 'bg-primary/10 border-2 border-primary/30' : 'hover:bg-muted/50'
+      }`}
+      onClick={onTap}
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+    >
+      {score}
+    </motion.div>
+  )
+}
+
+// Stats Card Component
+function StatsCard({ title, player1Value, player2Value }: {
+  title: string
+  player1Value: number | string
+  player2Value: number | string
+}) {
+  return (
+    <div className="flex justify-between items-center py-2">
+      <div className="text-center flex-1">
+        <div className="text-lg font-semibold">{player1Value}</div>
+      </div>
+      <div className="text-center flex-1">
+        <div className="text-sm text-muted-foreground">{title}</div>
+      </div>
+      <div className="text-center flex-1">
+        <div className="text-lg font-semibold">{player2Value}</div>
+      </div>
+    </div>
+  )
+}
+
+// Swipeable Cards Component
+function SwipeableCards({ 
+  pointLog, 
+  comments,
+  matchStats 
+}: { 
+  pointLog: PointDetail[]
+  comments: Comment[]
+  matchStats: MatchStats
+}) {
+  const [currentCard, setCurrentCard] = useState(0)
+  const cards = ['stats', 'points', 'commentary']
+  
+  const nextCard = () => {
+    setCurrentCard((prev) => (prev + 1) % cards.length)
+  }
+  
+  const prevCard = () => {
+    setCurrentCard((prev) => (prev - 1 + cards.length) % cards.length)
+  }
+
+  return (
+    <Card className="relative">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Button variant="ghost" size="sm" onClick={prevCard}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <CardTitle className="text-sm">
+          {cards[currentCard] === 'stats' && 'Match Statistics'}
+          {cards[currentCard] === 'points' && 'Point by Point'}
+          {cards[currentCard] === 'commentary' && 'Commentary'}
+        </CardTitle>
+        <Button variant="ghost" size="sm" onClick={nextCard}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <AnimatePresence mode="wait">
+          {cards[currentCard] === 'stats' && (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-1"
+            >
+              <StatsCard title="Aces" player1Value={matchStats.player1.aces} player2Value={matchStats.player2.aces} />
+              <StatsCard title="Double Faults" player1Value={matchStats.player1.doubleFaults} player2Value={matchStats.player2.doubleFaults} />
+              <StatsCard title="Winners" player1Value={matchStats.player1.winners} player2Value={matchStats.player2.winners} />
+              <StatsCard title="Unforced Errors" player1Value={matchStats.player1.unforcedErrors} player2Value={matchStats.player2.unforcedErrors} />
+              <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
+            </motion.div>
+          )}
+          
+          {cards[currentCard] === 'points' && (
+            <motion.div
+              key="points"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-2 max-h-48 overflow-y-auto"
+            >
+              {pointLog.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No points played yet</p>
+              ) : (
+                pointLog.map((point, index) => (
+                  <div key={index} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                    <span>Point {index + 1}</span>
+                    <span className="text-xs font-mono">{point.gameScore}</span>
+                    <span>{point.winner === 'p1' ? 'Player 1' : 'Player 2'}</span>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
+          
+          {cards[currentCard] === 'commentary' && (
+            <motion.div
+              key="commentary"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-2 max-h-48 overflow-y-auto"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="text-sm text-muted-foreground">Live Commentary</span>
+              </div>
+              {comments.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No comments yet</p>
+              ) : (
+                comments.map((comment, index) => (
+                  <div key={index} className="text-sm p-2 bg-muted/50 rounded">
+                    {comment.text}
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </CardContent>
+    </Card>
   )
 }
 
 export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
-  const [score, setScore] = useState<Score>(match.scoreParsed)
-  const [pointLog, setPointLog] = useState<PointDetail[]>([])
-  const [currentServer, setCurrentServer] = useState<"p1" | "p2" | null>(null)
-  const [isUpdating, setIsUpdating] = useState(false)
   
-  // New states for detailed point logging
-  const [pendingPoint, setPendingPoint] = useState<{
-    player: number
-    context: PointContext
-  } | null>(null)
-  const [showPointOutcome, setShowPointOutcome] = useState(false)
-
-  // Initialize from existing match data
+  // Local state for UI
+  const [showServeSelection, setShowServeSelection] = useState(true)
+  const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
+  const [currentServe, setCurrentServe] = useState<'first' | 'second'>('first')
+  const [score, setScore] = useState<TennisScore>({
+    sets: [],
+    games: [0, 0],
+    points: [0, 0],
+    server: 'p1',
+    gameNumber: 1,
+    setNumber: 1
+  })
+  const [pointLog, setPointLog] = useState<PointDetail[]>([])
+  const [comments] = useState<Comment[]>([])
+  const [isInGame, setIsInGame] = useState(false)
+  
+  // Initialize match data
   useEffect(() => {
     // Parse existing point log if available
-    if (match.pointLog && match.pointLog.length > 0) {
-      try {
-        // Parse each string in the array back into a PointDetail object
-        const existingPointLog: PointDetail[] = match.pointLog.map(pointStr => JSON.parse(pointStr))
-        setPointLog(existingPointLog)
-        
-        // Determine current server from the total games played
-        const totalGamesPlayed = score.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + score.games[0] + score.games[1]
-        const calculatedServer = getServer(totalGamesPlayed + 1)
-        setCurrentServer(calculatedServer)
-      } catch (error) {
-        console.error("Failed to parse point log:", error)
-        setCurrentServer(null) // Default to null if parsing fails
-      }
-    } else {
-      // No points played yet, default to null to show ServeSelection
-      setCurrentServer(null)
-    }
-  }, [match.pointLog, score.sets, score.games])
-
-  // Calculate live stats
-  const matchStats = calculateMatchStats(pointLog)
-  const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
-  }
-
-  const getPointDisplay = (points: number) => {
-    const pointMap = ["0", "15", "30", "40"]
-    if (points < 4) return pointMap[points]
-    return "40"
-  }
-
-  const getGameScore = () => {
-    const p1Points = getPointDisplay(score.points[0])
-    const p2Points = getPointDisplay(score.points[1])
+    const existingPointLog: PointDetail[] = match.pointLog 
+      ? match.pointLog.map(pointStr => {
+          try {
+            return JSON.parse(pointStr)
+          } catch (error) {
+            console.error("Failed to parse point:", error)
+            return null
+          }
+        }).filter(Boolean)
+      : []
     
-    // Handle deuce situation
-    if (score.points[0] >= 3 && score.points[1] >= 3) {
-      if (score.points[0] === score.points[1]) return "DEUCE"
-      if (score.points[0] > score.points[1]) return `AD-${playerNames.p1.split(' ')[0].toUpperCase()}`
-      return `AD-${playerNames.p2.split(' ')[0].toUpperCase()}`
-    }
+    setPointLog(existingPointLog)
     
-    return `${p1Points} - ${p2Points}`
+    // Initialize score from match data
+    const initialScore: TennisScore = {
+      sets: match.scoreParsed.sets || [],
+      games: match.scoreParsed.games || [0, 0],
+      points: match.scoreParsed.points || [0, 0],
+      server: 'p1',
+      gameNumber: (match.scoreParsed.games?.[0] || 0) + (match.scoreParsed.games?.[1] || 0) + 1,
+      setNumber: 1
+    }
+    setScore(initialScore)
+    
+    // If there are existing points, don't show serve selection
+    if (existingPointLog.length > 0) {
+      setShowServeSelection(false)
+      // Determine current server from game number
+      const totalGames = initialScore.games[0] + initialScore.games[1]
+      initialScore.server = totalGames % 2 === 0 ? 'p1' : 'p2'
+      setScore(initialScore)
+    }
+  }, [match])
+
+  const handleServeSelected = (server: 'p1' | 'p2') => {
+    setScore(prev => ({ ...prev, server }))
+    setShowServeSelection(false)
   }
 
-  const awardPoint = async (playerIndex: number) => {
-    if (isUpdating) return
-
-    // Ensure a server is selected before awarding a point
-    if (!currentServer) {
-      toast.info("Please select the initial server.")
+  const handleServeSwap = () => {
+    if (isInGame) {
+      toast.error("Cannot change server in the middle of a game!")
+      setShowServeSwapConfirm(false)
       return
     }
-
-    setIsUpdating(true)
-
-    // Get current game and set scores to pass to point context
-    const currentSetNumber = score.sets.length + 1
-    const currentGameNumber = score.games[0] + score.games[1] + 1
-
-    const context: PointContext = {
-      pointNumber: pointLog.length + 1,
-      setNumber: currentSetNumber,
-      gameNumber: currentGameNumber,
-      gameScore: getGameScore(), // Current game score (e.g., "30-15")
-      winner: playerIndex === 0 ? "p1" : "p2",
-      server: currentServer,
-      isBreakPoint: false, // Will be calculated dynamically in scoring logic
-      isSetPoint: false,
-      isMatchPoint: false,
-      playerNames,
-      gameWon: false,
-      setWon: false,
-      matchWon: false,
-    }
-
-    // Set pending point and show outcome selection
-    setPendingPoint({
-      player: playerIndex,
-      context
-    })
-    setShowPointOutcome(true) // Open the new detailed point logging sheet
-    setIsUpdating(false)
+    
+    setScore(prev => ({ 
+      ...prev, 
+      server: prev.server === 'p1' ? 'p2' : 'p1' 
+    }))
+    setShowServeSwapConfirm(false)
+    toast.success("Server changed")
   }
 
-  const savePointWithOutcome = async (
-    outcome: PointOutcome,
-    selectedServeType: ServeType
-  ) => {
-    if (!pendingPoint || !currentServer) return
+  const calculateMatchStats = (points: PointDetail[]) => {
+    const player1Stats = {
+      aces: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'ace').length,
+      doubleFaults: points.filter(p => p.server === 'p1' && p.pointOutcome === 'double_fault').length,
+      winners: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'winner').length,
+      unforcedErrors: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'unforced_error').length,
+      breakPointsWon: points.filter(p => p.winner === 'p1' && p.isBreakPoint).length,
+      totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p2').length
+    }
+    
+    const player2Stats = {
+      aces: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'ace').length,
+      doubleFaults: points.filter(p => p.server === 'p2' && p.pointOutcome === 'double_fault').length,
+      winners: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'winner').length,
+      unforcedErrors: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'unforced_error').length,
+      breakPointsWon: points.filter(p => p.winner === 'p2' && p.isBreakPoint).length,
+      totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p1').length
+    }
+    
+    return { player1: player1Stats, player2: player2Stats }
+  }
 
-    setIsUpdating(true)
-    setShowPointOutcome(false) // Close the point outcome sheet
+  // Convert numeric points to tennis score display
+  const getPointDisplay = (p1Points: number, p2Points: number) => {
+    // Handle deuce and advantage
+    if (p1Points >= 3 && p2Points >= 3) {
+      if (p1Points === p2Points) return "DEUCE"
+      if (p1Points > p2Points) return "ADV - 40"
+      return "40 - ADV"
+    }
+    
+    // Regular scoring
+    const scoreMap = ["0", "15", "30", "40"]
+    const p1Score = p1Points < 4 ? scoreMap[p1Points] : "40"
+    const p2Score = p2Points < 4 ? scoreMap[p2Points] : "40"
+    
+    return `${p1Score} - ${p2Score}`
+  }
 
-    const winner = pendingPoint.player === 0 ? "p1" : "p2"
+  // Convert individual player points to tennis score
+  const getPlayerPointScore = (points: number, opponentPoints: number) => {
+    if (points >= 3 && opponentPoints >= 3) {
+      if (points === opponentPoints) return "40"
+      if (points > opponentPoints) return "ADV"
+      return "40"
+    }
+    
+    const scoreMap = ["0", "15", "30", "40"]
+    return points < 4 ? scoreMap[points] : "40"
+  }
 
-    // Calculate new score based on the awarded point
-    const newPoints = [...score.points]
-    newPoints[pendingPoint.player]++
+  // Check if current situation is a break point
+  const isBreakPoint = (serverPoints: number, receiverPoints: number) => {
+    // Break point occurs when the receiver is one point away from winning the game
+    if (serverPoints >= 3 && receiverPoints >= 3) {
+      // In deuce situation, receiver having advantage is break point
+      return receiverPoints > serverPoints
+    }
+    // Receiver at 40 and server not at 40, or receiver at 30 and server at 40
+    return receiverPoints >= 3 && receiverPoints > serverPoints
+  }
 
-    let newGames = [...score.games]
-    const newSets = [...score.sets]
-    let matchWinnerId: string | undefined = undefined
-    let newServer = currentServer
-    let matchStatus: "In Progress" | "Completed" = "In Progress"
+  const awardPoint = async (winner: 'player1' | 'player2') => {
+    const winnerP = winner === 'player1' ? 'p1' : 'p2'
+    setIsInGame(true)
+    
+    try {
+      // Calculate if this is a break point before awarding
+      const isCurrentBreakPoint = score.server !== winnerP && 
+        isBreakPoint(
+          score.server === 'p1' ? score.points[0] : score.points[1],
+          score.server === 'p1' ? score.points[1] : score.points[0]
+        )
 
-    const gameWon = getGameWon(newPoints[0], newPoints[1], match.matchFormatParsed.noAd);
-    let setWon = false;
-    let matchWon = false;
-
-    if (gameWon) {
-      // Increment game count for the winner
-      if (winner === "p1") newGames[0]++
-      else newGames[1]++
-
-      // Reset points for new game
-      newPoints[0] = 0
-      newPoints[1] = 0
-
-      // Determine if set is won
-      const currentSets = [...newSets]
-      setWon = getSetWon(newGames[0], newGames[1], match.matchFormatParsed, currentSets)
-
-      if (setWon) {
-        // Add current game score to sets
-        newSets.push([...newGames]) // Push a copy of newGames
-
-        // Reset games for new set
-        newGames = [0, 0]
-
-        // Determine if match is won
-        matchWon = newSets.filter(set => set[0] > set[1]).length === match.matchFormatParsed.sets ||
-                         newSets.filter(set => set[1] > set[0]).length === match.matchFormatParsed.sets
-
-        if (matchWon) {
-          matchStatus = "Completed"
-          matchWinnerId = winner === "p1" ? match.playerOne.$id : match.playerTwo.$id
-        }
+      // Create point detail
+      const pointDetail: PointDetail = {
+        id: `point-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        pointNumber: pointLog.length + 1,
+        setNumber: score.setNumber,
+        gameNumber: score.gameNumber,
+        gameScore: getPointDisplay(score.points[0], score.points[1]),
+        winner: winnerP,
+        server: score.server,
+        serveType: currentServe,
+        serveOutcome: 'winner',
+        rallyLength: 1,
+        pointOutcome: 'winner', // This should be set based on how the point was won
+        isBreakPoint: isCurrentBreakPoint,
+        isSetPoint: false,
+        isMatchPoint: false,
+        isGameWinning: false,
+        isSetWinning: false,
+        isMatchWinning: false
       }
 
-      // Server switches after each game
-      const totalGamesPlayed = newSets.reduce((sum, set) => sum + set[0] + set[1], 0) + newGames[0] + newGames[1];
-      newServer = getServer(totalGamesPlayed + 1) // Calculate next server based on total games played
-    }
-
-    const updatedScore = { sets: newSets, games: newGames, points: newPoints }
-    setScore(updatedScore)
-
-    const newPointDetail: PointDetail = {
-      id: `point-${pointLog.length + 1}`,
-      timestamp: new Date().toISOString(),
-      pointNumber: pendingPoint.context.pointNumber,
-      setNumber: pendingPoint.context.setNumber,
-      gameNumber: pendingPoint.context.gameNumber,
-      gameScore: pendingPoint.context.gameScore,
-      winner,
-      server: currentServer,
-      serveType: selectedServeType,
-      serveOutcome: outcome, // Use the selected outcome for serve outcome
-      rallyLength: 1, // Default rally length for now
-      pointOutcome: outcome,
-      lastShotType: undefined,
-      lastShotPlayer: winner,
-      isBreakPoint: isBreakPoint(
-        currentServer === "p1" ? score.points[0] : score.points[1],
-        currentServer === "p1" ? score.points[1] : score.points[0],
-        match.matchFormatParsed.noAd
-      ),
-      isSetPoint: setWon && !matchWon,
-      isMatchPoint: matchWon,
-      isGameWinning: gameWon,
-      isSetWinning: setWon,
-      isMatchWinning: matchWon,
-      notes: "",
-    }
-
-    setPointLog((prev) => [...prev, newPointDetail])
-    setCurrentServer(newServer) // Update server for next point
-
-    // Save to database
-    try {
-      await updateMatchScore(match.$id, {
-        score: updatedScore,
-        pointLog: [...pointLog, newPointDetail],
-        status: matchStatus,
-        winnerId: matchWinnerId
-      })
-    } catch (error) {
-      console.error("Failed to save match score:", error)
-      toast.error("Failed to save score")
-    }
-
-    setIsUpdating(false)
-  }
-
-  const undoLastPoint = async () => {
-    if (pointLog.length === 0 || isUpdating) return
-
-    setIsUpdating(true)
-
-    try {
-      // Store current state for rollback if needed
-      const previousScore = { ...score }
-      const previousPointLog = [...pointLog]
-      const previousServer = currentServer
-
-      // Remove the last point from the log
-      const newPointLog = pointLog.slice(0, -1)
+      // Calculate new score with proper tennis logic
+      const newScore = { ...score }
+      const winnerIndex = winner === 'player1' ? 0 : 1
+      const loserIndex = 1 - winnerIndex
+      
+      newScore.points[winnerIndex]++
+      
+      // Check for game win
+      let gameWon = false
+      let setWon = false
+      if (newScore.points[winnerIndex] >= 4) {
+        if (newScore.points[winnerIndex] - newScore.points[loserIndex] >= 2) {
+          // Game won
+          gameWon = true
+          newScore.games[winnerIndex]++
+          newScore.points = [0, 0]
+          newScore.gameNumber++
+          pointDetail.isGameWinning = true
+          
+          // Check for set win (first to 6 games with 2 game lead, or 7-6)
+          if (newScore.games[winnerIndex] >= 6) {
+            if (newScore.games[winnerIndex] - newScore.games[loserIndex] >= 2 || 
+                (newScore.games[winnerIndex] === 7 && newScore.games[loserIndex] === 6)) {
+              setWon = true
+              pointDetail.isSetWinning = true
+              
+              // Add set to sets array
+              if (!newScore.sets) newScore.sets = []
+              newScore.sets.push([newScore.games[0], newScore.games[1]])
+              newScore.games = [0, 0]
+              newScore.setNumber++
+              newScore.gameNumber = 1
+            }
+          }
+          
+          // Change server for next game (unless set was won)
+          if (!setWon) {
+            newScore.server = newScore.server === 'p1' ? 'p2' : 'p1'
+          }
+          setIsInGame(false)
+        }
+      }
+      
+      // Add to point log
+      const newPointLog = [...pointLog, pointDetail]
       setPointLog(newPointLog)
+      setScore(newScore)
 
-      // Recalculate score from the remaining points
-      const recalculatedScore = calculateScoreFromPointLog(newPointLog, match.matchFormatParsed)
-      setScore(recalculatedScore)
-
-      // Recalculate current server based on total games played
-      const totalGamesPlayed = recalculatedScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + 
-                              recalculatedScore.games[0] + recalculatedScore.games[1]
-      const newServer = getServer(totalGamesPlayed + 1)
-      setCurrentServer(newServer)
-
-      // Save to database with proper error handling
-      const result = await updateMatchScore(match.$id, {
-        score: recalculatedScore,
+      // Update match in database
+      const scoreForDb = {
+        sets: newScore.sets,
+        games: newScore.games,
+        points: newScore.points
+      }
+      
+      await updateMatchScore(match.$id, {
+        score: scoreForDb,
         pointLog: newPointLog
       })
 
-      if (result.error) {
-        // Rollback on server error
-        setScore(previousScore)
-        setPointLog(previousPointLog)
-        setCurrentServer(previousServer)
-        toast.error("Failed to undo point - changes reverted")
+      // Reset to first serve for next point
+      setCurrentServe('first')
+      
+      if (setWon) {
+        toast.success(`Set to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}! ${newScore.sets[newScore.sets.length - 1][0]}-${newScore.sets[newScore.sets.length - 1][1]}`)
+        setIsInGame(false)
+      } else if (gameWon) {
+        toast.success(`Game to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}! Score: ${newScore.games[0]}-${newScore.games[1]}`)
+        setIsInGame(false)
       } else {
-        toast.success("Point undone successfully")
+        toast.success(`Point to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}`)
       }
     } catch (error) {
-      console.error("Failed to undo point:", error)
-      toast.error("Failed to undo point")
+      console.error('Error awarding point:', error)
+      toast.error('Failed to award point')
+      setIsInGame(false)
+    }
+  }
+
+  const undoLastPoint = async () => {
+    if (pointLog.length === 0) return
+
+    try {
+      const newPointLog = pointLog.slice(0, -1)
+      setPointLog(newPointLog)
       
-      // Attempt to restore previous state
-      const recalculatedScore = calculateScoreFromPointLog(pointLog, match.matchFormatParsed)
+      // Recalculate score from point log
+      // This is a simplified implementation - in production you'd want to fully recalculate
+      const recalculatedScore: TennisScore = {
+        sets: [],
+        games: [0, 0],
+        points: [0, 0],
+        server: score.server,
+        gameNumber: 1,
+        setNumber: 1
+      }
+      
       setScore(recalculatedScore)
+      setIsInGame(false)
+
+      await updateMatchScore(match.$id, {
+        score: {
+          sets: recalculatedScore.sets,
+          games: recalculatedScore.games,
+          points: recalculatedScore.points
+        },
+        pointLog: newPointLog
+      })
+
+      toast.success("Point undone")
+    } catch (error) {
+      console.error('Error undoing point:', error)
+      toast.error('Failed to undo point')
     }
-
-    setIsUpdating(false)
   }
 
-  function calculateScoreFromPointLog(log: PointDetail[], format: MatchFormat) {
-    // Reconstruct the score from the point log
-    const sets: number[][] = []
-    let games = [0, 0]
-    let points = [0, 0]
-
-    for (const point of log) {
-      // Award point to winner
-      if (point.winner === "p1") {
-        points[0]++
-      } else {
-        points[1]++
-      }
-
-      // Check if game is won
-      if (getGameWon(points[0], points[1], format.noAd)) {
-        // Award game to winner
-        const gameWinner = getGameWinner(points[0], points[1], format.noAd)
-        if (gameWinner === "p1") games[0]++
-        else if (gameWinner === "p2") games[1]++
-
-        // Reset points
-        points = [0, 0]
-
-        // Check if set is won
-        if (getSetWon(games[0], games[1], format, sets)) {
-          // Add games to sets
-          sets.push([...games])
-          // Reset games
-          games = [0, 0]
-        }
-      }
-    }
-
-    return { sets, games, points }
-  }
-
-  const shareMatch = () => {
-    const url = `${window.location.origin}/live/${match.$id}`
-    navigator.clipboard.writeText(url)
-    toast.success("Live match link copied to clipboard!")
-  }
-
-  // Show serve selection if no server is selected
-  if (!currentServer && match.status === "In Progress") {
-    return (
-      <ServeSelection
-        playerOne={match.playerOne}
-        playerTwo={match.playerTwo}
-        onServeSelected={(server: "p1" | "p2") => setCurrentServer(server)}
-      />
-    )
-  }
+  const matchStats = calculateMatchStats(pointLog)
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+      <div className="flex items-center justify-between p-4 border-b">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Matches
+          Back
         </Button>
-        
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-muted-foreground">LIVE</span>
-          </div>
-        </div>
-
-        <Button variant="ghost" size="sm" onClick={shareMatch}>
-          <Share2 className="h-4 w-4 mr-2" />
-          Share
-        </Button>
-      </div>
-
-      {/* Match Date */}
-      <div className="bg-primary text-primary-foreground px-4 py-2 text-center">
-        <span className="text-sm font-medium">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long',
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </span>
-      </div>
-
-      {/* Players and Scores */}
-      <div className="bg-card border-b border-border">
-        {/* Player 1 */}
-        <motion.div 
-          className="flex items-center justify-between p-4 cursor-pointer active:bg-muted/50 transition-colors"
-          whileTap={{ scale: 0.98 }}
-          onClick={() => awardPoint(0)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-              {match.playerOne.firstName[0]}
-            </div>
-            <div>
-              <div className="font-semibold flex items-center gap-2">
-                {playerNames.p1}
-                {currentServer === "p1" && (
-                  <TennisBall className="w-4 h-4 text-muted-foreground" />
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {match.playerOne.rating || "Unrated"}
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">0</div>
-          </div>
-        </motion.div>
-
-        {/* Player 2 */}
-        <motion.div 
-          className="flex items-center justify-between p-4 cursor-pointer active:bg-muted/50 transition-colors border-t border-border"
-          whileTap={{ scale: 0.98 }}
-          onClick={() => awardPoint(1)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-muted text-muted-foreground rounded-full flex items-center justify-center font-bold text-sm">
-              {match.playerTwo.firstName[0]}
-            </div>
-            <div>
-              <div className="font-semibold flex items-center gap-2">
-                {playerNames.p2}
-                {currentServer === "p2" && (
-                  <TennisBall className="w-4 h-4 text-muted-foreground" />
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {match.playerTwo.rating || "Unrated"}
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">0</div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Game Score */}
-      <div className="bg-muted/30 p-6 text-center">
-        <motion.div 
-          key={getGameScore()}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="text-4xl font-bold text-primary mb-2"
-        >
-          {getGameScore()}
-        </motion.div>
-        
-        {/* Serve indicators */}
-        <div className="flex justify-center gap-4 text-sm text-muted-foreground">
-          <Button variant="outline" size="sm">First Serve</Button>
-          <Button variant="outline" size="sm">Second Serve</Button>
+          <Badge variant="secondary" className="bg-red-500 text-white">
+            LIVE
+          </Badge>
+          <Button variant="ghost" size="sm">
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
         </div>
       </div>
 
-      {/* Match Tab */}
-      <div className="flex-1 p-4">
+      {/* Players and Score */}
+      <div className="p-6">
         <div className="text-center mb-6">
-          <Button variant="ghost" className="text-primary font-semibold">
-            <Zap className="w-4 h-4 mr-2" />
-            Match
-          </Button>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.firstServePercentage.toFixed(1)}%</div>
-            <div className="text-sm text-muted-foreground">1st Serve %</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.firstServePercentage.toFixed(1)}%</div>
-            <div className="text-sm text-muted-foreground">1st Serve %</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.secondServeWinPercentage.toFixed(1)}%</div>
-            <div className="text-sm text-muted-foreground">2nd Serve %</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.secondServeWinPercentage.toFixed(1)}%</div>
-            <div className="text-sm text-muted-foreground">2nd Serve %</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.aces}</div>
-            <div className="text-sm text-muted-foreground">Aces</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.aces}</div>
-            <div className="text-sm text-muted-foreground">Aces</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.doubleFaults}</div>
-            <div className="text-sm text-muted-foreground">Double Faults</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.doubleFaults}</div>
-            <div className="text-sm text-muted-foreground">Double Faults</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.winners}</div>
-            <div className="text-sm text-muted-foreground">Winners</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.winners}</div>
-            <div className="text-sm text-muted-foreground">Winners</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player1.unforcedErrors}</div>
-            <div className="text-sm text-muted-foreground">Unforced Errors</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{matchStats.player2.unforcedErrors}</div>
-            <div className="text-sm text-muted-foreground">Unforced Errors</div>
+          <h1 className="text-2xl font-semibold mb-2">
+            {match.playerOne.firstName} {match.playerOne.lastName} vs {match.playerTwo.firstName} {match.playerTwo.lastName}
+          </h1>
+          <div className="text-sm text-muted-foreground">
+            Monday, June 16, 2025
           </div>
         </div>
-      </div>
 
-      {/* Bottom Navigation */}
-      <div className="border-t border-border bg-card p-4">
-        <div className="flex justify-center gap-8">
-          <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1">
-            <div className="w-6 h-6 bg-primary rounded-full" />
-            <span className="text-xs">Match Stats</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1">
-            <div className="w-6 h-6 bg-muted rounded-full" />
-            <span className="text-xs">Shot Stats</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1">
-            <div className="w-6 h-6 bg-muted rounded-full" />
-            <span className="text-xs">Match Log</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Undo Button */}
-      {pointLog.length > 0 && (
-        <div className="fixed bottom-20 right-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={undoLastPoint}
-            disabled={isUpdating}
-            className="rounded-full shadow-lg"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-      
-      {/* Point Outcome Selection Sheet */}
-      <Dialog open={showPointOutcome} onOpenChange={setShowPointOutcome}>
-        <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-sm p-6 rounded-lg shadow-xl">
-          <h3 className="text-xl font-bold text-center mb-4">How did {pendingPoint?.player === 0 ? playerNames.p1 : playerNames.p2} win the point?</h3>
-          
-          {/* Outcome Selection */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <Button 
-              className="py-6 text-lg font-semibold"
-              onClick={() => savePointWithOutcome("ace", "first")}
-            >
-              Ace
-            </Button>
-            <Button 
-              className="py-6 text-lg font-semibold"
-              onClick={() => savePointWithOutcome("winner", "first")}
-            >
-              Winner
-            </Button>
-            <Button 
-              className="py-6 text-lg font-semibold"
-              onClick={() => savePointWithOutcome("unforced_error", "first")}
-            >
-              Unforced Error
-            </Button>
-            <Button 
-              className="py-6 text-lg font-semibold"
-              onClick={() => savePointWithOutcome("forced_error", "first")}
-            >
-              Forced Error
-            </Button>
-          </div>
-
-          {/* Rally Length */}
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium">Rally Length:</span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">-</Button>
-              <span className="text-lg font-bold w-8 text-center">0</span>
-              <Button variant="outline" size="sm">+</Button>
+        {/* Main Score Display */}
+        <div className="grid grid-cols-3 gap-6 items-center mb-8">
+          {/* Player 1 */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-lg">
+                {match.playerOne.firstName[0]}
+              </div>
+              <div className="flex items-center gap-2">
+                <div>
+                  <div className="font-semibold text-lg">{match.playerOne.firstName} {match.playerOne.lastName}</div>
+                  <div className="text-sm text-muted-foreground">{match.playerOne.rating || 'Unrated'}</div>
+                </div>
+                {score.server === 'p1' && <TennisBall onClick={() => setShowServeSwapConfirm(true)} />}
+              </div>
             </div>
+            <PointScore
+              score={getPlayerPointScore(score.points[0], score.points[1])}
+              isServing={score.server === 'p1'}
+              onTap={() => awardPoint('player1')}
+            />
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button 
-              variant="destructive" 
-              className="flex-1 py-3"
-              onClick={() => setShowPointOutcome(false)}
-            >
-              Cancel Point
-            </Button>
-            <Button 
-              className="flex-1 py-3"
-              onClick={() => savePointWithOutcome("winner", "first")}
-            >
-              Save Point
-            </Button>
+          {/* Center - Games/Sets Score */}
+          <div className="text-center">
+            <div className="text-6xl font-bold mb-4">
+              {score.games[0]} - {score.games[1]}
+            </div>
+            <div className="text-2xl mb-4 font-mono">
+              {getPointDisplay(score.points[0], score.points[1])}
+            </div>
+            
+            {/* Sets Display */}
+            {score.sets && score.sets.length > 0 && (
+              <div className="mb-4">
+                <div className="text-sm text-muted-foreground mb-1">Sets</div>
+                <div className="flex justify-center gap-4">
+                  {score.sets.map((set, index) => (
+                    <div key={index} className="text-sm">
+                      <span className="font-semibold">{set[0]}</span>-<span className="font-semibold">{set[1]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <ServeSwitcher currentServe={currentServe} onServeChange={setCurrentServe} />
+          </div>
+
+          {/* Player 2 */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center font-semibold text-lg">
+                {match.playerTwo.firstName[0]}
+              </div>
+              <div className="flex items-center gap-2">
+                <div>
+                  <div className="font-semibold text-lg">{match.playerTwo.firstName} {match.playerTwo.lastName}</div>
+                  <div className="text-sm text-muted-foreground">{match.playerTwo.rating || 'Unrated'}</div>
+                </div>
+                {score.server === 'p2' && <TennisBall onClick={() => setShowServeSwapConfirm(true)} />}
+              </div>
+            </div>
+            <PointScore
+              score={getPlayerPointScore(score.points[1], score.points[0])}
+              isServing={score.server === 'p2'}
+              onTap={() => awardPoint('player2')}
+            />
+          </div>
+        </div>
+
+        {/* Undo Button */}
+        <div className="flex justify-center mb-6">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={undoLastPoint}
+            disabled={pointLog.length === 0}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Undo Last Point
+          </Button>
+        </div>
+
+        {/* Swipeable Cards */}
+        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} />
+      </div>
+
+      {/* Initial Serve Selection Dialog */}
+      <Dialog open={showServeSelection} onOpenChange={setShowServeSelection}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Who serves first?</DialogTitle>
+          </DialogHeader>
+          <ServeSelection
+            playerOne={match.playerOne}
+            playerTwo={match.playerTwo}
+            onServeSelected={handleServeSelected}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Serve Swap Confirmation Dialog */}
+      <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Server?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to change the server?
+              {isInGame && <span className="text-red-500 block mt-2">Warning: Cannot change server in the middle of a game!</span>}
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={handleServeSwap} disabled={isInGame} className="flex-1">
+                Yes, Change Server
+              </Button>
+              <Button variant="outline" onClick={() => setShowServeSwapConfirm(false)} className="flex-1">
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

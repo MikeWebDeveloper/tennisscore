@@ -28,7 +28,7 @@ export function MainPlayerSetupPrompt() {
         <CardContent className="text-center space-y-6">
           <div className="space-y-2">
             <p className="text-slate-300">
-              To get started with your personalized dashboard, you'll need to select your main player.
+              To get started with your personalized dashboard, you&apos;ll need to select your main player.
             </p>
             <p className="text-sm text-slate-400">
               This helps us show you relevant statistics and match data.
@@ -47,7 +47,7 @@ export function MainPlayerSetupPrompt() {
           
           <div className="text-xs text-slate-500 space-y-1">
             <p>💡 You can create players for yourself, opponents, or students</p>
-            <p>⭐ Set one as your "main player" to see personalized stats</p>
+            <p>⭐ Set one as your &quot;main player&quot; to see personalized stats</p>
           </div>
         </CardContent>
       </Card>

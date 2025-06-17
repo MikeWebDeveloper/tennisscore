@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { motion } from "framer-motion"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -75,7 +75,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
-  const formatScore = (scoreParsed: any) => {
+  const formatScore = (scoreParsed: { sets: { p1: number; p2: number }[] }) => {
     if (!scoreParsed?.sets || scoreParsed.sets.length === 0) {
       return "0-0"
     }

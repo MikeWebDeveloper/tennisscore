@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion"
 import { Star } from "lucide-react"
-import { EnhancedBentoGrid } from "@/components/features/dashboard/enhanced-bento-grid"
-import { MainPlayerSetupPrompt } from "@/components/features/dashboard/main-player-setup-prompt"
+import { EnhancedBentoGrid } from "./_components/enhanced-bento-grid"
+import { MainPlayerSetupPrompt } from "./_components/main-player-setup-prompt"
 import { Match, Player, User, DashboardStats } from "@/lib/types"
 
 interface DashboardClientProps {

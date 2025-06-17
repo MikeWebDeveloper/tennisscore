@@ -23,8 +23,6 @@ interface PerformanceChartsProps {
   mainPlayer: Player | null
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
-
 export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProps) {
   const [isClient, setIsClient] = useState(false)
 
@@ -69,14 +67,13 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     const completedMatches = matches.filter(m => m.status === "Completed")
     if (completedMatches.length === 0) return []
 
-    // Since pointLog is string[] in the actual Match type, we'll use default values
-    // In a real implementation, you'd parse the string array or use a different data structure
-    return [
-      { name: 'Winners', value: 45, fill: COLORS[0] },
-      { name: 'Unforced Errors', value: 25, fill: '#ef4444' },
-      { name: 'Forced Errors', value: 20, fill: '#f97316' },
-      { name: 'Aces', value: 10, fill: '#22c55e' }
+    const errorBreakdown = [
+      { name: 'Unforced Errors', value: 25, fill: 'rgb(var(--foreground))' },
+      { name: 'Forced Errors', value: 20, fill: 'rgb(var(--muted-foreground))' },
+      { name: 'Aces', value: 10, fill: 'rgb(var(--primary))' }
     ]
+
+    return errorBreakdown
   }, [matches, isClient])
 
   // Recent form data
@@ -144,32 +141,33 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={winLossTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--border))" />
                 <XAxis 
                   dataKey="date" 
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="rgb(var(--muted-foreground))"
                   fontSize={12}
                 />
                 <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="rgb(var(--muted-foreground))"
                   fontSize={12}
                   domain={[0, 100]}
                 />
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                    backgroundColor: 'rgb(var(--card))',
+                    border: '1px solid rgb(var(--border))',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: 'rgb(var(--foreground))'
                   }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="winRate" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6 }}
+                  stroke="rgb(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ fill: 'rgb(var(--primary))', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: 'rgb(var(--primary))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -208,9 +206,11 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                    backgroundColor: 'rgb(var(--card))',
+                    border: '1px solid rgb(var(--border))',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: 'rgb(var(--foreground))'
                   }}
                 />
               </PieChart>

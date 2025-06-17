@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import { getPlayersByUser } from "@/lib/actions/players"
-import { SimplifiedCreateMatchForm } from "./_components/simplified-create-match-form"
+import { CreateMatchForm } from "./_components/create-match-form"
 
 export default async function NewMatchPage() {
   const user = await getCurrentUser()
@@ -12,6 +12,6 @@ export default async function NewMatchPage() {
   const players = await getPlayersByUser()
 
   return (
-    <SimplifiedCreateMatchForm players={players} />
+    <CreateMatchForm players={players} />
   )
 } 
