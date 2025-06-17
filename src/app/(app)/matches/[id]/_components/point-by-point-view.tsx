@@ -1,13 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PointDetail } from "@/lib/types"
-import { reconstructMatchScore } from "@/lib/utils/tennis-scoring"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Target } from "lucide-react"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -19,264 +16,153 @@ interface PointByPointViewProps {
   }
 }
 
-interface FormattedPoint {
-  pointNumber: number
-  setGame: string
-  server: string
-  pointScore: string
-  outcome: string
-  winner: string
-  isBreakPoint?: boolean
-  setPoint?: boolean
-  matchPoint?: boolean
+interface GameResult {
+  gameNumber: number
+  setNumber: number
+  winner: 'p1' | 'p2'
+  pointProgression: string[]
+  finalScore: string
+  isBreakGame?: boolean
 }
 
 export function PointByPointView({ pointLog, playerNames }: PointByPointViewProps) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const pointsPerPage = 15
-  
-  // Format points for display in professional tennis broadcast style
-  const formatPointsForDisplay = (): FormattedPoint[] => {
-    return pointLog.map((point, index) => {
-      const pointNumber = index + 1
-      const setGame = `${point.setNumber}-${point.gameNumber}`
-      const server = point.server === "p1" ? playerNames.p1 : playerNames.p2
-      const winner = point.winner === "p1" ? playerNames.p1 : playerNames.p2
-      
-      // Format point score based on tennis scoring
-      let pointScore = ""
-      if (point.gameScore) {
-        pointScore = point.gameScore
-      } else {
-        // Fallback to basic score if gameScore not available
-        pointScore = `${point.setNumber}-${point.gameNumber}`
-      }
-      
-             // Format outcome with professional terminology
-       let outcome = ""
-       switch (point.pointOutcome) {
-         case "ace":
-           outcome = "Ace"
-           break
-         case "winner":
-           if (point.lastShotType) {
-             outcome = `${point.lastShotType.charAt(0).toUpperCase() + point.lastShotType.slice(1)} Winner`
-           } else {
-             outcome = "Winner"
-           }
-           break
-         case "unforced_error":
-           if (point.lastShotType) {
-             outcome = `${point.lastShotType.charAt(0).toUpperCase() + point.lastShotType.slice(1)} UE`
-           } else {
-             outcome = "Unforced Error"
-           }
-           break
-         case "forced_error":
-           if (point.lastShotType) {
-             outcome = `${point.lastShotType.charAt(0).toUpperCase() + point.lastShotType.slice(1)} FE`
-           } else {
-             outcome = "Forced Error"
-           }
-           break
-         case "double_fault":
-           outcome = "Double Fault"
-           break
-         default:
-           // Handle any additional point outcomes
-           outcome = String(point.pointOutcome).replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-       }
-
-      return {
-        pointNumber,
-        setGame,
-        server,
-        pointScore,
-        outcome,
-        winner,
-                 isBreakPoint: point.isBreakPoint,
-         setPoint: point.isSetPoint,
-         matchPoint: point.isMatchPoint
-      }
-    }).reverse() // Show most recent points first like in broadcast
+  if (pointLog.length === 0) {
+    return (
+      <Card className="bg-slate-900 border-slate-700">
+        <CardContent className="p-8 text-center">
+          <p className="text-slate-400">No point-by-point data available</p>
+        </CardContent>
+      </Card>
+    )
   }
 
-  const formattedPoints = formatPointsForDisplay()
-  const totalPages = Math.ceil(formattedPoints.length / pointsPerPage)
-  const startIndex = (currentPage - 1) * pointsPerPage
-  const endIndex = startIndex + pointsPerPage
-  const currentPoints = formattedPoints.slice(startIndex, endIndex)
+  // Group points by games and analyze progression
+  const gameResults: GameResult[] = []
+  const gameGroups = pointLog.reduce((groups, point) => {
+    const gameKey = `${point.setNumber}-${point.gameNumber}`
+    if (!groups[gameKey]) {
+      groups[gameKey] = []
+    }
+    groups[gameKey].push(point)
+    return groups
+  }, {} as Record<string, PointDetail[]>)
 
-  // Reconstruct the final match score
-  const matchScore = reconstructMatchScore(pointLog.map(p => ({
-    winner: p.winner,
-    setNumber: p.setNumber,
-    gameNumber: p.gameNumber
-  })))
+  // Process each game to show progression
+  Object.entries(gameGroups).forEach(([gameKey, points]) => {
+    const [setNumber, gameNumber] = gameKey.split('-').map(Number)
+    const lastPoint = points[points.length - 1]
+    
+    // Simulate point progression (simplified for display)
+    const pointProgression: string[] = []
+    let p1Points = 0
+    let p2Points = 0
+    
+    points.forEach((point) => {
+      if (point.winner === 'p1') {
+        p1Points++
+      } else {
+        p2Points++
+      }
+      
+      // Convert to tennis scoring
+      const getDisplayScore = (p1: number, p2: number) => {
+        if (p1 < 3 && p2 < 3) {
+          const scoreMap = ['0', '15', '30']
+          return `${scoreMap[p1] || '40'}, ${scoreMap[p2] || '40'}`
+        }
+        if (p1 >= 3 && p2 >= 3) {
+          if (p1 === p2) return 'Deuce'
+          return p1 > p2 ? `Ad ${playerNames.p1.split(' ')[0]}` : `Ad ${playerNames.p2.split(' ')[0]}`
+        }
+        const scoreMap = ['0', '15', '30', '40']
+        return `${scoreMap[Math.min(p1, 3)]}, ${scoreMap[Math.min(p2, 3)]}`
+      }
+      
+      pointProgression.push(getDisplayScore(p1Points, p2Points))
+    })
+
+    // Determine if this was a break game (server lost)
+    const isBreakGame = (points[0]?.server !== lastPoint.winner)
+
+    gameResults.push({
+      gameNumber,
+      setNumber,
+      winner: lastPoint.winner,
+      pointProgression,
+      finalScore: lastPoint.gameScore || `${gameNumber}`,
+      isBreakGame
+    })
+  })
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Point by Point</CardTitle>
-          <div className="text-lg font-bold text-primary">
-            {matchScore.finalScore || "Match in Progress"}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {playerNames.p1} vs {playerNames.p2}
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Professional Table View */}
-      <Card>
-        <CardContent className="p-0">
-          {/* Table Header */}
-          <div className="grid grid-cols-5 gap-4 p-4 bg-muted/50 border-b font-semibold text-sm">
-            <div className="text-center">SET-GAME</div>
-            <div className="text-center">SERVER</div>
-            <div className="text-center">SCORE</div>
-            <div className="text-center">OUTCOME</div>
-            <div className="text-center">POINT TO</div>
-          </div>
-
-          {/* Table Body */}
-          <div className="divide-y">
-            {currentPoints.map((point, index) => (
-              <motion.div
-                key={point.pointNumber}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="grid grid-cols-5 gap-4 p-4 hover:bg-muted/30 transition-colors"
-              >
-                {/* Set-Game */}
-                <div className="text-center font-mono text-sm">
-                  {point.setGame}
-                </div>
-
-                {/* Server */}
-                <div className="text-center text-sm">
-                  <span className="font-medium">{point.server}</span>
-                </div>
-
-                {/* Score */}
-                <div className="text-center font-mono text-sm font-semibold">
-                  {point.pointScore}
-                </div>
-
-                {/* Outcome */}
-                <div className="text-center text-sm">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-medium">{point.outcome}</span>
-                    {/* Special point indicators */}
-                    <div className="flex gap-1">
-                      {point.isBreakPoint && (
-                        <Badge variant="destructive" className="text-xs px-1 py-0">
-                          BP
-                        </Badge>
-                      )}
-                      {point.setPoint && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0">
-                          SP
-                        </Badge>
-                      )}
-                      {point.matchPoint && (
-                        <Badge variant="default" className="text-xs px-1 py-0">
-                          MP
+    <Card className="bg-slate-900 border-slate-700">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Target className="h-5 w-5 text-primary" />
+          POINT BY POINT - SET 1
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+                 {gameResults.slice(-8).map((game, index) => {
+           const winnerName = game.winner === 'p1' ? playerNames.p1 : playerNames.p2
+          
+          return (
+            <motion.div
+              key={`${game.setNumber}-${game.gameNumber}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`bg-slate-800 rounded-lg p-4 ${
+                game.isBreakGame ? 'border-l-4 border-l-primary' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-primary">{game.gameNumber}</span>
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold">
+                      {winnerName.split(' ')[0]} wins
+                      {game.isBreakGame && (
+                        <Badge variant="outline" className="ml-2 text-xs bg-primary/10 text-primary border-primary">
+                          BREAK
                         </Badge>
                       )}
                     </div>
+                    <div className="text-slate-400 text-sm">Game {game.gameNumber}</div>
                   </div>
                 </div>
-
-                {/* Winner */}
-                <div className="text-center text-sm">
-                  <span className={`font-semibold ${
-                    point.winner === playerNames.p1 ? "text-blue-600" : "text-red-600"
-                  }`}>
-                    {point.winner}
-                  </span>
+                <div className="text-right">
+                  <div className="text-primary font-bold text-lg">
+                    {game.winner === 'p1' ? '1' : '0'} - {game.winner === 'p2' ? '1' : '0'}
+                  </div>
+                  <div className="text-slate-400 text-sm">
+                    {game.pointProgression.length > 0 
+                      ? game.pointProgression.slice(-1)[0] || '15, 30, 40'
+                      : '15, 30, 40'
+                    }
+                  </div>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+          )
+        })}
+        
+        {gameResults.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-slate-400">No games completed yet</p>
           </div>
-
-          {/* Empty state */}
-          {formattedPoints.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <div className="text-lg font-medium mb-2">No points logged yet</div>
-              <div className="text-sm">Start scoring to see the point-by-point breakdown</div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              ({formattedPoints.length} points total)
-            </span>
+        )}
+        
+        {gameResults.length > 8 && (
+          <div className="text-center pt-4">
+            <p className="text-slate-500 text-sm">
+              Showing last 8 games • {gameResults.length} total games
+            </p>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Legend */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground space-y-2">
-            <div className="font-medium">Legend:</div>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="destructive" className="text-xs">BP</Badge>
-                <span>Break Point</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">SP</Badge>
-                <span>Set Point</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="default" className="text-xs">MP</Badge>
-                <span>Match Point</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">UE</span>
-                <span>Unforced Error</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">FE</span>
-                <span>Forced Error</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   )
 } 

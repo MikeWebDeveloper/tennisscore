@@ -274,9 +274,24 @@ export async function getMatch(matchId: string) {
     )
     
     return match
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching match:", error)
-    throw new Error("Match not found")
+    
+    // Handle specific Appwrite errors
+    if (error && typeof error === 'object') {
+      const err = error as { code?: number; type?: string; message?: string }
+      
+      if (err.code === 404 || err.type === 'document_not_found') {
+        throw new Error("Match not found")
+      } else if (err.code === 401 || err.type === 'general_unauthorized_scope') {
+        throw new Error("Unauthorized access to match")
+      } else if (err.message?.includes('fetch failed') || err.message?.includes('network')) {
+        throw new Error("Network error - please check your connection")
+      }
+    }
+    
+    // Generic fallback
+    throw new Error("Unable to load match")
   }
 }
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Share2, Trophy, Clock } from "lucide-react"
+import { Share2, Trophy, Clock, TrendingUp, Target } from "lucide-react"
 import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
@@ -22,6 +22,67 @@ interface PublicLiveMatchProps {
     winnerId?: string
     matchDate: string
   }
+}
+
+// Point-by-point component that matches the screenshot
+function PointByPointBreakdown({ pointLog, playerNames }: { 
+  pointLog: PointDetail[], 
+  playerNames: { p1: string, p2: string } 
+}) {
+  if (pointLog.length === 0) return null
+
+  // Group points by games
+  const gamePoints = pointLog.reduce((acc, point) => {
+    const gameKey = `${point.setNumber}-${point.gameNumber}`
+    if (!acc[gameKey]) {
+      acc[gameKey] = []
+    }
+    acc[gameKey].push(point)
+    return acc
+  }, {} as Record<string, PointDetail[]>)
+
+  return (
+    <Card className="bg-slate-900 border-slate-700">
+      <CardContent className="p-4">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          POINT BY POINT - SET 1
+        </h3>
+        <div className="space-y-3">
+          {Object.entries(gamePoints).slice(-8).map(([gameKey, points]) => {
+            const lastPoint = points[points.length - 1]
+            const gameNum = gameKey.split('-')[1]
+            
+            return (
+              <motion.div
+                key={gameKey}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center justify-between bg-slate-800 rounded-lg p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-primary">{gameNum}</span>
+                  </div>
+                  <div className="text-white font-semibold text-lg">
+                    {lastPoint.winner === 'p1' ? `${playerNames.p1.split(' ')[0]} wins` : `${playerNames.p2.split(' ')[0]} wins`}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-primary font-bold text-lg">
+                    {lastPoint.winner === 'p1' ? '1' : '0'} - {lastPoint.winner === 'p2' ? '1' : '0'}
+                  </div>
+                  <div className="text-slate-400 text-sm">
+                    {lastPoint.gameScore || "15-0, 30-0, 40-0"}
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 // Animation variants
@@ -106,128 +167,140 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   }
 
   const matchStats = calculateMatchStats(pointLog)
+  const hasPointData = pointLog.length > 0
+  const playerNames = {
+    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
+    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
+  }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="min-h-screen bg-background p-4"
-    >
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 p-4 max-w-md mx-auto space-y-4"
+      >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Trophy className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Live Tennis Match</h1>
+        <motion.div variants={itemVariants} className="text-center pt-4">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Trophy className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold text-white">Live Tennis Match</h1>
           </div>
-          <div className="flex items-center justify-center gap-4">
-            <Badge variant={match.status === "In Progress" ? "default" : "secondary"}>
+          <div className="flex items-center justify-center gap-2">
+            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-white text-black">
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
             {connected && (
-              <Badge variant="outline" className="text-green-600">
+              <Badge variant="outline" className="border-green-500 text-green-400 bg-green-500/10">
                 Connected
               </Badge>
             )}
           </div>
         </motion.div>
 
-        {/* Main Scoreboard */}
+        {/* Main Scoreboard - Mobile Optimized */}
         <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden">
+          <Card className="bg-slate-900 border-slate-700 overflow-hidden">
             <CardContent className="p-0">
               {/* Player Names */}
-              <div className="grid grid-cols-2 bg-muted/50">
-                <div className={`p-4 text-center font-medium ${match.winnerId === match.playerOne.$id ? 'bg-primary text-primary-foreground' : ''}`}>
-                  {match.playerOne.firstName} {match.playerOne.lastName}
+              <div className="grid grid-cols-2 bg-slate-800/50">
+                <div className={`p-3 text-center font-medium text-white ${match.winnerId === match.playerOne.$id ? 'bg-primary/20' : ''}`}>
+                  <div className="text-sm text-slate-300">Player 1</div>
+                  <div className="font-semibold">{match.playerOne.firstName}</div>
                 </div>
-                <div className={`p-4 text-center font-medium ${match.winnerId === match.playerTwo.$id ? 'bg-primary text-primary-foreground' : ''}`}>
-                  {match.playerTwo.firstName} {match.playerTwo.lastName}
+                <div className={`p-3 text-center font-medium text-white ${match.winnerId === match.playerTwo.$id ? 'bg-primary/20' : ''}`}>
+                  <div className="text-sm text-slate-300">Player 2</div>
+                  <div className="font-semibold">{match.playerTwo.firstName}</div>
                 </div>
               </div>
 
-              {/* Set Scores */}
-              <div className="grid grid-cols-2 border-b">
-                {match.scoreParsed.sets.map((set, index) => (
-                  <div key={index} className="grid grid-cols-2 border-r last:border-r-0">
-                    <div className="p-3 text-center text-lg font-mono border-r">
-                      {set[0]}
-                    </div>
-                    <div className="p-3 text-center text-lg font-mono">
-                      {set[1]}
-                    </div>
+              {/* Set Scores - Large and Prominent */}
+              <div className="grid grid-cols-2 bg-slate-900">
+                <div className="p-6 text-center">
+                  <div className="text-4xl font-bold text-white font-mono">
+                    {match.scoreParsed.sets[0]?.[0] || 0}
                   </div>
-                ))}
+                </div>
+                <div className="p-6 text-center border-l border-slate-700">
+                  <div className="text-4xl font-bold text-white font-mono">
+                    {match.scoreParsed.sets[0]?.[1] || 0}
+                  </div>
+                </div>
               </div>
 
-              {/* Current Game Score */}
+              {/* Games Score */}
               {match.status === "In Progress" && (
-                <div className="grid grid-cols-2">
+                <div className="grid grid-cols-2 bg-slate-800">
                   <div className="p-4 text-center">
-                    <div className="text-sm text-muted-foreground mb-1">Games</div>
-                    <div className="text-2xl font-mono">{match.scoreParsed.games[0]}</div>
+                    <div className="text-sm text-slate-400 mb-1">Games</div>
+                    <div className="text-2xl font-mono text-white">{match.scoreParsed.games[0]}</div>
                   </div>
-                  <div className="p-4 text-center border-l">
-                    <div className="text-sm text-muted-foreground mb-1">Games</div>
-                    <div className="text-2xl font-mono">{match.scoreParsed.games[1]}</div>
+                  <div className="p-4 text-center border-l border-slate-700">
+                    <div className="text-sm text-slate-400 mb-1">Games</div>
+                    <div className="text-2xl font-mono text-white">{match.scoreParsed.games[1]}</div>
                   </div>
                 </div>
               )}
 
-              {/* Current Point Score */}
+              {/* Current Game Score */}
               {match.status === "In Progress" && (
-                <div className="bg-muted/30 p-4 text-center">
-                  <div className="text-sm text-muted-foreground mb-2">Current Game</div>
-                  <div className="text-xl font-mono">{getGameScore()}</div>
+                <div className="bg-slate-700/50 p-4 text-center">
+                  <div className="text-sm text-slate-300 mb-2">Current Game</div>
+                  <div className="text-xl font-mono text-primary font-semibold">{getGameScore()}</div>
                 </div>
               )}
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Match Stats */}
-        {pointLog.length > 0 && (
+        {/* Match Statistics - Simplified for Mobile */}
+        {hasPointData && (
           <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-medium mb-4">Match Statistics</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-muted-foreground">
-                      {match.playerOne.firstName} {match.playerOne.lastName}
+            <Card className="bg-slate-900 border-slate-700">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4 text-white flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Match Statistics
+                </h3>
+                <div className="space-y-4">
+                  {/* Player 1 Stats */}
+                  <div>
+                    <h4 className="font-medium text-sm text-slate-300 mb-2">
+                      {match.playerOne.firstName}
                     </h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Total Points</span>
-                                               <span className="font-mono">{matchStats.player1.totalPointsWon}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span>Winners</span>
-                       <span className="font-mono">{matchStats.player1.winners}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span>Unforced Errors</span>
-                       <span className="font-mono">{matchStats.player1.unforcedErrors}</span>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player1.totalPointsWon}</div>
+                        <div className="text-slate-400 text-xs">Total Points</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player1.winners}</div>
+                        <div className="text-slate-400 text-xs">Winners</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player1.unforcedErrors}</div>
+                        <div className="text-slate-400 text-xs">Unforced Errors</div>
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-muted-foreground">
-                      {match.playerTwo.firstName} {match.playerTwo.lastName}
+
+                  <div className="border-t border-slate-700 pt-4">
+                    <h4 className="font-medium text-sm text-slate-300 mb-2">
+                      {match.playerTwo.firstName}
                     </h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Total Points</span>
-                                               <span className="font-mono">{matchStats.player2.totalPointsWon}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span>Winners</span>
-                       <span className="font-mono">{matchStats.player2.winners}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span>Unforced Errors</span>
-                       <span className="font-mono">{matchStats.player2.unforcedErrors}</span>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player2.totalPointsWon}</div>
+                        <div className="text-slate-400 text-xs">Total Points</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player2.winners}</div>
+                        <div className="text-slate-400 text-xs">Winners</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-white">{matchStats.player2.unforcedErrors}</div>
+                        <div className="text-slate-400 text-xs">Unforced Errors</div>
                       </div>
                     </div>
                   </div>
@@ -237,13 +310,20 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </motion.div>
         )}
 
-        {/* Share Button */}
-        <motion.div variants={itemVariants} className="text-center">
+        {/* Point by Point Breakdown */}
+        {hasPointData && (
+          <motion.div variants={itemVariants}>
+            <PointByPointBreakdown pointLog={pointLog} playerNames={playerNames} />
+          </motion.div>
+        )}
+
+        {/* Share Button - Prominent and Mobile-Friendly */}
+        <motion.div variants={itemVariants} className="text-center py-4">
           <motion.button
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.02 }}
             onClick={shareMatch}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors font-semibold"
           >
             <Share2 className="h-4 w-4" />
             Share Match
@@ -251,13 +331,13 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         </motion.div>
 
         {/* Match Info */}
-        <motion.div variants={itemVariants} className="text-center text-sm text-muted-foreground">
+        <motion.div variants={itemVariants} className="text-center text-sm text-slate-400 pb-4">
           <div className="flex items-center justify-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Match started {new Date(match.matchDate).toLocaleDateString()}</span>
           </div>
         </motion.div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   )
 } 

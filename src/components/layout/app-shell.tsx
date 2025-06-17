@@ -79,8 +79,6 @@ const overlayVariants = {
   }
 }
 
-
-
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -100,7 +98,7 @@ export function AppShell({ children, user }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
         <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border shadow-lg">

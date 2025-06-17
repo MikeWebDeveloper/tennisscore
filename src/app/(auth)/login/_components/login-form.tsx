@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useFormState, useFormStatus } from "react-dom"
+import { useActionState } from "react"
+import { useFormStatus } from "react-dom"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,7 +28,7 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(signInAction, undefined)
+  const [state, formAction] = useActionState(signInAction, undefined)
 
   useEffect(() => {
     if (state?.error) {
@@ -36,7 +37,7 @@ export function LoginForm() {
   }, [state])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4" suppressHydrationWarning>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

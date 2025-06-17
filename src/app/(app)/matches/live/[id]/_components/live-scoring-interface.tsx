@@ -15,12 +15,14 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  Plus
+  Plus,
+  Undo,
+  Trophy
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore, addMatchComment } from "@/lib/actions/matches"
 import { Player, PointDetail, Score } from "@/lib/types"
-import { ServeSelection } from "./serve-selection"
+
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -52,6 +54,9 @@ interface TennisScore {
 
 interface MatchStats {
   player1: {
+    totalPoints?: number
+    servicePoints?: number
+    receivingPoints?: number
     aces: number
     doubleFaults: number
     winners: number
@@ -60,6 +65,9 @@ interface MatchStats {
     totalBreakPoints: number
   }
   player2: {
+    totalPoints?: number
+    servicePoints?: number
+    receivingPoints?: number
     aces: number
     doubleFaults: number
     winners: number
@@ -67,6 +75,7 @@ interface MatchStats {
     breakPointsWon: number
     totalBreakPoints: number
   }
+  isBasicMode?: boolean
 }
 
 // Green Tennis Ball Icon Component
@@ -234,11 +243,29 @@ function SwipeableCards({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-1"
             >
-              <StatsCard title="Aces" player1Value={matchStats.player1.aces} player2Value={matchStats.player2.aces} />
-              <StatsCard title="Double Faults" player1Value={matchStats.player1.doubleFaults} player2Value={matchStats.player2.doubleFaults} />
-              <StatsCard title="Winners" player1Value={matchStats.player1.winners} player2Value={matchStats.player2.winners} />
-              <StatsCard title="Unforced Errors" player1Value={matchStats.player1.unforcedErrors} player2Value={matchStats.player2.unforcedErrors} />
-              <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
+              {matchStats.isBasicMode ? (
+                // Points-only mode - show simplified stats like flashscore
+                <>
+                  <StatsCard title="Total Points" player1Value={matchStats.player1.totalPoints || 0} player2Value={matchStats.player2.totalPoints || 0} />
+                  <StatsCard title="Service Points Won" player1Value={matchStats.player1.servicePoints || 0} player2Value={matchStats.player2.servicePoints || 0} />
+                  <StatsCard title="Receiving Points Won" player1Value={matchStats.player1.receivingPoints || 0} player2Value={matchStats.player2.receivingPoints || 0} />
+                  {(matchStats.player1.breakPointsWon > 0 || matchStats.player2.breakPointsWon > 0) && (
+                    <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
+                  )}
+                </>
+              ) : (
+                // Detailed mode - show traditional tennis stats
+                <>
+                  <StatsCard title="Total Points" player1Value={matchStats.player1.totalPoints || 0} player2Value={matchStats.player2.totalPoints || 0} />
+                  <StatsCard title="Service Points Won" player1Value={matchStats.player1.servicePoints || 0} player2Value={matchStats.player2.servicePoints || 0} />
+                  <StatsCard title="Receiving Points Won" player1Value={matchStats.player1.receivingPoints || 0} player2Value={matchStats.player2.receivingPoints || 0} />
+                  <StatsCard title="Aces" player1Value={matchStats.player1.aces} player2Value={matchStats.player2.aces} />
+                  <StatsCard title="Double Faults" player1Value={matchStats.player1.doubleFaults} player2Value={matchStats.player2.doubleFaults} />
+                  <StatsCard title="Winners" player1Value={matchStats.player1.winners} player2Value={matchStats.player2.winners} />
+                  <StatsCard title="Unforced Errors" player1Value={matchStats.player1.unforcedErrors} player2Value={matchStats.player2.unforcedErrors} />
+                  <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
+                </>
+              )}
             </motion.div>
           )}
           
@@ -248,34 +275,50 @@ function SwipeableCards({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-2 max-h-48 overflow-y-auto"
+              className="space-y-1 max-h-48 overflow-y-auto"
             >
               {pointLog.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No points played yet</p>
               ) : (
                 pointLog.slice(-10).reverse().map((point, index) => (
-                  <div key={point.id || index} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        Set {point.setNumber}, Game {point.gameNumber}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Point {point.pointNumber}
-                      </span>
+                  <div key={point.id || index} className={`grid grid-cols-5 gap-2 p-2 text-xs rounded hover:bg-muted/30 ${
+                    point.isBreakPoint ? 'bg-orange-50 border border-orange-200' : ''
+                  }`}>
+                    {/* Point number */}
+                    <div className="text-center text-xs text-muted-foreground font-mono">
+                      #{point.pointNumber}
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs font-mono">{point.gameScore}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {point.server === 'p1' ? match.playerOne.firstName : match.playerTwo.firstName} serving
-                      </div>
+                    
+                    {/* Score before point */}
+                    <div className="text-center font-mono text-xs font-medium">
+                      {point.gameScore}
                     </div>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {point.winner === 'p1' ? match.playerOne.firstName : match.playerTwo.firstName}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {point.pointOutcome}
-                        {point.isBreakPoint && " (BP)"}
+                    
+                    {/* Server */}
+                    <div className="text-center text-xs text-muted-foreground">
+                      {point.server === 'p1' ? match.playerOne.firstName.charAt(0) : match.playerTwo.firstName.charAt(0)}
+                    </div>
+                    
+                    {/* Winner */}
+                    <div className="text-center text-xs font-medium">
+                      {point.winner === 'p1' ? match.playerOne.firstName.charAt(0) : match.playerTwo.firstName.charAt(0)}
+                    </div>
+                    
+                    {/* Outcome + special points */}
+                    <div className="text-right text-xs">
+                      <div className="flex items-center justify-end gap-1">
+                        {point.pointOutcome && (
+                          <span className="text-muted-foreground">
+                            {point.pointOutcome === 'ace' ? 'Ace' :
+                             point.pointOutcome === 'winner' ? 'W' :
+                             point.pointOutcome === 'unforced_error' ? 'UE' :
+                             point.pointOutcome === 'double_fault' ? 'DF' : 
+                             point.pointOutcome}
+                          </span>
+                        )}
+                        {point.isBreakPoint && (
+                          <Badge variant="outline" className="text-xs px-1 py-0 bg-orange-100">BP</Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -346,7 +389,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   
   // Local state for UI
-  const [showServeSelection, setShowServeSelection] = useState(false)
   const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
   const [currentServe, setCurrentServe] = useState<'first' | 'second'>('first')
   const [score, setScore] = useState<TennisScore>({
@@ -445,31 +487,24 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     let initialScore: TennisScore
     if (existingPointLog.length > 0) {
       initialScore = recalculateScoreFromPointLog(existingPointLog)
-      setShowServeSelection(false) // Don't show serve selection if match is in progress
       setIsInGame(true) // Match is already in progress
     } else {
-      // New match - default first player serves, but allow user to change
+      // New match - default to player 1 serving first
       initialScore = {
         sets: [],
         games: [0, 0],
         points: [0, 0],
-        server: 'p1',
+        server: 'p1', // Default to Player 1 serving first
         gameNumber: 1,
         setNumber: 1
       }
-      // Only show serve selection for completely new matches
-      setShowServeSelection(true)
       setIsInGame(false)
     }
     
     setScore(initialScore)
   }, [match.$id]) // Only re-run when match ID changes, not on every match update
 
-  const handleServeSelected = (server: 'p1' | 'p2') => {
-    setScore(prev => ({ ...prev, server }))
-    setShowServeSelection(false)
-    setIsInGame(true) // Mark match as started
-  }
+
 
   const handleServeSwap = () => {
     if (isInGame) {
@@ -487,7 +522,51 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const calculateMatchStats = (points: PointDetail[]) => {
+    // Determine if this is a points-only match based on the data available
+    const hasDetailedOutcomes = points.some(p => 
+      p.pointOutcome && !['winner', 'unforced_error'].includes(p.pointOutcome)
+    )
+    
+    if (!hasDetailedOutcomes && points.length > 0) {
+      // Points-only mode - show basic stats like flashscore
+      const player1Stats = {
+        totalPoints: points.filter(p => p.winner === 'p1').length,
+        servicePoints: points.filter(p => p.winner === 'p1' && p.server === 'p1').length,
+        receivingPoints: points.filter(p => p.winner === 'p1' && p.server === 'p2').length,
+        // Keep minimal stats for compatibility
+        aces: 0,
+        doubleFaults: 0,
+        winners: 0,
+        unforcedErrors: 0,
+        breakPointsWon: points.filter(p => p.winner === 'p1' && p.isBreakPoint).length,
+        totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p2').length
+      }
+      
+      const player2Stats = {
+        totalPoints: points.filter(p => p.winner === 'p2').length,
+        servicePoints: points.filter(p => p.winner === 'p2' && p.server === 'p2').length,
+        receivingPoints: points.filter(p => p.winner === 'p2' && p.server === 'p1').length,
+        // Keep minimal stats for compatibility
+        aces: 0,
+        doubleFaults: 0,
+        winners: 0,
+        unforcedErrors: 0,
+        breakPointsWon: points.filter(p => p.winner === 'p2' && p.isBreakPoint).length,
+        totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p1').length
+      }
+      
+      return { 
+        player1: player1Stats, 
+        player2: player2Stats,
+        isBasicMode: true 
+      }
+    }
+    
+    // Detailed mode - show traditional tennis stats
     const player1Stats = {
+      totalPoints: points.filter(p => p.winner === 'p1').length,
+      servicePoints: points.filter(p => p.winner === 'p1' && p.server === 'p1').length,
+      receivingPoints: points.filter(p => p.winner === 'p1' && p.server === 'p2').length,
       aces: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'ace').length,
       doubleFaults: points.filter(p => p.server === 'p1' && p.pointOutcome === 'double_fault').length,
       winners: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'winner').length,
@@ -497,6 +576,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
     
     const player2Stats = {
+      totalPoints: points.filter(p => p.winner === 'p2').length,
+      servicePoints: points.filter(p => p.winner === 'p2' && p.server === 'p2').length,
+      receivingPoints: points.filter(p => p.winner === 'p2' && p.server === 'p1').length,
       aces: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'ace').length,
       doubleFaults: points.filter(p => p.server === 'p2' && p.pointOutcome === 'double_fault').length,
       winners: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'winner').length,
@@ -505,7 +587,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p1').length
     }
     
-    return { player1: player1Stats, player2: player2Stats }
+    return { 
+      player1: player1Stats, 
+      player2: player2Stats,
+      isBasicMode: false 
+    }
   }
 
   // Convert numeric points to tennis score display
@@ -682,136 +768,198 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const matchStats = calculateMatchStats(pointLog)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="bg-red-500 text-white">
-            LIVE
-          </Badge>
-          <Button variant="ghost" size="sm" onClick={shareMatch}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-        </div>
-      </div>
-
-      {/* Players and Score */}
-      <div className="p-6">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold mb-2">
-            {match.playerOne.firstName} {match.playerOne.lastName} vs {match.playerTwo.firstName} {match.playerTwo.lastName}
-          </h1>
-          <div className="text-sm text-muted-foreground">
-            Monday, June 16, 2025
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="flex flex-col h-screen">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 p-4 bg-slate-900/50 backdrop-blur-sm border-b border-slate-700">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="text-slate-300 hover:text-white hover:bg-slate-800"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center gap-2">
+              <Badge variant={isConnected ? "default" : "secondary"} className="bg-green-500/20 text-green-400 border-green-500">
+                {isConnected ? "Live" : "Offline"}
+              </Badge>
+            </div>
           </div>
         </div>
 
-        {/* Main Score Display */}
-        <div className="grid grid-cols-3 gap-6 items-center mb-8">
-          {/* Player 1 */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-lg">
-                {match.playerOne.firstName[0]}
-              </div>
-              <div className="flex items-center gap-2">
-                <div>
-                  <div className="font-semibold text-lg">{match.playerOne.firstName} {match.playerOne.lastName}</div>
-                  <div className="text-sm text-muted-foreground">{match.playerOne.rating || 'Unrated'}</div>
-                </div>
-                {score.server === 'p1' && <TennisBall onClick={() => setShowServeSwapConfirm(true)} />}
-              </div>
-            </div>
-            <PointScore
-              score={getPlayerPointScore(score.points[0], score.points[1])}
-              isServing={score.server === 'p1'}
-              onTap={() => awardPoint('player1')}
-            />
-          </div>
-
-          {/* Center - Games/Sets Score */}
-          <div className="text-center">
-            <div className="text-6xl font-bold mb-4">
-              {score.games[0]} - {score.games[1]}
-            </div>
-            <div className="text-2xl mb-4 font-mono">
-              {getPointDisplay(score.points[0], score.points[1])}
-            </div>
-            
-            {/* Sets Display */}
-            {score.sets && score.sets.length > 0 && (
-              <div className="mb-4">
-                <div className="text-sm text-muted-foreground mb-1">Sets</div>
-                <div className="flex justify-center gap-4">
-                  {score.sets.map((set, index) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-semibold">{set[0]}</span>-<span className="font-semibold">{set[1]}</span>
+        {/* Main Content - Scrollable */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto px-4 pb-24">
+            {/* Score Display - Prominent */}
+            <div className="py-6">
+              <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+                <CardContent className="p-0">
+                  {/* Player Names */}
+                  <div className="grid grid-cols-2 bg-slate-800/50">
+                    <div className="p-4 text-center">
+                      <div className="text-sm text-slate-400 mb-1">Player 1</div>
+                      <div className="font-semibold text-white flex items-center justify-center gap-2">
+                        {score.server === 'p1' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                        {match.playerOne.firstName}
+                      </div>
                     </div>
+                    <div className="p-4 text-center border-l border-slate-700">
+                      <div className="text-sm text-slate-400 mb-1">Player 2</div>
+                      <div className="font-semibold text-white flex items-center justify-center gap-2">
+                        {score.server === 'p2' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                        {match.playerTwo.firstName}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Set Scores */}
+                  <div className="grid grid-cols-2 bg-slate-900">
+                    <div className="p-6 text-center">
+                      <div className="text-4xl font-bold font-mono text-primary">
+                        {score.sets[0]?.[0] || 0}
+                      </div>
+                    </div>
+                    <div className="p-6 text-center border-l border-slate-700">
+                      <div className="text-4xl font-bold font-mono text-primary">
+                        {score.sets[0]?.[1] || 0}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Games */}
+                  <div className="grid grid-cols-2 bg-slate-800">
+                    <div className="p-4 text-center">
+                      <div className="text-xs text-slate-400 mb-1">Games</div>
+                      <div className="text-2xl font-mono text-white">{score.games[0]}</div>
+                    </div>
+                    <div className="p-4 text-center border-l border-slate-700">
+                      <div className="text-xs text-slate-400 mb-1">Games</div>
+                      <div className="text-2xl font-mono text-white">{score.games[1]}</div>
+                    </div>
+                  </div>
+
+                  {/* Current Game */}
+                  <div className="bg-slate-700/50 p-4 text-center">
+                    <div className="text-sm text-slate-300 mb-2">Current Game</div>
+                    <div className="text-xl font-mono text-primary font-semibold">
+                      {getGameScore()}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Swipeable Cards */}
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700 mb-6">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-white">Match Details</CardTitle>
+                  <div className="flex gap-1">
+                    {cards.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentCard ? 'bg-primary' : 'bg-slate-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  {['Stats', 'Points', 'Timeline'].map((tab, index) => (
+                    <button
+                      key={tab}
+                      onClick={() => setCurrentCard(index)}
+                      className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                        index === currentCard 
+                          ? 'bg-primary text-black font-medium' 
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      {tab}
+                    </button>
                   ))}
                 </div>
-              </div>
-            )}
-            
-            <ServeSwitcher currentServe={currentServe} onServeChange={setCurrentServe} />
-          </div>
-
-          {/* Player 2 */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center font-semibold text-lg">
-                {match.playerTwo.firstName[0]}
-              </div>
-              <div className="flex items-center gap-2">
-                <div>
-                  <div className="font-semibold text-lg">{match.playerTwo.firstName} {match.playerTwo.lastName}</div>
-                  <div className="text-sm text-muted-foreground">{match.playerTwo.rating || 'Unrated'}</div>
-                </div>
-                {score.server === 'p2' && <TennisBall onClick={() => setShowServeSwapConfirm(true)} />}
-              </div>
-            </div>
-            <PointScore
-              score={getPlayerPointScore(score.points[1], score.points[0])}
-              isServing={score.server === 'p2'}
-              onTap={() => awardPoint('player2')}
-            />
+              </CardHeader>
+              <CardContent className="min-h-[200px]">
+                <AnimatePresence mode="wait">
+                  {cards[currentCard] === 'stats' && renderStatsCard()}
+                  {cards[currentCard] === 'points' && renderPointsCard()}
+                  {cards[currentCard] === 'timeline' && renderTimelineCard()}
+                </AnimatePresence>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Undo Button */}
-        <div className="flex justify-center mb-6">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={undoLastPoint}
-            disabled={pointLog.length === 0}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Undo Last Point
-          </Button>
+        {/* Bottom Action Bar - Fixed */}
+        <div className="flex-shrink-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 p-4">
+          <div className="grid grid-cols-2 gap-3">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                handlePointWin('p1')
+                // Haptic feedback for iOS Safari
+                if ('vibrate' in navigator) {
+                  navigator.vibrate(50)
+                }
+              }}
+              className="bg-gradient-to-r from-primary to-green-500 text-black font-semibold py-4 px-6 rounded-xl shadow-lg active:shadow-sm transition-all"
+            >
+              <div className="text-lg">Point {match.playerOne.firstName}</div>
+              <div className="text-sm opacity-80">Tap to score</div>
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                handlePointWin('p2')
+                if ('vibrate' in navigator) {
+                  navigator.vibrate(50)
+                }
+              }}
+              className="bg-gradient-to-r from-primary to-green-500 text-black font-semibold py-4 px-6 rounded-xl shadow-lg active:shadow-sm transition-all"
+            >
+              <div className="text-lg">Point {match.playerTwo.firstName}</div>
+              <div className="text-sm opacity-80">Tap to score</div>
+            </motion.button>
+          </div>
+          
+          {/* Action Buttons Row */}
+          <div className="flex gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUndo}
+              disabled={pointLog.length === 0}
+              className="flex-1 bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+            >
+              <Undo className="h-4 w-4 mr-2" />
+              Undo
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowServeSwapConfirm(true)}
+              disabled={isInGame}
+              className="flex-1 bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Switch Server
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEndMatch}
+              className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+            >
+              <Trophy className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-
-        {/* Swipeable Cards */}
-        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} onAddComment={handleAddComment} match={match} />
       </div>
-
-      {/* Initial Serve Selection Dialog */}
-      <Dialog open={showServeSelection} onOpenChange={setShowServeSelection}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Who serves first?</DialogTitle>
-          </DialogHeader>
-          <ServeSelection
-            playerOne={match.playerOne}
-            playerTwo={match.playerTwo}
-            onServeSelected={handleServeSelected}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Serve Swap Confirmation Dialog */}
       <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
