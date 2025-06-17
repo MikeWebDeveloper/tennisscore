@@ -34,9 +34,9 @@ interface GameResult {
 export function PointByPointView({ pointLog, playerNames }: PointByPointViewProps) {
   if (pointLog.length === 0) {
     return (
-      <Card className="bg-slate-900 border-slate-700">
+      <Card>
         <CardContent className="p-8 text-center">
-          <p className="text-slate-400">No point-by-point data available</p>
+          <p className="text-muted-foreground">No point-by-point data available</p>
         </CardContent>
       </Card>
     )
@@ -123,9 +123,9 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
   })
 
   return (
-    <Card className="bg-slate-900 border-slate-700">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
+        <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
           POINT BY POINT - SET 1
         </CardTitle>
@@ -139,7 +139,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`bg-slate-800 rounded-lg p-4 ${
+              className={`bg-muted/50 rounded-lg p-4 ${
                 game.isBreakGame ? 'border-l-4 border-l-primary' : ''
               }`}
             >
@@ -149,7 +149,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                     <span className="text-sm font-bold text-primary">{game.gameNumber}</span>
                   </div>
                   <div>
-                    <div className="text-white font-semibold">
+                    <div className="font-semibold">
                       {game.finalGameScore}
                       {game.isBreakGame && (
                         <Badge variant="outline" className="ml-2 text-xs bg-primary/10 text-primary border-primary">
@@ -157,14 +157,14 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                         </Badge>
                       )}
                     </div>
-                    <div className="text-slate-400 text-sm">Game {game.gameNumber}</div>
+                    <div className="text-muted-foreground text-sm">Game {game.gameNumber}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-primary font-bold text-lg">
                     {game.winner === 'p1' ? '1' : '0'} - {game.winner === 'p2' ? '1' : '0'}
                   </div>
-                  <div className="text-slate-400 text-sm font-mono">
+                  <div className="text-muted-foreground text-sm font-mono">
                     {game.pointProgression.length > 0 ? (
                       (() => {
                         const lastPoint = game.pointProgression[game.pointProgression.length - 1]
@@ -187,8 +187,8 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
               </div>
               
               {/* Point progression details */}
-              <div className="mt-3 pt-3 border-t border-slate-700">
-                <div className="text-xs text-slate-500 mb-2">Point progression:</div>
+              <div className="mt-3 pt-3 border-t">
+                <div className="text-xs text-muted-foreground mb-2">Point progression:</div>
                 <div className="flex flex-wrap gap-1">
                   {game.pointProgression.slice(0, 8).map((point, pointIndex) => {
                     let scoreDisplay = ""
@@ -208,8 +208,8 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                         variant="outline" 
                         className={`text-xs ${
                           point.pointWinner === 'p1' 
-                            ? 'bg-blue-500/10 text-blue-400 border-blue-500' 
-                            : 'bg-red-500/10 text-red-400 border-red-500'
+                            ? 'bg-primary/10 text-primary border-primary' 
+                            : 'bg-destructive/10 text-destructive border-destructive'
                         }`}
                       >
                         {scoreDisplay}
@@ -217,7 +217,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                     )
                   })}
                   {game.pointProgression.length > 8 && (
-                    <span className="text-xs text-slate-500">...</span>
+                    <span className="text-xs text-muted-foreground">...</span>
                   )}
                 </div>
               </div>
@@ -227,13 +227,13 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
         
         {gameResults.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-slate-400">No games completed yet</p>
+            <p className="text-muted-foreground">No games completed yet</p>
           </div>
         )}
         
         {gameResults.length > 8 && (
           <div className="text-center pt-4">
-            <p className="text-slate-500 text-sm">
+            <p className="text-muted-foreground text-sm">
               Showing last 8 games • {gameResults.length} total games
             </p>
           </div>

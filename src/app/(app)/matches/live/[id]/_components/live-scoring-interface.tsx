@@ -391,22 +391,21 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-background">
       <div className="flex flex-col h-screen">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 p-4 bg-slate-900/50 backdrop-blur-sm border-b border-slate-700">
+        <div className="flex-shrink-0 p-4 bg-background border-b">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500">
+              <Badge variant="default" className="bg-green-500 text-white">
                 Live
               </Badge>
             </div>
@@ -416,22 +415,22 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto px-4 pb-32 md:pb-24">
-            {/* Score Display - Prominent */}
+            {/* Score Display - Clean */}
             <div className="py-6">
-              <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <Card>
                 <CardContent className="p-0">
                   {/* Player Names */}
-                  <div className="grid grid-cols-2 bg-slate-800/50">
+                  <div className="grid grid-cols-2 bg-muted/50">
                     <div className="p-4 text-center">
-                      <div className="text-sm text-slate-400 mb-1">Player 1</div>
-                      <div className="font-semibold text-white flex items-center justify-center gap-2">
+                      <div className="text-sm text-muted-foreground mb-1">Player 1</div>
+                      <div className="font-semibold flex items-center justify-center gap-2">
                         {score.server === 'p1' && <div className="w-2 h-2 bg-primary rounded-full" />}
                         {match.playerOne.firstName}
                       </div>
                     </div>
-                    <div className="p-4 text-center border-l border-slate-700">
-                      <div className="text-sm text-slate-400 mb-1">Player 2</div>
-                      <div className="font-semibold text-white flex items-center justify-center gap-2">
+                    <div className="p-4 text-center border-l">
+                      <div className="text-sm text-muted-foreground mb-1">Player 2</div>
+                      <div className="font-semibold flex items-center justify-center gap-2">
                         {score.server === 'p2' && <div className="w-2 h-2 bg-primary rounded-full" />}
                         {match.playerTwo.firstName}
                       </div>
@@ -439,13 +438,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   </div>
 
                   {/* Set Scores */}
-                  <div className="grid grid-cols-2 bg-slate-900">
+                  <div className="grid grid-cols-2">
                     <div className="p-6 text-center">
                       <div className="text-4xl font-bold font-mono text-primary">
                         {score.sets[0]?.[0] || 0}
                       </div>
                     </div>
-                    <div className="p-6 text-center border-l border-slate-700">
+                    <div className="p-6 text-center border-l">
                       <div className="text-4xl font-bold font-mono text-primary">
                         {score.sets[0]?.[1] || 0}
                       </div>
@@ -453,20 +452,20 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   </div>
 
                   {/* Games */}
-                  <div className="grid grid-cols-2 bg-slate-800">
+                  <div className="grid grid-cols-2 bg-muted/30">
                     <div className="p-4 text-center">
-                      <div className="text-xs text-slate-400 mb-1">Games</div>
-                      <div className="text-2xl font-mono text-white">{score.games[0]}</div>
+                      <div className="text-xs text-muted-foreground mb-1">Games</div>
+                      <div className="text-2xl font-mono">{score.games[0]}</div>
                     </div>
-                    <div className="p-4 text-center border-l border-slate-700">
-                      <div className="text-xs text-slate-400 mb-1">Games</div>
-                      <div className="text-2xl font-mono text-white">{score.games[1]}</div>
+                    <div className="p-4 text-center border-l">
+                      <div className="text-xs text-muted-foreground mb-1">Games</div>
+                      <div className="text-2xl font-mono">{score.games[1]}</div>
                     </div>
                   </div>
 
                   {/* Current Game */}
-                  <div className="bg-slate-700/50 p-4 text-center">
-                    <div className="text-sm text-slate-300 mb-2">Current Game</div>
+                  <div className="bg-primary/10 p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-2">Current Game</div>
                     <div className="text-xl font-mono text-primary font-semibold">
                       {getGameScore()}
                     </div>
@@ -475,10 +474,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               </Card>
             </div>
 
-            {/* Swipeable Cards */}
-            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700 mb-6">
+            {/* Stats Card */}
+            <Card className="mb-6">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-white">Match Details</CardTitle>
+                <CardTitle className="text-lg">Match Details</CardTitle>
               </CardHeader>
               <CardContent className="min-h-[200px]">
                 <AnimatePresence mode="wait">
@@ -490,7 +489,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </div>
 
         {/* Bottom Action Bar - Fixed */}
-        <div className="flex-shrink-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 p-4">
+        <div className="flex-shrink-0 bg-background border-t p-4">
           <div className="grid grid-cols-2 gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -500,10 +499,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   navigator.vibrate(50)
                 }
               }}
-              className="bg-gradient-to-r from-primary to-green-500 text-black font-semibold py-4 px-6 rounded-xl shadow-lg active:shadow-sm transition-all"
+              className="h-20 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-lg flex flex-col items-center justify-center transition-all duration-200"
             >
-              <div className="text-lg">Point {match.playerOne.firstName}</div>
-              <div className="text-sm opacity-80">Tap to score</div>
+              <div className="text-sm font-medium">{match.playerOne.firstName}</div>
+              <div className="text-xs opacity-80">Point</div>
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -513,10 +512,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   navigator.vibrate(50)
                 }
               }}
-              className="bg-gradient-to-r from-primary to-green-500 text-black font-semibold py-4 px-6 rounded-xl shadow-lg active:shadow-sm transition-all"
+              className="h-20 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg shadow-lg flex flex-col items-center justify-center transition-all duration-200"
             >
-              <div className="text-lg">Point {match.playerTwo.firstName}</div>
-              <div className="text-sm opacity-80">Tap to score</div>
+              <div className="text-sm font-medium">{match.playerTwo.firstName}</div>
+              <div className="text-xs opacity-80">Point</div>
             </motion.button>
           </div>
           
@@ -527,7 +526,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               size="sm"
               onClick={handleUndo}
               disabled={pointLog.length === 0}
-              className="flex-1 bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="flex-1"
             >
               <Undo className="h-4 w-4 mr-2" />
               Undo
@@ -537,16 +536,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               size="sm"
               onClick={() => setShowServeSwapConfirm(true)}
               disabled={isInGame}
-              className="flex-1 bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="flex-1"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Switch Server
+              Swap
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleEndMatch}
-              className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="px-3"
             >
               <Trophy className="h-4 w-4" />
             </Button>
@@ -558,15 +557,28 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Switch Server?</DialogTitle>
+            <DialogTitle>Change Server?</DialogTitle>
           </DialogHeader>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setShowServeSwapConfirm(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button onClick={handleServeSwap} className="flex-1">
-              Switch
-            </Button>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Are you sure you want to change the server? This action can only be done between games.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowServeSwapConfirm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="default" 
+                onClick={handleServeSwap}
+                className="flex-1"
+              >
+                Change Server
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

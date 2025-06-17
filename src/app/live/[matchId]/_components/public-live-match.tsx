@@ -24,7 +24,7 @@ interface PublicLiveMatchProps {
   }
 }
 
-// Point-by-point component that matches the screenshot
+// Point-by-point component
 function PointByPointBreakdown({ pointLog, playerNames }: { 
   pointLog: PointDetail[], 
   playerNames: { p1: string, p2: string } 
@@ -42,9 +42,9 @@ function PointByPointBreakdown({ pointLog, playerNames }: {
   }, {} as Record<string, PointDetail[]>)
 
   return (
-    <Card className="bg-slate-900 border-slate-700">
+    <Card>
       <CardContent className="p-4">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Target className="h-5 w-5" />
           POINT BY POINT - SET 1
         </h3>
@@ -58,13 +58,13 @@ function PointByPointBreakdown({ pointLog, playerNames }: {
                 key={gameKey}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between bg-slate-800 rounded-lg p-3"
+                className="flex items-center justify-between bg-muted/50 rounded-lg p-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="text-sm font-bold text-primary">{gameNum}</span>
                   </div>
-                  <div className="text-white font-semibold text-lg">
+                  <div className="font-semibold text-lg">
                     {lastPoint.winner === 'p1' ? `${playerNames.p1.split(' ')[0]} wins` : `${playerNames.p2.split(' ')[0]} wins`}
                   </div>
                 </div>
@@ -72,7 +72,7 @@ function PointByPointBreakdown({ pointLog, playerNames }: {
                   <div className="text-primary font-bold text-lg">
                     {lastPoint.winner === 'p1' ? '1' : '0'} - {lastPoint.winner === 'p2' ? '1' : '0'}
                   </div>
-                  <div className="text-slate-400 text-sm">
+                  <div className="text-muted-foreground text-sm">
                     {lastPoint.gameScore || "15-0, 30-0, 40-0"}
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-background">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -185,45 +185,45 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         <motion.div variants={itemVariants} className="text-center pt-4">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Trophy className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold text-white">Live Tennis Match</h1>
+            <h1 className="text-xl font-bold">Live Tennis Match</h1>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-white text-black">
+            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white">
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
             {connected && (
-              <Badge variant="outline" className="border-green-500 text-green-400 bg-green-500/10">
+              <Badge variant="outline" className="border-green-500 text-green-500">
                 Connected
               </Badge>
             )}
           </div>
         </motion.div>
 
-        {/* Main Scoreboard - Mobile Optimized */}
+        {/* Main Scoreboard - Clean Design */}
         <motion.div variants={itemVariants}>
-          <Card className="bg-slate-900 border-slate-700 overflow-hidden">
+          <Card>
             <CardContent className="p-0">
               {/* Player Names */}
-              <div className="grid grid-cols-2 bg-slate-800/50">
-                <div className={`p-3 text-center font-medium text-white ${match.winnerId === match.playerOne.$id ? 'bg-primary/20' : ''}`}>
-                  <div className="text-sm text-slate-300">Player 1</div>
+              <div className="grid grid-cols-2 bg-muted/50">
+                <div className={`p-4 text-center ${match.winnerId === match.playerOne.$id ? 'bg-primary/20' : ''}`}>
+                  <div className="text-sm text-muted-foreground mb-1">Player 1</div>
                   <div className="font-semibold">{match.playerOne.firstName}</div>
                 </div>
-                <div className={`p-3 text-center font-medium text-white ${match.winnerId === match.playerTwo.$id ? 'bg-primary/20' : ''}`}>
-                  <div className="text-sm text-slate-300">Player 2</div>
+                <div className={`p-4 text-center border-l ${match.winnerId === match.playerTwo.$id ? 'bg-primary/20' : ''}`}>
+                  <div className="text-sm text-muted-foreground mb-1">Player 2</div>
                   <div className="font-semibold">{match.playerTwo.firstName}</div>
                 </div>
               </div>
 
-              {/* Set Scores - Large and Prominent */}
-              <div className="grid grid-cols-2 bg-slate-900">
+              {/* Set Scores */}
+              <div className="grid grid-cols-2">
                 <div className="p-6 text-center">
-                  <div className="text-4xl font-bold text-white font-mono">
+                  <div className="text-4xl font-bold font-mono text-primary">
                     {match.scoreParsed.sets[0]?.[0] || 0}
                   </div>
                 </div>
-                <div className="p-6 text-center border-l border-slate-700">
-                  <div className="text-4xl font-bold text-white font-mono">
+                <div className="p-6 text-center border-l">
+                  <div className="text-4xl font-bold font-mono text-primary">
                     {match.scoreParsed.sets[0]?.[1] || 0}
                   </div>
                 </div>
@@ -231,22 +231,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
               {/* Games Score */}
               {match.status === "In Progress" && (
-                <div className="grid grid-cols-2 bg-slate-800">
+                <div className="grid grid-cols-2 bg-muted/30">
                   <div className="p-4 text-center">
-                    <div className="text-sm text-slate-400 mb-1">Games</div>
-                    <div className="text-2xl font-mono text-white">{match.scoreParsed.games[0]}</div>
+                    <div className="text-xs text-muted-foreground mb-1">Games</div>
+                    <div className="text-2xl font-mono">{match.scoreParsed.games[0]}</div>
                   </div>
-                  <div className="p-4 text-center border-l border-slate-700">
-                    <div className="text-sm text-slate-400 mb-1">Games</div>
-                    <div className="text-2xl font-mono text-white">{match.scoreParsed.games[1]}</div>
+                  <div className="p-4 text-center border-l">
+                    <div className="text-xs text-muted-foreground mb-1">Games</div>
+                    <div className="text-2xl font-mono">{match.scoreParsed.games[1]}</div>
                   </div>
                 </div>
               )}
 
               {/* Current Game Score */}
               {match.status === "In Progress" && (
-                <div className="bg-slate-700/50 p-4 text-center">
-                  <div className="text-sm text-slate-300 mb-2">Current Game</div>
+                <div className="bg-primary/10 p-4 text-center">
+                  <div className="text-sm text-muted-foreground mb-2">Current Game</div>
                   <div className="text-xl font-mono text-primary font-semibold">{getGameScore()}</div>
                 </div>
               )}
@@ -254,53 +254,53 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </Card>
         </motion.div>
 
-        {/* Match Statistics - Simplified for Mobile */}
+        {/* Match Statistics */}
         {hasPointData && (
           <motion.div variants={itemVariants}>
-            <Card className="bg-slate-900 border-slate-700">
+            <Card>
               <CardContent className="p-4">
-                <h3 className="font-semibold mb-4 text-white flex items-center gap-2">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
                   Match Statistics
                 </h3>
                 <div className="space-y-4">
                   {/* Player 1 Stats */}
                   <div>
-                    <h4 className="font-medium text-sm text-slate-300 mb-2">
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
                       {match.playerOne.firstName}
                     </h4>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player1.totalPointsWon}</div>
-                        <div className="text-slate-400 text-xs">Total Points</div>
+                        <div className="text-lg font-bold">{matchStats.player1.totalPointsWon}</div>
+                        <div className="text-muted-foreground text-xs">Total Points</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player1.winners}</div>
-                        <div className="text-slate-400 text-xs">Winners</div>
+                        <div className="text-lg font-bold">{matchStats.player1.winners}</div>
+                        <div className="text-muted-foreground text-xs">Winners</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player1.unforcedErrors}</div>
-                        <div className="text-slate-400 text-xs">Unforced Errors</div>
+                        <div className="text-lg font-bold">{matchStats.player1.unforcedErrors}</div>
+                        <div className="text-muted-foreground text-xs">Unforced Errors</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-700 pt-4">
-                    <h4 className="font-medium text-sm text-slate-300 mb-2">
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
                       {match.playerTwo.firstName}
                     </h4>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player2.totalPointsWon}</div>
-                        <div className="text-slate-400 text-xs">Total Points</div>
+                        <div className="text-lg font-bold">{matchStats.player2.totalPointsWon}</div>
+                        <div className="text-muted-foreground text-xs">Total Points</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player2.winners}</div>
-                        <div className="text-slate-400 text-xs">Winners</div>
+                        <div className="text-lg font-bold">{matchStats.player2.winners}</div>
+                        <div className="text-muted-foreground text-xs">Winners</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-white">{matchStats.player2.unforcedErrors}</div>
-                        <div className="text-slate-400 text-xs">Unforced Errors</div>
+                        <div className="text-lg font-bold">{matchStats.player2.unforcedErrors}</div>
+                        <div className="text-muted-foreground text-xs">Unforced Errors</div>
                       </div>
                     </div>
                   </div>
@@ -317,13 +317,13 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </motion.div>
         )}
 
-        {/* Share Button - Prominent and Mobile-Friendly */}
+        {/* Share Button */}
         <motion.div variants={itemVariants} className="text-center py-4">
           <motion.button
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.02 }}
             onClick={shareMatch}
-            className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+            className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-semibold"
           >
             <Share2 className="h-4 w-4" />
             Share Match
@@ -331,7 +331,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         </motion.div>
 
         {/* Match Info */}
-        <motion.div variants={itemVariants} className="text-center text-sm text-slate-400 pb-4">
+        <motion.div variants={itemVariants} className="text-center text-sm text-muted-foreground pb-4">
           <div className="flex items-center justify-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Match started {new Date(match.matchDate).toLocaleDateString()}</span>
