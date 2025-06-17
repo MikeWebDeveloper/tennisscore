@@ -170,12 +170,17 @@ function SwipeableCards({
   pointLog, 
   comments,
   matchStats,
-  onAddComment 
+  onAddComment,
+  match 
 }: { 
   pointLog: PointDetail[]
   comments: Comment[]
   matchStats: MatchStats
   onAddComment: (comment: string) => Promise<void>
+  match: {
+    playerOne: Player
+    playerTwo: Player
+  }
 }) {
   const [currentCard, setCurrentCard] = useState(0)
   const [newComment, setNewComment] = useState("")
@@ -248,11 +253,31 @@ function SwipeableCards({
               {pointLog.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No points played yet</p>
               ) : (
-                pointLog.map((point, index) => (
-                  <div key={index} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
-                    <span>Point {index + 1}</span>
-                    <span className="text-xs font-mono">{point.gameScore}</span>
-                    <span>{point.winner === 'p1' ? 'Player 1' : 'Player 2'}</span>
+                pointLog.slice(-10).reverse().map((point, index) => (
+                  <div key={point.id || index} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        Set {point.setNumber}, Game {point.gameNumber}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Point {point.pointNumber}
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs font-mono">{point.gameScore}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {point.server === 'p1' ? match.playerOne.firstName : match.playerTwo.firstName} serving
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">
+                        {point.winner === 'p1' ? match.playerOne.firstName : match.playerTwo.firstName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {point.pointOutcome}
+                        {point.isBreakPoint && " (BP)"}
+                      </div>
+                    </div>
                   </div>
                 ))
               )}
@@ -321,7 +346,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   
   // Local state for UI
-  const [showServeSelection, setShowServeSelection] = useState(true)
+  const [showServeSelection, setShowServeSelection] = useState(false)
   const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
   const [currentServe, setCurrentServe] = useState<'first' | 'second'>('first')
   const [score, setScore] = useState<TennisScore>({
@@ -335,6 +360,70 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [isInGame, setIsInGame] = useState(false)
+  
+  // Helper function to recalculate score from point log
+  const recalculateScoreFromPointLog = (points: PointDetail[]): TennisScore => {
+    const newScore: TennisScore = {
+      sets: [],
+      games: [0, 0],
+      points: [0, 0],
+      server: 'p1', // Will be determined from point log or default to p1
+      gameNumber: 1,
+      setNumber: 1
+    }
+
+    if (points.length === 0) {
+      return newScore
+    }
+
+    // Replay all points to rebuild score
+    for (const point of points) {
+      const winnerIndex = point.winner === 'p1' ? 0 : 1
+      newScore.points[winnerIndex]++
+
+      // Check for game completion
+      if (newScore.points[winnerIndex] >= 4 && 
+          newScore.points[winnerIndex] - newScore.points[1 - winnerIndex] >= 2) {
+        
+        // Game won - update games
+        newScore.games[winnerIndex]++
+        newScore.points = [0, 0]
+        newScore.gameNumber++
+
+        // Check for set completion (first to 6 with 2-game lead, or 7-6)
+        if (newScore.games[winnerIndex] >= 6) {
+          if (newScore.games[winnerIndex] - newScore.games[1 - winnerIndex] >= 2 || 
+              (newScore.games[winnerIndex] === 7 && newScore.games[1 - winnerIndex] === 6)) {
+            
+            // Set won - add to sets array and reset games
+            newScore.sets.push([newScore.games[0], newScore.games[1]])
+            newScore.games = [0, 0]
+            newScore.setNumber++
+            newScore.gameNumber = 1
+          }
+        }
+        
+        // Server changes after each game
+        newScore.server = newScore.server === 'p1' ? 'p2' : 'p1'
+      }
+    }
+
+    // Determine current server based on game number if no points yet in current game
+    if (newScore.points[0] === 0 && newScore.points[1] === 0) {
+      const totalGames = newScore.games[0] + newScore.games[1]
+      newScore.server = totalGames % 2 === 0 ? 'p1' : 'p2'
+    } else {
+      // Use server from the last point in current game
+      const lastPointInGame = points.findLast(p => 
+        p.setNumber === newScore.setNumber && p.gameNumber === newScore.gameNumber
+      )
+      if (lastPointInGame) {
+        newScore.server = lastPointInGame.server
+      }
+    }
+
+    return newScore
+  }
   
   // Initialize match data
   useEffect(() => {
@@ -352,25 +441,25 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     
     setPointLog(existingPointLog)
     
-    // Initialize score from match data
-    const initialScore: TennisScore = {
-      sets: match.scoreParsed.sets || [],
-      games: match.scoreParsed.games || [0, 0],
-      points: match.scoreParsed.points || [0, 0],
-      server: 'p1',
-      gameNumber: (match.scoreParsed.games?.[0] || 0) + (match.scoreParsed.games?.[1] || 0) + 1,
-      setNumber: 1
-    }
-    setScore(initialScore)
-    
-    // If there are existing points, don't show serve selection
+    // Recalculate score from point log or initialize
+    let initialScore: TennisScore
     if (existingPointLog.length > 0) {
-      setShowServeSelection(false)
-      // Determine current server from game number
-      const totalGames = initialScore.games[0] + initialScore.games[1]
-      initialScore.server = totalGames % 2 === 0 ? 'p1' : 'p2'
-      setScore(initialScore)
+      initialScore = recalculateScoreFromPointLog(existingPointLog)
+      setShowServeSelection(false) // Don't show serve selection if match is in progress
+    } else {
+      // New match - default first player serves, but allow user to change
+      initialScore = {
+        sets: [],
+        games: [0, 0],
+        points: [0, 0],
+        server: 'p1',
+        gameNumber: 1,
+        setNumber: 1
+      }
+      setShowServeSelection(true) // Show serve selection for new match
     }
+    
+    setScore(initialScore)
   }, [match])
 
   const handleServeSelected = (server: 'p1' | 'p2') => {
@@ -479,7 +568,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         server: score.server,
         serveType: currentServe,
         serveOutcome: 'winner',
-        rallyLength: 1,
+        rallyLength: Math.floor(Math.random() * 10) + 1, // Random for now
         pointOutcome: 'winner', // This should be set based on how the point was won
         isBreakPoint: isCurrentBreakPoint,
         isSetPoint: false,
@@ -489,78 +578,37 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         isMatchWinning: false
       }
 
-      // Calculate new score with proper tennis logic
-      const newScore = { ...score }
-      const winnerIndex = winner === 'player1' ? 0 : 1
-      const loserIndex = 1 - winnerIndex
-      
-      newScore.points[winnerIndex]++
-      
-      // Check for game win
-      let gameWon = false
-      let setWon = false
-      if (newScore.points[winnerIndex] >= 4) {
-        if (newScore.points[winnerIndex] - newScore.points[loserIndex] >= 2) {
-          // Game won
-          gameWon = true
-          newScore.games[winnerIndex]++
-          newScore.points = [0, 0]
-          newScore.gameNumber++
-          pointDetail.isGameWinning = true
-          
-          // Check for set win (first to 6 games with 2 game lead, or 7-6)
-          if (newScore.games[winnerIndex] >= 6) {
-            if (newScore.games[winnerIndex] - newScore.games[loserIndex] >= 2 || 
-                (newScore.games[winnerIndex] === 7 && newScore.games[loserIndex] === 6)) {
-              setWon = true
-              pointDetail.isSetWinning = true
-              
-              // Add set to sets array
-              if (!newScore.sets) newScore.sets = []
-              newScore.sets.push([newScore.games[0], newScore.games[1]])
-              newScore.games = [0, 0]
-              newScore.setNumber++
-              newScore.gameNumber = 1
-            }
-          }
-          
-          // Change server for next game (unless set was won)
-          if (!setWon) {
-            newScore.server = newScore.server === 'p1' ? 'p2' : 'p1'
-          }
-          setIsInGame(false)
-        }
-      }
-      
-      // Add to point log
+      // Add point to log first
       const newPointLog = [...pointLog, pointDetail]
       setPointLog(newPointLog)
+
+      // Recalculate score from the complete point log
+      const newScore = recalculateScoreFromPointLog(newPointLog)
       setScore(newScore)
 
-      // Update match in database
-      const scoreForDb = {
-        sets: newScore.sets,
-        games: newScore.games,
-        points: newScore.points
+      // Update point detail with correct flags after calculation
+      if (newScore.games[winner === 'player1' ? 0 : 1] > score.games[winner === 'player1' ? 0 : 1]) {
+        pointDetail.isGameWinning = true
       }
-      
-      await updateMatchScore(match.$id, {
-        score: scoreForDb,
-        pointLog: newPointLog
-      })
+      if (newScore.sets.length > score.sets.length) {
+        pointDetail.isSetWinning = true
+      }
 
-      // Reset to first serve for next point
+             // Save to database
+       await updateMatchScore(match.$id, {
+         score: {
+           sets: newScore.sets,
+           games: newScore.games,
+           points: newScore.points
+         },
+         pointLog: newPointLog
+       })
+
+      // Reset serve type for next point
       setCurrentServe('first')
-      
-      if (setWon) {
-        toast.success(`Set to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}! ${newScore.sets[newScore.sets.length - 1][0]}-${newScore.sets[newScore.sets.length - 1][1]}`)
-        setIsInGame(false)
-      } else if (gameWon) {
-        toast.success(`Game to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}! Score: ${newScore.games[0]}-${newScore.games[1]}`)
-        setIsInGame(false)
-      } else {
-        toast.success(`Point to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}`)
-      }
+      setIsInGame(false)
+
+      toast.success(`Point awarded to ${winner === 'player1' ? match.playerOne.firstName : match.playerTwo.firstName}`)
     } catch (error) {
       console.error('Error awarding point:', error)
       toast.error('Failed to award point')
@@ -569,34 +617,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const undoLastPoint = async () => {
-    if (pointLog.length === 0) return
+    if (pointLog.length === 0) {
+      toast.error("No points to undo")
+      return
+    }
 
     try {
+      // Remove last point from log
       const newPointLog = pointLog.slice(0, -1)
       setPointLog(newPointLog)
       
-      // Recalculate score from point log
-      // This is a simplified implementation - in production you'd want to fully recalculate
-      const recalculatedScore: TennisScore = {
-        sets: [],
-        games: [0, 0],
-        points: [0, 0],
-        server: score.server,
-        gameNumber: 1,
-        setNumber: 1
-      }
-      
+      // Recalculate score from remaining points
+      const recalculatedScore = recalculateScoreFromPointLog(newPointLog)
       setScore(recalculatedScore)
       setIsInGame(false)
 
-      await updateMatchScore(match.$id, {
-        score: {
-          sets: recalculatedScore.sets,
-          games: recalculatedScore.games,
-          points: recalculatedScore.points
-        },
-        pointLog: newPointLog
-      })
+             // Save to database
+       await updateMatchScore(match.$id, {
+         score: {
+           sets: recalculatedScore.sets,
+           games: recalculatedScore.games,
+           points: recalculatedScore.points
+         },
+         pointLog: newPointLog
+       })
 
       toast.success("Point undone")
     } catch (error) {
@@ -748,7 +792,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </div>
 
         {/* Swipeable Cards */}
-        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} onAddComment={handleAddComment} />
+        <SwipeableCards pointLog={pointLog} comments={comments} matchStats={matchStats} onAddComment={handleAddComment} match={match} />
       </div>
 
       {/* Initial Serve Selection Dialog */}
