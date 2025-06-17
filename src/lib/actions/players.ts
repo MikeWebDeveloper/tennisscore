@@ -92,20 +92,45 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
 export async function getPlayersByUser(): Promise<Player[]> {
   try {
     const user = await getCurrentUser()
-    if (!user) throw new Error("Unauthorized")
+    if (!user) return []
     
     const { databases } = await createAdminClient()
     
-    const response = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      [Query.equal("userId", user.$id)]
-    )
+    // Add retry logic for network issues
+    let retries = 3
+    while (retries > 0) {
+      try {
+        const response = await databases.listDocuments(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+          [Query.equal("userId", user.$id)]
+        )
+        
+        return response.documents as unknown as Player[]
+      } catch (error: unknown) {
+        retries--
+        if (retries === 0) throw error
+        
+        // Check if it's a network error
+        if (error instanceof Error && (
+          error.message.includes('ECONNRESET') || 
+          error.message.includes('fetch failed') ||
+          error.message.includes('network')
+        )) {
+          console.warn(`Network error, retrying... (${3 - retries}/3)`)
+          await new Promise(resolve => setTimeout(resolve, 1000 * (3 - retries))) // Exponential backoff
+          continue
+        }
+        
+        throw error
+      }
+    }
     
-    return response.documents as unknown as Player[]
+    return []
   } catch (error: unknown) {
     console.error("Error fetching players:", error)
-    throw new Error("Failed to fetch players")
+    // Return empty array instead of throwing to prevent page crashes
+    return []
   }
 }
 
@@ -183,7 +208,7 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       }
     }
     
-    const updateData: any = { ...validatedData }
+    const updateData: Record<string, unknown> = { ...validatedData }
     if (profilePictureId) {
       updateData.profilePictureId = profilePictureId
     }

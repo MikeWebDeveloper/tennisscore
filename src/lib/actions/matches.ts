@@ -113,13 +113,37 @@ export async function getMatchesByUser(): Promise<Match[]> {
 
     const { databases } = await createAdminClient()
 
-    const response = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      [Query.equal("userId", user.$id)]
-    )
+    // Add retry logic for network issues
+    let retries = 3
+    while (retries > 0) {
+      try {
+        const response = await databases.listDocuments(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+          [Query.equal("userId", user.$id)]
+        )
 
-    return response.documents as unknown as Match[]
+        return response.documents as unknown as Match[]
+      } catch (error: unknown) {
+        retries--
+        if (retries === 0) throw error
+        
+        // Check if it's a network error
+        if (error instanceof Error && (
+          error.message.includes('ECONNRESET') || 
+          error.message.includes('fetch failed') ||
+          error.message.includes('network')
+        )) {
+          console.warn(`Network error, retrying... (${3 - retries}/3)`)
+          await new Promise(resolve => setTimeout(resolve, 1000 * (3 - retries))) // Exponential backoff
+          continue
+        }
+        
+        throw error
+      }
+    }
+
+    return []
   } catch (error) {
     console.error("Error fetching matches:", error)
     return []
@@ -135,19 +159,43 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
 
     const { databases } = await createAdminClient()
 
-    const response = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      [
-        Query.equal("userId", user.$id),
-        Query.or([
-          Query.equal("playerOneId", playerId),
-          Query.equal("playerTwoId", playerId)
-        ])
-      ]
-    )
+    // Add retry logic for network issues
+    let retries = 3
+    while (retries > 0) {
+      try {
+        const response = await databases.listDocuments(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+          [
+            Query.equal("userId", user.$id),
+            Query.or([
+              Query.equal("playerOneId", playerId),
+              Query.equal("playerTwoId", playerId)
+            ])
+          ]
+        )
 
-    return response.documents as unknown as Match[]
+        return response.documents as unknown as Match[]
+      } catch (error: unknown) {
+        retries--
+        if (retries === 0) throw error
+        
+        // Check if it's a network error
+        if (error instanceof Error && (
+          error.message.includes('ECONNRESET') || 
+          error.message.includes('fetch failed') ||
+          error.message.includes('network')
+        )) {
+          console.warn(`Network error, retrying... (${3 - retries}/3)`)
+          await new Promise(resolve => setTimeout(resolve, 1000 * (3 - retries))) // Exponential backoff
+          continue
+        }
+        
+        throw error
+      }
+    }
+
+    return []
   } catch (error) {
     console.error("Error fetching player matches:", error)
     return []

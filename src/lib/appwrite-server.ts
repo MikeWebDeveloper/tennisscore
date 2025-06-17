@@ -3,6 +3,22 @@
 import { Client, Account, Databases, Storage, Users } from "node-appwrite"
 import { getSession } from "./session"
 
+// Enhanced client configuration with better timeout handling
+function createClientWithRetry() {
+  const client = new Client()
+    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
+    .setKey(process.env.APPWRITE_API_KEY!)
+
+  // Set reasonable timeouts
+  client.headers = {
+    ...client.headers,
+    'X-Appwrite-Request-Timeout': '30', // 30 second timeout
+  }
+
+  return client
+}
+
 export async function createSessionClient() {
   const sessionData = await getSession()
 
@@ -10,12 +26,7 @@ export async function createSessionClient() {
     throw new Error("No session")
   }
 
-  // For JWT-based sessions, we still use the admin client but know which user we're acting on behalf of
-  // We return the admin client but with context about the current user
-  const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
-    .setKey(process.env.APPWRITE_API_KEY!)
+  const client = createClientWithRetry()
 
   return {
     get account() {
@@ -35,10 +46,7 @@ export async function createSessionClient() {
 }
 
 export async function createAdminClient() {
-  const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
-    .setKey(process.env.APPWRITE_API_KEY!)
+  const client = createClientWithRetry()
 
   return {
     get account() {

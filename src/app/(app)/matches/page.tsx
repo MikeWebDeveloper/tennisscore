@@ -3,12 +3,40 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { getMatchesByUser } from "@/lib/actions/matches"
 import { getPlayersByUser } from "@/lib/actions/players"
+import { ConnectionError } from "@/components/connection-error"
+import { Match, Player } from "@/lib/types"
 
 import { MatchesList } from "./_components/matches-list"
 
 export default async function MatchesPage() {
-  const matches = await getMatchesByUser()
-  const players = await getPlayersByUser()
+  let matches: Match[] = []
+  let players: Player[] = []
+  let hasError = false
+
+  try {
+    // Try to fetch data with error handling
+    const [matchesResult, playersResult] = await Promise.allSettled([
+      getMatchesByUser(),
+      getPlayersByUser()
+    ])
+
+    if (matchesResult.status === 'fulfilled') {
+      matches = matchesResult.value
+    } else {
+      console.error("Failed to fetch matches:", matchesResult.reason)
+      hasError = true
+    }
+
+    if (playersResult.status === 'fulfilled') {
+      players = playersResult.value
+    } else {
+      console.error("Failed to fetch players:", playersResult.reason)
+      hasError = true
+    }
+  } catch (error) {
+    console.error("Error in MatchesPage:", error)
+    hasError = true
+  }
 
   const playersMap = new Map(players.map(player => [player.$id, player]))
 
@@ -44,7 +72,15 @@ export default async function MatchesPage() {
           </Link>
         </Button>
       </div>
-      <MatchesList matches={enhancedMatches} />
+      
+      {hasError && matches.length === 0 ? (
+        <ConnectionError 
+          title="Unable to Load Matches"
+          description="There's a connectivity issue preventing us from loading your matches. Please try refreshing the page."
+        />
+      ) : (
+        <MatchesList matches={enhancedMatches} />
+      )}
     </div>
   )
 } 
