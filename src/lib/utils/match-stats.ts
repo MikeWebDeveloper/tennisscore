@@ -162,7 +162,7 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
 
 export function generatePointContext(
   pointNumber: number,
-  currentScore: any,
+  currentScore: { sets: { p1: number; p2: number }[]; games: number[]; points: number[] },
   winner: "p1" | "p2",
   playerNames: { p1: string; p2: string }
 ) {

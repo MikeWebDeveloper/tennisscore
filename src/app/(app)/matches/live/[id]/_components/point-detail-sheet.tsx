@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
+
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ import {
   ShotType, 
   CourtPosition 
 } from "@/lib/types"
-import { Target, Zap, AlertTriangle, Trophy } from "lucide-react"
+import { Target, Zap, Trophy } from "lucide-react"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -111,7 +111,7 @@ export function PointDetailSheet({
               {getContextBadges().map((badge, index) => {
                 const Icon = badge.icon
                 return (
-                  <Badge key={index} variant={badge.color as any} className="text-xs">
+                  <Badge key={index} variant={badge.color as "default" | "destructive" | "secondary"} className="text-xs">
                     <Icon className="h-3 w-3 mr-1" />
                     {badge.label}
                   </Badge>
@@ -161,7 +161,7 @@ export function PointDetailSheet({
                   <Label className="text-sm font-medium">Serve Placement</Label>
                   <RadioGroup 
                     value={servePlacement} 
-                    onValueChange={(value) => setServePlacement(value as any)}
+                    onValueChange={(value) => setServePlacement(value as "wide" | "body" | "t")}
                     className="mt-2"
                   >
                     <div className="flex items-center space-x-2">

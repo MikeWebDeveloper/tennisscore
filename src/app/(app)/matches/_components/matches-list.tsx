@@ -29,11 +29,11 @@ export function MatchesList({ matches }: MatchesListProps) {
     )
   }
 
-  const formatScore = (score: any) => {
+  const formatScore = (score: { sets: { p1: number; p2: number }[] } | undefined) => {
     if (!score || !score.sets || score.sets.length === 0) {
       return "N/A"
     }
-    return score.sets.map((set: any) => `${set.p1}-${set.p2}`).join(", ")
+    return score.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
   }
 
   return (

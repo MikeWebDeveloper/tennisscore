@@ -39,7 +39,7 @@ interface MatchDetailsProps {
       games: number[]
       points: number[]
     }
-    pointLog: any[]
+    pointLog: string[]
     matchFormat: string
     winnerId?: string
     userId: string
@@ -79,7 +79,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     if (!scoreParsed?.sets || scoreParsed.sets.length === 0) {
       return "0-0"
     }
-    return scoreParsed.sets.map((set: any) => `${set.p1}-${set.p2}`).join(", ")
+    return scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
   }
 
   const formatDate = (dateString: string) => {
@@ -112,51 +112,57 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       breakPointsTotal: { p1: 0, p2: 0 }
     }
 
-    let serves = { p1: { first: 0, firstIn: 0, second: 0, secondIn: 0 }, p2: { first: 0, firstIn: 0, second: 0, secondIn: 0 } }
+    const serves = { p1: { first: 0, firstIn: 0, second: 0, secondIn: 0 }, p2: { first: 0, firstIn: 0, second: 0, secondIn: 0 } }
 
-    match.pointLog.forEach((point, index) => {
-      const player = point.winner === "p1" ? "p1" : "p2"
-      const opponent = player === "p1" ? "p2" : "p1"
+    match.pointLog.forEach((pointStr) => {
+      try {
+        const point = JSON.parse(pointStr)
+        const player = point.winner === "p1" ? "p1" : "p2"
+        const opponent = player === "p1" ? "p2" : "p1"
 
-      // Count winners and errors
-      if (point.outcome === "Winner") {
-        analysis.winners[player]++
-      } else if (point.outcome === "Unforced Error") {
-        analysis.unforcedErrors[opponent]++
-      } else if (point.outcome === "Ace") {
-        analysis.aces[player]++
-      } else if (point.outcome === "Double Fault") {
-        analysis.doubleFaults[opponent]++
-      }
-
-      // Track serve statistics
-      if (point.serve) {
-        const server = point.server === "p1" ? "p1" : "p2"
-        if (point.serve === "First") {
-          serves[server].first++
-          if (point.serveIn) serves[server].firstIn++
-        } else if (point.serve === "Second") {
-          serves[server].second++
-          if (point.serveIn) serves[server].secondIn++
+        // Count winners and errors
+        if (point.outcome === "Winner") {
+          analysis.winners[player]++
+        } else if (point.outcome === "Unforced Error") {
+          analysis.unforcedErrors[opponent]++
+        } else if (point.outcome === "Ace") {
+          analysis.aces[player]++
+        } else if (point.outcome === "Double Fault") {
+          analysis.doubleFaults[opponent]++
         }
 
-        // Track serve points won
-        if (point.serveIn && point.winner === server) {
+        // Track serve statistics
+        if (point.serve) {
+          const server = point.server === "p1" ? "p1" : "p2"
           if (point.serve === "First") {
-            analysis.firstServePointsWon[server]++
-          } else {
-            analysis.secondServePointsWon[server]++
+            serves[server].first++
+            if (point.serveIn) serves[server].firstIn++
+          } else if (point.serve === "Second") {
+            serves[server].second++
+            if (point.serveIn) serves[server].secondIn++
+          }
+
+          // Track serve points won
+          if (point.serveIn && point.winner === server) {
+            if (point.serve === "First") {
+              analysis.firstServePointsWon[server]++
+            } else {
+              analysis.secondServePointsWon[server]++
+            }
           }
         }
-      }
 
-      // Track break points (simplified - would need game context for accuracy)
-      if (point.breakPoint) {
-        const returner = point.server === "p1" ? "p2" : "p1"
-        analysis.breakPointsTotal[returner]++
-        if (point.winner === returner) {
-          analysis.breakPointsConverted[returner]++
+        // Track break points (simplified - would need game context for accuracy)
+        if (point.breakPoint) {
+          const returner = point.server === "p1" ? "p2" : "p1"
+          analysis.breakPointsTotal[returner]++
+          if (point.winner === returner) {
+            analysis.breakPointsConverted[returner]++
+          }
         }
+      } catch {
+        // Skip invalid point log entries
+        console.warn('Invalid point log entry:', pointStr)
       }
     })
 
@@ -247,7 +253,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               <CardContent>
                 <div className="text-center space-y-4">
                   <div className="text-3xl font-mono font-bold">
-                    {formatScore(match.scoreParsed)}
+                    {match.scoreParsed ? formatScore(match.scoreParsed) : "0-0"}
                   </div>
                   {match.winner && (
                     <div className="flex items-center justify-center gap-2 text-lg">
@@ -382,38 +388,49 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 </div>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {match.pointLog.map((point, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="font-medium">
-                            Point won by {point.winner === "p1" ? 
-                              `${match.playerOne?.firstName} ${match.playerOne?.lastName}` : 
-                              `${match.playerTwo?.firstName} ${match.playerTwo?.lastName}`
-                            }
+                  {match.pointLog.map((pointStr, index) => {
+                    try {
+                      const point = JSON.parse(pointStr)
+                      return (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">
+                                Point won by {point.winner === "p1" ? 
+                                  `${match.playerOne?.firstName} ${match.playerOne?.lastName}` : 
+                                  `${match.playerTwo?.firstName} ${match.playerTwo?.lastName}`
+                                }
+                              </div>
+                              {point.pointOutcome && (
+                                <div className="text-sm text-muted-foreground">
+                                  {point.pointOutcome}
+                                  {point.lastShotType && ` • ${point.lastShotType}`}
+                                  {point.serveType && ` • ${point.serveType} Serve`}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          {point.outcome && (
-                            <div className="text-sm text-muted-foreground">
-                              {point.outcome}
-                              {point.shot && ` • ${point.shot}`}
-                              {point.serve && ` • ${point.serve} Serve`}
+                          {point.gameScore && (
+                            <div className="text-sm font-mono text-muted-foreground">
+                              {point.gameScore}
                             </div>
                           )}
                         </div>
-                      </div>
-                      {point.gameScore && (
-                        <div className="text-sm font-mono text-muted-foreground">
-                          {point.gameScore}
+                      )
+                    } catch {
+                      return (
+                        <div key={index} className="p-3 rounded-lg border bg-muted/30 text-muted-foreground">
+                          Point #{index + 1} (Invalid data)
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      )
+                    }
+                  })}
                 </div>
               )}
             </CardContent>

@@ -4,12 +4,13 @@ import { Player, MatchFormat, Score } from "@/lib/types"
 import { PublicLiveMatch } from "./_components/public-live-match"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     matchId: string
-  }
+  }>
 }
 
 export default async function PublicLiveMatchPage({ params }: PageProps) {
+  const { matchId } = await params
   const { databases } = await createAdminClient()
 
   try {
@@ -17,7 +18,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
     const match = await databases.getDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      params.matchId
+      matchId
     )
 
     // Fetch player data
@@ -56,12 +57,13 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps) {
   try {
+    const { matchId } = await params
     const { databases } = await createAdminClient()
     
     const match = await databases.getDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      params.matchId
+      matchId
     )
 
     const [playerOne, playerTwo] = await Promise.all([
