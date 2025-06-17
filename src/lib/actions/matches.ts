@@ -25,6 +25,42 @@ export async function createMatch(matchData: {
 
     const { databases } = await createAdminClient()
 
+    // Handle anonymous players - create temporary player records
+    let actualPlayerOneId = matchData.playerOneId
+    let actualPlayerTwoId = matchData.playerTwoId
+
+    // Create anonymous Player 1 if needed
+    if (matchData.playerOneId === "anonymous-1") {
+      const anonymousPlayer1 = await databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        ID.unique(),
+        {
+          firstName: "Player",
+          lastName: "1",
+          isMainPlayer: false,
+          userId: user.$id,
+        }
+      )
+      actualPlayerOneId = anonymousPlayer1.$id
+    }
+
+    // Create anonymous Player 2 if needed
+    if (matchData.playerTwoId === "anonymous-2") {
+      const anonymousPlayer2 = await databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        ID.unique(),
+        {
+          firstName: "Player",
+          lastName: "2",
+          isMainPlayer: false,
+          userId: user.$id,
+        }
+      )
+      actualPlayerTwoId = anonymousPlayer2.$id
+    }
+
     const initialScore: Score = {
       sets: [],
       games: [0, 0],
@@ -36,8 +72,8 @@ export async function createMatch(matchData: {
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       ID.unique(),
       {
-        playerOneId: matchData.playerOneId,
-        playerTwoId: matchData.playerTwoId,
+        playerOneId: actualPlayerOneId,
+        playerTwoId: actualPlayerTwoId,
         matchFormat: JSON.stringify(matchData.matchFormat),
         matchDate: new Date().toISOString(),
         status: "In Progress",
@@ -49,6 +85,7 @@ export async function createMatch(matchData: {
     )
 
     revalidatePath("/dashboard")
+    revalidatePath("/players") // Refresh players list if anonymous players were created
     return { success: true, matchId: match.$id }
   } catch (error) {
     console.error("Error creating match:", error)

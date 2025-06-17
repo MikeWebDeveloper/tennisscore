@@ -21,6 +21,12 @@ interface CreateMatchFormProps {
   players: Player[]
 }
 
+// Anonymous players for quick matches
+const ANONYMOUS_PLAYERS = [
+  { $id: "anonymous-1", firstName: "Player", lastName: "1", displayName: "Player 1" },
+  { $id: "anonymous-2", firstName: "Player", lastName: "2", displayName: "Player 2" },
+]
+
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -57,6 +63,8 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const [scoring, setScoring] = useState<"ad" | "no-ad">("ad")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb">("full")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "complex">("simple")
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,22 +123,77 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
     }
   }
 
+  const renderPlayerSelect = (
+    value: string,
+    onChange: (value: string) => void,
+    label: string,
+    excludeIds: string[] = []
+  ) => (
+    <div className="space-y-2">
+      <Label htmlFor={label.toLowerCase().replace(" ", "-")}>{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select player" />
+        </SelectTrigger>
+        <SelectContent>
+          {/* Anonymous players section */}
+          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
+            Quick Match
+          </div>
+          {ANONYMOUS_PLAYERS.map((player) => (
+            <SelectItem 
+              key={player.$id} 
+              value={player.$id}
+              disabled={excludeIds.includes(player.$id)}
+            >
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                {player.displayName}
+              </div>
+            </SelectItem>
+          ))}
+          
+          {/* Real players section */}
+          {players.length > 0 && (
+            <>
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
+                Tracked Players
+              </div>
+              {players.map((player) => (
+                <SelectItem 
+                  key={player.$id} 
+                  value={player.$id}
+                  disabled={excludeIds.includes(player.$id)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    {player.firstName} {player.lastName}
+                  </div>
+                </SelectItem>
+              ))}
+            </>
+          )}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-2xl mx-auto p-4"
+      className="max-w-2xl mx-auto"
     >
       {/* Header */}
       <motion.div variants={itemVariants} className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/matches">
+        <Link href="/matches">
+          <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+          </Button>
+        </Link>
         <div>
-          <h1 className="text-2xl font-bold">Create New Match</h1>
+          <h1 className="text-2xl font-bold">New Match</h1>
           <p className="text-muted-foreground">Set up your tennis match</p>
         </div>
       </motion.div>
@@ -145,12 +208,10 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <Label htmlFor="singles" className="radio-option">
                     <RadioGroupItem value="singles" id="singles" />
-                    <User className="h-4 w-4" />
                     <span className="font-medium">Singles</span>
                   </Label>
                   <Label htmlFor="doubles" className="radio-option">
                     <RadioGroupItem value="doubles" id="doubles" />
-                    <Users className="h-4 w-4" />
                     <span className="font-medium">Doubles</span>
                   </Label>
                 </div>
@@ -159,87 +220,48 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           </Card>
         </motion.div>
 
-        {/* Player Selection */}
+        {/* Players */}
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">Players</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium">Players</h3>
+                {players.length === 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    No tracked players yet - use quick match options
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="player-one">Player 1</Label>
-                  <Select value={playerOne} onValueChange={setPlayerOne}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select player" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem 
-                          key={player.$id} 
-                          value={player.$id}
-                          disabled={player.$id === playerTwo}
-                        >
-                          {player.firstName} {player.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {renderPlayerSelect(
+                  playerOne, 
+                  setPlayerOne, 
+                  "Player 1", 
+                  [playerTwo, playerThree, playerFour].filter(Boolean)
+                )}
                 
-                <div className="space-y-2">
-                  <Label htmlFor="player-two">Player 2</Label>
-                  <Select value={playerTwo} onValueChange={setPlayerTwo}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select player" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem 
-                          key={player.$id} 
-                          value={player.$id}
-                          disabled={player.$id === playerOne}
-                        >
-                          {player.firstName} {player.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {renderPlayerSelect(
+                  playerTwo, 
+                  setPlayerTwo, 
+                  "Player 2", 
+                  [playerOne, playerThree, playerFour].filter(Boolean)
+                )}
 
                 {matchType === "doubles" && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="player-three">Player 3</Label>
-                      <Select value={playerThree} onValueChange={setPlayerThree}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select player" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Select a player</SelectItem>
-                          {players.map((player) => (
-                            <SelectItem key={player.$id} value={player.$id}>
-                              {player.firstName} {player.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {renderPlayerSelect(
+                      playerThree, 
+                      setPlayerThree, 
+                      "Player 3", 
+                      [playerOne, playerTwo, playerFour].filter(Boolean)
+                    )}
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="player-four">Player 4</Label>
-                      <Select value={playerFour} onValueChange={setPlayerFour}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select player" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Select a player</SelectItem>
-                          {players.map((player) => (
-                            <SelectItem key={player.$id} value={player.$id}>
-                              {player.firstName} {player.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {renderPlayerSelect(
+                      playerFour, 
+                      setPlayerFour, 
+                      "Player 4", 
+                      [playerOne, playerTwo, playerThree].filter(Boolean)
+                    )}
                   </>
                 )}
               </div>
@@ -300,7 +322,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       </Label>
                       <Label htmlFor="super-tb" className="radio-option">
                         <RadioGroupItem value="super-tb" id="super-tb" />
-                        <span className="font-medium">Super Tie-Break</span>
+                        <span className="font-medium">Super Tiebreak</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -310,7 +332,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           </Card>
         </motion.div>
 
-        {/* Scoring Detail */}
+        {/* Detail Level */}
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">

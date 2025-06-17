@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Upload } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { updatePlayer } from "@/lib/actions/players"
 import { Player } from "@/lib/types"
 
@@ -60,6 +60,9 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
       <DialogContent className="max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>Edit Player</DialogTitle>
+          <DialogDescription>
+            Update player information, profile picture, and settings.
+          </DialogDescription>
         </DialogHeader>
         <form action={handleUpdatePlayer} className="space-y-4">
           {/* Profile Picture Upload */}

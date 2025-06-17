@@ -1,12 +1,32 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import localFont from "next/font/local";
 
-const inter = Inter({
-  subsets: ["latin"],
+const satoshi = localFont({
+  src: [
+    {
+      path: "../styles/fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-satoshi",
+  display: "swap",
+});
+
+const inter = localFont({
+  src: [
+    {
+      path: "../styles/fonts/Inter-Variable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+  ],
   variable: "--font-inter",
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -15,8 +35,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TennisScore - Professional Tennis Scoring & Analytics",
-  description: "The ultimate digital companion for tennis players. Track scores, analyze performance, and share matches in real-time with professional-grade statistical analysis.",
+  title: "TennisScore - Tennis Scoring & Statistics",
+  description: "Professional tennis scoring and statistics tracking for players and coaches",
   keywords: ["tennis", "scoring", "analytics", "statistics", "match tracking", "tennis app"],
   authors: [{ name: "TennisScore Team" }],
   creator: "TennisScore",
@@ -38,7 +58,6 @@ export const metadata: Metadata = {
     title: "TennisScore - Professional Tennis Scoring & Analytics",
     description: "The ultimate digital companion for tennis players. Track scores, analyze performance, and share matches in real-time.",
   },
-
 };
 
 export default function RootLayout({
@@ -48,7 +67,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body 
+        className={`${satoshi.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           {children}
           <Toaster 

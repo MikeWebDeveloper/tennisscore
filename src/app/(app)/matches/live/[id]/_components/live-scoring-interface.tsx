@@ -446,6 +446,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     if (existingPointLog.length > 0) {
       initialScore = recalculateScoreFromPointLog(existingPointLog)
       setShowServeSelection(false) // Don't show serve selection if match is in progress
+      setIsInGame(true) // Match is already in progress
     } else {
       // New match - default first player serves, but allow user to change
       initialScore = {
@@ -456,15 +457,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         gameNumber: 1,
         setNumber: 1
       }
-      setShowServeSelection(true) // Show serve selection for new match
+      // Only show serve selection for completely new matches
+      setShowServeSelection(true)
+      setIsInGame(false)
     }
     
     setScore(initialScore)
-  }, [match])
+  }, [match.$id]) // Only re-run when match ID changes, not on every match update
 
   const handleServeSelected = (server: 'p1' | 'p2') => {
     setScore(prev => ({ ...prev, server }))
     setShowServeSelection(false)
+    setIsInGame(true) // Mark match as started
   }
 
   const handleServeSwap = () => {

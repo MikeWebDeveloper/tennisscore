@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Plus, User, Upload } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createPlayer } from "@/lib/actions/players"
 
 interface CreatePlayerDialogProps {
@@ -44,6 +44,9 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
       <DialogContent className="max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>Create New Player</DialogTitle>
+          <DialogDescription>
+            Add a new player to track their matches and statistics. You can upload a profile picture and set basic information.
+          </DialogDescription>
         </DialogHeader>
         <form action={handleCreatePlayer} className="space-y-4">
           {/* Profile Picture Upload */}
