@@ -1,6 +1,6 @@
 "use server"
 
-import { ID, Query } from "node-appwrite"
+import { ID, Query, Permission, Role } from "node-appwrite"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
@@ -26,40 +26,26 @@ export async function createMatch(matchData: {
     const { databases } = await createAdminClient()
 
     // Handle anonymous players - create temporary player records
-    let actualPlayerOneId = matchData.playerOneId
-    let actualPlayerTwoId = matchData.playerTwoId
-
-    // Create anonymous Player 1 if needed
-    if (matchData.playerOneId === "anonymous-1") {
-      const anonymousPlayer1 = await databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        ID.unique(),
-        {
-          firstName: "Player",
-          lastName: "1",
-          isMainPlayer: false,
-          userId: user.$id,
-        }
-      )
-      actualPlayerOneId = anonymousPlayer1.$id
+    const handleAnonymousPlayer = async (playerId: string, playerNum: number) => {
+      if (playerId.startsWith("anonymous-")) {
+        const anonymousPlayer = await databases.createDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+          ID.unique(),
+          {
+            firstName: "Player",
+            lastName: `${playerNum}`,
+            isAnonymous: true, // Add a flag to identify these players
+            userId: user.$id,
+          }
+        )
+        return anonymousPlayer.$id
+      }
+      return playerId
     }
 
-    // Create anonymous Player 2 if needed
-    if (matchData.playerTwoId === "anonymous-2") {
-      const anonymousPlayer2 = await databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        ID.unique(),
-        {
-          firstName: "Player",
-          lastName: "2",
-          isMainPlayer: false,
-          userId: user.$id,
-        }
-      )
-      actualPlayerTwoId = anonymousPlayer2.$id
-    }
+    const actualPlayerOneId = await handleAnonymousPlayer(matchData.playerOneId, 1)
+    const actualPlayerTwoId = await handleAnonymousPlayer(matchData.playerTwoId, 2)
 
     const initialScore: Score = {
       sets: [],
@@ -81,7 +67,8 @@ export async function createMatch(matchData: {
         pointLog: [],
         events: [],
         userId: user.$id,
-      }
+      },
+      [Permission.read(Role.any())]
     )
 
     revalidatePath("/dashboard")

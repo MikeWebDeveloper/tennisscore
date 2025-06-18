@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -18,7 +18,7 @@ import {
   ShotType, 
   CourtPosition 
 } from "@/lib/types"
-import { Target, Zap, Trophy } from "lucide-react"
+import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -57,7 +57,56 @@ export function PointDetailSheet({
   const [courtPosition, setCourtPosition] = useState<CourtPosition>("deuce")
   const [notes, setNotes] = useState("")
 
+  // Validation state
+  const [validationError, setValidationError] = useState<string>("")
+
+  // Tennis rule validation
+  useEffect(() => {
+    let error = ""
+
+    // Double fault validation
+    if (pointOutcome === "double_fault") {
+      if (serveType !== "second") {
+        error = "Double faults can only occur on second serves"
+      } else if (pointContext.winner === pointContext.server) {
+        error = "Double faults must be won by the receiving player"
+      }
+    }
+
+    // Ace validation
+    if (pointOutcome === "ace") {
+      if (pointContext.winner !== pointContext.server) {
+        error = "Aces must be won by the serving player"
+      }
+    }
+
+    // Serve winner validation (for non-ace serves)
+    if (pointOutcome === "winner" && lastShotType === "serve") {
+      if (pointContext.winner !== pointContext.server) {
+        error = "Service winners must be won by the serving player"
+      }
+    }
+
+    setValidationError(error)
+  }, [pointOutcome, serveType, pointContext.winner, pointContext.server, lastShotType])
+
+  // Auto-correct winner for certain outcomes
+  useEffect(() => {
+    if (pointOutcome === "double_fault") {
+      // Auto-set winner to receiving player for double faults
+      const receiver = pointContext.server === "p1" ? "p2" : "p1"
+      setLastShotPlayer(receiver)
+    } else if (pointOutcome === "ace") {
+      // Auto-set winner to serving player for aces
+      setLastShotPlayer(pointContext.server)
+    }
+  }, [pointOutcome, pointContext.server])
+
   const handleSave = () => {
+    if (validationError) {
+      return // Don't save if there's a validation error
+    }
+
     const pointDetail: Partial<PointDetail> = {
       serveType,
       serveOutcome,
@@ -91,6 +140,7 @@ export function PointDetailSheet({
     setLastShotPlayer(pointContext.winner)
     setCourtPosition("deuce")
     setNotes("")
+    setValidationError("")
   }
 
   const getContextBadges = () => {
@@ -99,6 +149,25 @@ export function PointDetailSheet({
     if (pointContext.isSetPoint) badges.push({ label: "Set Point", icon: Zap, color: "secondary" })
     if (pointContext.isMatchPoint) badges.push({ label: "Match Point", icon: Trophy, color: "default" })
     return badges
+  }
+
+  // Get available point outcomes based on serve type and context
+  const getAvailableOutcomes = () => {
+    const outcomes = [
+      { value: "winner", label: "Winner" },
+      { value: "unforced_error", label: "Unforced Error" },
+      { value: "forced_error", label: "Forced Error" },
+    ]
+
+    // Add ace for all serves
+    outcomes.push({ value: "ace", label: "Ace" })
+
+    // Add double fault only for second serves
+    if (serveType === "second") {
+      outcomes.push({ value: "double_fault", label: "Double Fault" })
+    }
+
+    return outcomes
   }
 
   return (
@@ -124,6 +193,14 @@ export function PointDetailSheet({
             <span className="font-medium"> {pointContext.playerNames[pointContext.winner]} wins point</span>
           </div>
         </SheetHeader>
+
+        {/* Validation Error Alert */}
+        {validationError && (
+          <div className="flex items-center gap-2 p-3 mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span>{validationError}</span>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Serve Details */}
@@ -212,26 +289,12 @@ export function PointDetailSheet({
                   onValueChange={(value) => setPointOutcome(value as PointOutcome)}
                   className="mt-2 grid grid-cols-2 gap-2"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="winner" id="winner" />
-                    <Label htmlFor="winner">Winner</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="ace" id="ace" />
-                    <Label htmlFor="ace">Ace</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="unforced_error" id="unforced" />
-                    <Label htmlFor="unforced">Unforced Error</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="double_fault" id="double_fault" />
-                    <Label htmlFor="double_fault">Double Fault</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="forced_error" id="forced" />
-                    <Label htmlFor="forced">Forced Error</Label>
-                  </div>
+                  {getAvailableOutcomes().map((outcome) => (
+                    <div key={outcome.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={outcome.value} id={outcome.value} />
+                      <Label htmlFor={outcome.value}>{outcome.label}</Label>
+                    </div>
+                  ))}
                 </RadioGroup>
               </div>
 
@@ -244,6 +307,10 @@ export function PointDetailSheet({
                       onValueChange={(value) => setLastShotType(value as ShotType)}
                       className="mt-2"
                     >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="serve" id="serve-shot" />
+                        <Label htmlFor="serve-shot">Serve</Label>
+                      </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="forehand" id="forehand" />
                         <Label htmlFor="forehand">Forehand</Label>
@@ -327,7 +394,11 @@ export function PointDetailSheet({
         <Separator className="my-6" />
 
         <div className="flex gap-3">
-          <Button onClick={handleSave} className="flex-1">
+          <Button 
+            onClick={handleSave} 
+            className="flex-1"
+            disabled={!!validationError}
+          >
             Save Detailed Point
           </Button>
           <Button variant="outline" onClick={handleSimplePoint} className="flex-1">

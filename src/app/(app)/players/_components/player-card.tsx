@@ -67,9 +67,6 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
               ⭐ Main Player
             </p>
           )}
-          <p className="text-xs text-muted-foreground">
-            Created: {new Date(player.$createdAt).toLocaleDateString()}
-          </p>
         </div>
       </CardContent>
     </Card>

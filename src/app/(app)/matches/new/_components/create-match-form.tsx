@@ -9,13 +9,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { ArrowLeft, Users, User } from "lucide-react"
+import { ArrowLeft, Users, User, Plus } from "lucide-react"
 import Link from "next/link"
 import { Player } from "@/lib/types"
 import { createMatch } from "@/lib/actions/matches"
 import { toast } from "sonner"
 import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
+import { CreatePlayerDialog } from "../../../players/_components/create-player-dialog"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -23,8 +24,10 @@ interface CreateMatchFormProps {
 
 // Anonymous players for quick matches
 const ANONYMOUS_PLAYERS = [
-  { $id: "anonymous-1", firstName: "Player", lastName: "1", displayName: "Player 1" },
-  { $id: "anonymous-2", firstName: "Player", lastName: "2", displayName: "Player 2" },
+  { $id: "anonymous-1", firstName: "Player", lastName: "1", displayName: "Player 1 (No Tracking)" },
+  { $id: "anonymous-2", firstName: "Player", lastName: "2", displayName: "Player 2 (No Tracking)" },
+  { $id: "anonymous-3", firstName: "Player", lastName: "3", displayName: "Player 3 (No Tracking)" },
+  { $id: "anonymous-4", firstName: "Player", lastName: "4", displayName: "Player 4 (No Tracking)" },
 ]
 
 // Animation variants
@@ -53,18 +56,17 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   
-  // Form state
+  // Form state with default anonymous players
   const [matchType, setMatchType] = useState<"singles" | "doubles">("singles")
-  const [playerOne, setPlayerOne] = useState("")
-  const [playerTwo, setPlayerTwo] = useState("")
+  const [playerOne, setPlayerOne] = useState("anonymous-1") // Default to Player 1
+  const [playerTwo, setPlayerTwo] = useState("anonymous-2") // Default to Player 2
   const [playerThree, setPlayerThree] = useState("")
   const [playerFour, setPlayerFour] = useState("")
   const [sets, setSets] = useState([3]) // Best of 3 by default
   const [scoring, setScoring] = useState<"ad" | "no-ad">("ad")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb">("full")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "complex">("simple")
-
-
+  const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,7 +95,10 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       const result = await createMatch({
         playerOneId: validatedData.playerOneId,
         playerTwoId: validatedData.playerTwoId,
-        matchFormat: validatedData.matchFormat
+        matchFormat: {
+          ...validatedData.matchFormat,
+          detailLevel: validatedData.detailLevel
+        }
       })
 
       if (result.error) {
@@ -131,7 +136,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   ) => (
     <div className="space-y-2">
       <Label htmlFor={label.toLowerCase().replace(" ", "-")}>{label}</Label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={(val) => {
+        if (val === "create-new") {
+          setShowCreatePlayerDialog(true)
+        } else {
+          onChange(val)
+        }
+      }}>
         <SelectTrigger>
           <SelectValue placeholder="Select player" />
         </SelectTrigger>
@@ -152,6 +163,17 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
               </div>
             </SelectItem>
           ))}
+          
+          {/* Create new player option */}
+          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
+            Actions
+          </div>
+          <SelectItem value="create-new">
+            <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4 text-primary" />
+              <span className="text-primary font-medium">Create New Player</span>
+            </div>
+          </SelectItem>
           
           {/* Real players section */}
           {players.length > 0 && (
@@ -226,11 +248,9 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <h3 className="font-medium">Players</h3>
-                {players.length === 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    No tracked players yet - use quick match options
-                  </div>
-                )}
+                <div className="text-sm text-muted-foreground">
+                  Default: Quick match with anonymous players
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderPlayerSelect(
@@ -357,7 +377,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                     <RadioGroupItem value="complex" id="complex" />
                     <div>
                       <div className="font-medium">Detailed Stats</div>
-                      <div className="text-sm text-muted-foreground">Shot types, court positions, rally length</div>
+                      <div className="text-sm text-muted-foreground">Coming Soon</div>
                     </div>
                   </Label>
                 </div>
@@ -377,6 +397,12 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           </Button>
         </motion.div>
       </form>
+
+      {/* Create Player Dialog */}
+      <CreatePlayerDialog 
+        isOpen={showCreatePlayerDialog}
+        onOpenChange={setShowCreatePlayerDialog}
+      />
     </motion.div>
   )
 } 

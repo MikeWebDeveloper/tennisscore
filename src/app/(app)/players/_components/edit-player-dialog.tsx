@@ -24,15 +24,23 @@ interface EditPlayerDialogProps {
 
 export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDialogProps) {
   const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null)
+  const [isMainPlayer, setIsMainPlayer] = useState(false)
 
   useEffect(() => {
     if (player && isOpen) {
       setEditPreviewImage(null)
+      setIsMainPlayer(player.isMainPlayer || false)
     }
   }, [player, isOpen])
 
-  const handleUpdatePlayer = async (formData: FormData) => {
+  const handleUpdatePlayer = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     if (!player) return
+    
+    const formData = new FormData(event.currentTarget)
+    // Explicitly set the isMainPlayer value
+    formData.set("isMainPlayer", isMainPlayer.toString())
+    
     const result = await updatePlayer(player.$id, formData)
     if (result.success) {
       onOpenChange(false)
@@ -64,7 +72,7 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
             Update player information, profile picture, and settings.
           </DialogDescription>
         </DialogHeader>
-        <form action={handleUpdatePlayer} className="space-y-4">
+        <form onSubmit={handleUpdatePlayer} className="space-y-4">
           {/* Profile Picture Upload */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
@@ -153,8 +161,8 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="editIsMainPlayer" 
-              name="isMainPlayer" 
-              defaultChecked={player.isMainPlayer}
+              checked={isMainPlayer}
+              onCheckedChange={(checked) => setIsMainPlayer(checked as boolean)}
             />
             <Label htmlFor="editIsMainPlayer" className="text-sm">
               Set as main player

@@ -2,20 +2,32 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft,
-  RotateCcw,
   Undo,
-  Trophy
+  Trophy,
+  Share2,
+  MessageCircle,
+  MessageSquare,
+  Copy,
+  Mail
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { Player, PointDetail, Score } from "@/lib/types"
+import { Player, PointDetail, TennisScore, Score } from "@/lib/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
+import { PointDetailSheet } from "./point-detail-sheet"
+import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -27,61 +39,211 @@ interface LiveScoringInterfaceProps {
     pointLog?: string[]
     status: string
     scoreParsed: Score
+    matchFormatParsed?: {
+      sets: number
+      noAd: boolean
+      detailLevel?: "points" | "simple" | "complex"
+    }
   }
 }
 
-interface TennisScore {
-  sets: number[][]
-  games: number[]
-  points: number[]
-  server: 'p1' | 'p2'
-  gameNumber: number
-  setNumber: number
-}
-
-interface MatchStats {
-  player1: {
-    totalPoints?: number
-    servicePoints?: number
-    receivingPoints?: number
-    aces: number
-    doubleFaults: number
-    winners: number
-    unforcedErrors: number
-    breakPointsWon: number
-    totalBreakPoints: number
-  }
-  player2: {
-    totalPoints?: number
-    servicePoints?: number
-    receivingPoints?: number
-    aces: number
-    doubleFaults: number
-    winners: number
-    unforcedErrors: number
-    breakPointsWon: number
-    totalBreakPoints: number
-  }
-  isBasicMode?: boolean
-}
-
-// Stats Card Component
-function StatsCard({ title, player1Value, player2Value }: {
-  title: string
-  player1Value: number | string
-  player2Value: number | string
+// Share Dialog Component
+function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  matchId: string
+  playerNames: { p1: string; p2: string }
 }) {
+  const shareUrl = `${window.location.origin}/live/${matchId}`
+  const shareText = `🎾 Live Tennis Match: ${playerNames.p1} vs ${playerNames.p2}`
+
+  const shareOptions = [
+    { name: "Messenger", icon: MessageCircle, url: `fb-messenger://share?link=${encodeURIComponent(shareUrl)}`, color: "bg-blue-500" },
+    { name: "WhatsApp", icon: MessageSquare, url: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, color: "bg-green-500" },
+    { name: "SMS", icon: Mail, url: `sms:?body=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, color: "bg-gray-500" },
+    { name: "Copy Link", icon: Copy, action: () => {
+        navigator.clipboard.writeText(shareUrl)
+        toast.success("Link copied to clipboard!")
+        onOpenChange(false)
+      },
+      color: "bg-primary"
+    }
+  ]
+
   return (
-    <div className="flex justify-between items-center py-2">
-      <div className="text-center flex-1">
-        <div className="text-lg font-semibold">{player1Value}</div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share Live Match</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            {shareOptions.map((option) => (
+              <Button
+                key={option.name}
+                variant="outline"
+                className={`h-16 flex flex-col gap-1 text-white border-0 hover:opacity-90 ${option.color}`}
+                onClick={() => {
+                  if (option.action) option.action()
+                  else if (option.url) window.open(option.url, '_blank', 'noopener,noreferrer')
+                }}
+              >
+                <option.icon className="h-5 w-5" />
+                <span className="text-xs">{option.name}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// New Scoreboard Component
+function LiveScoreboard({
+  playerOneName,
+  playerTwoName,
+  score,
+  onServerClick,
+}: {
+  playerOneName: string
+  playerTwoName: string
+  score: TennisScore
+  onServerClick: () => void
+}) {
+  const getPointDisplay = (points: number[], playerIndex: number) => {
+    const p1 = points[0]
+    const p2 = points[1]
+    if (p1 >= 3 && p2 >= 3) {
+      if (p1 === p2) return "40"
+      if (p1 > p2 && playerIndex === 0) return "AD"
+      if (p2 > p1 && playerIndex === 1) return "AD"
+    }
+    const pointMap = ["0", "15", "30", "40"]
+    return pointMap[points[playerIndex]] || "40"
+  }
+
+  return (
+    <div className="bg-card text-card-foreground rounded-lg border my-4">
+      {/* Header Row */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-2 border-b text-xs text-muted-foreground">
+        <div className="font-semibold uppercase tracking-wider">Player</div>
+        <div className="w-12 text-center">Sets</div>
+        <div className="w-12 text-center">Games</div>
+        <div className="w-12 text-center">Points</div>
       </div>
-      <div className="text-center flex-1">
-        <div className="text-sm text-muted-foreground">{title}</div>
+      
+      {/* Player 1 Row */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium">
+        <div className="flex items-center gap-3">
+          {score.server === "p1" && (
+            <motion.button layoutId="tennis-ball" onClick={onServerClick} className="flex-shrink-0">
+              <TennisBallIcon className="w-4 h-4" />
+            </motion.button>
+          )}
+          <span className="font-sans font-semibold tracking-wide">{playerOneName}</span>
+        </div>
+        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[0] || 0}</div>
+        <div className="w-12 text-center font-mono text-xl">{score.games[0]}</div>
+        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+          {getPointDisplay(score.points, 0)}
+        </div>
       </div>
-      <div className="text-center flex-1">
-        <div className="text-lg font-semibold">{player2Value}</div>
+
+      <div className="border-t"></div>
+
+      {/* Player 2 Row */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium">
+        <div className="flex items-center gap-3">
+          {score.server === "p2" && (
+            <motion.button layoutId="tennis-ball" onClick={onServerClick} className="flex-shrink-0">
+              <TennisBallIcon className="w-4 h-4" />
+            </motion.button>
+          )}
+          <span className="font-sans font-semibold tracking-wide">{playerTwoName}</span>
+        </div>
+        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[1] || 0}</div>
+        <div className="w-12 text-center font-mono text-xl">{score.games[1]}</div>
+        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+          {getPointDisplay(score.points, 1)}
+        </div>
       </div>
+    </div>
+  )
+}
+
+// New Interactive Point Entry Component
+function PointEntry({ 
+  onPointWin,
+  score
+}: { 
+  onPointWin: (winner: "p1" | "p2") => void,
+  score: TennisScore
+}) {
+  const getPointDisplay = (points: number) => {
+    if (score.points[0] >= 3 && score.points[1] >= 3) {
+      if (score.points[0] === score.points[1]) return "40"
+      if (points > Math.min(score.points[0], score.points[1])) return "AD"
+    }
+    const pointMap = ["0", "15", "30", "40"]
+    return pointMap[points] || "40"
+  }
+  return (
+    <div className="grid grid-cols-2 items-center justify-around gap-2 my-6">
+      <div 
+        onClick={() => onPointWin("p1")}
+        className="h-32 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
+      >
+        <span className="text-6xl font-black font-mono text-center text-card-foreground">
+          {getPointDisplay(score.points[0])}
+        </span>
+      </div>
+      <div 
+        onClick={() => onPointWin("p2")}
+        className="h-32 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
+      >
+        <span className="text-6xl font-black font-mono text-center text-card-foreground">
+          {getPointDisplay(score.points[1])}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// Simple stats display for live match
+function SimpleStatsDisplay({ points, playerNames }: { points: PointDetail[], playerNames: {p1: string, p2: string} }) {
+  const p1Points = points.filter(p => p.winner === "p1").length
+  const p2Points = points.filter(p => p.winner === "p2").length
+  
+  const p1ServePointsWon = points.filter(p => p.server === "p1" && p.winner === "p1").length
+  const p1ServePointsTotal = points.filter(p => p.server === "p1").length
+  
+  const p2ServePointsWon = points.filter(p => p.server === "p2" && p.winner === "p2").length
+  const p2ServePointsTotal = points.filter(p => p.server === "p2").length
+
+  const p1BreakPointsWon = points.filter(p => p.winner === "p1" && p.server === "p2" && p.isBreakPoint).length
+  const p1BreakPointsTotal = points.filter(p => p.server === "p2" && p.isBreakPoint).length
+  
+  const p2BreakPointsWon = points.filter(p => p.winner === "p2" && p.server === "p1" && p.isBreakPoint).length
+  const p2BreakPointsTotal = points.filter(p => p.server === "p1" && p.isBreakPoint).length
+  
+  const StatRow = ({ label, p1Value, p2Value }: { label: string; p1Value: string | number; p2Value: string | number }) => (
+    <div className="flex justify-between items-center text-sm py-2 border-b last:border-b-0">
+      <div className="font-medium">{p1Value}</div>
+      <div className="text-muted-foreground text-xs text-center px-2">{label}</div>
+      <div className="font-medium">{p2Value}</div>
+    </div>
+  )
+
+  return (
+    <div className="p-2">
+      <div className="flex justify-between items-center text-sm font-semibold mb-2">
+        <span>{playerNames.p1}</span>
+        <span>{playerNames.p2}</span>
+      </div>
+      <StatRow label="Total Points Won" p1Value={p1Points} p2Value={p2Points} />
+      <StatRow label="Service Pts Won" p1Value={`${p1ServePointsWon}/${p1ServePointsTotal}`} p2Value={`${p2ServePointsWon}/${p2ServePointsTotal}`} />
+      <StatRow label="Break Pts Won" p1Value={`${p1BreakPointsWon}/${p1BreakPointsTotal}`} p2Value={`${p2BreakPointsWon}/${p2BreakPointsTotal}`} />
     </div>
   )
 }
@@ -91,6 +253,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
   // Local state for UI
   const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
+  const [showPointDetail, setShowPointDetail] = useState(false)
+  const [showServeSelection, setShowServeSelection] = useState(false)
+  const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [score, setScore] = useState<TennisScore>({
     sets: [],
     games: [0, 0],
@@ -101,6 +267,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   })
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [isInGame, setIsInGame] = useState(false)
+  
+  const playerNames = {
+    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
+    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
+  }
+
+  const detailLevel = match.matchFormatParsed?.detailLevel || "simple"
   
   // Helper function to recalculate score from point log
   const recalculateScoreFromPointLog = (points: PointDetail[]): TennisScore => {
@@ -175,6 +348,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         gameNumber: 1,
         setNumber: 1
       }
+      // Show serve selection for new matches
+      setShowServeSelection(true)
     }
     
     setScore(initialScore)
@@ -195,78 +370,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     toast.success("Server changed")
   }
 
-  const calculateMatchStats = (points: PointDetail[]): MatchStats => {
-    const hasDetailedOutcomes = points.some(p => 
-      p.pointOutcome && !['winner', 'unforced_error'].includes(p.pointOutcome)
-    )
-    
-    if (!hasDetailedOutcomes && points.length > 0) {
-      const player1Stats = {
-        totalPoints: points.filter(p => p.winner === 'p1').length,
-        servicePoints: points.filter(p => p.winner === 'p1' && p.server === 'p1').length,
-        receivingPoints: points.filter(p => p.winner === 'p1' && p.server === 'p2').length,
-        aces: 0,
-        doubleFaults: 0,
-        winners: points.filter(p => p.winner === 'p1').length,
-        unforcedErrors: 0,
-        breakPointsWon: points.filter(p => p.winner === 'p1' && p.isBreakPoint).length,
-        totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p2').length
-      }
-      
-      const player2Stats = {
-        totalPoints: points.filter(p => p.winner === 'p2').length,
-        servicePoints: points.filter(p => p.winner === 'p2' && p.server === 'p2').length,
-        receivingPoints: points.filter(p => p.winner === 'p2' && p.server === 'p1').length,
-        aces: 0,
-        doubleFaults: 0,
-        winners: points.filter(p => p.winner === 'p2').length,
-        unforcedErrors: 0,
-        breakPointsWon: points.filter(p => p.winner === 'p2' && p.isBreakPoint).length,
-        totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p1').length
-      }
-      
-      return {
-        player1: player1Stats,
-        player2: player2Stats,
-        isBasicMode: true
-      }
-    }
-
-    // Detailed mode fallback
-    const player1Stats = {
-      aces: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'ace').length,
-      doubleFaults: points.filter(p => p.server === 'p1' && p.pointOutcome === 'double_fault').length,
-      winners: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'winner').length,
-      unforcedErrors: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'unforced_error').length,
-      breakPointsWon: points.filter(p => p.winner === 'p1' && p.isBreakPoint).length,
-      totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p2').length
-    }
-    
-    const player2Stats = {
-      aces: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'ace').length,
-      doubleFaults: points.filter(p => p.server === 'p2' && p.pointOutcome === 'double_fault').length,
-      winners: points.filter(p => p.winner === 'p2' && p.pointOutcome === 'winner').length,
-      unforcedErrors: points.filter(p => p.winner === 'p1' && p.pointOutcome === 'unforced_error').length,
-      breakPointsWon: points.filter(p => p.winner === 'p2' && p.isBreakPoint).length,
-      totalBreakPoints: points.filter(p => p.isBreakPoint && p.server === 'p1').length
-    }
-    
-    return {
-      player1: player1Stats,
-      player2: player2Stats,
-      isBasicMode: false
-    }
-  }
-
   const getGameScore = () => {
     const p1Points = score.points[0]
     const p2Points = score.points[1]
     
-    // Handle deuce situation
     if (p1Points >= 3 && p2Points >= 3) {
       if (p1Points === p2Points) return "DEUCE"
-      if (p1Points > p2Points) return `AD-${match.playerOne.firstName.toUpperCase()}`
-      return `AD-${match.playerTwo.firstName.toUpperCase()}`
+      if (p1Points > p2Points) return `AD-${playerNames.p1.split(' ')[0].toUpperCase()}`
+      return `AD-${playerNames.p2.split(' ')[0].toUpperCase()}`
     }
     
     const pointMap = ["0", "15", "30", "40"]
@@ -277,26 +388,55 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handlePointWin = async (winner: 'p1' | 'p2') => {
-         const newPointDetail: PointDetail = {
-       id: `${Date.now()}-${Math.random()}`,
-       pointNumber: pointLog.length + 1,
-       setNumber: score.setNumber,
-       gameNumber: score.gameNumber,
-       server: score.server,
-       winner,
-       gameScore: getGameScore(),
-       pointOutcome: 'winner',
-       serveType: 'first',
-       serveOutcome: 'winner',
-       rallyLength: 1,
-       isBreakPoint: false,
-       isSetPoint: false,
-       isMatchPoint: false,
-       isGameWinning: false,
-       isSetWinning: false,
-       isMatchWinning: false,
-       timestamp: new Date().toISOString()
-     }
+    // For "points" detail level, just award the point immediately
+    if (detailLevel === "points") {
+      await awardPoint(winner)
+      return
+    }
+    
+    // For "simple" or "complex" detail levels, show point detail sheet
+    setPendingPointWinner(winner)
+    setShowPointDetail(true)
+  }
+
+  const isBreakPoint = (currentScore: TennisScore): boolean => {
+    const receiver = currentScore.server === 'p1' ? 'p2' : 'p1'
+    const receiverIndex = receiver === 'p1' ? 0 : 1
+    const serverIndex = receiver === 'p1' ? 1 : 0
+    
+    const receiverPoints = currentScore.points[receiverIndex]
+    const serverPoints = currentScore.points[serverIndex]
+    
+    // Standard game breakpoint condition
+    if (receiverPoints >= 3 && receiverPoints > serverPoints) {
+      return true
+    }
+    
+    return false
+  }
+
+  const awardPoint = async (winner: 'p1' | 'p2', pointDetails?: Partial<PointDetail>) => {
+    const newPointDetail: PointDetail = {
+      id: `${Date.now()}-${Math.random()}`,
+      pointNumber: pointLog.length + 1,
+      setNumber: score.setNumber,
+      gameNumber: score.gameNumber,
+      server: score.server,
+      winner,
+      gameScore: getGameScore(),
+      pointOutcome: pointDetails?.pointOutcome || 'winner',
+      serveType: pointDetails?.serveType || 'first',
+      serveOutcome: pointDetails?.serveOutcome || 'winner',
+      rallyLength: pointDetails?.rallyLength || 1,
+      isBreakPoint: isBreakPoint(score),
+      isSetPoint: false,
+      isMatchPoint: false,
+      isGameWinning: false,
+      isSetWinning: false,
+      isMatchWinning: false,
+      timestamp: new Date().toISOString(),
+      ...pointDetails
+    }
 
     const updatedPointLog = [...pointLog, newPointDetail]
     setPointLog(updatedPointLog)
@@ -318,6 +458,22 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
+  const handlePointDetailSave = (pointDetail: Partial<PointDetail>) => {
+    if (pendingPointWinner) {
+      awardPoint(pendingPointWinner, pointDetail)
+      setPendingPointWinner(null)
+      setShowPointDetail(false)
+    }
+  }
+
+  const handleSimplePoint = () => {
+    if (pendingPointWinner) {
+      awardPoint(pendingPointWinner)
+      setPendingPointWinner(null)
+      setShowPointDetail(false)
+    }
+  }
+
   const handleUndo = async () => {
     if (pointLog.length === 0) return
 
@@ -325,14 +481,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setPointLog(updatedPointLog)
     
     if (updatedPointLog.length === 0) {
-             const initialScore: TennisScore = {
-         sets: [],
-         games: [0, 0],
-         points: [0, 0],
-         server: 'p1' as const,
-         gameNumber: 1,
-         setNumber: 1
-       }
+      const initialScore: TennisScore = {
+        sets: [],
+        games: [0, 0],
+        points: [0, 0],
+        server: 'p1' as const,
+        gameNumber: 1,
+        setNumber: 1
+      }
       setScore(initialScore)
       setIsInGame(false)
     } else {
@@ -357,57 +513,47 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     router.push(`/matches/${match.$id}`)
   }
 
-  const matchStats = calculateMatchStats(pointLog)
+  // Enhanced share with native sharing API
+  const handleShare = () => {
+    const shareUrl = `${window.location.origin}/live/${match.$id}`
+    const shareData = {
+      title: "Live Tennis Match",
+      text: `🎾 ${playerNames.p1} vs ${playerNames.p2}`,
+      url: shareUrl,
+    }
 
-  const renderStatsCard = () => (
-    <motion.div
-      key="stats"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-1"
-    >
-      {matchStats.isBasicMode ? (
-        <>
-          <StatsCard title="Total Points" player1Value={matchStats.player1.totalPoints || 0} player2Value={matchStats.player2.totalPoints || 0} />
-          <StatsCard title="Service Points Won" player1Value={matchStats.player1.servicePoints || 0} player2Value={matchStats.player2.servicePoints || 0} />
-          <StatsCard title="Receiving Points Won" player1Value={matchStats.player1.receivingPoints || 0} player2Value={matchStats.player2.receivingPoints || 0} />
-          {(matchStats.player1.breakPointsWon > 0 || matchStats.player2.breakPointsWon > 0) && (
-            <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
-          )}
-        </>
-      ) : (
-        <>
-          <StatsCard title="Aces" player1Value={matchStats.player1.aces} player2Value={matchStats.player2.aces} />
-          <StatsCard title="Double Faults" player1Value={matchStats.player1.doubleFaults} player2Value={matchStats.player2.doubleFaults} />
-          <StatsCard title="Winners" player1Value={matchStats.player1.winners} player2Value={matchStats.player2.winners} />
-          <StatsCard title="Unforced Errors" player1Value={matchStats.player1.unforcedErrors} player2Value={matchStats.player2.unforcedErrors} />
-          <StatsCard title="Break Points Won" player1Value={`${matchStats.player1.breakPointsWon}/${matchStats.player1.totalBreakPoints}`} player2Value={`${matchStats.player2.breakPointsWon}/${matchStats.player2.totalBreakPoints}`} />
-        </>
-      )}
-    </motion.div>
-  )
+    if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      navigator
+        .share(shareData)
+        .catch((err) => console.warn("Share cancelled", err))
+    } else {
+      setShowShareDialog(true)
+    }
+  }
 
-  
+  const handleServeSelection = (selectedServer: 'p1' | 'p2') => {
+    setScore(prev => ({
+      ...prev,
+      server: selectedServer
+    }))
+    setShowServeSelection(false)
+    toast.success(`${playerNames[selectedServer]} will serve first`)
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col h-screen">
-        {/* Header - Fixed */}
-        <div className="flex-shrink-0 p-4 bg-background border-b">
+        {/* Minimalist Header - Fixed */}
+        <div className="flex-shrink-0 bg-background border-b px-4 py-3">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
             <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-green-500 text-white">
-                Live
-              </Badge>
+              <Button variant="ghost" size="icon" onClick={handleShare}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Badge variant="default" className="bg-green-500 text-white animate-pulse">Live</Badge>
             </div>
           </div>
         </div>
@@ -415,143 +561,77 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto px-4 pb-32 md:pb-24">
-            {/* Score Display - Clean */}
-            <div className="py-6">
-              <Card>
-                <CardContent className="p-0">
-                  {/* Player Names */}
-                  <div className="grid grid-cols-2 bg-muted/50">
-                    <div className="p-4 text-center">
-                      <div className="text-sm text-muted-foreground mb-1">Player 1</div>
-                      <div className="font-semibold flex items-center justify-center gap-2">
-                        {score.server === 'p1' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                        {match.playerOne.firstName}
-                      </div>
-                    </div>
-                    <div className="p-4 text-center border-l">
-                      <div className="text-sm text-muted-foreground mb-1">Player 2</div>
-                      <div className="font-semibold flex items-center justify-center gap-2">
-                        {score.server === 'p2' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                        {match.playerTwo.firstName}
-                      </div>
-                    </div>
-                  </div>
+            <LiveScoreboard 
+              playerOneName={playerNames.p1}
+              playerTwoName={playerNames.p2}
+              score={score}
+              onServerClick={() => setShowServeSwapConfirm(true)}
+            />
 
-                  {/* Set Scores */}
-                  <div className="grid grid-cols-2">
-                    <div className="p-6 text-center">
-                      <div className="text-4xl font-bold font-mono text-primary">
-                        {score.sets[0]?.[0] || 0}
-                      </div>
-                    </div>
-                    <div className="p-6 text-center border-l">
-                      <div className="text-4xl font-bold font-mono text-primary">
-                        {score.sets[0]?.[1] || 0}
-                      </div>
-                    </div>
-                  </div>
+            <PointEntry onPointWin={handlePointWin} score={score} />
+            
+            <Tabs defaultValue="stats" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="stats">Stats</TabsTrigger>
+                <TabsTrigger value="points">Points</TabsTrigger>
+                <TabsTrigger value="commentary">Commentary</TabsTrigger>
+              </TabsList>
 
-                  {/* Games */}
-                  <div className="grid grid-cols-2 bg-muted/30">
-                    <div className="p-4 text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Games</div>
-                      <div className="text-2xl font-mono">{score.games[0]}</div>
-                    </div>
-                    <div className="p-4 text-center border-l">
-                      <div className="text-xs text-muted-foreground mb-1">Games</div>
-                      <div className="text-2xl font-mono">{score.games[1]}</div>
-                    </div>
-                  </div>
-
-                  {/* Current Game */}
-                  <div className="bg-primary/10 p-4 text-center">
-                    <div className="text-sm text-muted-foreground mb-2">Current Game</div>
-                    <div className="text-xl font-mono text-primary font-semibold">
-                      {getGameScore()}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Stats Card */}
-            <Card className="mb-6">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Match Details</CardTitle>
-              </CardHeader>
-              <CardContent className="min-h-[200px]">
-                <AnimatePresence mode="wait">
-                  {renderStatsCard()}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
+              <TabsContent value="stats" className="mt-4">
+                <SimpleStatsDisplay points={pointLog} playerNames={playerNames} />
+              </TabsContent>
+              <TabsContent value="points" className="max-h-96 overflow-y-auto mt-4">
+                <PointByPointView pointLog={pointLog} playerNames={playerNames} />
+              </TabsContent>
+              <TabsContent value="commentary" className="text-center py-8 text-muted-foreground mt-4">
+                Commentary coming soon...
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 
-        {/* Bottom Action Bar - Fixed */}
+        {/* Bottom Action Bar - Fixed (Undo/End Match) */}
         <div className="flex-shrink-0 bg-background border-t p-4">
-          <div className="grid grid-cols-2 gap-3">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                handlePointWin('p1')
-                if ('vibrate' in navigator) {
-                  navigator.vibrate(50)
-                }
-              }}
-              className="h-20 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-lg flex flex-col items-center justify-center transition-all duration-200"
-            >
-              <div className="text-sm font-medium">{match.playerOne.firstName}</div>
-              <div className="text-xs opacity-80">Point</div>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                handlePointWin('p2')
-                if ('vibrate' in navigator) {
-                  navigator.vibrate(50)
-                }
-              }}
-              className="h-20 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg shadow-lg flex flex-col items-center justify-center transition-all duration-200"
-            >
-              <div className="text-sm font-medium">{match.playerTwo.firstName}</div>
-              <div className="text-xs opacity-80">Point</div>
-            </motion.button>
-          </div>
-          
-          {/* Action Buttons Row */}
-          <div className="flex gap-2 mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUndo}
-              disabled={pointLog.length === 0}
-              className="flex-1"
-            >
-              <Undo className="h-4 w-4 mr-2" />
-              Undo
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleUndo} disabled={pointLog.length === 0} className="flex-1">
+              <Undo className="h-4 w-4 mr-2" /> Undo
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowServeSwapConfirm(true)}
-              disabled={isInGame}
-              className="flex-1"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Swap
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEndMatch}
-              className="px-3"
-            >
-              <Trophy className="h-4 w-4" />
+            <Button variant="destructive" size="sm" onClick={handleEndMatch} className="flex-1">
+              <Trophy className="h-4 w-4 mr-2" /> End Match
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <ShareDialog 
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        matchId={match.$id}
+        playerNames={playerNames}
+      />
+
+      {/* Point Detail Sheet */}
+      {pendingPointWinner && (
+        <PointDetailSheet
+          open={showPointDetail}
+          onOpenChange={setShowPointDetail}
+          onSave={handlePointDetailSave}
+          onSimplePoint={handleSimplePoint}
+          pointContext={{
+            pointNumber: pointLog.length + 1,
+            setNumber: score.setNumber,
+            gameNumber: score.gameNumber,
+            gameScore: getGameScore(),
+            winner: pendingPointWinner,
+            server: score.server,
+            isBreakPoint: isBreakPoint(score),
+            isSetPoint: false,   // Could be calculated based on set situation
+            isMatchPoint: false, // Could be calculated based on match situation
+            playerNames
+          }}
+        />
+      )}
 
       {/* Serve Swap Confirmation Dialog */}
       <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
@@ -577,6 +657,41 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 className="flex-1"
               >
                 Change Server
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Initial Serve Selection Dialog */}
+      <Dialog open={showServeSelection} onOpenChange={() => {}}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TennisBallIcon className="w-5 h-5" />
+              Who serves first?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Choose which player will serve the first game of the match.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => handleServeSelection('p1')}
+                className="h-16 flex flex-col items-center gap-2"
+              >
+                <TennisBallIcon className="w-6 h-6" />
+                <span className="font-medium">{playerNames.p1}</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleServeSelection('p2')}
+                className="h-16 flex flex-col items-center gap-2"
+              >
+                <TennisBallIcon className="w-6 h-6" />
+                <span className="font-medium">{playerNames.p2}</span>
               </Button>
             </div>
           </div>

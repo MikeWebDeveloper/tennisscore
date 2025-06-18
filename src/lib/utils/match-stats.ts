@@ -52,6 +52,7 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
   const secondReturnPoints = playerReturns.filter(p => p.serveType === "second")
   const firstReturnPointsWon = firstReturnPoints.filter(p => p.winner === playerId).length
   const secondReturnPointsWon = secondReturnPoints.filter(p => p.winner === playerId).length
+  const totalReturnPointsWon = firstReturnPointsWon + secondReturnPointsWon
 
   // Point Stats
   const totalPointsWon = playerPoints.length
@@ -126,6 +127,10 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
     secondReturnPointsWon,
     secondReturnPointsPlayed: secondReturnPoints.length,
     secondReturnWinPercentage: secondReturnPoints.length > 0 ? (secondReturnPointsWon / secondReturnPoints.length) * 100 : 0,
+    
+    totalReturnPointsWon,
+    totalReturnPointsPlayed: playerReturns.length,
+    totalReturnWinPercentage: playerReturns.length > 0 ? (totalReturnPointsWon / playerReturns.length) * 100 : 0,
 
     // Point Stats
     totalPointsWon,

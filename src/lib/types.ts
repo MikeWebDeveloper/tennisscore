@@ -14,9 +14,8 @@ export interface Player {
   rating?: string
   profilePictureId?: string
   isMainPlayer?: boolean
+  isAnonymous?: boolean
   userId: string
-  $createdAt: string
-  $updatedAt: string
 }
 
 export interface Match {
@@ -41,12 +40,19 @@ export interface MatchFormat {
   finalSetTiebreak: boolean // Tiebreak in final set
   finalSetTiebreakAt?: number // Points for final set tiebreak (e.g., 10)
   shortSets?: boolean // First to 4 games (for practice)
+  detailLevel?: "points" | "simple" | "complex" // Level of detail for point tracking
 }
 
 export interface Score {
   sets: number[][]
   games: number[]
   points: number[]
+}
+
+export interface TennisScore extends Score {
+  server: "p1" | "p2"
+  gameNumber: number
+  setNumber: number
 }
 
 export interface DashboardStats {
@@ -136,6 +142,10 @@ export interface PlayerStats {
   secondReturnPointsWon: number
   secondReturnPointsPlayed: number
   secondReturnWinPercentage: number
+  
+  totalReturnPointsWon: number
+  totalReturnPointsPlayed: number
+  totalReturnWinPercentage: number
   
   // Point Stats
   totalPointsWon: number
