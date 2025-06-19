@@ -32,6 +32,8 @@ import { SimpleStatsPopup } from "./simple-stats-popup"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { MatchStatsComponent } from "../../../[id]/_components/match-stats"
+import { calculateMatchStats } from "@/lib/utils/match-stats"
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -168,7 +170,14 @@ function LiveScoreboard({
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
           )}
-          <span className="font-sans font-semibold tracking-wide">{playerOneName}</span>
+          <div className="flex flex-col">
+            <span className="font-sans font-semibold tracking-wide leading-tight">
+              {playerOneName.split(' ')[0]}
+            </span>
+            <span className="font-sans text-sm text-muted-foreground leading-tight">
+              {playerOneName.split(' ').slice(1).join(' ')}
+            </span>
+          </div>
           <Badge variant="secondary" className="text-xs">{setsWon[0]}</Badge>
         </div>
         {Array.from({ length: totalSetsToShow }, (_, i) => (
@@ -198,7 +207,14 @@ function LiveScoreboard({
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
           )}
-          <span className="font-sans font-semibold tracking-wide">{playerTwoName}</span>
+          <div className="flex flex-col">
+            <span className="font-sans font-semibold tracking-wide leading-tight">
+              {playerTwoName.split(' ')[0]}
+            </span>
+            <span className="font-sans text-sm text-muted-foreground leading-tight">
+              {playerTwoName.split(' ').slice(1).join(' ')}
+            </span>
+          </div>
           <Badge variant="secondary" className="text-xs">{setsWon[1]}</Badge>
         </div>
         {Array.from({ length: totalSetsToShow }, (_, i) => (
@@ -253,44 +269,6 @@ function PointEntry({
   )
 }
 
-// Simple stats display for live match
-function SimpleStatsDisplay({ points, playerNames }: { points: PointDetail[], playerNames: {p1: string, p2: string} }) {
-  const p1Points = points.filter(p => p.winner === "p1").length
-  const p2Points = points.filter(p => p.winner === "p2").length
-  
-  const p1ServePointsWon = points.filter(p => p.server === "p1" && p.winner === "p1").length
-  const p1ServePointsTotal = points.filter(p => p.server === "p1").length
-  
-  const p2ServePointsWon = points.filter(p => p.server === "p2" && p.winner === "p2").length
-  const p2ServePointsTotal = points.filter(p => p.server === "p2").length
-
-  const p1BreakPointsWon = points.filter(p => p.winner === "p1" && p.server === "p2" && p.isBreakPoint).length
-  const p1BreakPointsTotal = points.filter(p => p.server === "p2" && p.isBreakPoint).length
-  
-  const p2BreakPointsWon = points.filter(p => p.winner === "p2" && p.server === "p1" && p.isBreakPoint).length
-  const p2BreakPointsTotal = points.filter(p => p.server === "p1" && p.isBreakPoint).length
-  
-  const StatRow = ({ label, p1Value, p2Value }: { label: string; p1Value: string | number; p2Value: string | number }) => (
-    <div className="flex justify-between items-center text-sm py-2 border-b last:border-b-0">
-      <div className="font-medium">{p1Value}</div>
-      <div className="text-muted-foreground text-xs text-center px-2">{label}</div>
-      <div className="font-medium">{p2Value}</div>
-    </div>
-  )
-
-  return (
-    <div className="p-2">
-      <div className="flex justify-between items-center text-sm font-semibold mb-2">
-        <span>{playerNames.p1}</span>
-        <span>{playerNames.p2}</span>
-      </div>
-      <StatRow label="Total Points Won" p1Value={p1Points} p2Value={p2Points} />
-      <StatRow label="Service Pts Won" p1Value={`${p1ServePointsWon}/${p1ServePointsTotal}`} p2Value={`${p2ServePointsWon}/${p2ServePointsTotal}`} />
-      <StatRow label="Break Pts Won" p1Value={`${p1BreakPointsWon}/${p1BreakPointsTotal}`} p2Value={`${p2BreakPointsWon}/${p2BreakPointsTotal}`} />
-    </div>
-  )
-}
-
 export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   
@@ -313,10 +291,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [isInGame, setIsInGame] = useState(false)
   
   const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
+    p1: `${match.playerOne.firstName} ${match.playerTwo.lastName}`,
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
   }
 
+  const matchStats = calculateMatchStats(pointLog)
+  
   const detailLevel = match.matchFormatParsed?.detailLevel || "simple"
   
   // Helper function to recalculate score from point log
@@ -431,6 +411,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handlePointWin = async (winner: "p1" | "p2") => {
+    // Correctly access the parsed match format object
     const detailLevel = match.matchFormatParsed?.detailLevel
 
     if (detailLevel === "points") {
@@ -445,7 +426,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
-    // Default to complex if undefined or complex
+    // Default to complex if undefined or complex (which is disabled)
+    // This effectively means 'simple' is the most detailed option for now.
     setPendingPointWinner(winner)
     setShowPointDetail(true)
   }
@@ -598,10 +580,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col min-h-screen">
         {/* Minimalist Header - Fixed */}
         <div className="flex-shrink-0 bg-background border-b px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
@@ -615,8 +597,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-4 pb-32 md:pb-24">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <LiveScoreboard 
               playerOneName={playerNames.p1}
               playerTwoName={playerNames.p2}
@@ -651,7 +633,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               </TabsList>
 
               <TabsContent value="stats" className="mt-4">
-                <SimpleStatsDisplay points={pointLog} playerNames={playerNames} />
+                <MatchStatsComponent 
+                  stats={matchStats} 
+                  playerOne={match.playerOne} 
+                  playerTwo={match.playerTwo} 
+                />
               </TabsContent>
               <TabsContent value="points" className="max-h-96 overflow-y-auto mt-4">
                 <PointByPointView pointLog={pointLog} playerNames={playerNames} />
@@ -663,7 +649,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </div>
         </div>
 
-        {/* Bottom Action Bar - Fixed (Undo/End Match) */}
+        {/* Bottom Action Bar - Fixed (End Match) */}
         <div className="flex-shrink-0 bg-background border-t p-4">
           <div className="flex gap-2">
             <Button variant="destructive" size="sm" onClick={handleEndMatch} className="flex-1">
@@ -689,7 +675,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         serveType={serveType}
       />
 
-      {/* Point Detail Sheet */}
+      {/* Point Detail Sheet - Only shown for "complex" which is disabled */}
       {pendingPointWinner && detailLevel === "complex" && (
         <PointDetailSheet
           open={showPointDetail}
