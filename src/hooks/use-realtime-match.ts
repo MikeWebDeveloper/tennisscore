@@ -31,13 +31,13 @@ export function useRealtimeMatch(matchId: string) {
       try {
         console.log("🔄 Connecting to real-time updates...")
         
-        // Verify environment variables
-        const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID
-        const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID
+        // Verify environment variables and trim whitespace/newlines
+        const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID?.trim()
+        const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID?.trim()
         
         console.log("🔍 Environment check:", {
-          endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-          project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT,
+          endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.trim(),
+          project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT?.trim(),
           database: dbId,
           collection: collectionId,
           matchId

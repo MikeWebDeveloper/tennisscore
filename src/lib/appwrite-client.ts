@@ -8,8 +8,9 @@ let storageInstance: Storage | null = null
 
 const getClient = (): Client => {
     if (!clientInstance) {
-        const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
-        const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
+        // Trim whitespace and newlines from environment variables
+        const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.trim()
+        const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT?.trim()
 
         console.log("🔧 Creating Appwrite client with:", {
             endpoint: endpoint ? `${endpoint.slice(0, 30)}...` : "missing",
