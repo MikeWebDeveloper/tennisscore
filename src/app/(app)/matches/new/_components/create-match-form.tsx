@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
 import { CreatePlayerDialog } from "../../../players/_components/create-player-dialog"
+import { MobileBottomNavSpacer } from "@/components/layout/mobile-bottom-nav"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -400,6 +401,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         isOpen={showCreatePlayerDialog}
         onOpenChange={setShowCreatePlayerDialog}
       />
+      <MobileBottomNavSpacer />
     </motion.div>
   )
 } 

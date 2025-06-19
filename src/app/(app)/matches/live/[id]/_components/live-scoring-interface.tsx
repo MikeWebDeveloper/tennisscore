@@ -29,15 +29,9 @@ import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { PointDetailSheet } from "./point-detail-sheet"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { SimpleStatsPopup } from "./simple-stats-popup"
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3 }
-  }
-}
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -306,6 +300,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showPointDetail, setShowPointDetail] = useState(false)
   const [showSimpleStatsPopup, setShowSimpleStatsPopup] = useState(false)
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
+  const [serveType, setServeType] = useState<'first' | 'second'>('first')
   const [score, setScore] = useState<TennisScore>({
     sets: [],
     games: [0, 0],
@@ -436,21 +431,23 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handlePointWin = async (winner: "p1" | "p2") => {
-    // Directly read the detailLevel from the match prop
-    const detailLevel = match.matchFormatParsed?.detailLevel || "simple"
+    const detailLevel = match.matchFormatParsed?.detailLevel
 
-    // If the detail level is 'points', award the point immediately
-    // without showing any popups.
     if (detailLevel === "points") {
-      await awardPoint(winner) // Pass only the winner
+      // No popups, no extra details. Just award the point.
+      await awardPoint(winner, { serveType: "first", pointOutcome: "winner" })
       return
     }
 
-    // If the detail level is 'simple', show the PointDetailSheet.
     if (detailLevel === "simple") {
       setPendingPointWinner(winner)
-      setShowPointDetail(true)
+      setShowSimpleStatsPopup(true)
+      return
     }
+
+    // Default to complex if undefined or complex
+    setPendingPointWinner(winner)
+    setShowPointDetail(true)
   }
 
   const isBreakPoint = (currentScore: TennisScore): boolean => {
@@ -533,7 +530,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleSimpleStatsSave = (outcome: PointOutcome) => {
     if (pendingPointWinner) {
-      awardPoint(pendingPointWinner, { pointOutcome: outcome })
+      awardPoint(pendingPointWinner, {
+        serveType: serveType,
+        pointOutcome: outcome,
+      })
     }
     setPendingPointWinner(null)
     setShowSimpleStatsPopup(false)
@@ -628,13 +628,22 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
             <PointEntry onPointWin={handlePointWin} score={score} />
             
-            <motion.div variants={itemVariants} className="mt-4 flex justify-center">
+            <div className="mt-4 flex justify-center items-center gap-6">
               <Button variant="outline" size="sm" onClick={handleUndo} disabled={pointLog.length === 0}>
                 <Undo className="h-4 w-4 mr-2" /> Undo Last Point
               </Button>
-            </motion.div>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="serve-type" className={cn(serveType === 'first' && 'text-primary')}>1st</Label>
+                <Switch 
+                  id="serve-type"
+                  checked={serveType === 'second'}
+                  onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
+                />
+                <Label htmlFor="serve-type" className={cn(serveType === 'second' && 'text-primary')}>2nd</Label>
+              </div>
+            </div>
             
-            <Tabs defaultValue="stats" className="space-y-4">
+            <Tabs defaultValue="stats" className="space-y-4 mt-4">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="stats">Stats</TabsTrigger>
                 <TabsTrigger value="points">Points</TabsTrigger>
@@ -674,16 +683,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
       {/* Simple Stats Popup */}
       <SimpleStatsPopup
-        open={showSimpleStatsPopup}
+        isOpen={showSimpleStatsPopup}
         onOpenChange={setShowSimpleStatsPopup}
-        playerWinning={
-          pendingPointWinner === "p1" ? playerNames.p1 : playerNames.p2
-        }
-        onSave={handleSimpleStatsSave}
+        onSelectOutcome={handleSimpleStatsSave}
+        serveType={serveType}
       />
 
       {/* Point Detail Sheet */}
-      {pendingPointWinner && detailLevel === "simple" && (
+      {pendingPointWinner && detailLevel === "complex" && (
         <PointDetailSheet
           open={showPointDetail}
           onOpenChange={setShowPointDetail}

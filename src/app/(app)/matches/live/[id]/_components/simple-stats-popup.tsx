@@ -5,69 +5,74 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { useState } from "react"
 import { PointOutcome } from "@/lib/types"
 
 interface SimpleStatsPopupProps {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (outcome: PointOutcome) => void
-  playerWinning: string
+  onSelectOutcome: (outcome: PointOutcome) => void
+  serveType: "first" | "second"
 }
 
-const pointOutcomes: { value: PointOutcome; label: string }[] = [
-  { value: "winner", label: "Winner" },
-  { value: "ace", label: "Ace" },
-  { value: "unforced_error", label: "Unforced Error" },
-  { value: "double_fault", label: "Double Fault" },
-]
-
 export function SimpleStatsPopup({
-  open,
+  isOpen,
   onOpenChange,
-  onSave,
-  playerWinning,
+  onSelectOutcome,
+  serveType,
 }: SimpleStatsPopupProps) {
-  const [selectedOutcome, setSelectedOutcome] = useState<PointOutcome>("winner")
-
-  const handleSave = () => {
-    onSave(selectedOutcome)
+  const handleSelect = (outcome: PointOutcome) => {
+    onSelectOutcome(outcome)
+    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xs">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Point to {playerWinning}</DialogTitle>
+          <DialogTitle>How did the point end?</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
-          <RadioGroup
-            value={selectedOutcome}
-            onValueChange={(value: PointOutcome) => setSelectedOutcome(value)}
-            className="space-y-2"
+        <div className="grid grid-cols-2 gap-3 py-4">
+          <Button
+            variant="outline"
+            className="h-16 text-base"
+            onClick={() => handleSelect("ace")}
           >
-            {pointOutcomes.map((outcome) => (
-              <Label
-                key={outcome.value}
-                htmlFor={outcome.value}
-                className="flex items-center justify-between rounded-md border p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary"
-              >
-                {outcome.label}
-                <RadioGroupItem value={outcome.value} id={outcome.value} />
-              </Label>
-            ))}
-          </RadioGroup>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSave} className="w-full">
-            Save Point
+            Ace
           </Button>
-        </DialogFooter>
+          <Button
+            variant="outline"
+            className="h-16 text-base"
+            onClick={() => handleSelect("winner")}
+          >
+            Winner
+          </Button>
+          <Button
+            variant="outline"
+            className="h-16 text-base"
+            onClick={() => handleSelect("unforced_error")}
+          >
+            Unforced Error
+          </Button>
+          {serveType === "second" ? (
+            <Button
+              variant="destructive"
+              className="h-16 text-base"
+              onClick={() => handleSelect("double_fault")}
+            >
+              Double Fault
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="h-16 text-base"
+              onClick={() => handleSelect("forced_error")}
+            >
+              Forced Error
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   )

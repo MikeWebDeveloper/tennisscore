@@ -4,7 +4,9 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Trophy } from "lucide-react"
+import { Trophy, Eye } from "lucide-react"
+import { Player } from "@/lib/types"
+import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 
 interface MatchesListProps {
   matches: Array<{
@@ -19,6 +21,8 @@ interface MatchesListProps {
     winnerName?: string
     score: string // Original JSON string
     scoreParsed?: { sets: { p1: number; p2: number }[] }
+    playerOne?: Player
+    playerTwo?: Player
   }>
 }
 
@@ -72,13 +76,20 @@ export function MatchesList({ matches }: MatchesListProps) {
                 </div>
               )}
 
-              <div className="pt-2 border-t">
-                <Button variant="outline" className="w-full" asChild>
+              <div className="flex items-center gap-2 mt-4">
+                <Button variant="outline" size="sm" asChild>
                   <Link href={`/matches/${match.$id}`}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <Eye className="h-4 w-4 mr-2" />
                     View Details
                   </Link>
                 </Button>
+                <DeleteMatchButton 
+                  matchId={match.$id}
+                  playerNames={{
+                    p1: `${match.playerOne?.firstName || 'Player'} ${match.playerOne?.lastName || '1'}`,
+                    p2: `${match.playerTwo?.firstName || 'Player'} ${match.playerTwo?.lastName || '2'}`,
+                  }}
+                />
               </div>
             </div>
           </CardContent>
