@@ -194,6 +194,31 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     window.location.reload()
   }
 
+  // Test function to trigger a manual update
+  const testUpdate = async () => {
+    try {
+      console.log("🧪 Testing manual update for match:", match.$id)
+      
+      // Create a mock update
+      const testUpdate = {
+        score: JSON.stringify({
+          ...match.scoreParsed,
+          points: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)]
+        }),
+        status: match.status
+      }
+      
+      console.log("Test update data:", testUpdate)
+      
+      // This would normally be done via a server action, but for testing
+      // we can see if we receive the update via real-time
+      toast.success("Test update triggered - check console for real-time events")
+    } catch (error) {
+      console.error("Test update failed:", error)
+      toast.error("Test update failed")
+    }
+  }
+
   const matchStats = calculateMatchStats(pointLog)
   const hasPointData = pointLog.length > 0
   const playerNames = {
@@ -224,6 +249,14 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                 className="p-2"
               >
                 <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={testUpdate}
+                className="p-2 text-xs"
+              >
+                🧪 Test
               </Button>
               <Button 
                 variant="outline" 
