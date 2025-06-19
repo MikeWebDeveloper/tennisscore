@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Share2, Trophy, Clock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Share2, Trophy, Clock, RefreshCw, Wifi, WifiOff } from "lucide-react"
 import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
@@ -132,7 +133,7 @@ const itemVariants = {
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const [match, setMatch] = useState(initialMatch)
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
-  const { connected, lastUpdate } = useRealtimeMatch(match.$id)
+  const { connected, lastUpdate, error, retryCount } = useRealtimeMatch(match.$id)
 
   // Parse point log
   useEffect(() => {
@@ -159,13 +160,38 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     }
   }, [lastUpdate])
 
-  const shareMatch = () => {
+  const shareMatch = async () => {
     const url = window.location.href
+    const title = `${match.playerOne.firstName} ${match.playerOne.lastName} vs ${match.playerTwo.firstName} ${match.playerTwo.lastName} - Live Tennis Match`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: "Watch this live tennis match!",
+          url
+        })
+      } catch (err) {
+        // User canceled share or error occurred
+        if (err instanceof Error && err.name !== 'AbortError') {
+          fallbackShare(url)
+        }
+      }
+    } else {
+      fallbackShare(url)
+    }
+  }
+
+  const fallbackShare = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {
       toast.success("Match link copied to clipboard!")
     }).catch(() => {
       toast.error("Failed to copy link")
     })
+  }
+
+  const refreshMatch = () => {
+    window.location.reload()
   }
 
   const matchStats = calculateMatchStats(pointLog)
@@ -185,23 +211,60 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center pt-4">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Trophy className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Live Tennis Match</h1>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">Live Tennis Match</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshMatch}
+                className="p-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={shareMatch}
+                className="p-2"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-2">
+          
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white">
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
-            {connected && (
-              <Badge variant="outline" className="border-green-500 text-green-500">
-                Connected
-              </Badge>
-            )}
+            
+            {/* Connection Status */}
+            <Badge variant={connected ? "outline" : "destructive"} className={`border-2 ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
+              {connected ? (
+                <>
+                  <Wifi className="w-3 h-3 mr-1" />
+                  Connected
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 mr-1" />
+                  {retryCount > 0 ? `Retry ${retryCount}/5` : 'Disconnected'}
+                </>
+              )}
+            </Badge>
           </div>
+          
+          {error && (
+            <div className="text-xs text-red-500 mt-2 p-2 bg-red-50 rounded border">
+              Connection error: {error}
+            </div>
+          )}
         </motion.div>
 
-        {/* Main Scoreboard */}
+        {/* Live Scoreboard */}
         <motion.div variants={itemVariants}>
           <LiveScoreboard
             playerOneName={playerNames.p1}
@@ -214,60 +277,50 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           />
         </motion.div>
 
-        {/* Tabbed Content - Stats and Point by Point */}
-        {hasPointData && (
-          <motion.div variants={itemVariants}>
-            <Tabs defaultValue="stats" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="stats">Stats</TabsTrigger>
-                <TabsTrigger value="points">Point-by-Point</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="stats" className="mt-4">
-                <Card>
-                  <CardContent className="p-0">
-                    <MatchStatsComponent 
-                      stats={matchStats}
-                      playerOne={match.playerOne}
-                      playerTwo={match.playerTwo}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="points" className="mt-4">
-                <Card>
-                  <CardContent className="p-0">
-                    <PointByPointView 
-                      pointLog={pointLog} 
-                      playerNames={playerNames} 
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        )}
-
-        {/* Share Button */}
-        <motion.div variants={itemVariants} className="text-center py-4">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.02 }}
-            onClick={shareMatch}
-            className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-semibold"
-          >
-            <Share2 className="h-4 w-4" />
-            Share Match
-          </motion.button>
+        {/* Match Details Tabs */}
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="stats" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="stats">Stats</TabsTrigger>
+              <TabsTrigger value="points" disabled={!hasPointData}>
+                Point-by-Point
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="stats" className="mt-4">
+              <Card>
+                <CardContent className="p-4">
+                  <MatchStatsComponent 
+                    stats={matchStats}
+                    playerOne={match.playerOne}
+                    playerTwo={match.playerTwo}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="points" className="mt-4">
+              <Card>
+                <CardContent className="p-4">
+                  <PointByPointView
+                    pointLog={pointLog}
+                    playerNames={playerNames}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </motion.div>
 
-        {/* Match Info */}
-        <motion.div variants={itemVariants} className="text-center text-sm text-muted-foreground pb-4">
-          <div className="flex items-center justify-center gap-2">
+        {/* Match Info Footer */}
+        <motion.div variants={itemVariants} className="text-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <Clock className="h-4 w-4" />
-            <span>Match started {new Date(match.matchDate).toLocaleDateString()}</span>
+            <span>Started {new Date(match.matchDate).toLocaleString()}</span>
           </div>
+          <p className="text-xs">
+            Powered by TennisScore
+          </p>
         </motion.div>
       </motion.div>
     </div>
