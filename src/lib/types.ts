@@ -44,9 +44,11 @@ export interface MatchFormat {
 }
 
 export interface Score {
-  sets: number[][]
-  games: number[]
-  points: number[]
+  sets: Array<[number, number]>;
+  games: [number, number];
+  points: [number, number];
+  isTiebreak?: boolean;
+  tiebreakPoints?: [number, number];
 }
 
 export interface TennisScore extends Score {
@@ -117,63 +119,49 @@ export interface MatchStats {
 }
 
 export interface PlayerStats {
-  // Serve Stats
+  totalPointsPlayed: number
+  totalPointsWon: number
+  pointWinPercentage: number
+  servicePointsWon: number
+  returnPointsWon: number
+  winners: number
+  unforcedErrors: number
+  forcedErrors: number
+  aces: number
+  doubleFaults: number
   firstServesMade: number
   firstServesAttempted: number
   firstServePercentage: number
   firstServePointsWon: number
   firstServePointsPlayed: number
   firstServeWinPercentage: number
-  
   secondServesMade: number
   secondServesAttempted: number
+  secondServePercentage: number
   secondServePointsWon: number
   secondServePointsPlayed: number
   secondServeWinPercentage: number
-  
-  aces: number
-  doubleFaults: number
-  
-  // Return Stats
   firstReturnPointsWon: number
   firstReturnPointsPlayed: number
   firstReturnWinPercentage: number
-  
   secondReturnPointsWon: number
   secondReturnPointsPlayed: number
   secondReturnWinPercentage: number
-  
   totalReturnPointsWon: number
   totalReturnPointsPlayed: number
   totalReturnWinPercentage: number
-  
-  // Point Stats
-  totalPointsWon: number
-  totalPointsPlayed: number
-  pointWinPercentage: number
-  
-  winners: number
-  unforcedErrors: number
-  forcedErrors: number
-  
-  // Break Point Stats
   breakPointsWon: number
   breakPointsPlayed: number
-  breakPointConversionPercentage: number
-  
   breakPointsSaved: number
   breakPointsFaced: number
+  breakPointConversionPercentage: number
   breakPointSavePercentage: number
-  
-  // Shot Type Stats
   forehandWinners: number
   forehandErrors: number
   backhandWinners: number
   backhandErrors: number
   volleyWinners: number
   volleyErrors: number
-  
-  // Net Points
   netPointsWon: number
   netPointsPlayed: number
   netPointWinPercentage: number

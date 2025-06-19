@@ -138,7 +138,7 @@ export function isGamePoint(p1Points: number, p2Points: number, noAd: boolean = 
 }
 
 export function isTiebreakWon(p1Points: number, p2Points: number, targetPoints: number = 7): boolean {
-  // Tiebreak is won by first to target points (usually 7) with a 2-point margin
+  // Tiebreak is won by first to target points (usually 7 or 10) with a 2-point margin
   return (p1Points >= targetPoints && p1Points - p2Points >= 2) ||
          (p2Points >= targetPoints && p2Points - p1Points >= 2)
 }
@@ -149,40 +149,20 @@ export function getTiebreakWinner(p1Points: number, p2Points: number, targetPoin
   return null
 }
 
-export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat, currentSets: number[][]): boolean {
+export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat): boolean {
   const targetGames = format.shortSets ? 4 : 6
-  
-  // Standard set: first to target games, must win by 2
   if (p1Games >= targetGames && p1Games - p2Games >= 2) return true
   if (p2Games >= targetGames && p2Games - p1Games >= 2) return true
-  
-  // Check if this is the final set
-  const setsNeededToWin = Math.ceil(format.sets / 2)
-  const p1SetsWon = currentSets.filter(set => set[0] > set[1]).length
-  const p2SetsWon = currentSets.filter(set => set[1] > set[0]).length
-  const isFinalSet = (p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1)
-  
-  // Tiebreak scenario (6-6 in regular sets)
-  if (format.tiebreak && !isFinalSet) {
+  if (format.tiebreak) {
     const tiebreakAt = format.shortSets ? 4 : 6
-    if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) || 
+    if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
-  
-  // Final set tiebreak handling
-  if (isFinalSet && format.finalSetTiebreak) {
+  if (format.finalSetTiebreak) {
     const tiebreakAt = format.shortSets ? 4 : 6
-    if (format.finalSetTiebreakAt && format.finalSetTiebreakAt !== 7) {
-      // Super tiebreak (usually to 10 points)
-      if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) || 
-          (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
-    } else {
-      // Regular tiebreak in final set
-      if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) || 
-          (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
-    }
+    if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
+        (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
-  
   return false
 }
 
@@ -226,25 +206,14 @@ export function isMatchWon(currentSets: number[][], format: MatchFormat): { won:
   return { won: false, winner: null }
 }
 
-export function shouldStartTiebreak(p1Games: number, p2Games: number, format: MatchFormat, currentSets: number[][]): boolean {
+export function shouldStartTiebreak(p1Games: number, p2Games: number, format: MatchFormat): boolean {
   const targetGames = format.shortSets ? 4 : 6
-  
-  // Check if this is the final set
-  const setsNeededToWin = Math.ceil(format.sets / 2)
-  const p1SetsWon = currentSets.filter(set => set[0] > set[1]).length
-  const p2SetsWon = currentSets.filter(set => set[1] > set[0]).length
-  const isFinalSet = (p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1)
-  
-  // Regular sets: start tiebreak at 6-6 (or 4-4 for short sets)
-  if (!isFinalSet && format.tiebreak && p1Games === targetGames && p2Games === targetGames) {
+  if (format.tiebreak && p1Games === targetGames && p2Games === targetGames) {
     return true
   }
-  
-  // Final set: depends on finalSetTiebreak setting
-  if (isFinalSet && format.finalSetTiebreak && p1Games === targetGames && p2Games === targetGames) {
+  if (format.finalSetTiebreak && p1Games === targetGames && p2Games === targetGames) {
     return true
   }
-  
   return false
 }
 
@@ -326,7 +295,7 @@ export function getGameContext(
     else gamesAfterWin[1]++
   }
   
-  const wouldWinSet = isSetWon(gamesAfterWin[0], gamesAfterWin[1], format, score.sets)
+  const wouldWinSet = isSetWon(gamesAfterWin[0], gamesAfterWin[1], format)
   
   // Check if this could be a match point
   let wouldWinMatch = false
@@ -337,7 +306,7 @@ export function getGameContext(
     wouldWinMatch = matchResult.won
   }
   
-  const isTiebreak = shouldStartTiebreak(score.games[0], score.games[1], format, score.sets)
+  const isTiebreak = shouldStartTiebreak(score.games[0], score.games[1], format)
   
   // Calculate next server
   let nextServer: "p1" | "p2"

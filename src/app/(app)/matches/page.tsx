@@ -41,8 +41,13 @@ export default async function MatchesPage() {
   const playersMap = new Map(players.map(player => [player.$id, player]))
 
   const enhancedMatches = matches.map(match => {
-    const playerOne = playersMap.get(match.playerOneId)
-    const playerTwo = playersMap.get(match.playerTwoId)
+    // Handle anonymous players by checking ID prefix
+    const playerOne = match.playerOneId.startsWith('anonymous-') 
+      ? { firstName: "Player", lastName: "1", $id: match.playerOneId } as Player
+      : playersMap.get(match.playerOneId)
+    const playerTwo = match.playerTwoId.startsWith('anonymous-') 
+      ? { firstName: "Player", lastName: "2", $id: match.playerTwoId } as Player
+      : playersMap.get(match.playerTwoId)
     const winner = match.winnerId ? playersMap.get(match.winnerId) : null
 
     let scoreParsed: { sets: { p1: number; p2: number }[] } | undefined = undefined

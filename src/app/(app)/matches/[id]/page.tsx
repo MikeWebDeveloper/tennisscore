@@ -12,7 +12,7 @@ import { getPlayersByIds } from "@/lib/actions/players"
 import { PointByPointView } from "./_components/point-by-point-view"
 import { MinimalistStats } from "./_components/minimalist-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
-import { PointDetail } from "@/lib/types"
+import { PointDetail, Player } from "@/lib/types"
 import { DeleteMatchButton } from "./_components/delete-match-button"
 
 export default async function MatchPage({ 
@@ -31,10 +31,36 @@ export default async function MatchPage({
     redirect("/matches")
   }
 
-  // Fetch player data
-  const playersData = await getPlayersByIds([match.playerOneId, match.playerTwoId])
-  const player1 = playersData[match.playerOneId]
-  const player2 = playersData[match.playerTwoId]
+  // Handle anonymous players by checking ID prefix
+  let player1, player2
+  
+  if (match.playerOneId.startsWith('anonymous-')) {
+    player1 = { 
+      $id: match.playerOneId,
+      firstName: "Player", 
+      lastName: "1",
+      userId: user.$id,
+      $createdAt: new Date().toISOString(),
+      $updatedAt: new Date().toISOString()
+    } as Player
+  } else {
+    const playersData = await getPlayersByIds([match.playerOneId])
+    player1 = playersData[match.playerOneId]
+  }
+  
+  if (match.playerTwoId.startsWith('anonymous-')) {
+    player2 = { 
+      $id: match.playerTwoId,
+      firstName: "Player", 
+      lastName: "2",
+      userId: user.$id,
+      $createdAt: new Date().toISOString(),
+      $updatedAt: new Date().toISOString()
+    } as Player
+  } else {
+    const playersData = await getPlayersByIds([match.playerTwoId])
+    player2 = playersData[match.playerTwoId]
+  }
 
   // Parse the match data
   const score = JSON.parse(match.score || "{}")

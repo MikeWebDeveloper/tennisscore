@@ -32,6 +32,7 @@ interface PointDetailSheetProps {
     gameScore: string
     winner: "p1" | "p2"
     server: "p1" | "p2"
+    serveType: "first" | "second"
     isBreakPoint: boolean
     isSetPoint: boolean
     isMatchPoint: boolean
@@ -66,7 +67,7 @@ export function PointDetailSheet({
 
     // Double fault validation
     if (pointOutcome === "double_fault") {
-      if (serveType !== "second") {
+      if (pointContext.serveType !== "second") {
         error = "Double faults can only occur on second serves"
       } else if (pointContext.winner === pointContext.server) {
         error = "Double faults must be won by the receiving player"
@@ -88,7 +89,7 @@ export function PointDetailSheet({
     }
 
     setValidationError(error)
-  }, [pointOutcome, serveType, pointContext.winner, pointContext.server, lastShotType])
+  }, [pointOutcome, pointContext.serveType, pointContext.winner, pointContext.server, lastShotType])
 
   // Auto-correct winner for certain outcomes
   useEffect(() => {
@@ -154,18 +155,24 @@ export function PointDetailSheet({
   // Get available point outcomes based on serve type and context
   const getAvailableOutcomes = () => {
     const outcomes = [
-      { value: "winner", label: "Winner" },
-      { value: "unforced_error", label: "Unforced Error" },
-      { value: "forced_error", label: "Forced Error" },
-    ]
+      { value: "winner", label: "Winner", disabled: false },
+      { value: "unforced_error", label: "Unforced Error", disabled: false },
+      { value: "forced_error", label: "Forced Error", disabled: false },
+    ] as Array<{ value: PointOutcome; label: string; disabled: boolean }>
 
-    // Add ace for all serves
-    outcomes.push({ value: "ace", label: "Ace" })
+    // Ace option (disabled if winner is not server)
+    outcomes.push({
+      value: "ace",
+      label: "Ace",
+      disabled: pointContext.winner !== pointContext.server,
+    })
 
-    // Add double fault only for second serves
-    if (serveType === "second") {
-      outcomes.push({ value: "double_fault", label: "Double Fault" })
-    }
+    // Double fault option (only when second serve and winner is returner)
+    outcomes.push({
+      value: "double_fault",
+      label: "Double Fault",
+      disabled: pointContext.serveType !== "second" || pointContext.winner === pointContext.server,
+    })
 
     return outcomes
   }
@@ -290,9 +297,9 @@ export function PointDetailSheet({
                   className="mt-2 grid grid-cols-2 gap-2"
                 >
                   {getAvailableOutcomes().map((outcome) => (
-                    <div key={outcome.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={outcome.value} id={outcome.value} />
-                      <Label htmlFor={outcome.value}>{outcome.label}</Label>
+                    <div key={outcome.value} className="flex items-center space-x-2 opacity-100">
+                      <RadioGroupItem value={outcome.value} id={outcome.value} disabled={outcome.disabled} />
+                      <Label htmlFor={outcome.value} className={outcome.disabled ? "text-muted-foreground" : ""}>{outcome.label}</Label>
                     </div>
                   ))}
                 </RadioGroup>

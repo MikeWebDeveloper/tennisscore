@@ -57,8 +57,12 @@ export function MatchesList({ matches }: MatchesListProps) {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-semibold">Score:</span>
-                <span className="font-mono text-lg">{formatScore(match.scoreParsed)}</span>
+                <span className="font-semibold">
+                  {match.status === "Completed" ? "Final Score:" : "Score:"}
+                </span>
+                <span className={`font-mono ${match.status === "Completed" ? "text-xl font-bold" : "text-lg"}`}>
+                  {formatScore(match.scoreParsed)}
+                </span>
               </div>
               
               <div className="flex justify-between items-center">

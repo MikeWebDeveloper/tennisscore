@@ -6,12 +6,6 @@ import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition } from "@/lib/types"
 
-interface Score {
-  sets: number[][]
-  games: number[]
-  points: number[]
-}
-
 export async function createMatch(matchData: {
   playerOneId: string
   playerTwoId: string
@@ -25,49 +19,46 @@ export async function createMatch(matchData: {
 
     const { databases } = await createAdminClient()
 
-    // Handle anonymous players - create temporary player records
-    const handleAnonymousPlayer = async (playerId: string, playerNum: number) => {
-      if (playerId.startsWith("anonymous-")) {
-        const anonymousPlayer = await databases.createDocument(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-          ID.unique(),
-          {
-            firstName: "Player",
-            lastName: `${playerNum}`,
-            isAnonymous: true, // Add a flag to identify these players
-            userId: user.$id,
-          }
-        )
-        return anonymousPlayer.$id
-      }
-      return playerId
+    const playerOneId = matchData.playerOneId;
+    const playerTwoId = matchData.playerTwoId;
+    const docToCreate: Record<string, unknown> = {
+      matchFormat: JSON.stringify(matchData.matchFormat),
+      matchDate: new Date().toISOString(),
+      status: "In Progress",
+      score: JSON.stringify({
+        sets: [],
+        games: [0, 0],
+        points: [0, 0],
+      }),
+      pointLog: [],
+      events: [],
+      userId: user.$id,
+    };
+
+    // For anonymous players, create temporary IDs that can be recognized later
+    // We'll use a special prefix that indicates these are not real player IDs
+    if (playerOneId.startsWith("anonymous-")) {
+      // Use the anonymous ID directly - it will be recognized by the UI
+      docToCreate.playerOneId = playerOneId;
+    } else {
+      docToCreate.playerOneId = playerOneId;
     }
 
-    const actualPlayerOneId = await handleAnonymousPlayer(matchData.playerOneId, 1)
-    const actualPlayerTwoId = await handleAnonymousPlayer(matchData.playerTwoId, 2)
-
-    const initialScore: Score = {
-      sets: [],
-      games: [0, 0],
-      points: [0, 0],
+    if (playerTwoId.startsWith("anonymous-")) {
+      // Use the anonymous ID directly - it will be recognized by the UI
+      docToCreate.playerTwoId = playerTwoId;
+    } else {
+      docToCreate.playerTwoId = playerTwoId;
     }
+
+    // The handleAnonymousPlayer function should be REMOVED.
+    // Do NOT create documents for anonymous players.
 
     const match = await databases.createDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       ID.unique(),
-      {
-        playerOneId: actualPlayerOneId,
-        playerTwoId: actualPlayerTwoId,
-        matchFormat: JSON.stringify(matchData.matchFormat),
-        matchDate: new Date().toISOString(),
-        status: "In Progress",
-        score: JSON.stringify(initialScore),
-        pointLog: [],
-        events: [],
-        userId: user.$id,
-      },
+      docToCreate, // Use the new document object
       [Permission.read(Role.any())]
     )
 

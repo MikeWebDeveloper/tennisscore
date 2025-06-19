@@ -2,6 +2,16 @@ import { PointDetail, MatchStats, PlayerStats } from "@/lib/types"
 
 function createEmptyPlayerStats(): PlayerStats {
   return {
+    totalPointsPlayed: 0,
+    totalPointsWon: 0,
+    pointWinPercentage: 0,
+    servicePointsWon: 0,
+    returnPointsWon: 0,
+    winners: 0,
+    unforcedErrors: 0,
+    forcedErrors: 0,
+    aces: 0,
+    doubleFaults: 0,
     firstServesMade: 0,
     firstServesAttempted: 0,
     firstServePercentage: 0,
@@ -10,11 +20,10 @@ function createEmptyPlayerStats(): PlayerStats {
     firstServeWinPercentage: 0,
     secondServesMade: 0,
     secondServesAttempted: 0,
+    secondServePercentage: 0,
     secondServePointsWon: 0,
     secondServePointsPlayed: 0,
     secondServeWinPercentage: 0,
-    aces: 0,
-    doubleFaults: 0,
     firstReturnPointsWon: 0,
     firstReturnPointsPlayed: 0,
     firstReturnWinPercentage: 0,
@@ -24,17 +33,11 @@ function createEmptyPlayerStats(): PlayerStats {
     totalReturnPointsWon: 0,
     totalReturnPointsPlayed: 0,
     totalReturnWinPercentage: 0,
-    totalPointsWon: 0,
-    totalPointsPlayed: 0,
-    pointWinPercentage: 0,
-    winners: 0,
-    unforcedErrors: 0,
-    forcedErrors: 0,
     breakPointsWon: 0,
     breakPointsPlayed: 0,
-    breakPointConversionPercentage: 0,
     breakPointsSaved: 0,
     breakPointsFaced: 0,
+    breakPointConversionPercentage: 0,
     breakPointSavePercentage: 0,
     forehandWinners: 0,
     forehandErrors: 0,
@@ -57,94 +60,108 @@ export function calculateMatchStats(pointLog: PointDetail[]): MatchStats {
   }
 
   pointLog.forEach(point => {
-    const server = point.server
-    const winner = point.winner
-    const returner = server === 'p1' ? 'p2' : 'p1'
+    const winnerStats = point.winner === 'p1' ? p1Stats : p2Stats
+    const loserStats = point.winner === 'p1' ? p2Stats : p1Stats
+    const serverStats = point.server === 'p1' ? p1Stats : p2Stats
+    const returnerStats = point.server === 'p1' ? p2Stats : p1Stats
 
-    const serverStats = server === 'p1' ? p1Stats : p2Stats
-    const returnerStats = returner === 'p1' ? p1Stats : p2Stats
-    const winnerStats = winner === 'p1' ? p1Stats : p2Stats
-    const loserStats = winner === 'p1' ? p2Stats : p1Stats
-
-    // Total points
     p1Stats.totalPointsPlayed++
     p2Stats.totalPointsPlayed++
-    winnerStats.totalPointsWon++
 
-    // Serve stats
+    winnerStats.totalPointsWon++
+    if (point.server === point.winner) {
+      winnerStats.servicePointsWon++
+    } else {
+      winnerStats.returnPointsWon++
+    }
+
+    // Enhanced serve statistics tracking
     if (point.serveType === 'first') {
       serverStats.firstServesAttempted++
-      if (point.pointOutcome !== 'double_fault') { // A first serve can't be a double fault
+      
+      // First serve went in if it's not a double fault and not followed by second serve
+      if (point.serveOutcome !== 'double_fault') {
         serverStats.firstServesMade++
         serverStats.firstServePointsPlayed++
-        if (winner === server) {
+        if (point.winner === point.server) {
           serverStats.firstServePointsWon++
         }
       }
-    } else { // second serve
+    } else if (point.serveType === 'second') {
+      // Second serve means first serve missed
+      if (serverStats.firstServesAttempted === 0) {
+        serverStats.firstServesAttempted++
+      }
+      
       serverStats.secondServesAttempted++
-      if (point.pointOutcome !== 'double_fault') {
+      if (point.serveOutcome !== 'double_fault') {
         serverStats.secondServesMade++
         serverStats.secondServePointsPlayed++
-        if (winner === server) {
+        if (point.winner === point.server) {
           serverStats.secondServePointsWon++
         }
       }
     }
 
-    // Return stats
-    if (point.pointOutcome !== 'ace' && point.pointOutcome !== 'double_fault') {
-        returnerStats.totalReturnPointsPlayed++;
-        if (winner === returner) {
-            returnerStats.totalReturnPointsWon++;
-        }
-        if (point.serveType === 'first') {
-            returnerStats.firstReturnPointsPlayed++;
-            if (winner === returner) {
-                returnerStats.firstReturnPointsWon++;
-            }
-        } else {
-            returnerStats.secondReturnPointsPlayed++;
-            if (winner === returner) {
-                returnerStats.secondReturnPointsWon++;
-            }
-        }
-    }
-
-    // Point outcomes
-    if (point.pointOutcome === 'ace') serverStats.aces++
-    if (point.pointOutcome === 'double_fault') serverStats.doubleFaults++
-    if (point.pointOutcome === 'winner') winnerStats.winners++
-    if (point.pointOutcome === 'unforced_error') loserStats.unforcedErrors++
-    if (point.pointOutcome === 'forced_error') loserStats.forcedErrors++
-
-    // Break points
+    // Enhanced breakpoint tracking
     if (point.isBreakPoint) {
+      // Receiver gets a break point opportunity
       returnerStats.breakPointsPlayed++
+      
+      // Server faces a break point
       serverStats.breakPointsFaced++
-      if (winner === returner) {
+      
+      if (point.winner !== point.server) {
+        // Receiver wins the break point
         returnerStats.breakPointsWon++
       } else {
+        // Server saves the break point
         serverStats.breakPointsSaved++
       }
+    }
+    
+    switch (point.pointOutcome) {
+      case 'ace':
+        serverStats.aces++
+        winnerStats.winners++
+        break
+      case 'double_fault':
+        serverStats.doubleFaults++
+        loserStats.unforcedErrors++
+        break
+      case 'winner':
+        winnerStats.winners++
+        break
+      case 'unforced_error':
+        loserStats.unforcedErrors++
+        break
+      case 'forced_error':
+        loserStats.forcedErrors++
+        winnerStats.winners++ 
+        break
     }
   })
 
   // Final percentage calculations
-  const calculatePercentages = (stats: PlayerStats) => {
-    stats.firstServePercentage = stats.firstServesAttempted > 0 ? (stats.firstServesMade / stats.firstServesAttempted) * 100 : 0
-    stats.firstServeWinPercentage = stats.firstServePointsPlayed > 0 ? (stats.firstServePointsWon / stats.firstServePointsPlayed) * 100 : 0
-    stats.secondServeWinPercentage = stats.secondServePointsPlayed > 0 ? (stats.secondServePointsWon / stats.secondServePointsPlayed) * 100 : 0
-    stats.totalReturnWinPercentage = stats.totalReturnPointsPlayed > 0 ? (stats.totalReturnPointsWon / stats.totalReturnPointsPlayed) * 100 : 0
-    stats.firstReturnWinPercentage = stats.firstReturnPointsPlayed > 0 ? (stats.firstReturnPointsWon / stats.firstReturnPointsPlayed) * 100 : 0;
-    stats.secondReturnWinPercentage = stats.secondReturnPointsPlayed > 0 ? (stats.secondReturnPointsWon / stats.secondReturnPointsPlayed) * 100 : 0;
-    stats.breakPointConversionPercentage = stats.breakPointsPlayed > 0 ? (stats.breakPointsWon / stats.breakPointsPlayed) * 100 : 0
-    stats.breakPointSavePercentage = stats.breakPointsFaced > 0 ? (stats.breakPointsSaved / stats.breakPointsFaced) * 100 : 0
-    stats.pointWinPercentage = stats.totalPointsPlayed > 0 ? (stats.totalPointsWon / stats.totalPointsPlayed) * 100 : 0
-  }
+  // Calculate all percentages for player 1
+  p1Stats.firstServePercentage = p1Stats.firstServesAttempted > 0 ? (p1Stats.firstServesMade / p1Stats.firstServesAttempted) * 100 : 0
+  p1Stats.secondServePercentage = p1Stats.secondServesAttempted > 0 ? (p1Stats.secondServesMade / p1Stats.secondServesAttempted) * 100 : 0
+  p1Stats.firstServeWinPercentage = p1Stats.firstServePointsPlayed > 0 ? (p1Stats.firstServePointsWon / p1Stats.firstServePointsPlayed) * 100 : 0
+  p1Stats.secondServeWinPercentage = p1Stats.secondServePointsPlayed > 0 ? (p1Stats.secondServePointsWon / p1Stats.secondServePointsPlayed) * 100 : 0
+  p1Stats.totalReturnWinPercentage = p1Stats.totalReturnPointsPlayed > 0 ? (p1Stats.totalReturnPointsWon / p1Stats.totalReturnPointsPlayed) * 100 : 0
+  p1Stats.breakPointConversionPercentage = p1Stats.breakPointsPlayed > 0 ? (p1Stats.breakPointsWon / p1Stats.breakPointsPlayed) * 100 : 0
+  p1Stats.breakPointSavePercentage = p1Stats.breakPointsFaced > 0 ? (p1Stats.breakPointsSaved / p1Stats.breakPointsFaced) * 100 : 0
+  p1Stats.pointWinPercentage = p1Stats.totalPointsPlayed > 0 ? (p1Stats.totalPointsWon / p1Stats.totalPointsPlayed) * 100 : 0
 
-  calculatePercentages(p1Stats)
-  calculatePercentages(p2Stats)
+  // Calculate all percentages for player 2
+  p2Stats.firstServePercentage = p2Stats.firstServesAttempted > 0 ? (p2Stats.firstServesMade / p2Stats.firstServesAttempted) * 100 : 0
+  p2Stats.secondServePercentage = p2Stats.secondServesAttempted > 0 ? (p2Stats.secondServesMade / p2Stats.secondServesAttempted) * 100 : 0
+  p2Stats.firstServeWinPercentage = p2Stats.firstServePointsPlayed > 0 ? (p2Stats.firstServePointsWon / p2Stats.firstServePointsPlayed) * 100 : 0
+  p2Stats.secondServeWinPercentage = p2Stats.secondServePointsPlayed > 0 ? (p2Stats.secondServePointsWon / p2Stats.secondServePointsPlayed) * 100 : 0
+  p2Stats.totalReturnWinPercentage = p2Stats.totalReturnPointsPlayed > 0 ? (p2Stats.totalReturnPointsWon / p2Stats.totalReturnPointsPlayed) * 100 : 0
+  p2Stats.breakPointConversionPercentage = p2Stats.breakPointsPlayed > 0 ? (p2Stats.breakPointsWon / p2Stats.breakPointsPlayed) * 100 : 0
+  p2Stats.breakPointSavePercentage = p2Stats.breakPointsFaced > 0 ? (p2Stats.breakPointsSaved / p2Stats.breakPointsFaced) * 100 : 0
+  p2Stats.pointWinPercentage = p2Stats.totalPointsPlayed > 0 ? (p2Stats.totalPointsWon / p2Stats.totalPointsPlayed) * 100 : 0
 
   return { player1: p1Stats, player2: p2Stats }
 }
@@ -241,6 +258,17 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
   const netPointsWon = netPoints.filter(p => p.winner === playerId).length
 
   return {
+    // Point Stats
+    totalPointsWon,
+    totalPointsPlayed,
+    pointWinPercentage: totalPointsPlayed > 0 ? (totalPointsWon / totalPointsPlayed) * 100 : 0,
+    servicePointsWon: firstServePointsWon + secondServePointsWon,
+    returnPointsWon: totalReturnPointsWon,
+
+    winners,
+    unforcedErrors,
+    forcedErrors,
+
     // **CORRECTED SERVE STATS**
     firstServesMade: firstServesIn,
     firstServesAttempted: totalServicePoints, // All service points are first serve attempts
@@ -251,6 +279,7 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
 
     secondServesMade: secondServesIn,
     secondServesAttempted: totalServicePoints - firstServesIn, // Second serves attempted when first serve missed
+    secondServePercentage: (totalServicePoints - firstServesIn) > 0 ? (secondServesIn / (totalServicePoints - firstServesIn)) * 100 : 0,
     secondServePointsWon,
     secondServePointsPlayed: secondServePoints.length,
     secondServeWinPercentage: secondServePoints.length > 0 ? (secondServePointsWon / secondServePoints.length) * 100 : 0,
@@ -270,15 +299,6 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
     totalReturnPointsWon,
     totalReturnPointsPlayed: playerReturns.length,
     totalReturnWinPercentage: playerReturns.length > 0 ? (totalReturnPointsWon / playerReturns.length) * 100 : 0,
-
-    // Point Stats
-    totalPointsWon,
-    totalPointsPlayed,
-    pointWinPercentage: totalPointsPlayed > 0 ? (totalPointsWon / totalPointsPlayed) * 100 : 0,
-
-    winners,
-    unforcedErrors,
-    forcedErrors,
 
     // Break Point Stats
     breakPointsWon,

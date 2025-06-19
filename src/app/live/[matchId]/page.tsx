@@ -21,19 +21,34 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       matchId
     )
 
-    // Fetch player data
-    const [playerOne, playerTwo] = await Promise.all([
-      databases.getDocument(
+    // Handle new anonymous player logic: check for embedded player data first
+    let playerOne, playerTwo
+    
+    if (match.playerOneData) {
+      playerOne = match.playerOneData
+    } else if (match.playerOneId) {
+      playerOne = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerOneId
-      ),
-      databases.getDocument(
+      )
+    } else {
+      // Fallback for missing data
+      playerOne = { firstName: "Player", lastName: "1" }
+    }
+    
+    if (match.playerTwoData) {
+      playerTwo = match.playerTwoData
+    } else if (match.playerTwoId) {
+      playerTwo = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerTwoId
       )
-    ])
+    } else {
+      // Fallback for missing data
+      playerTwo = { firstName: "Player", lastName: "2" }
+    }
 
     // Parse the match data
     const matchData = {
@@ -66,18 +81,32 @@ export async function generateMetadata({ params }: PageProps) {
       matchId
     )
 
-    const [playerOne, playerTwo] = await Promise.all([
-      databases.getDocument(
+    // Handle new anonymous player logic for metadata
+    let playerOne, playerTwo
+    
+    if (match.playerOneData) {
+      playerOne = match.playerOneData
+    } else if (match.playerOneId) {
+      playerOne = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerOneId
-      ),
-      databases.getDocument(
+      )
+    } else {
+      playerOne = { firstName: "Player", lastName: "1" }
+    }
+    
+    if (match.playerTwoData) {
+      playerTwo = match.playerTwoData
+    } else if (match.playerTwoId) {
+      playerTwo = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerTwoId
       )
-    ])
+    } else {
+      playerTwo = { firstName: "Player", lastName: "2" }
+    }
 
     return {
       title: `${playerOne.firstName} ${playerOne.lastName} vs ${playerTwo.firstName} ${playerTwo.lastName} - Live Match`,

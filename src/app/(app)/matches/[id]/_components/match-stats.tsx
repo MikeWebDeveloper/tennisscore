@@ -1,142 +1,382 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Player, MatchStats as MatchStatsType } from "@/lib/types"
-import { cn } from "@/lib/utils"
-import { BarChart, Target, Zap, TrendingUp, Activity } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Player, MatchStats } from "@/lib/types"
+import { Target, Zap, Shield } from "lucide-react"
 
-interface MatchStatsProps {
-  stats: MatchStatsType
+interface MatchStatsComponentProps {
+  stats: MatchStats
   playerOne: Player
   playerTwo: Player
 }
 
-const StatRow = ({
-  label,
-  p1Value,
-  p2Value,
-  p1Total,
-  p2Total,
-  isPercentage = false,
-  delay = 0,
-}: {
-  label: string
-  p1Value: number
-  p2Value: number
-  p1Total?: number
-  p2Total?: number
-  isPercentage?: boolean
-  delay?: number
-}) => {
-  const total = p1Value + p2Value
-  const p1Percentage = total > 0 ? (p1Value / total) * 100 : 0
-  const p2Percentage = total > 0 ? (p2Value / total) * 100 : 0
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
 
-  const p1Display = isPercentage ? `${p1Value.toFixed(0)}%` : p1Value
-  const p2Display = isPercentage ? `${p2Value.toFixed(0)}%` : p2Value
-  
-  const p1Subtext = isPercentage && p1Total ? `(${p1Value.toFixed(0)}/${p1Total})` : null
-  const p2Subtext = isPercentage && p2Total ? `(${p2Value.toFixed(0)}/${p2Total})` : null
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+}
+
+// Stat row component
+function StatRow({ 
+  label, 
+  value1, 
+  value2, 
+  format = "number",
+  showProgress = true 
+}: { 
+  label: string
+  value1: number
+  value2: number
+  format?: "number" | "percentage"
+  showProgress?: boolean
+}) {
+  const total = value1 + value2
+  const percentage1 = total > 0 ? (value1 / total) * 100 : 50
+  const percentage2 = total > 0 ? (value2 / total) * 100 : 50
+
+  const formatValue = (value: number) => {
+    if (format === "percentage") {
+      return `${value.toFixed(0)}%`
+    }
+    return value.toString()
+  }
 
   return (
-    <motion.div
-      className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 py-3"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.08 }}
+    <motion.div 
+      variants={itemVariants}
+      className="space-y-2"
     >
-      {/* Player 1 Stat */}
-      <div className="text-right">
-        <div className="font-bold text-lg font-mono">{p1Display}</div>
-        {p1Subtext && <div className="text-xs text-muted-foreground">{p1Subtext}</div>}
+      <div className="flex items-center justify-between text-sm">
+        <motion.span 
+          className="font-mono font-semibold"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 0.3 }}
+        >
+          {formatValue(value1)}
+        </motion.span>
+        <span className="text-xs text-muted-foreground uppercase tracking-wider">
+          {label}
+        </span>
+        <motion.span 
+          className="font-mono font-semibold"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 0.3 }}
+        >
+          {formatValue(value2)}
+        </motion.span>
       </div>
-
-      {/* Center Bar */}
-      <div className="w-24 sm:w-48 text-center">
-        <div className="text-xs sm:text-sm text-muted-foreground mb-1.5 truncate">{label}</div>
-        <div className="flex items-center bg-muted h-2 rounded-full">
+      {showProgress && (
+        <div className="flex gap-1 h-2">
           <motion.div
-            className="bg-primary h-full rounded-l-full"
+            className="bg-blue-500 rounded-l"
             initial={{ width: 0 }}
-            animate={{ width: `${p1Percentage}%` }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: delay * 0.08 + 0.2 }}
+            animate={{ width: `${percentage1}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           />
           <motion.div
-            className="bg-red-500 h-full rounded-r-full"
+            className="bg-red-500 rounded-r"
             initial={{ width: 0 }}
-            animate={{ width: `${p2Percentage}%` }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: delay * 0.08 + 0.2 }}
+            animate={{ width: `${percentage2}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
-      </div>
+      )}
+    </motion.div>
+  )
+}
 
-      {/* Player 2 Stat */}
-      <div className="text-left">
-        <div className="font-bold text-lg font-mono">{p2Display}</div>
-        {p2Subtext && <div className="text-xs text-muted-foreground">{p2Subtext}</div>}
+export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsComponentProps) {
+  return (
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-4"
+    >
+      {/* Points Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Points
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <StatRow 
+            label="Total Points Won" 
+            value1={stats.player1.totalPointsWon} 
+            value2={stats.player2.totalPointsWon} 
+          />
+          <StatRow 
+            label="Winners" 
+            value1={stats.player1.winners} 
+            value2={stats.player2.winners} 
+          />
+          <StatRow 
+            label="Unforced Errors" 
+            value1={stats.player1.unforcedErrors} 
+            value2={stats.player2.unforcedErrors} 
+          />
+        </CardContent>
+      </Card>
+
+      {/* Service Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Service
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <StatRow 
+            label="Aces" 
+            value1={stats.player1.aces} 
+            value2={stats.player2.aces} 
+          />
+          <StatRow 
+            label="Double Faults" 
+            value1={stats.player1.doubleFaults} 
+            value2={stats.player2.doubleFaults} 
+          />
+          <StatRow 
+            label="1st Serve %" 
+            value1={Math.round(stats.player1.firstServePercentage)} 
+            value2={Math.round(stats.player2.firstServePercentage)}
+            format="percentage"
+          />
+          <StatRow 
+            label="1st Serve Points Won" 
+            value1={Math.round(stats.player1.firstServeWinPercentage)} 
+            value2={Math.round(stats.player2.firstServeWinPercentage)}
+            format="percentage"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Break Points Section */}
+      {(stats.player1.breakPointsPlayed > 0 || stats.player2.breakPointsPlayed > 0) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Break Points
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <StatRow 
+              label="Break Points Won" 
+              value1={stats.player1.breakPointsWon} 
+              value2={stats.player2.breakPointsWon} 
+            />
+            <StatRow 
+              label="Break Point Conversion" 
+              value1={Math.round(stats.player1.breakPointConversionPercentage)} 
+              value2={Math.round(stats.player2.breakPointConversionPercentage)}
+              format="percentage"
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Player Names Footer */}
+      <div className="flex justify-between text-sm text-muted-foreground px-2">
+        <span className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-blue-500 rounded" />
+          {playerOne.firstName} {playerOne.lastName}
+        </span>
+        <span className="flex items-center gap-2">
+          {playerTwo.firstName} {playerTwo.lastName}
+          <div className="w-3 h-3 bg-red-500 rounded" />
+        </span>
       </div>
     </motion.div>
   )
 }
 
-const StatCategory = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
-  <div className="bg-muted/30 rounded-lg">
-    <div className="p-4 border-b">
-      <h3 className="flex items-center gap-2 font-semibold">
-        <Icon className="w-5 h-5 text-primary" />
-        {title}
-      </h3>
-    </div>
-    <div className="p-2 sm:p-4 divide-y">{children}</div>
-  </div>
-)
+// Export a version without player objects for live scoring
+export function MatchStatsComponentSimple({ 
+  stats, 
+  playerNames,
+  detailLevel
+}: { 
+  stats: MatchStats
+  playerNames: { p1: string; p2: string }
+  detailLevel: "points" | "simple" | "complex"
+}) {
 
-export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsProps) {
-  const p1 = stats.player1
-  const p2 = stats.player2
+  const hasPoints = stats.player1.totalPointsWon > 0 || stats.player2.totalPointsWon > 0
+
+  if (!hasPoints) {
+    return (
+      <div className="text-center text-muted-foreground py-8">
+        <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>Stats will appear here once the first point is played.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-2 sm:p-4 font-sans space-y-6">
-      <div className="text-center p-4 bg-muted/30 rounded-lg">
-        <h2 className="text-xl font-bold flex items-center justify-center gap-2">
-          <BarChart className="w-6 h-6" />
-          Match Statistics
-        </h2>
-        <div className="flex justify-center items-baseline gap-4 mt-2">
-          <span className={cn("font-semibold", p1.totalPointsWon > p2.totalPointsWon && "text-primary")}>
-            {playerOne.firstName}
-          </span>
-          <span className="text-sm text-muted-foreground">vs</span>
-          <span className={cn("font-semibold", p2.totalPointsWon > p1.totalPointsWon && "text-red-500")}>
-            {playerTwo.firstName}
-          </span>
-        </div>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-4"
+    >
+      {/* Points Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Points
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <StatRow 
+            label="Total Points Won" 
+            value1={stats.player1.totalPointsWon} 
+            value2={stats.player2.totalPointsWon} 
+          />
+           <StatRow 
+            label="Service Points Won" 
+            value1={stats.player1.servicePointsWon} 
+            value2={stats.player2.servicePointsWon} 
+          />
+           <StatRow 
+            label="Receiving Points Won" 
+            value1={stats.player1.returnPointsWon} 
+            value2={stats.player2.returnPointsWon} 
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Break Points Section (Always shown for both modes if available) */}
+      {(stats.player1.breakPointsPlayed > 0 || stats.player2.breakPointsPlayed > 0 || 
+        stats.player1.breakPointsFaced > 0 || stats.player2.breakPointsFaced > 0) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Break Points
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <StatRow 
+              label="Break Points Won" 
+              value1={stats.player1.breakPointsWon} 
+              value2={stats.player2.breakPointsWon} 
+            />
+            <StatRow 
+              label="Break Points Saved" 
+              value1={stats.player1.breakPointsSaved} 
+              value2={stats.player2.breakPointsSaved} 
+            />
+            {detailLevel === 'simple' && (
+              <>
+                <StatRow 
+                  label="Break Point Conversion %" 
+                  value1={Math.round(stats.player1.breakPointConversionPercentage)} 
+                  value2={Math.round(stats.player2.breakPointConversionPercentage)}
+                  format="percentage"
+                />
+                <StatRow 
+                  label="Break Point Save %" 
+                  value1={Math.round(stats.player1.breakPointSavePercentage)} 
+                  value2={Math.round(stats.player2.breakPointSavePercentage)}
+                  format="percentage"
+                />
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Service Section (Simple Stats Only) */}
+      {detailLevel === 'simple' && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Service & Point Outcomes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <StatRow 
+              label="Aces" 
+              value1={stats.player1.aces} 
+              value2={stats.player2.aces} 
+            />
+            <StatRow 
+              label="Double Faults" 
+              value1={stats.player1.doubleFaults} 
+              value2={stats.player2.doubleFaults} 
+            />
+             <StatRow 
+              label="Winners" 
+              value1={stats.player1.winners} 
+              value2={stats.player2.winners} 
+            />
+            <StatRow 
+              label="Unforced Errors" 
+              value1={stats.player1.unforcedErrors} 
+              value2={stats.player2.unforcedErrors} 
+            />
+            <StatRow 
+              label="1st Serve %" 
+              value1={Math.round(stats.player1.firstServePercentage)} 
+              value2={Math.round(stats.player2.firstServePercentage)}
+              format="percentage"
+            />
+            <StatRow 
+              label="2nd Serve %" 
+              value1={Math.round(stats.player1.secondServePercentage)} 
+              value2={Math.round(stats.player2.secondServePercentage)}
+              format="percentage"
+            />
+            <StatRow 
+              label="1st Serve Points Won %" 
+              value1={Math.round(stats.player1.firstServeWinPercentage)} 
+              value2={Math.round(stats.player2.firstServeWinPercentage)}
+              format="percentage"
+            />
+            <StatRow 
+              label="2nd Serve Points Won %" 
+              value1={Math.round(stats.player1.secondServeWinPercentage)} 
+              value2={Math.round(stats.player2.secondServeWinPercentage)}
+              format="percentage"
+            />
+            <StatRow 
+              label="Total Return Points Won %" 
+              value1={Math.round(stats.player1.totalReturnWinPercentage)} 
+              value2={Math.round(stats.player2.totalReturnWinPercentage)}
+              format="percentage"
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Player Names Footer */}
+      <div className="flex justify-between text-sm text-muted-foreground px-2">
+        <span className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-blue-500 rounded" />
+          {playerNames.p1}
+        </span>
+        <span className="flex items-center gap-2">
+          {playerNames.p2}
+          <div className="w-3 h-3 bg-red-500 rounded" />
+        </span>
       </div>
-
-      <StatCategory icon={TrendingUp} title="Points">
-        <StatRow label="Total Points Won" p1Value={p1.totalPointsWon} p2Value={p2.totalPointsWon} delay={0} />
-        <StatRow label="Winners" p1Value={p1.winners} p2Value={p2.winners} delay={1} />
-        <StatRow label="Unforced Errors" p1Value={p1.unforcedErrors} p2Value={p2.unforcedErrors} delay={2} />
-      </StatCategory>
-      
-      <StatCategory icon={Target} title="Service">
-        <StatRow label="Aces" p1Value={p1.aces} p2Value={p2.aces} delay={3} />
-        <StatRow label="Double Faults" p1Value={p1.doubleFaults} p2Value={p2.doubleFaults} delay={4} />
-        <StatRow label="1st Serve %" p1Value={p1.firstServePercentage} p2Value={p2.firstServePercentage} p1Total={p1.firstServesAttempted} p2Total={p2.firstServesAttempted} isPercentage delay={5} />
-        <StatRow label="1st Serve Won %" p1Value={p1.firstServeWinPercentage} p2Value={p2.firstServeWinPercentage} p1Total={p1.firstServePointsPlayed} p2Total={p2.firstServePointsPlayed} isPercentage delay={6} />
-        <StatRow label="2nd Serve Won %" p1Value={p1.secondServeWinPercentage} p2Value={p2.secondServeWinPercentage} p1Total={p1.secondServePointsPlayed} p2Total={p2.secondServePointsPlayed} isPercentage delay={7} />
-      </StatCategory>
-
-      <StatCategory icon={Zap} title="Return">
-        <StatRow label="Total Return Pts Won %" p1Value={p1.totalReturnWinPercentage} p2Value={p2.totalReturnWinPercentage} p1Total={p1.totalReturnPointsPlayed} p2Total={p2.totalReturnPointsPlayed} isPercentage delay={8} />
-        <StatRow label="1st Srv Return Won %" p1Value={p1.firstReturnWinPercentage} p2Value={p2.firstReturnWinPercentage} p1Total={p1.firstReturnPointsPlayed} p2Total={p2.firstReturnPointsPlayed} isPercentage delay={9} />
-        <StatRow label="2nd Srv Return Won %" p1Value={p1.secondReturnWinPercentage} p2Value={p2.secondReturnWinPercentage} p1Total={p1.secondReturnPointsPlayed} p2Total={p2.secondReturnPointsPlayed} isPercentage delay={10} />
-      </StatCategory>
-      
-      <StatCategory icon={Activity} title="Breaks">
-        <StatRow label="Break Pts Converted" p1Value={p1.breakPointConversionPercentage} p2Value={p2.breakPointConversionPercentage} p1Total={p1.breakPointsPlayed} p2Total={p2.breakPointsPlayed} isPercentage delay={11} />
-        <StatRow label="Break Pts Saved" p1Value={p1.breakPointSavePercentage} p2Value={p2.breakPointSavePercentage} p1Total={p1.breakPointsFaced} p2Total={p2.breakPointsFaced} isPercentage delay={12} />
-      </StatCategory>
-    </div>
+    </motion.div>
   )
 } 

@@ -10,7 +10,7 @@ import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
 import { useRealtimeMatch } from "@/hooks/use-realtime-match"
-import { MatchStatsComponent } from "@/app/(app)/matches/[id]/_components/match-stats"
+import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { PointByPointView } from "@/app/(app)/matches/[id]/_components/point-by-point-view"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
@@ -341,10 +341,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             <TabsContent value="stats" className="mt-4">
               <Card>
                 <CardContent className="p-4">
-                  <MatchStatsComponent 
+                  <MatchStatsComponentSimple 
                     stats={matchStats}
-                    playerOne={match.playerOne}
-                    playerTwo={match.playerTwo}
+                    playerNames={playerNames}
+                    detailLevel="simple"
                   />
                 </CardContent>
               </Card>

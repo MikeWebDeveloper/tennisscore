@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -23,17 +23,17 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { Player, PointDetail, TennisScore, Score, PointOutcome } from "@/lib/types"
+import { Player, PointDetail as LibPointDetail, Score, MatchFormat } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { PointDetailSheet } from "./point-detail-sheet"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
-import { SimpleStatsPopup } from "./simple-stats-popup"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { MatchStatsComponent } from "../../../[id]/_components/match-stats"
+import { MatchStatsComponentSimple } from "../../../[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -45,11 +45,7 @@ interface LiveScoringInterfaceProps {
     pointLog?: string[]
     status: string
     scoreParsed: Score
-    matchFormatParsed?: {
-      sets: number
-      noAd: boolean
-      detailLevel?: "points" | "simple" | "complex"
-    }
+    matchFormatParsed?: MatchFormat
   }
 }
 
@@ -105,7 +101,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
   )
 }
 
-// New Scoreboard Component
+// New Scoreboard Component - Simplified and Responsive
 function LiveScoreboard({
   playerOneName,
   playerTwoName,
@@ -113,119 +109,121 @@ function LiveScoreboard({
   currentServer,
   isInGame,
   onServerClick,
+  setsCount,
+  isTiebreak,
 }: {
   playerOneName: string
   playerTwoName: string
-  score: TennisScore
+  score: Score
   currentServer: 'p1' | 'p2' | null
   isInGame: boolean
   onServerClick: () => void
+  setsCount: number
+  isTiebreak: boolean
 }) {
-  const getPointDisplay = (points: number[], playerIndex: number) => {
-    const p1 = points[0]
-    const p2 = points[1]
+  const getPointDisplay = (playerIndex: number) => {
+    if (isTiebreak) {
+      // In tie-break, show numerical score
+      return score.tiebreakPoints?.[playerIndex] || 0
+    }
+    
+    // Regular game scoring
+    const p1 = score.points[0]
+    const p2 = score.points[1]
+    
     if (p1 >= 3 && p2 >= 3) {
       if (p1 === p2) return "40"
       if (p1 > p2 && playerIndex === 0) return "AD"
       if (p2 > p1 && playerIndex === 1) return "AD"
     }
+    
     const pointMap = ["0", "15", "30", "40"]
-    return pointMap[points[playerIndex]] || "40"
+    return pointMap[score.points[playerIndex]] || "40"
   }
 
-  // Create dynamic columns based on completed sets plus current set
-  const completedSets = score.sets.length
-  const totalSetsToShow = Math.max(completedSets + 1, 3) // Show at least 3 set columns
-  const setsWon = [
-    score.sets.filter(set => set[0] > set[1]).length,
-    score.sets.filter(set => set[1] > set[0]).length
-  ]
+  // Build grid template dynamically: Player column + sets + Games + Points
+  const gridTemplate = `minmax(0,2fr) repeat(${setsCount},minmax(0,1fr)) 1fr 1fr`
 
-  // Create grid template for dynamic columns
-  const gridCols = `1fr repeat(${totalSetsToShow}, minmax(40px, 1fr)) minmax(50px, 1fr) minmax(60px, 1fr)`
+  // Helper to render set cell
+  const renderSetCell = (setIndex: number, playerIndex: number) => {
+    const completedSet = score.sets[setIndex]
+    const value = completedSet ? completedSet[playerIndex] : '-'
+    let isWinner = false
+    if (completedSet) {
+      if (playerIndex === 0 && completedSet[0] > completedSet[1]) isWinner = true
+      if (playerIndex === 1 && completedSet[1] > completedSet[0]) isWinner = true
+    }
+    return (
+      <div key={setIndex} className={cn("text-center font-mono text-base sm:text-lg", isWinner && "font-extrabold")}>{value}</div>
+    )
+  }
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg border my-4 overflow-x-auto">
+    <div className="bg-card text-card-foreground rounded-lg border my-4">
       {/* Header Row */}
-      <div className="grid items-center p-2 border-b text-xs text-muted-foreground min-w-max" style={{ gridTemplateColumns: gridCols }}>
+      <div className="items-center p-2 border-b text-xs text-muted-foreground" style={{display:'grid',gridTemplateColumns: gridTemplate}}>
         <div className="font-semibold uppercase tracking-wider">Player</div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center">Set {i + 1}</div>
+        {Array.from({length: setsCount}).map((_, i) => (
+          <div key={i} className="text-center">{i+1}</div>
         ))}
         <div className="text-center">Games</div>
-        <div className="text-center">Points</div>
+        <div className="text-center">{isTiebreak ? "Tiebreak" : "Points"}</div>
       </div>
       
       {/* Player 1 Row */}
-      <div className="grid items-center p-3 font-medium min-w-max" style={{ gridTemplateColumns: gridCols }}>
-        <div className="flex items-center gap-3">
-          {currentServer === "p1" && (
+      <div className="items-center p-3 font-medium" style={{display:'grid',gridTemplateColumns: gridTemplate}}>
+        <div className="flex items-center gap-2">
+          {currentServer === "p1" ? (
             <motion.button 
               layoutId="tennis-ball" 
               onClick={onServerClick} 
-              className="flex-shrink-0"
-              disabled={isInGame}
+              className="flex-shrink-0 hover:bg-muted rounded-full p-1 transition-colors" 
+              disabled={isInGame} 
               whileTap={!isInGame ? { scale: 0.95 } : {}}
+              title={isInGame ? "Cannot change server after match started" : "Click to change server"}
             >
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
+          ) : (
+            <div className="w-4 h-4" />
           )}
-          <div className="flex flex-col">
-            <span className="font-sans font-semibold tracking-wide leading-tight">
-              {playerOneName.split(' ')[0]}
-            </span>
-            <span className="font-sans text-sm text-muted-foreground leading-tight">
-              {playerOneName.split(' ').slice(1).join(' ')}
-            </span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-sans font-semibold tracking-wide leading-tight truncate">{playerOneName.split(' ')[0]}</span>
+            <span className="font-sans text-sm text-muted-foreground leading-tight truncate">{playerOneName.split(' ').slice(1).join(' ')}</span>
           </div>
-          <Badge variant="secondary" className="text-xs">{setsWon[0]}</Badge>
         </div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center font-mono text-lg">
-            {i < completedSets ? score.sets[i][0] : (i === completedSets ? score.games[0] : '-')}
-          </div>
-        ))}
-        <div className="text-center font-mono text-xl">{score.games[0]}</div>
-        <div className="text-center font-mono text-xl font-bold text-primary">
-          {getPointDisplay(score.points, 0)}
-        </div>
+        {Array.from({length: setsCount}).map((_, i) => renderSetCell(i,0))}
+        <div className="text-center font-mono text-lg sm:text-xl">{score.games[0]}</div>
+        <div className="text-center font-mono text-lg sm:text-xl font-bold text-primary">{getPointDisplay(0)}</div>
       </div>
 
       <div className="border-t"></div>
 
       {/* Player 2 Row */}
-      <div className="grid items-center p-3 font-medium min-w-max" style={{ gridTemplateColumns: gridCols }}>
-        <div className="flex items-center gap-3">
-          {currentServer === "p2" && (
+      <div className="items-center p-3 font-medium" style={{display:'grid',gridTemplateColumns: gridTemplate}}>
+        <div className="flex items-center gap-2">
+          {currentServer === "p2" ? (
             <motion.button 
               layoutId="tennis-ball" 
               onClick={onServerClick} 
-              className="flex-shrink-0"
-              disabled={isInGame}
+              className="flex-shrink-0 hover:bg-muted rounded-full p-1 transition-colors" 
+              disabled={isInGame} 
               whileTap={!isInGame ? { scale: 0.95 } : {}}
+              title={isInGame ? "Cannot change server after match started" : "Click to change server"}
             >
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
+          ) : (
+            <div className="w-4 h-4" />
           )}
-          <div className="flex flex-col">
-            <span className="font-sans font-semibold tracking-wide leading-tight">
-              {playerTwoName.split(' ')[0]}
-            </span>
-            <span className="font-sans text-sm text-muted-foreground leading-tight">
-              {playerTwoName.split(' ').slice(1).join(' ')}
-            </span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-sans font-semibold tracking-wide leading-tight truncate">{playerTwoName.split(' ')[0]}</span>
+            <span className="font-sans text-sm text-muted-foreground leading-tight truncate">{playerTwoName.split(' ').slice(1).join(' ')}</span>
           </div>
-          <Badge variant="secondary" className="text-xs">{setsWon[1]}</Badge>
         </div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center font-mono text-lg">
-            {i < completedSets ? score.sets[i][1] : (i === completedSets ? score.games[1] : '-')}
-          </div>
-        ))}
-        <div className="text-center font-mono text-xl">{score.games[1]}</div>
-        <div className="text-center font-mono text-xl font-bold text-primary">
-          {getPointDisplay(score.points, 1)}
-        </div>
+        {Array.from({length: setsCount}).map((_, i) => renderSetCell(i,1))}
+        <div className="text-center font-mono text-lg sm:text-xl">{score.games[1]}</div>
+        <div className="text-center font-mono text-lg sm:text-xl font-bold text-primary">{getPointDisplay(1)}</div>
       </div>
     </div>
   )
@@ -234,19 +232,33 @@ function LiveScoreboard({
 // New Interactive Point Entry Component
 function PointEntry({ 
   onPointWin,
-  score
+  score,
+  isTiebreak
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
-  score: TennisScore
+  score: Score,
+  isTiebreak: boolean
 }) {
-  const getPointDisplay = (points: number) => {
-    if (score.points[0] >= 3 && score.points[1] >= 3) {
-      if (score.points[0] === score.points[1]) return "40"
-      if (points > Math.min(score.points[0], score.points[1])) return "AD"
+  const getPointDisplay = (playerIndex: number) => {
+    if (isTiebreak) {
+      // In tie-break, show numerical score
+      return score.tiebreakPoints?.[playerIndex] || 0
     }
+    
+    // Regular game scoring
+    const p1 = score.points[0]
+    const p2 = score.points[1]
+    
+    if (p1 >= 3 && p2 >= 3) {
+      if (p1 === p2) return "40"
+      if (p1 > p2 && playerIndex === 0) return "AD"
+      if (p2 > p1 && playerIndex === 1) return "AD"
+    }
+    
     const pointMap = ["0", "15", "30", "40"]
-    return pointMap[points] || "40"
+    return pointMap[score.points[playerIndex]] || "40"
   }
+
   return (
     <div className="grid grid-cols-2 items-center justify-around gap-2 my-6">
       <div 
@@ -254,7 +266,7 @@ function PointEntry({
         className="h-32 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
       >
         <span className="text-6xl font-black font-mono text-center text-card-foreground">
-          {getPointDisplay(score.points[0])}
+          {getPointDisplay(0)}
         </span>
       </div>
       <div 
@@ -262,7 +274,7 @@ function PointEntry({
         className="h-32 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
       >
         <span className="text-6xl font-black font-mono text-center text-card-foreground">
-          {getPointDisplay(score.points[1])}
+          {getPointDisplay(1)}
         </span>
       </div>
     </div>
@@ -272,81 +284,82 @@ function PointEntry({
 export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   
+  // Use match store
+  const { 
+    score, 
+    pointLog, 
+    currentServer,
+    initializeMatch, 
+    awardPoint, 
+    undoLastPoint, 
+    setServer
+  } = useMatchStore()
+  
   // Local state for UI
   const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
-  const [showSimpleStatsPopup, setShowSimpleStatsPopup] = useState(false)
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [serveType, setServeType] = useState<'first' | 'second'>('first')
-  const [score, setScore] = useState<TennisScore>({
-    sets: [],
-    games: [0, 0],
-    points: [0, 0],
-    server: 'p1',
-    gameNumber: 1,
-    setNumber: 1
-  })
-  const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [isInGame, setIsInGame] = useState(false)
+  const [isMatchInitialized, setIsMatchInitialized] = useState(false)
   
   const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerTwo.lastName}`,
+    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
   }
 
-  const matchStats = calculateMatchStats(pointLog)
+  // Convert store point details to lib point details for stats calculation
+  const convertedPointLog: LibPointDetail[] = pointLog.map(point => ({
+    ...point,
+    lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType'])
+  }))
   
-  const detailLevel = match.matchFormatParsed?.detailLevel || "simple"
+  const matchStats = calculateMatchStats(convertedPointLog)
   
-  // Helper function to recalculate score from point log
-  const recalculateScoreFromPointLog = (points: PointDetail[]): TennisScore => {
-    const newScore: TennisScore = {
-      sets: [],
-      games: [0, 0],
-      points: [0, 0],
-      server: 'p1',
-      gameNumber: 1,
-      setNumber: 1
-    }
-
-    if (points.length === 0) {
-      return newScore
-    }
-
-    // Simple scoring logic
-    for (const point of points) {
-      const winnerIndex = point.winner === 'p1' ? 0 : 1
-      newScore.points[winnerIndex]++
-
-      if (newScore.points[winnerIndex] >= 4 && 
-          newScore.points[winnerIndex] - newScore.points[1 - winnerIndex] >= 2) {
-        
-        newScore.games[winnerIndex]++
-        newScore.points = [0, 0]
-        newScore.gameNumber++
-
-        if (newScore.games[winnerIndex] >= 6) {
-          if (newScore.games[winnerIndex] - newScore.games[1 - winnerIndex] >= 2 || 
-              (newScore.games[winnerIndex] === 7 && newScore.games[1 - winnerIndex] === 6)) {
-            
-            newScore.sets.push([newScore.games[0], newScore.games[1]])
-            newScore.games = [0, 0]
-            newScore.setNumber++
-            newScore.gameNumber = 1
-          }
-        }
-        
-        newScore.server = newScore.server === 'p1' ? 'p2' : 'p1'
+  // Parse match format properly
+  const parsedMatchFormat = useMemo(() => {
+    try {
+      const parsed = JSON.parse(match.matchFormat)
+      return {
+        sets: parsed.sets || 3,
+        noAd: parsed.noAd || false,
+        tiebreak: parsed.tiebreak !== false, // Default to true
+        finalSetTiebreak: parsed.finalSetTiebreak || false,
+        finalSetTiebreakAt: parsed.finalSetTiebreakAt || 10,
+        detailLevel: parsed.detailLevel || "simple"
+      }
+    } catch (error) {
+      console.error("Failed to parse match format:", error)
+      return {
+        sets: 3,
+        noAd: false,
+        tiebreak: true,
+        finalSetTiebreak: false,
+        finalSetTiebreakAt: 10,
+        detailLevel: "simple"
       }
     }
-
-    return newScore
-  }
+  }, [match.matchFormat])
+  
+  const detailLevel = parsedMatchFormat.detailLevel || "simple"
+  
+  // Check if currently in tie-break
+  const isTiebreak = score.isTiebreak || false
+  
+  // Memoized serve type handler
+  const handleServeTypeChange = useCallback((checked: boolean) => {
+    setServeType(checked ? 'second' : 'first')
+  }, [])
   
   // Initialize match data
   useEffect(() => {
-    const existingPointLog: PointDetail[] = match.pointLog 
+    // Don't initialize if match data is not ready
+    if (!match || !match.$id) {
+      return
+    }
+
+    const existingPointLog: StorePointDetail[] = match.pointLog 
       ? match.pointLog.map(pointStr => {
           try {
             return JSON.parse(pointStr)
@@ -357,43 +370,77 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }).filter(Boolean)
       : []
     
-    setPointLog(existingPointLog)
-    
-    let initialScore: TennisScore
-    if (existingPointLog.length > 0) {
-      initialScore = recalculateScoreFromPointLog(existingPointLog)
-      setIsInGame(true)
-    } else {
-      initialScore = {
-        sets: [],
-        games: [0, 0],
-        points: [0, 0],
-        server: 'p1', // Default server to p1
-        gameNumber: 1,
-        setNumber: 1
-      }
-      setIsInGame(false)
+    // Parse the score
+    let parsedScore: Score
+    try {
+      parsedScore = JSON.parse(match.score)
+    } catch (error) {
+      console.error("Failed to parse match score:", error)
+      parsedScore = { sets: [], games: [0, 0], points: [0, 0] }
+    }
+
+    // Initialize match store
+    const matchData = {
+      $id: match.$id,
+      playerOneId: match.playerOne.$id,
+      playerTwoId: match.playerTwo.$id,
+      matchDate: new Date().toISOString(),
+      matchFormat: parsedMatchFormat,
+      status: match.status as 'In Progress' | 'Completed',
+      winnerId: match.status === 'Completed' ? undefined : undefined,
+      score: parsedScore,
+      pointLog: existingPointLog,
+      events: [],
+      userId: match.playerOne.userId || ''
     }
     
-    setScore(initialScore)
-  }, [match.pointLog])
+    try {
+      initializeMatch(matchData)
+      setIsInGame(existingPointLog.length > 0)
+      setIsMatchInitialized(true)
+    } catch (error) {
+      console.error("Failed to initialize match:", error)
+    }
+  }, [match, parsedMatchFormat, initializeMatch])
+
+  // Show loading state until match is initialized
+  if (!isMatchInitialized || !currentServer) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Initializing match...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleServeSwap = () => {
+    // Critical safeguard: verify match hasn't started
     if (isInGame) {
       toast.error("Cannot change server after the match has started.")
       setShowServeSwapConfirm(false)
       return
     }
     
-    setScore(prev => ({ 
-      ...prev, 
-      server: prev.server === 'p1' ? 'p2' : 'p1' 
-    }))
+    if (currentServer) {
+      const newServer = currentServer === 'p1' ? 'p2' : 'p1'
+      setServer(newServer)
+      const newServerName = newServer === 'p1' ? playerNames.p1 : playerNames.p2
+      toast.success(`Server changed to ${newServerName}`)
+    }
     setShowServeSwapConfirm(false)
-    toast.success("Server changed")
   }
 
   const getGameScore = () => {
+    if (isTiebreak) {
+      const p1 = score.tiebreakPoints?.[0] || 0
+      const p2 = score.tiebreakPoints?.[1] || 0
+      return `${p1} - ${p2}`
+    }
+    
     const p1Points = score.points[0]
     const p2Points = score.points[1]
     
@@ -411,92 +458,76 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handlePointWin = async (winner: "p1" | "p2") => {
-    // Correctly access the parsed match format object
-    const detailLevel = match.matchFormatParsed?.detailLevel
-
-    if (detailLevel === "points") {
-      // No popups, no extra details. Just award the point.
-      await awardPoint(winner, { serveType: "first", pointOutcome: "winner" })
+    // Add defensive check
+    if (!currentServer || !score) {
+      console.error("Match not properly initialized - missing server or score")
+      toast.error("Match not ready. Please refresh the page.")
+      return
+    }
+    
+    // Prevent scoring if match is already complete
+    if (match.status === 'Completed') {
+      toast.error("Match is already complete and cannot be modified.")
       return
     }
 
-    if (detailLevel === "simple") {
+    // For "Points Only", create a minimal point object and save it immediately.
+    if (detailLevel === 'points') {
+      const minimalPointDetail: Partial<StorePointDetail> = {
+        serveType: serveType, // Use current serve type from UI
+        pointOutcome: 'winner', // Default to winner
+        serveOutcome: 'winner', // Default serve outcome
+        rallyLength: 1, // Minimal rally
+        lastShotType: 'serve', // Default to serve
+      }
+      await handleAwardPoint(winner, minimalPointDetail)
+      return
+    }
+
+    // For 'simple' mode, open the details sheet to capture serve type and point outcome
+    if (detailLevel === 'simple') {
       setPendingPointWinner(winner)
-      setShowSimpleStatsPopup(true)
+      setShowPointDetail(true)
       return
     }
 
-    // Default to complex if undefined or complex (which is disabled)
-    // This effectively means 'simple' is the most detailed option for now.
+    // For complex (future), open an advanced stats modal
     setPendingPointWinner(winner)
     setShowPointDetail(true)
   }
 
-  const isBreakPoint = (currentScore: TennisScore): boolean => {
-    const receiver = currentScore.server === 'p1' ? 'p2' : 'p1'
-    const receiverIndex = receiver === 'p1' ? 0 : 1
-    const serverIndex = receiver === 'p1' ? 1 : 0
-    
-    const receiverPoints = currentScore.points[receiverIndex]
-    const serverPoints = currentScore.points[serverIndex]
-    
-    // Standard game breakpoint condition
-    if (receiverPoints >= 3 && receiverPoints > serverPoints) {
-      return true
-    }
-    
-    return false
-  }
-
-  const awardPoint = async (
+  const handleAwardPoint = async (
     winner: "p1" | "p2",
-    pointDetails?: Partial<PointDetail>
+    pointDetails?: Partial<StorePointDetail>
   ) => {
-    const newPointDetail: PointDetail = {
-      id: `${Date.now()}-${Math.random()}`,
-      pointNumber: pointLog.length + 1,
-      setNumber: score.setNumber,
-      gameNumber: score.gameNumber,
-      server: score.server,
-      winner,
-      gameScore: getGameScore(),
-      pointOutcome: pointDetails?.pointOutcome || 'winner',
-      serveType: pointDetails?.serveType || "first",
-      serveOutcome: pointDetails?.serveOutcome || "winner",
-      rallyLength: pointDetails?.rallyLength || 1,
-      isBreakPoint: isBreakPoint(score),
-      isSetPoint: false,
-      isMatchPoint: false,
-      isGameWinning: false,
-      isSetWinning: false,
-      isMatchWinning: false,
-      timestamp: new Date().toISOString(),
-      ...(pointDetails || {}),
-    }
-
-    const updatedPointLog = [...pointLog, newPointDetail]
-    setPointLog(updatedPointLog)
-    
-    // Recalculate score
-    const newScore = recalculateScoreFromPointLog(updatedPointLog)
-    setScore(newScore)
-    setIsInGame(true)
-
-    // Save to backend
     try {
+      const result = awardPoint(winner, pointDetails || {})
+      setIsInGame(true)
+
+      // Save to backend
       await updateMatchScore(match.$id, {
-        score: newScore,
-        pointLog: updatedPointLog
+        score: result.newScore,
+        pointLog: [...pointLog, result.pointDetail]
       })
+
+      if (result.isMatchComplete) {
+        toast.success(`Match completed! ${result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2} wins!`)
+      }
     } catch (error) {
-      console.error("Failed to update match score:", error)
+      console.error("Failed to award point:", error)
       toast.error("Failed to save point")
     }
   }
 
-  const handlePointDetailSave = (pointDetail: Partial<PointDetail>) => {
+  const handlePointDetailSave = (pointDetail: Partial<LibPointDetail>) => {
     if (pendingPointWinner) {
-      awardPoint(pendingPointWinner, pointDetail)
+      // Convert lib point detail to store point detail
+      const storePointDetail: Partial<StorePointDetail> = {
+        ...pointDetail,
+        serveType: serveType,
+        lastShotType: pointDetail.lastShotType === 'drop_shot' ? 'other' : (pointDetail.lastShotType as StorePointDetail['lastShotType'])
+      }
+      handleAwardPoint(pendingPointWinner, storePointDetail)
       setPendingPointWinner(null)
       setShowPointDetail(false)
     }
@@ -504,162 +535,189 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleSimplePoint = () => {
     if (pendingPointWinner) {
-      awardPoint(pendingPointWinner)
+      handleAwardPoint(pendingPointWinner)
       setPendingPointWinner(null)
       setShowPointDetail(false)
     }
   }
 
-  const handleSimpleStatsSave = (outcome: PointOutcome) => {
-    if (pendingPointWinner) {
-      awardPoint(pendingPointWinner, {
-        serveType: serveType,
-        pointOutcome: outcome,
-      })
-    }
-    setPendingPointWinner(null)
-    setShowSimpleStatsPopup(false)
-  }
-
   const handleUndo = async () => {
     if (pointLog.length === 0) return
 
-    const updatedPointLog = pointLog.slice(0, -1)
-    setPointLog(updatedPointLog)
-    
-    if (updatedPointLog.length === 0) {
-      const initialScore: TennisScore = {
-        sets: [],
-        games: [0, 0],
-        points: [0, 0],
-        server: 'p1' as const,
-        gameNumber: 1,
-        setNumber: 1
-      }
-      setScore(initialScore)
-      setIsInGame(false)
-    } else {
-      const newScore = recalculateScoreFromPointLog(updatedPointLog)
-      setScore(newScore)
-    }
-
     try {
+      const result = undoLastPoint()
+      
+      // Save to backend
       await updateMatchScore(match.$id, {
-        score: score,
-        pointLog: updatedPointLog
+        score: result.newScore,
+        pointLog: result.newPointLog
       })
+      
+      setIsInGame(result.newPointLog.length > 0)
       toast.success("Point undone")
     } catch (error) {
       console.error("Failed to undo point:", error)
-      toast.error("Failed to undo")
+      toast.error("Failed to undo point")
     }
   }
 
   const handleEndMatch = () => {
-    toast.success("Match ended")
     router.push(`/matches/${match.$id}`)
   }
 
-  // Enhanced share with native sharing API
   const handleShare = () => {
-    const shareUrl = `${window.location.origin}/live/${match.$id}`
-    const shareData = {
-      title: "Live Tennis Match",
-      text: `🎾 ${playerNames.p1} vs ${playerNames.p2}`,
-      url: shareUrl,
-    }
-
-    if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-      navigator
-        .share(shareData)
-        .catch((err) => console.warn("Share cancelled", err))
+    if (navigator.share) {
+      navigator.share({
+        title: 'Live Tennis Match',
+        text: `🎾 ${playerNames.p1} vs ${playerNames.p2}`,
+        url: `${window.location.origin}/live/${match.$id}`
+      }).catch(console.error)
     } else {
       setShowShareDialog(true)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex flex-col min-h-screen">
-        {/* Minimalist Header - Fixed */}
-        <div className="flex-shrink-0 bg-background border-b px-4 py-3">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={handleShare}>
-                <Share2 className="h-4 w-4" />
-              </Button>
-              <Badge variant="default" className="bg-green-500 text-white animate-pulse">Live</Badge>
-            </div>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="font-semibold text-lg">Live Match</h1>
+            <p className="text-sm text-muted-foreground">
+              {playerNames.p1} vs {playerNames.p2}
+            </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleShare}>
+            <Share2 className="h-4 w-4 mr-1" />
+            Share
+          </Button>
+          <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+            Live
+          </Badge>
+        </div>
+      </div>
 
-        {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <LiveScoreboard 
-              playerOneName={playerNames.p1}
-              playerTwoName={playerNames.p2}
-              score={score}
-              currentServer={score.server}
-              isInGame={isInGame}
-              onServerClick={() => setShowServeSwapConfirm(true)}
+      {/* Main Content */}
+      <div className="p-4 max-w-4xl mx-auto">
+        {/* Scoreboard */}
+        <LiveScoreboard
+          playerOneName={playerNames.p1}
+          playerTwoName={playerNames.p2}
+          score={score}
+          currentServer={currentServer}
+          isInGame={isInGame}
+          onServerClick={() => setShowServeSwapConfirm(true)}
+          setsCount={parsedMatchFormat.sets}
+          isTiebreak={isTiebreak}
+        />
+
+        {/* Point Entry */}
+        <PointEntry 
+          onPointWin={handlePointWin}
+          score={score}
+          isTiebreak={isTiebreak}
+        />
+
+        {/* Controls */}
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="outline"
+            onClick={handleUndo}
+            disabled={pointLog.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Undo className="h-4 w-4" />
+            Undo Last Point
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="serve-type"
+              checked={serveType === 'second'}
+              onCheckedChange={handleServeTypeChange}
             />
-
-            <PointEntry onPointWin={handlePointWin} score={score} />
-            
-            <div className="mt-4 flex justify-center items-center gap-6">
-              <Button variant="outline" size="sm" onClick={handleUndo} disabled={pointLog.length === 0}>
-                <Undo className="h-4 w-4 mr-2" /> Undo Last Point
-              </Button>
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="serve-type" className={cn(serveType === 'first' && 'text-primary')}>1st</Label>
-                <Switch 
-                  id="serve-type"
-                  checked={serveType === 'second'}
-                  onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
-                />
-                <Label htmlFor="serve-type" className={cn(serveType === 'second' && 'text-primary')}>2nd</Label>
-              </div>
-            </div>
-            
-            <Tabs defaultValue="stats" className="space-y-4 mt-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="stats">Stats</TabsTrigger>
-                <TabsTrigger value="points">Points</TabsTrigger>
-                <TabsTrigger value="commentary">Commentary</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="stats" className="mt-4">
-                <MatchStatsComponent 
-                  stats={matchStats} 
-                  playerOne={match.playerOne} 
-                  playerTwo={match.playerTwo} 
-                />
-              </TabsContent>
-              <TabsContent value="points" className="max-h-96 overflow-y-auto mt-4">
-                <PointByPointView pointLog={pointLog} playerNames={playerNames} />
-              </TabsContent>
-              <TabsContent value="commentary" className="text-center py-8 text-muted-foreground mt-4">
-                Commentary coming soon...
-              </TabsContent>
-            </Tabs>
+            <Label htmlFor="serve-type" className="text-sm">
+              {serveType === 'first' ? '1st' : '2nd'} Serve
+            </Label>
           </div>
         </div>
 
-        {/* Bottom Action Bar - Fixed (End Match) */}
-        <div className="flex-shrink-0 bg-background border-t p-4">
-          <div className="flex gap-2">
-            <Button variant="destructive" size="sm" onClick={handleEndMatch} className="flex-1">
-              <Trophy className="h-4 w-4 mr-2" /> End Match
-            </Button>
-          </div>
+        {/* Tabs */}
+        <Tabs defaultValue="stats" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="stats">Stats</TabsTrigger>
+            <TabsTrigger value="points">Points</TabsTrigger>
+            <TabsTrigger value="commentary">Commentary</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="stats" className="mt-4">
+            <MatchStatsComponentSimple 
+              stats={matchStats} 
+              playerNames={playerNames}
+              detailLevel={detailLevel}
+            />
+          </TabsContent>
+          
+          <TabsContent value="points" className="mt-4">
+            <PointByPointView 
+              pointLog={convertedPointLog} 
+              playerNames={playerNames}
+            />
+          </TabsContent>
+          
+          <TabsContent value="commentary" className="mt-4">
+            <div className="text-center text-muted-foreground py-8">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Commentary feature coming soon</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* End Match Button */}
+        <div className="mt-8 pb-20">
+          <Button 
+            variant="outline" 
+            className="w-full h-12"
+            onClick={handleEndMatch}
+          >
+            <Trophy className="h-4 w-4 mr-2" />
+            End Match
+          </Button>
         </div>
       </div>
 
       {/* Dialogs */}
+      <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Server</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground">
+            {isInGame 
+              ? "Cannot change server after match has started." 
+              : `Switch server from ${currentServer === 'p1' ? playerNames.p1 : playerNames.p2} to ${currentServer === 'p1' ? playerNames.p2 : playerNames.p1}?`
+            }
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowServeSwapConfirm(false)}>
+              Cancel
+            </Button>
+            {!isInGame && (
+              <Button onClick={handleServeSwap}>
+                Change Server
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ShareDialog 
         open={showShareDialog}
         onOpenChange={setShowShareDialog}
@@ -667,65 +725,25 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         playerNames={playerNames}
       />
 
-      {/* Simple Stats Popup */}
-      <SimpleStatsPopup
-        isOpen={showSimpleStatsPopup}
-        onOpenChange={setShowSimpleStatsPopup}
-        onSelectOutcome={handleSimpleStatsSave}
-        serveType={serveType}
+      <PointDetailSheet
+        open={showPointDetail}
+        onOpenChange={setShowPointDetail}
+        onSave={handlePointDetailSave}
+        onSimplePoint={handleSimplePoint}
+        pointContext={{
+          pointNumber: pointLog.length + 1,
+          setNumber: score.sets.length + 1,
+          gameNumber: score.games[0] + score.games[1] + 1,
+          gameScore: getGameScore(),
+          winner: pendingPointWinner || 'p1',
+          server: currentServer || 'p1',
+          serveType: serveType,
+          isBreakPoint: false,
+          isSetPoint: false,
+          isMatchPoint: false,
+          playerNames
+        }}
       />
-
-      {/* Point Detail Sheet - Only shown for "complex" which is disabled */}
-      {pendingPointWinner && detailLevel === "complex" && (
-        <PointDetailSheet
-          open={showPointDetail}
-          onOpenChange={setShowPointDetail}
-          onSave={handlePointDetailSave}
-          onSimplePoint={handleSimplePoint}
-          pointContext={{
-            pointNumber: pointLog.length + 1,
-            setNumber: score.setNumber,
-            gameNumber: score.gameNumber,
-            gameScore: getGameScore(),
-            winner: pendingPointWinner,
-            server: score.server,
-            isBreakPoint: isBreakPoint(score),
-            isSetPoint: false,   // Could be calculated based on set situation
-            isMatchPoint: false, // Could be calculated based on match situation
-            playerNames
-          }}
-        />
-      )}
-
-      {/* Serve Swap Confirmation Dialog */}
-      <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Server?</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Are you sure you want to change the server? This action can only be done between games.
-            </p>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowServeSwapConfirm(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="default" 
-                onClick={handleServeSwap}
-                className="flex-1"
-              >
-                Change Server
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 } 

@@ -61,16 +61,17 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       ]
     }
 
-    // Create a players lookup map
+    // Handle new anonymous player logic: check for embedded player data first
     const playersMap = new Map(players.map(player => [player.$id, player]))
 
-    let playerOne = playersMap.get(match.playerOneId)
-    let playerTwo = playersMap.get(match.playerTwoId)
-
-    // Create fallback players if still not found
-    if (!playerOne) {
-      playerOne = {
-        $id: match.playerOneId,
+    let playerOne, playerTwo
+    
+    // Check for embedded player data first, then fall back to player lookup
+    if (match.playerOneData) {
+      playerOne = match.playerOneData
+    } else {
+      playerOne = playersMap.get(match.playerOneId) || {
+        $id: match.playerOneId || "anonymous-1",
         firstName: "Player",
         lastName: "1",
         userId: user.$id,
@@ -79,9 +80,11 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       }
     }
 
-    if (!playerTwo) {
-      playerTwo = {
-        $id: match.playerTwoId,
+    if (match.playerTwoData) {
+      playerTwo = match.playerTwoData
+    } else {
+      playerTwo = playersMap.get(match.playerTwoId) || {
+        $id: match.playerTwoId || "anonymous-2",
         firstName: "Player",
         lastName: "2", 
         userId: user.$id,

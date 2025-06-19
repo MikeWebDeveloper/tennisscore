@@ -2,8 +2,11 @@
 
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
-import { PointDetail } from "@/lib/types"
+import { PointDetail as BasePointDetail } from "@/lib/types"
 import { Target } from "lucide-react"
+import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
+
+type PointDetail = BasePointDetail & { isTiebreak?: boolean }
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -21,6 +24,7 @@ interface GameGroup {
   isBreak: boolean
   isSetPoint: boolean
   isMatchPoint: boolean
+  isTiebreak: boolean
 }
 
 // Tennis score mapping
@@ -34,6 +38,10 @@ function getPointScore(p1: number, p2: number, noAd: boolean = false): string {
     return "40:AD"
   }
   return `${scoreMap[p1] || '40'}:${scoreMap[p2] || '40'}`
+}
+
+function getTiebreakScore(p1: number, p2: number): string {
+  return `${p1}:${p2}`
 }
 
 function processPointLog(pointLog: PointDetail[]): GameGroup[] {
@@ -51,23 +59,45 @@ function processPointLog(pointLog: PointDetail[]): GameGroup[] {
     const gamePoints = games[key]
     const firstPoint = gamePoints[0]
     const lastPoint = gamePoints[gamePoints.length - 1]
-    
+    const isTiebreakGame = !!firstPoint['isTiebreak']
     let p1GamePts = 0, p2GamePts = 0
     const pointProgression: string[] = []
-    
+
     for (let i = 0; i < gamePoints.length; i++) {
       const point = gamePoints[i]
-      
-      // The progression shows the score *before* the point is played
-      pointProgression.push(getPointScore(p1GamePts, p2GamePts))
-
-      if (point.winner === 'p1') {
-        p1GamePts++
+      if (isTiebreakGame) {
+        // Numeric progression for tiebreak
+        pointProgression.push(getTiebreakScore(p1GamePts, p2GamePts))
       } else {
-        p2GamePts++
+        // Tennis progression, but first point should be 15:0 not 0:0
+        if (i === 0) {
+          // After first point, show 15:0 or 0:15
+          if (point.winner === 'p1') {
+            pointProgression.push('15:0')
+            p1GamePts++
+          } else {
+            pointProgression.push('0:15')
+            p2GamePts++
+          }
+          continue
+        }
+        pointProgression.push(getPointScore(p1GamePts, p2GamePts))
+      }
+      if (!isTiebreakGame) {
+        if (point.winner === 'p1') {
+          p1GamePts++
+        } else {
+          p2GamePts++
+        }
+      } else {
+        if (point.winner === 'p1') {
+          p1GamePts++
+        } else {
+          p2GamePts++
+        }
       }
     }
-    
+
     // Determine set score *after* this game
     const currentSetGames = gameGroups.filter(g => g.setNumber === firstPoint.setNumber)
     let p1GamesInSet = currentSetGames.filter(g => g.winner === 'p1').length
@@ -78,11 +108,9 @@ function processPointLog(pointLog: PointDetail[]): GameGroup[] {
       p2GamesInSet++
     }
 
-    const isSetOver = (p1GamesInSet >= 6 && p1GamesInSet - p2GamesInSet >= 2) || (p2GamesInSet >= 6 && p2GamesInSet - p1GamesInSet >= 2) || p1GamesInSet === 7 || p2GamesInSet === 7
-
     gameGroups.push({
       setNumber: firstPoint.setNumber,
-      gameNumber: firstPoint.gameNumber,
+      gameNumber: firstPoint['isTiebreak'] ? 0 : firstPoint.gameNumber,
       server: firstPoint.server,
       winner: lastPoint.winner,
       scoreInGame: { p1: p1GamePts, p2: p2GamePts },
@@ -91,17 +119,8 @@ function processPointLog(pointLog: PointDetail[]): GameGroup[] {
       isBreak: firstPoint.server !== lastPoint.winner,
       isSetPoint: !!lastPoint.isSetPoint,
       isMatchPoint: !!lastPoint.isMatchPoint,
+      isTiebreak: isTiebreakGame,
     })
-    
-    if (isSetOver) {
-      // This logic is for tracking sets, which we are not displaying per-game anymore.
-      // Keeping it here in case we need it later, but commenting out to fix linter.
-      // if (p1GamesInSet > p2GamesInSet) {
-      //   p1Sets++
-      // } else {
-      //   p2Sets++
-      // }
-    }
   }
   return gameGroups
 }
@@ -126,7 +145,6 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
       <div className="space-y-1">
         {processedGames.map((game, index) => {
           const isP1Winner = game.winner === 'p1'
-          
           return (
             <motion.div
               key={index}
@@ -137,24 +155,27 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
             >
               <div className="flex justify-between items-center px-2">
                 <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {game.isTiebreak ? 'Tiebreak' : `Game ${game.gameNumber}`}
+                  </span>
                   {game.isBreak && <Badge variant="destructive" className="text-xs">BREAK</Badge>}
                   {game.isSetPoint && <Badge className="bg-amber-500 text-white text-xs">SET</Badge>}
                   {game.isMatchPoint && <Badge className="bg-green-500 text-white text-xs">MATCH</Badge>}
                 </div>
                 <div className="flex items-center gap-3 font-mono text-lg font-bold">
                   <div className={`flex items-center gap-1.5 ${isP1Winner ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {game.server === 'p1' && <Target className="w-4 h-4 text-primary" />}
+                    {game.server === 'p1' && <TennisBallIcon className="w-4 h-4" />}
                     <span>{game.scoreAfterGame.p1}</span>
                   </div>
                   <span>-</span>
                   <div className={`flex items-center gap-1.5 ${!isP1Winner ? 'text-foreground' : 'text-muted-foreground'}`}>
                     <span>{game.scoreAfterGame.p2}</span>
-                    {game.server === 'p2' && <Target className="w-4 h-4 text-primary" />}
+                    {game.server === 'p2' && <TennisBallIcon className="w-4 h-4" />}
                   </div>
                 </div>
               </div>
               <div className="text-xs text-muted-foreground font-mono px-2 mt-1">
-                {game.pointProgression.join(" , ")}
+                {game.pointProgression.join(" → ")}
               </div>
             </motion.div>
           )

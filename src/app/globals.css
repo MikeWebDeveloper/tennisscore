@@ -122,6 +122,19 @@
   @apply border-ring bg-ring text-primary-foreground;
 }
 
+/* Disabled radio option styling */
+.radio-option-disabled {
+  @apply flex items-center space-x-3 p-4 rounded-lg border border-border/30 bg-muted/20 transition-all duration-200 cursor-not-allowed opacity-50;
+}
+
+.radio-option-disabled [data-slot="radio-group-item"] {
+  @apply border-muted-foreground/30;
+}
+
+.radio-option-disabled div {
+  @apply text-muted-foreground;
+}
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .mobile-padding {

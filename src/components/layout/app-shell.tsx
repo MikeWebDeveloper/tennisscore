@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
@@ -82,7 +82,13 @@ const overlayVariants = {
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const getInitials = (name: string) => {
     return name
@@ -97,8 +103,19 @@ export function AppShell({ children, user }: AppShellProps) {
     setTheme(theme === "dark" ? "light" : "dark")
   }
 
+  // Show loading state until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background" suppressHydrationWarning>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-background" suppressHydrationWarning>
+    <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
         <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border shadow-lg">
@@ -197,7 +214,9 @@ export function AppShell({ children, user }: AppShellProps) {
 
         {/* Main Content */}
         <main className="ml-64 flex-1">
-          {children}
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            {children}
+          </div>
         </main>
       </div>
 
@@ -346,7 +365,9 @@ export function AppShell({ children, user }: AppShellProps) {
 
         {/* Mobile Main Content */}
         <main className="pt-16">
-          {children}
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            {children}
+          </div>
         </main>
 
         {/* Mobile Bottom Navigation */}
