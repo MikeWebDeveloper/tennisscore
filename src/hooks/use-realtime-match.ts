@@ -31,10 +31,29 @@ export function useRealtimeMatch(matchId: string) {
       try {
         console.log("🔄 Connecting to real-time updates...")
         
+        // Verify environment variables
+        const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID
+        const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID
+        
+        console.log("🔍 Environment check:", {
+          endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+          project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT,
+          database: dbId,
+          collection: collectionId,
+          matchId
+        })
+        
+        if (!dbId || !collectionId) {
+          throw new Error(`Missing required environment variables: database=${!!dbId}, collection=${!!collectionId}`)
+        }
+        
         // Simple subscription to the specific document
-        const channel = `databases.${process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID}.documents.${matchId}`
+        const channel = `databases.${dbId}.collections.${collectionId}.documents.${matchId}`
         
         console.log("📡 Subscription channel:", channel)
+        console.log("🔧 Client configuration:", {
+          hasClient: !!client
+        })
 
         const unsubscribe = client.subscribe(
           channel,
