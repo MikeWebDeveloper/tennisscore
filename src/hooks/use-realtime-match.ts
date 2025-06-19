@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
-import { client, databases } from "@/lib/appwrite-client"
+import { useEffect, useState, useRef } from "react"
+import { client } from "@/lib/appwrite-client"
 
 interface RealtimeMatchData {
   score?: string
@@ -16,160 +16,103 @@ export function useRealtimeMatch(matchId: string) {
   const [lastUpdate, setLastUpdate] = useState<RealtimeMatchData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
-
-  // Test if we can access the document first
-  const testDocumentAccess = useCallback(async () => {
-    if (!matchId) return false
-    
-    try {
-      console.log("🔍 Testing document access for match:", matchId)
-      
-      const document = await databases.getDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID!,
-        matchId
-      )
-      
-      console.log("✅ Document access successful:", {
-        id: document.$id,
-        status: document.status,
-        hasScore: !!document.score
-      })
-      
-      return true
-    } catch (err) {
-      console.error("❌ Document access failed:", err)
-      setError(`Cannot access match document: ${err instanceof Error ? err.message : 'Unknown error'}`)
-      return false
-    }
-  }, [matchId])
-
-  const connect = useCallback(async () => {
-    if (!matchId) {
-      console.log("No matchId provided, skipping connection")
-      return
-    }
-
-    console.log(`🔄 Attempting to connect to real-time updates for match: ${matchId}`)
-    
-    // First test if we can access the document
-    const canAccess = await testDocumentAccess()
-    if (!canAccess) {
-      return
-    }
-    
-    console.log("Environment variables:", {
-      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-      project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT,
-      database: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      collection: process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID
-    })
-    
-    // Try different subscription approaches
-    const channels = [
-      // Specific document
-      `databases.${process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID}.documents.${matchId}`,
-      // Collection level (might be more reliable)
-      `databases.${process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID}.documents`,
-    ]
-    
-    console.log(`📡 Trying subscription channels:`, channels)
-
-    try {
-      // Try subscribing to both channels
-      const unsubscribe = client.subscribe(
-        channels,
-        (response) => {
-          console.log("🎉 Real-time response received:", response)
-          console.log("Events:", response.events)
-          console.log("Payload:", response.payload)
-          
-          // Check if this update is for our specific match
-          const payload = response.payload as Record<string, unknown>
-          if (payload && payload.$id !== matchId) {
-            console.log(`🔍 Update for different match (${payload.$id}), ignoring`)
-            return
-          }
-          
-          // Check for any update events
-          const hasUpdateEvent = response.events.some(event => 
-            event.includes('databases') && 
-            event.includes('documents') && 
-            event.includes('update')
-          )
-          
-          if (hasUpdateEvent && payload && payload.$id === matchId) {
-            console.log("✅ Match updated via real-time:", payload)
-            
-            setLastUpdate({
-              score: payload.score as string,
-              pointLog: payload.pointLog as string[],
-              events: payload.events as string[],
-              status: payload.status as "In Progress" | "Completed",
-              winnerId: payload.winnerId as string | undefined
-            })
-            setConnected(true)
-            setError(null)
-            setRetryCount(0)
-          } else {
-            console.log("🔍 Non-matching event received:", {
-              events: response.events,
-              payloadId: payload?.$id,
-              expectedId: matchId
-            })
-          }
-        }
-      )
-
-      console.log("✅ Real-time subscription established")
-      setConnected(true)
-      setError(null)
-      
-      return unsubscribe
-    } catch (err) {
-      console.error("❌ Failed to establish real-time connection:", err)
-      setError(err instanceof Error ? err.message : "Connection failed")
-      setConnected(false)
-      
-      // Retry connection with exponential backoff
-      const delay = Math.min(1000 * Math.pow(2, retryCount), 30000) // Max 30 seconds
-      console.log(`⏳ Retrying connection in ${delay}ms (attempt ${retryCount + 1}/5)`)
-      
-      setTimeout(() => {
-        if (retryCount < 5) {
-          setRetryCount(prev => prev + 1)
-          connect()
-        }
-      }, delay)
-      
-      return () => {}
-    }
-  }, [matchId, retryCount, testDocumentAccess])
+  const unsubscribeRef = useRef<(() => void) | null>(null)
+  const isConnectingRef = useRef(false)
 
   useEffect(() => {
+    if (!matchId || isConnectingRef.current) {
+      return
+    }
+
     console.log("🚀 Starting real-time connection for match:", matchId)
-    const connectPromise = connect()
-    
+    isConnectingRef.current = true
+
+    const connectToRealtime = () => {
+      try {
+        console.log("🔄 Connecting to real-time updates...")
+        
+        // Simple subscription to the specific document
+        const channel = `databases.${process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID}.documents.${matchId}`
+        
+        console.log("📡 Subscription channel:", channel)
+
+        const unsubscribe = client.subscribe(
+          channel,
+          (response) => {
+            console.log("🎉 Real-time event received:", response)
+            
+            // Check if this is an update event
+            const isUpdate = response.events.some(event => 
+              event.includes('update')
+            )
+            
+            if (isUpdate && response.payload) {
+              const payload = response.payload as Record<string, unknown>
+              console.log("✅ Match updated:", payload)
+              
+              setLastUpdate({
+                score: payload.score as string,
+                pointLog: payload.pointLog as string[],
+                events: payload.events as string[],
+                status: payload.status as "In Progress" | "Completed",
+                winnerId: payload.winnerId as string | undefined
+              })
+              setConnected(true)
+              setError(null)
+              setRetryCount(0)
+            }
+          }
+        )
+
+        unsubscribeRef.current = unsubscribe
+        setConnected(true)
+        setError(null)
+        console.log("✅ Real-time subscription established")
+
+      } catch (err) {
+        console.error("❌ Real-time connection failed:", err)
+        setError(err instanceof Error ? err.message : "Connection failed")
+        setConnected(false)
+        
+        // Retry with exponential backoff
+        if (retryCount < 3) {
+          const delay = 1000 * Math.pow(2, retryCount)
+          console.log(`⏳ Retrying in ${delay}ms...`)
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1)
+            connectToRealtime()
+          }, delay)
+        }
+      } finally {
+        isConnectingRef.current = false
+      }
+    }
+
+    // Start connection
+    connectToRealtime()
+
     // Cleanup function
     return () => {
       console.log("🧹 Cleaning up real-time connection")
-      connectPromise.then((unsubscribe) => {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe()
+      if (unsubscribeRef.current) {
+        try {
+          unsubscribeRef.current()
+        } catch (err) {
+          console.error("Error during cleanup:", err)
         }
-      }).catch(() => {
-        // Handle cleanup errors silently
-      })
+        unsubscribeRef.current = null
+      }
       setConnected(false)
+      isConnectingRef.current = false
     }
-  }, [connect])
+  }, [matchId, retryCount])
 
-  // Add visibility change handler for mobile browsers
+  // Handle page visibility changes for mobile
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !connected && matchId) {
+      if (document.visibilityState === 'visible' && !connected && matchId && !isConnectingRef.current) {
         console.log("👁️ Page became visible, reconnecting...")
-        connect()
+        setRetryCount(0) // Reset retry count
       }
     }
 
@@ -178,15 +121,7 @@ export function useRealtimeMatch(matchId: string) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [connected, matchId, connect])
-
-  // Test connection on mount
-  useEffect(() => {
-    if (matchId) {
-      console.log("🧪 Testing Appwrite client connection...")
-      console.log("Client config available:", !!client)
-    }
-  }, [matchId])
+  }, [connected, matchId])
 
   return { connected, lastUpdate, error, retryCount }
 } 

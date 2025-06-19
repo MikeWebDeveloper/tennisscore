@@ -133,7 +133,15 @@ const itemVariants = {
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const [match, setMatch] = useState(initialMatch)
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
-  const { connected, lastUpdate, error, retryCount } = useRealtimeMatch(match.$id)
+  const [mounted, setMounted] = useState(false)
+  
+  // Only start real-time connection after component mounts to prevent hydration issues
+  const { connected, lastUpdate, error, retryCount } = useRealtimeMatch(mounted ? match.$id : "")
+
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Parse point log
   useEffect(() => {
@@ -149,7 +157,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   // Update match when real-time data changes
   useEffect(() => {
-    if (lastUpdate) {
+    if (lastUpdate && mounted) {
+      console.log("🔄 Updating match with real-time data:", lastUpdate)
       setMatch(prev => ({
         ...prev,
         scoreParsed: lastUpdate.score ? JSON.parse(lastUpdate.score) : prev.scoreParsed,
@@ -158,7 +167,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         winnerId: lastUpdate.winnerId || prev.winnerId
       }))
     }
-  }, [lastUpdate])
+  }, [lastUpdate, mounted])
 
   const shareMatch = async () => {
     const url = window.location.href
@@ -194,36 +203,28 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     window.location.reload()
   }
 
-  // Test function to trigger a manual update
-  const testUpdate = async () => {
-    try {
-      console.log("🧪 Testing manual update for match:", match.$id)
-      
-      // Create a mock update
-      const testUpdate = {
-        score: JSON.stringify({
-          ...match.scoreParsed,
-          points: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)]
-        }),
-        status: match.status
-      }
-      
-      console.log("Test update data:", testUpdate)
-      
-      // This would normally be done via a server action, but for testing
-      // we can see if we receive the update via real-time
-      toast.success("Test update triggered - check console for real-time events")
-    } catch (error) {
-      console.error("Test update failed:", error)
-      toast.error("Test update failed")
-    }
-  }
-
   const matchStats = calculateMatchStats(pointLog)
   const hasPointData = pointLog.length > 0
   const playerNames = {
     p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
+  }
+
+  // Prevent hydration mismatch by showing loading state until mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="relative z-10 p-4 max-w-md mx-auto space-y-4">
+          <div className="text-center pt-4">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Trophy className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">Live Tennis Match</h1>
+            </div>
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -253,14 +254,6 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={testUpdate}
-                className="p-2 text-xs"
-              >
-                🧪 Test
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
                 onClick={shareMatch}
                 className="p-2"
               >
@@ -274,23 +267,25 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
             
-            {/* Connection Status */}
-            <Badge variant={connected ? "outline" : "destructive"} className={`border-2 ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
-              {connected ? (
-                <>
-                  <Wifi className="w-3 h-3 mr-1" />
-                  Connected
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-3 h-3 mr-1" />
-                  {retryCount > 0 ? `Retry ${retryCount}/5` : 'Disconnected'}
-                </>
-              )}
-            </Badge>
+            {/* Connection Status - only show if match is in progress */}
+            {match.status === "In Progress" && (
+              <Badge variant={connected ? "outline" : "destructive"} className={`border-2 ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
+                {connected ? (
+                  <>
+                    <Wifi className="w-3 h-3 mr-1" />
+                    Connected
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3 h-3 mr-1" />
+                    {retryCount > 0 ? `Retry ${retryCount}/3` : 'Connecting...'}
+                  </>
+                )}
+              </Badge>
+            )}
           </div>
           
-          {error && (
+          {error && match.status === "In Progress" && (
             <div className="text-xs text-red-500 mt-2 p-2 bg-red-50 rounded border">
               Connection error: {error}
             </div>
