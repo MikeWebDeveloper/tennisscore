@@ -393,7 +393,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         sets: [],
         games: [0, 0],
         points: [0, 0],
-        server: 'p1', // Default, will be overridden by serve selection
+        server: 'p1', // Default server to p1
         gameNumber: 1,
         setNumber: 1
       }
@@ -405,7 +405,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleServeSwap = () => {
     if (isInGame) {
-      toast.error("Cannot change server in the middle of a game!")
+      toast.error("Cannot change server after the match has started.")
       setShowServeSwapConfirm(false)
       return
     }
@@ -435,23 +435,22 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     return `${p1Display} - ${p2Display}`
   }
 
-  const handlePointWin = async (winner: 'p1' | 'p2') => {
-    // For "points" detail level, just award the point immediately
+  const handlePointWin = async (winner: "p1" | "p2") => {
+    // Directly read the detailLevel from the match prop
+    const detailLevel = match.matchFormatParsed?.detailLevel || "simple"
+
+    // If the detail level is 'points', award the point immediately
+    // without showing any popups.
     if (detailLevel === "points") {
-      await awardPoint(winner, { pointOutcome: 'winner' })
-      return
-    }
-    
-    // For "simple" detail level, show the simple stats popup
-    if (detailLevel === "simple") {
-      setPendingPointWinner(winner)
-      setShowSimpleStatsPopup(true)
+      await awardPoint(winner) // Pass only the winner
       return
     }
 
-    // For "complex" detail level, show point detail sheet
-    setPendingPointWinner(winner)
-    setShowPointDetail(true)
+    // If the detail level is 'simple', show the PointDetailSheet.
+    if (detailLevel === "simple") {
+      setPendingPointWinner(winner)
+      setShowPointDetail(true)
+    }
   }
 
   const isBreakPoint = (currentScore: TennisScore): boolean => {
@@ -470,7 +469,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     return false
   }
 
-  const awardPoint = async (winner: 'p1' | 'p2', pointDetails?: Partial<PointDetail>) => {
+  const awardPoint = async (
+    winner: "p1" | "p2",
+    pointDetails?: Partial<PointDetail>
+  ) => {
     const newPointDetail: PointDetail = {
       id: `${Date.now()}-${Math.random()}`,
       pointNumber: pointLog.length + 1,
@@ -480,8 +482,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       winner,
       gameScore: getGameScore(),
       pointOutcome: pointDetails?.pointOutcome || 'winner',
-      serveType: pointDetails?.serveType || 'first',
-      serveOutcome: pointDetails?.serveOutcome || 'winner',
+      serveType: pointDetails?.serveType || "first",
+      serveOutcome: pointDetails?.serveOutcome || "winner",
       rallyLength: pointDetails?.rallyLength || 1,
       isBreakPoint: isBreakPoint(score),
       isSetPoint: false,
@@ -490,7 +492,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       isSetWinning: false,
       isMatchWinning: false,
       timestamp: new Date().toISOString(),
-      ...pointDetails
+      ...(pointDetails || {}),
     }
 
     const updatedPointLog = [...pointLog, newPointDetail]
@@ -681,7 +683,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       />
 
       {/* Point Detail Sheet */}
-      {pendingPointWinner && detailLevel === "complex" && (
+      {pendingPointWinner && detailLevel === "simple" && (
         <PointDetailSheet
           open={showPointDetail}
           onOpenChange={setShowPointDetail}
