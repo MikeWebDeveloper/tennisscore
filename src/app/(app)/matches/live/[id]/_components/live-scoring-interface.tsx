@@ -23,11 +23,21 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { Player, PointDetail, TennisScore, Score } from "@/lib/types"
+import { Player, PointDetail, TennisScore, Score, PointOutcome } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { PointDetailSheet } from "./point-detail-sheet"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
+import { SimpleStatsPopup } from "./simple-stats-popup"
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3 }
+  }
+}
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -294,7 +304,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
-  const [showServeSelection, setShowServeSelection] = useState(false)
+  const [showSimpleStatsPopup, setShowSimpleStatsPopup] = useState(false)
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [score, setScore] = useState<TennisScore>({
     sets: [],
@@ -388,8 +398,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         setNumber: 1
       }
       setIsInGame(false)
-      // Show serve selection for new matches
-      setShowServeSelection(true)
     }
     
     setScore(initialScore)
@@ -430,11 +438,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const handlePointWin = async (winner: 'p1' | 'p2') => {
     // For "points" detail level, just award the point immediately
     if (detailLevel === "points") {
-      await awardPoint(winner)
+      await awardPoint(winner, { pointOutcome: 'winner' })
       return
     }
     
-    // For "simple" or "complex" detail levels, show point detail sheet
+    // For "simple" detail level, show the simple stats popup
+    if (detailLevel === "simple") {
+      setPendingPointWinner(winner)
+      setShowSimpleStatsPopup(true)
+      return
+    }
+
+    // For "complex" detail level, show point detail sheet
     setPendingPointWinner(winner)
     setShowPointDetail(true)
   }
@@ -514,6 +529,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
+  const handleSimpleStatsSave = (outcome: PointOutcome) => {
+    if (pendingPointWinner) {
+      awardPoint(pendingPointWinner, { pointOutcome: outcome })
+    }
+    setPendingPointWinner(null)
+    setShowSimpleStatsPopup(false)
+  }
+
   const handleUndo = async () => {
     if (pointLog.length === 0) return
 
@@ -571,15 +594,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const handleServeSelection = (selectedServer: 'p1' | 'p2') => {
-    setScore(prev => ({
-      ...prev,
-      server: selectedServer
-    }))
-    setShowServeSelection(false)
-    toast.success(`${playerNames[selectedServer]} will serve first`)
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col h-screen">
@@ -612,6 +626,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
             <PointEntry onPointWin={handlePointWin} score={score} />
             
+            <motion.div variants={itemVariants} className="mt-4 flex justify-center">
+              <Button variant="outline" size="sm" onClick={handleUndo} disabled={pointLog.length === 0}>
+                <Undo className="h-4 w-4 mr-2" /> Undo Last Point
+              </Button>
+            </motion.div>
+            
             <Tabs defaultValue="stats" className="space-y-4">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="stats">Stats</TabsTrigger>
@@ -635,9 +655,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         {/* Bottom Action Bar - Fixed (Undo/End Match) */}
         <div className="flex-shrink-0 bg-background border-t p-4">
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleUndo} disabled={pointLog.length === 0} className="flex-1">
-              <Undo className="h-4 w-4 mr-2" /> Undo
-            </Button>
             <Button variant="destructive" size="sm" onClick={handleEndMatch} className="flex-1">
               <Trophy className="h-4 w-4 mr-2" /> End Match
             </Button>
@@ -653,8 +670,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         playerNames={playerNames}
       />
 
+      {/* Simple Stats Popup */}
+      <SimpleStatsPopup
+        open={showSimpleStatsPopup}
+        onOpenChange={setShowSimpleStatsPopup}
+        playerWinning={
+          pendingPointWinner === "p1" ? playerNames.p1 : playerNames.p2
+        }
+        onSave={handleSimpleStatsSave}
+      />
+
       {/* Point Detail Sheet */}
-      {pendingPointWinner && (
+      {pendingPointWinner && detailLevel === "complex" && (
         <PointDetailSheet
           open={showPointDetail}
           onOpenChange={setShowPointDetail}
@@ -699,41 +726,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 className="flex-1"
               >
                 Change Server
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Initial Serve Selection Dialog */}
-      <Dialog open={showServeSelection} onOpenChange={() => {}}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <TennisBallIcon className="w-5 h-5" />
-              Who serves first?
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Choose which player will serve the first game of the match.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => handleServeSelection('p1')}
-                className="h-16 flex flex-col items-center gap-2"
-              >
-                <TennisBallIcon className="w-6 h-6" />
-                <span className="font-medium">{playerNames.p1}</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleServeSelection('p2')}
-                className="h-16 flex flex-col items-center gap-2"
-              >
-                <TennisBallIcon className="w-6 h-6" />
-                <span className="font-medium">{playerNames.p2}</span>
               </Button>
             </div>
           </div>

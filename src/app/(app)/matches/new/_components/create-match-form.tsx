@@ -370,11 +370,11 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       <div className="text-sm text-muted-foreground">Aces, double faults, winners, errors</div>
                     </div>
                   </Label>
-                  <Label htmlFor="complex" className="radio-option">
-                    <RadioGroupItem value="complex" id="complex" />
+                  <Label htmlFor="complex" className="radio-option-disabled">
+                    <RadioGroupItem value="complex" id="complex" disabled />
                     <div>
                       <div className="font-medium">Detailed Stats</div>
-                      <div className="text-sm text-muted-foreground">Coming Soon</div>
+                      <div className="text-sm text-muted-foreground">Shot placement, rally length, etc.</div>
                     </div>
                   </Label>
                 </div>
