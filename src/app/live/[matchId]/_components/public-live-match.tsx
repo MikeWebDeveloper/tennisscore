@@ -59,18 +59,31 @@ function LiveScoreboard({
     return pointMap[points[playerIndex]] || "40"
   }
 
+  // Create dynamic columns based on completed sets plus current set
+  const completedSets = score.sets.length
+  const totalSetsToShow = Math.max(completedSets + 1, 3) // Show at least 3 set columns
+  const setsWon = [
+    score.sets.filter(set => set[0] > set[1]).length,
+    score.sets.filter(set => set[1] > set[0]).length
+  ]
+
+  // Create grid template for dynamic columns
+  const gridCols = `1fr repeat(${totalSetsToShow}, minmax(40px, 1fr)) minmax(50px, 1fr) minmax(60px, 1fr)`
+
   return (
-    <div className="bg-card text-card-foreground rounded-lg border my-4">
+    <div className="bg-card text-card-foreground rounded-lg border my-4 overflow-x-auto">
       {/* Header Row */}
-      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-2 border-b text-xs text-muted-foreground">
+      <div className="grid items-center p-2 border-b text-xs text-muted-foreground min-w-max" style={{ gridTemplateColumns: gridCols }}>
         <div className="font-semibold uppercase tracking-wider">Player</div>
-        <div className="w-12 text-center">Sets</div>
-        <div className="w-12 text-center">Games</div>
-        <div className="w-12 text-center">Points</div>
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center">Set {i + 1}</div>
+        ))}
+        <div className="text-center">Games</div>
+        <div className="text-center">Points</div>
       </div>
       
       {/* Player 1 Row */}
-      <div className={`grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium ${winnerId === playerOneId ? 'bg-primary/10' : ''}`}>
+      <div className={`grid items-center p-3 font-medium min-w-max ${winnerId === playerOneId ? 'bg-primary/10' : ''}`} style={{ gridTemplateColumns: gridCols }}>
         <div className="flex items-center gap-3">
           {score.server === "p1" && (
             <motion.div layoutId="tennis-ball" className="flex-shrink-0">
@@ -78,10 +91,15 @@ function LiveScoreboard({
             </motion.div>
           )}
           <span className="font-sans font-semibold tracking-wide">{playerOneName}</span>
+          <Badge variant="secondary" className="text-xs">{setsWon[0]}</Badge>
         </div>
-        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[0] || 0}</div>
-        <div className="w-12 text-center font-mono text-xl">{score.games[0]}</div>
-        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center font-mono text-lg">
+            {i < completedSets ? score.sets[i][0] : (i === completedSets ? score.games[0] : '-')}
+          </div>
+        ))}
+        <div className="text-center font-mono text-xl">{score.games[0]}</div>
+        <div className="text-center font-mono text-xl font-bold text-primary">
           {status === "In Progress" ? getPointDisplay(score.points, 0) : ""}
         </div>
       </div>
@@ -89,7 +107,7 @@ function LiveScoreboard({
       <div className="border-t"></div>
 
       {/* Player 2 Row */}
-      <div className={`grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium ${winnerId === playerTwoId ? 'bg-primary/10' : ''}`}>
+      <div className={`grid items-center p-3 font-medium min-w-max ${winnerId === playerTwoId ? 'bg-primary/10' : ''}`} style={{ gridTemplateColumns: gridCols }}>
         <div className="flex items-center gap-3">
           {score.server === "p2" && (
             <motion.div layoutId="tennis-ball" className="flex-shrink-0">
@@ -97,10 +115,15 @@ function LiveScoreboard({
             </motion.div>
           )}
           <span className="font-sans font-semibold tracking-wide">{playerTwoName}</span>
+          <Badge variant="secondary" className="text-xs">{setsWon[1]}</Badge>
         </div>
-        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[1] || 0}</div>
-        <div className="w-12 text-center font-mono text-xl">{score.games[1]}</div>
-        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center font-mono text-lg">
+            {i < completedSets ? score.sets[i][1] : (i === completedSets ? score.games[1] : '-')}
+          </div>
+        ))}
+        <div className="text-center font-mono text-xl">{score.games[1]}</div>
+        <div className="text-center font-mono text-xl font-bold text-primary">
           {status === "In Progress" ? getPointDisplay(score.points, 1) : ""}
         </div>
       </div>

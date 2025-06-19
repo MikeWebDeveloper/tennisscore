@@ -104,11 +104,15 @@ function LiveScoreboard({
   playerOneName,
   playerTwoName,
   score,
+  currentServer,
+  isInGame,
   onServerClick,
 }: {
   playerOneName: string
   playerTwoName: string
   score: TennisScore
+  currentServer: 'p1' | 'p2' | null
+  isInGame: boolean
   onServerClick: () => void
 }) {
   const getPointDisplay = (points: number[], playerIndex: number) => {
@@ -123,29 +127,53 @@ function LiveScoreboard({
     return pointMap[points[playerIndex]] || "40"
   }
 
+  // Create dynamic columns based on completed sets plus current set
+  const completedSets = score.sets.length
+  const totalSetsToShow = Math.max(completedSets + 1, 3) // Show at least 3 set columns
+  const setsWon = [
+    score.sets.filter(set => set[0] > set[1]).length,
+    score.sets.filter(set => set[1] > set[0]).length
+  ]
+
+  // Create grid template for dynamic columns
+  const gridCols = `1fr repeat(${totalSetsToShow}, minmax(40px, 1fr)) minmax(50px, 1fr) minmax(60px, 1fr)`
+
   return (
-    <div className="bg-card text-card-foreground rounded-lg border my-4">
+    <div className="bg-card text-card-foreground rounded-lg border my-4 overflow-x-auto">
       {/* Header Row */}
-      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-2 border-b text-xs text-muted-foreground">
+      <div className="grid items-center p-2 border-b text-xs text-muted-foreground min-w-max" style={{ gridTemplateColumns: gridCols }}>
         <div className="font-semibold uppercase tracking-wider">Player</div>
-        <div className="w-12 text-center">Sets</div>
-        <div className="w-12 text-center">Games</div>
-        <div className="w-12 text-center">Points</div>
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center">Set {i + 1}</div>
+        ))}
+        <div className="text-center">Games</div>
+        <div className="text-center">Points</div>
       </div>
       
       {/* Player 1 Row */}
-      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium">
+      <div className="grid items-center p-3 font-medium min-w-max" style={{ gridTemplateColumns: gridCols }}>
         <div className="flex items-center gap-3">
-          {score.server === "p1" && (
-            <motion.button layoutId="tennis-ball" onClick={onServerClick} className="flex-shrink-0">
+          {currentServer === "p1" && (
+            <motion.button 
+              layoutId="tennis-ball" 
+              onClick={onServerClick} 
+              className="flex-shrink-0"
+              disabled={isInGame}
+              whileTap={!isInGame ? { scale: 0.95 } : {}}
+            >
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
           )}
           <span className="font-sans font-semibold tracking-wide">{playerOneName}</span>
+          <Badge variant="secondary" className="text-xs">{setsWon[0]}</Badge>
         </div>
-        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[0] || 0}</div>
-        <div className="w-12 text-center font-mono text-xl">{score.games[0]}</div>
-        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center font-mono text-lg">
+            {i < completedSets ? score.sets[i][0] : (i === completedSets ? score.games[0] : '-')}
+          </div>
+        ))}
+        <div className="text-center font-mono text-xl">{score.games[0]}</div>
+        <div className="text-center font-mono text-xl font-bold text-primary">
           {getPointDisplay(score.points, 0)}
         </div>
       </div>
@@ -153,18 +181,29 @@ function LiveScoreboard({
       <div className="border-t"></div>
 
       {/* Player 2 Row */}
-      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center p-3 font-medium">
+      <div className="grid items-center p-3 font-medium min-w-max" style={{ gridTemplateColumns: gridCols }}>
         <div className="flex items-center gap-3">
-          {score.server === "p2" && (
-            <motion.button layoutId="tennis-ball" onClick={onServerClick} className="flex-shrink-0">
+          {currentServer === "p2" && (
+            <motion.button 
+              layoutId="tennis-ball" 
+              onClick={onServerClick} 
+              className="flex-shrink-0"
+              disabled={isInGame}
+              whileTap={!isInGame ? { scale: 0.95 } : {}}
+            >
               <TennisBallIcon className="w-4 h-4" />
             </motion.button>
           )}
           <span className="font-sans font-semibold tracking-wide">{playerTwoName}</span>
+          <Badge variant="secondary" className="text-xs">{setsWon[1]}</Badge>
         </div>
-        <div className="w-12 text-center font-mono text-xl">{score.sets[0]?.[1] || 0}</div>
-        <div className="w-12 text-center font-mono text-xl">{score.games[1]}</div>
-        <div className="w-12 text-center font-mono text-xl font-bold text-primary">
+        {Array.from({ length: totalSetsToShow }, (_, i) => (
+          <div key={i} className="text-center font-mono text-lg">
+            {i < completedSets ? score.sets[i][1] : (i === completedSets ? score.games[1] : '-')}
+          </div>
+        ))}
+        <div className="text-center font-mono text-xl">{score.games[1]}</div>
+        <div className="text-center font-mono text-xl font-bold text-primary">
           {getPointDisplay(score.points, 1)}
         </div>
       </div>
@@ -344,10 +383,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         sets: [],
         games: [0, 0],
         points: [0, 0],
-        server: 'p1',
+        server: 'p1', // Default, will be overridden by serve selection
         gameNumber: 1,
         setNumber: 1
       }
+      setIsInGame(false)
       // Show serve selection for new matches
       setShowServeSelection(true)
     }
@@ -565,6 +605,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               playerOneName={playerNames.p1}
               playerTwoName={playerNames.p2}
               score={score}
+              currentServer={score.server}
+              isInGame={isInGame}
               onServerClick={() => setShowServeSwapConfirm(true)}
             />
 
