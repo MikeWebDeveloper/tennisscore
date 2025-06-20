@@ -10,14 +10,6 @@ function createClientWithRetry() {
     .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
     .setKey(process.env.APPWRITE_API_KEY!)
 
-  // Set more aggressive timeouts and connection settings for stability
-  client.headers = {
-    ...client.headers,
-    'X-Appwrite-Request-Timeout': '45', // 45 second timeout
-    'Connection': 'keep-alive',
-    'Keep-Alive': 'timeout=30, max=100'
-  }
-
   return client
 }
 
@@ -27,13 +19,6 @@ function createSessionClientWithToken(sessionToken: string) {
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
     .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
     .setSession(sessionToken) // Use session token instead of API key
-
-  client.headers = {
-    ...client.headers,
-    'X-Appwrite-Request-Timeout': '45',
-    'Connection': 'keep-alive',
-    'Keep-Alive': 'timeout=30, max=100'
-  }
 
   return client
 }
