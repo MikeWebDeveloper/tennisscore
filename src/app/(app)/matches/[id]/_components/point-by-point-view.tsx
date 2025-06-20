@@ -239,7 +239,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <TennisBallIcon className="w-4 h-4 text-muted-foreground" />
+                    <TennisBallIcon className="w-4 h-4" isServing={true} />
                     <span className="text-sm text-muted-foreground">
                       {serverName} serving
                     </span>

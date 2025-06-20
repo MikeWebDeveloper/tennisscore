@@ -85,6 +85,7 @@ interface MatchState {
   score: Score
   pointLog: PointDetail[]
   currentServer: 'p1' | 'p2' | null
+  startingServer: 'p1' | 'p2' | null  // Track who was chosen to serve first
   matchFormat: MatchFormat | null
   initialTiebreakServer: 'p1' | 'p2' | null
   
@@ -122,6 +123,21 @@ const initialScore: Score = {
   isTiebreak: false,
   tiebreakPoints: [0, 0],
   initialTiebreakServer: undefined,
+}
+
+// Helper function to calculate server based on starting server choice
+const getServerWithStartingChoice = (gameNumber: number, startingServer: 'p1' | 'p2'): 'p1' | 'p2' => {
+  // gameNumber is 1-indexed (1st game, 2nd game, etc.)
+  // Server alternates every game
+  const totalGamesPlayed = gameNumber - 1
+  
+  if (startingServer === 'p1') {
+    // P1 serves first: P1 serves games 1,3,5... P2 serves games 2,4,6...
+    return totalGamesPlayed % 2 === 0 ? 'p1' : 'p2'
+  } else {
+    // P2 serves first: P2 serves games 1,3,5... P1 serves games 2,4,6...
+    return totalGamesPlayed % 2 === 0 ? 'p2' : 'p1'
+  }
 }
 
 // Helper function to recalculate score from point log with enhanced logic
@@ -216,6 +232,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   score: initialScore,
   pointLog: [],
   currentServer: null,
+  startingServer: null,
   matchFormat: null,
   initialTiebreakServer: null,
   isMatchComplete: false,
@@ -233,16 +250,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const score = match.score || initialScore
     const pointLog = match.pointLog || []
     let calculatedServer: 'p1' | 'p2' | null = null
+    let startingServer: 'p1' | 'p2' = 'p1' // Default to p1 if not set
     
     if (pointLog.length > 0) {
       // Recalculate score from point log to ensure consistency
       const recalculatedScore = calculateScoreFromPointLog(pointLog, match.matchFormat)
+      
+      // Get the starting server from the first point in the log
+      startingServer = pointLog[0].server
+      
       if (recalculatedScore.isTiebreak) {
         const totalTiebreakPoints = recalculatedScore.tiebreakPoints![0] + recalculatedScore.tiebreakPoints![1]
         calculatedServer = getTiebreakServer(totalTiebreakPoints, recalculatedScore.initialTiebreakServer!)
       } else {
         const totalGamesPlayed = recalculatedScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + recalculatedScore.games[0] + recalculatedScore.games[1]
-        calculatedServer = getServer(totalGamesPlayed + 1)
+        calculatedServer = getServerWithStartingChoice(totalGamesPlayed + 1, startingServer)
       }
       
       set({
@@ -250,6 +272,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         score: recalculatedScore,
         pointLog,
         currentServer: calculatedServer,
+        startingServer,
         matchFormat: match.matchFormat,
         initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
@@ -257,14 +280,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         events: match.events || []
       })
     } else {
-      // For new matches, default to player 1 serving first
-      calculatedServer = 'p1'
+      // For new matches, keep existing server or default to player 1
+      const currentState = get()
+      startingServer = currentState.currentServer || 'p1'
+      calculatedServer = startingServer
       
       set({
         currentMatch: match,
         score,
         pointLog,
         currentServer: calculatedServer,
+        startingServer,
         matchFormat: match.matchFormat,
         initialTiebreakServer: score.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
@@ -538,13 +564,22 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     return { newScore: recalculatedScore, newPointLog }
   },
   
-  setServer: (server) => set({ currentServer: server }),
+  setServer: (server) => {
+    const state = get()
+    // If no points have been played yet, this sets the starting server
+    if (state.pointLog.length === 0) {
+      set({ currentServer: server, startingServer: server })
+    } else {
+      set({ currentServer: server })
+    }
+  },
   
   resetMatch: () => set({
     currentMatch: null,
     score: initialScore,
     pointLog: [],
     currentServer: null,
+    startingServer: null,
     matchFormat: null,
     initialTiebreakServer: null,
     events: [],

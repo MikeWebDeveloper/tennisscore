@@ -87,23 +87,22 @@ export function LiveScoreboard({
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {/* Always show tennis ball icon, colored for server, grayed for non-server */}
+              {/* Tennis ball icon - shows who is serving */}
               <motion.button 
                 layoutId="tennis-ball-p1" 
                 onClick={onServerClick} 
                 className={cn(
                   "flex-shrink-0 p-1 rounded-full transition-colors",
-                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer",
-                  server === "p1" ? "text-primary" : "text-muted-foreground/40"
+                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
                 )}
                 disabled={!onServerClick || isInGame}
                 whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
                 title={server === "p1" ? "Currently serving" : "Click to change server"}
               >
-                <TennisBallIcon className={cn(
-                  "w-4 h-4 transition-colors",
-                  server === "p1" ? "fill-current" : "stroke-current fill-transparent"
-                )} />
+                <TennisBallIcon 
+                  className="w-4 h-4"
+                  isServing={server === "p1"}
+                />
               </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">
@@ -149,23 +148,22 @@ export function LiveScoreboard({
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {/* Always show tennis ball icon, colored for server, grayed for non-server */}
+              {/* Tennis ball icon - shows who is serving */}
               <motion.button 
                 layoutId="tennis-ball-p2" 
                 onClick={onServerClick} 
                 className={cn(
                   "flex-shrink-0 p-1 rounded-full transition-colors",
-                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer",
-                  server === "p2" ? "text-primary" : "text-muted-foreground/40"
+                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
                 )}
                 disabled={!onServerClick || isInGame}
                 whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
                 title={server === "p2" ? "Currently serving" : "Click to change server"}
               >
-                <TennisBallIcon className={cn(
-                  "w-4 h-4 transition-colors",
-                  server === "p2" ? "fill-current" : "stroke-current fill-transparent"
-                )} />
+                <TennisBallIcon 
+                  className="w-4 h-4"
+                  isServing={server === "p2"}
+                />
               </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">

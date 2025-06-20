@@ -4,26 +4,12 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
+import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 
 interface ServeSelectionProps {
   playerOne: Player
   playerTwo: Player
-  onServeSelected: (servingPlayer: "p1" | "p2") => void
-}
-
-// Tennis Ball SVG Component
-function TennisBall({ className }: { className?: string }) {
-  return (
-    <svg 
-      viewBox="0 0 24 24" 
-      className={className}
-      fill="currentColor"
-    >
-      <circle cx="12" cy="12" r="10" fill="currentColor" stroke="currentColor" strokeWidth="1"/>
-      <path d="M2 12c0-2.5 2-4.5 4.5-4.5S11 9.5 11 12s-2 4.5-4.5 4.5S2 14.5 2 12z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-      <path d="M22 12c0 2.5-2 4.5-4.5 4.5S13 14.5 13 12s2-4.5 4.5-4.5S22 9.5 22 12z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-    </svg>
-  )
+  onServeSelected: (server: "p1" | "p2") => void
 }
 
 export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeSelectionProps) {
@@ -79,7 +65,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
               </div>
               <div className="flex items-center gap-2">
                 {selectedServer === "p1" && (
-                  <TennisBall className="w-6 h-6 text-muted-foreground" />
+                  <TennisBallIcon className="w-6 h-6" isServing={true} />
                 )}
                 <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
                   selectedServer === "p1" 
@@ -111,7 +97,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
               </div>
               <div className="flex items-center gap-2">
                 {selectedServer === "p2" && (
-                  <TennisBall className="w-6 h-6 text-muted-foreground" />
+                  <TennisBallIcon className="w-6 h-6" isServing={true} />
                 )}
                 <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
                   selectedServer === "p2" 
