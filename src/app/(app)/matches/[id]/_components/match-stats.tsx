@@ -265,8 +265,28 @@ export function MatchStatsComponentSimple({
               />
             </>
           ) : (
-            // Detailed scoring: Show winners, errors, aces, double faults
+            // Simple/Complex scoring: Show both points-only stats AND detailed stats
             <>
+              {/* Points-only stats (from "points" level) */}
+              <StatRow 
+                label="Total Points" 
+                value1={stats.totalPointsWonByPlayer[0]} 
+                value2={stats.totalPointsWonByPlayer[1]} 
+              />
+              <StatRow 
+                label="Service Points %" 
+                value1={stats.servicePointsWonPercentageByPlayer[0]} 
+                value2={stats.servicePointsWonPercentageByPlayer[1]}
+                format="percentage"
+              />
+              <StatRow 
+                label="Receiving Points %" 
+                value1={stats.receivingPointsWonPercentageByPlayer[0]} 
+                value2={stats.receivingPointsWonPercentageByPlayer[1]}
+                format="percentage"
+              />
+              
+              {/* Detailed stats */}
               <StatRow 
                 label="Winners" 
                 value1={stats.winnersByPlayer[0]} 

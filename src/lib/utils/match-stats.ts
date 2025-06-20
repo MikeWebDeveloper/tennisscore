@@ -52,13 +52,11 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
   if (pointLog.length === 0) return stats
 
   // Count totals
-  let p1FirstServes = 0
   let p1FirstServesIn = 0
   let p1FirstServePointsWon = 0
   let p1SecondServePoints = 0
   let p1SecondServePointsWon = 0
 
-  let p2FirstServes = 0
   let p2FirstServesIn = 0
   let p2FirstServePointsWon = 0
   let p2SecondServePoints = 0
@@ -132,7 +130,6 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
     // Serve statistics
     if (isP1Serving) {
       if (point.serveType === 'first') {
-        p1FirstServes++
         if (point.serveOutcome !== 'double_fault') {
           p1FirstServesIn++
           if (isP1) p1FirstServePointsWon++
@@ -143,7 +140,6 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       }
     } else {
       if (point.serveType === 'first') {
-        p2FirstServes++
         if (point.serveOutcome !== 'double_fault') {
           p2FirstServesIn++
           if (!isP1) p2FirstServePointsWon++
@@ -157,8 +153,8 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
 
   // Calculate percentages
   stats.firstServePercentageByPlayer = [
-    p1FirstServes > 0 ? Math.round((p1FirstServesIn / p1FirstServes) * 100) : 0,
-    p2FirstServes > 0 ? Math.round((p2FirstServesIn / p2FirstServes) * 100) : 0
+    stats.servicePointsPlayedByPlayer[0] > 0 ? Math.round((p1FirstServesIn / stats.servicePointsPlayedByPlayer[0]) * 100) : 0,
+    stats.servicePointsPlayedByPlayer[1] > 0 ? Math.round((p2FirstServesIn / stats.servicePointsPlayedByPlayer[1]) * 100) : 0
   ]
 
   stats.firstServePointsWonByPlayer = [
