@@ -31,26 +31,7 @@ interface GameData {
   isCompleted: boolean
 }
 
-// Tennis score mapping
-const TENNIS_SCORES = ["0", "15", "30", "40"]
-
-function getTennisScore(p1Points: number, p2Points: number): string {
-  // Handle deuce and advantage situations
-  if (p1Points >= 3 && p2Points >= 3) {
-    if (p1Points === p2Points) return "40-40"
-    if (p1Points > p2Points) return "AD-40"
-    return "40-AD"
-  }
-  
-  // Regular scoring
-  const p1Score = TENNIS_SCORES[Math.min(p1Points, 3)] || "40"
-  const p2Score = TENNIS_SCORES[Math.min(p2Points, 3)] || "40"
-  return `${p1Score}-${p2Score}`
-}
-
-function getTiebreakScore(p1Points: number, p2Points: number): string {
-  return `${p1Points}-${p2Points}`
-}
+// We now use the gameScore stored in each point instead of recalculating
 
 function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
   if (!pointLog || pointLog.length === 0) return []
@@ -100,22 +81,16 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         const isCompleted = !!gameWinningPoint;
         
         const pointProgression: { score: string; indicators: string[] }[] = [];
-        let p1Points = 0;
-        let p2Points = 0;
 
         gamePoints.forEach(point => {
-            if (point.winner === 'p1') p1Points++;
-            else p2Points++;
-            
-            const scoreAfterPoint = isTiebreak ? 
-              getTiebreakScore(p1Points, p2Points) : 
-              getTennisScore(p1Points, p2Points);
+            // Use the score that was stored BEFORE this point was played
+            const scoreBeforePoint = point.gameScore || "0-0";
             
             const indicators: string[] = [];
             if (point.isBreakPoint) indicators.push("BP");
             if (point.isSetPoint) indicators.push("SP");
             if (point.isMatchPoint) indicators.push("MP");
-            pointProgression.push({ score: scoreAfterPoint, indicators });
+            pointProgression.push({ score: scoreBeforePoint, indicators });
         });
 
         let gameWinner: 'p1' | 'p2' | undefined;

@@ -334,10 +334,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                  } else {
            // Traditional: Check for 40-X (P2 has 40) or advantage situations
            if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
-               (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1) || // P2 has advantage
-               (currentP2 >= 3 && currentP1 >= 3 && currentP2 === currentP1)) { // Deuce - any point is a break point for returner
+               (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1)) { // P2 has advantage
              isThisPointBreakPoint = true
            }
+           // Note: At deuce (40-40), it's NOT a break point until someone gets advantage
          }
       } else {
         // Player 1 is receiving - check if P1 is in a break point situation  
@@ -347,10 +347,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                  } else {
            // Traditional: Check for 40-X (P1 has 40) or advantage situations
            if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
-               (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2) || // P1 has advantage
-               (currentP1 >= 3 && currentP2 >= 3 && currentP1 === currentP2)) { // Deuce - any point is a break point for returner
+               (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2)) { // P1 has advantage
              isThisPointBreakPoint = true
            }
+           // Note: At deuce (40-40), it's NOT a break point until someone gets advantage
          }
       }
       
