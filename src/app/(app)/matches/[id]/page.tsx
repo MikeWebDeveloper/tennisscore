@@ -107,14 +107,41 @@ export default async function MatchPage({
   // Calculate match statistics
   const matchStats = calculateMatchStats(parsedPoints)
 
+  // Format match score for header display
+  const formatMatchScore = (scoreData: { sets?: { p1?: number; p2?: number }[] }) => {
+    if (!scoreData.sets || scoreData.sets.length === 0) {
+      return "0-0"
+    }
+    return scoreData.sets.map((set: { p1?: number; p2?: number }) => 
+      `${set.p1 || 0}-${set.p2 || 0}`
+    ).join(", ")
+  }
+
+  const matchScore = formatMatchScore(score)
+
   return (
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Match Details</h1>
-          <p className="text-sm text-muted-foreground">
-            {playerNames.p1} vs {playerNames.p2} • {match.status} • {new Date(match.matchDate).toLocaleDateString()}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {playerNames.p1} vs {playerNames.p2}
+            </p>
+            {/* Always visible match score */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">•</span>
+              <Badge variant="outline" className="font-mono text-sm px-2 py-1">
+                {matchScore}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">•</span>
+              <span className="text-sm text-muted-foreground">
+                {new Date(match.matchDate).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={match.status === "Completed" ? "default" : "secondary"}>

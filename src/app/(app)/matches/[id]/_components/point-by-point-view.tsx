@@ -57,10 +57,24 @@ function getTiebreakScore(p1Points: number, p2Points: number): string {
 function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
   if (!pointLog || pointLog.length === 0) return []
 
+  // Sort points by their natural order (timestamp, point number, etc.)
+  const sortedPoints = [...pointLog].sort((a, b) => {
+    // First sort by set number
+    if (a.setNumber !== b.setNumber) {
+      return a.setNumber - b.setNumber
+    }
+    // Then by game number
+    if (a.gameNumber !== b.gameNumber) {
+      return a.gameNumber - b.gameNumber
+    }
+    // Finally by point number within the game
+    return a.pointNumber - b.pointNumber
+  })
+
   // Group points by set and game
   const setGroups: { [setNumber: number]: { [gameKey: string]: PointDetail[] } } = {}
   
-  pointLog.forEach(point => {
+  sortedPoints.forEach(point => {
     if (!setGroups[point.setNumber]) {
       setGroups[point.setNumber] = {}
     }
@@ -95,8 +109,10 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
     sortedGameEntries.forEach(([, gamePoints]) => {
       if (gamePoints.length === 0) return
 
-      const firstPoint = gamePoints[0]
-      const lastPoint = gamePoints[gamePoints.length - 1]
+      // Sort points within the game by point number to ensure correct order
+      const sortedGamePoints = gamePoints.sort((a, b) => a.pointNumber - b.pointNumber)
+      
+      const firstPoint = sortedGamePoints[0]
       const isTiebreak = !!firstPoint.isTiebreak
       
       let p1Points = 0
@@ -104,29 +120,40 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
       const pointProgression: string[] = []
 
       // Process each point in the game to build progression
-      gamePoints.forEach((point) => {
-        // Award the point
-        if (point.winner === 'p1') {
-          p1Points++
-        } else {
-          p2Points++
+      // CRITICAL FIX: Only process points that belong to THIS game
+      sortedGamePoints.forEach((point) => {
+        // Double-check that this point belongs to the current game
+        if (point.setNumber === firstPoint.setNumber && 
+            point.gameNumber === firstPoint.gameNumber &&
+            !!point.isTiebreak === isTiebreak) {
+          
+          // Award the point
+          if (point.winner === 'p1') {
+            p1Points++
+          } else {
+            p2Points++
+          }
+
+          // Store the score AFTER this point
+          const scoreAfterPoint = isTiebreak 
+            ? getTiebreakScore(p1Points, p2Points)
+            : getTennisScore(p1Points, p2Points)
+
+          pointProgression.push(scoreAfterPoint)
         }
-
-        // Store the score AFTER this point (this is the key fix!)
-        const scoreAfterPoint = isTiebreak 
-          ? getTiebreakScore(p1Points, p2Points)
-          : getTennisScore(p1Points, p2Points)
-
-        pointProgression.push(scoreAfterPoint)
       })
 
       // Add "Game" at the end if it's not a tiebreak
-      if (!isTiebreak) {
+      // CRITICAL FIX: Only add "Game" if this is actually the end of a game
+      if (!isTiebreak && pointProgression.length > 0) {
         pointProgression.push("Game")
       }
 
+      // Find the actual last point of this game (the game-winning point)
+      const lastGamePoint = sortedGamePoints[sortedGamePoints.length - 1]
+      
       // Determine game winner and update cumulative score
-      const gameWinner = lastPoint.winner
+      const gameWinner = lastGamePoint.winner
       if (gameWinner === 'p1') {
         p1GamesWon++
       } else {
@@ -147,8 +174,8 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         pointProgression,
         gameScore,
         isBreak,
-        isSetPoint: !!lastPoint.isSetPoint,
-        isMatchPoint: !!lastPoint.isMatchPoint,
+        isSetPoint: !!lastGamePoint.isSetPoint,
+        isMatchPoint: !!lastGamePoint.isMatchPoint,
         isTiebreak
       })
     })
