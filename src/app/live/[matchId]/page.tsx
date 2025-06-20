@@ -26,28 +26,36 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
     
     if (match.playerOneData) {
       playerOne = match.playerOneData
-    } else if (match.playerOneId) {
+    } else if (match.playerOneId && !match.playerOneId.startsWith('anonymous-')) {
       playerOne = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerOneId
       )
     } else {
-      // Fallback for missing data
-      playerOne = { firstName: "Player", lastName: "1" }
+      // Fallback for missing data or anonymous players
+      playerOne = { 
+        firstName: "Player", 
+        lastName: "1",
+        $id: match.playerOneId || "anonymous-1"
+      }
     }
     
     if (match.playerTwoData) {
       playerTwo = match.playerTwoData
-    } else if (match.playerTwoId) {
+    } else if (match.playerTwoId && !match.playerTwoId.startsWith('anonymous-')) {
       playerTwo = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         match.playerTwoId
       )
     } else {
-      // Fallback for missing data
-      playerTwo = { firstName: "Player", lastName: "2" }
+      // Fallback for missing data or anonymous players
+      playerTwo = { 
+        firstName: "Player", 
+        lastName: "2",
+        $id: match.playerTwoId || "anonymous-2"
+      }
     }
 
     // Parse the match data
@@ -86,7 +94,7 @@ export async function generateMetadata({ params }: PageProps) {
     
     if (match.playerOneData) {
       playerOne = match.playerOneData
-    } else if (match.playerOneId) {
+    } else if (match.playerOneId && !match.playerOneId.startsWith('anonymous-')) {
       playerOne = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
@@ -98,7 +106,7 @@ export async function generateMetadata({ params }: PageProps) {
     
     if (match.playerTwoData) {
       playerTwo = match.playerTwoData
-    } else if (match.playerTwoId) {
+    } else if (match.playerTwoId && !match.playerTwoId.startsWith('anonymous-')) {
       playerTwo = await databases.getDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
