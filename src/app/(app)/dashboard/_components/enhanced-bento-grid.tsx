@@ -111,9 +111,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
   }) => {
     return (
       <motion.div variants={itemVariants} className={className}>
-        <Card className="hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+        <Card className="h-24 hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+          <CardContent className="p-4 h-full">
+            <div className="flex items-center justify-between h-full">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground font-medium">{label}</p>
                 <p className="text-xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200">{value}</p>
