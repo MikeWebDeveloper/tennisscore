@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Button } from "@/components/ui/button"
-import { Play } from "lucide-react"
+import { Play, Users } from "lucide-react"
 import { getCurrentUser } from "@/lib/auth"
 import { getMatch } from "@/lib/actions/matches"
 import { getPlayersByIds } from "@/lib/actions/players"
@@ -31,36 +31,38 @@ export default async function MatchPage({
     redirect("/matches")
   }
 
-  // Handle anonymous players by checking ID prefix
-  let player1, player2
-  
-  if (match.playerOneId.startsWith('anonymous-')) {
-    player1 = { 
-      $id: match.playerOneId,
-      firstName: "Player", 
-      lastName: "1",
-      userId: user.$id,
-      $createdAt: new Date().toISOString(),
-      $updatedAt: new Date().toISOString()
-    } as Player
-  } else {
-    const playersData = await getPlayersByIds([match.playerOneId])
-    player1 = playersData[match.playerOneId]
+  // Check if it's a doubles match
+  const isDoubles = match.playerThreeId && match.playerFourId
+
+  // Handle all players (including doubles)
+  const playerIds = [match.playerOneId, match.playerTwoId]
+  if (isDoubles) {
+    playerIds.push(match.playerThreeId!, match.playerFourId!)
   }
-  
-  if (match.playerTwoId.startsWith('anonymous-')) {
-    player2 = { 
-      $id: match.playerTwoId,
-      firstName: "Player", 
-      lastName: "2",
-      userId: user.$id,
-      $createdAt: new Date().toISOString(),
-      $updatedAt: new Date().toISOString()
-    } as Player
-  } else {
-    const playersData = await getPlayersByIds([match.playerTwoId])
-    player2 = playersData[match.playerTwoId]
+
+  // Filter out anonymous player IDs
+  const realPlayerIds = playerIds.filter(id => !id.startsWith('anonymous-'))
+  const playersData = realPlayerIds.length > 0 ? await getPlayersByIds(realPlayerIds) : {}
+
+  // Create player objects
+  const createPlayer = (id: string, defaultNumber: string): Player => {
+    if (id.startsWith('anonymous-')) {
+      return { 
+        $id: id,
+        firstName: "Player", 
+        lastName: defaultNumber,
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      } as Player
+    }
+    return playersData[id] || null
   }
+
+  const player1 = createPlayer(match.playerOneId, "1")
+  const player2 = createPlayer(match.playerTwoId, "2")
+  const player3 = isDoubles ? createPlayer(match.playerThreeId!, "3") : null
+  const player4 = isDoubles ? createPlayer(match.playerFourId!, "4") : null
 
   // Parse the match data
   const score = JSON.parse(match.score || "{}")
@@ -98,10 +100,27 @@ export default async function MatchPage({
     return point as PointDetail
   })
 
-  // Get player names 
+  // Get player names - adjusted for doubles
   const playerNames = {
-    p1: player1 ? `${player1.firstName} ${player1.lastName}` : "Player 1",
-    p2: player2 ? `${player2.firstName} ${player2.lastName}` : "Player 2"
+    p1: isDoubles 
+      ? `${player1?.firstName} / ${player3?.firstName}`
+      : `${player1?.firstName} ${player1?.lastName}`,
+    p2: isDoubles 
+      ? `${player2?.firstName} / ${player4?.firstName}`
+      : `${player2?.firstName} ${player2?.lastName}`
+  }
+
+  const getFullPlayerNames = () => {
+    if (isDoubles) {
+      return {
+        team1: `${player1?.firstName} ${player1?.lastName} / ${player3?.firstName} ${player3?.lastName}`,
+        team2: `${player2?.firstName} ${player2?.lastName} / ${player4?.firstName} ${player4?.lastName}`
+      }
+    }
+    return {
+      p1: `${player1?.firstName} ${player1?.lastName}`,
+      p2: `${player2?.firstName} ${player2?.lastName}`
+    }
   }
 
   // Calculate match statistics
@@ -129,24 +148,37 @@ export default async function MatchPage({
   }
 
   const headerScore = formatHeaderScore(score)
+  const fullNames = getFullPlayerNames()
 
   return (
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Match Details</h1>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-muted-foreground">
-              {playerNames.p1} vs {playerNames.p2}
-            </p>
+          <div className="flex flex-col gap-1">
+            {isDoubles ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Doubles Match</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {fullNames.team1!}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  vs {fullNames.team2!}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {fullNames.p1} vs {fullNames.p2}
+              </p>
+            )}
             {/* Always visible match score */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">•</span>
+            <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="font-mono text-base px-3 py-1">
                 {headerScore}
               </Badge>
-            </div>
-            <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">•</span>
               <span className="text-sm text-muted-foreground">
                 {new Date(match.matchDate).toLocaleDateString()}
@@ -219,9 +251,49 @@ export default async function MatchPage({
                 </div>
                 <div className="text-center">
                   <div className="text-sm text-muted-foreground">Winner</div>
-                  <div className="text-2xl font-bold">
-                    {match.winnerId ? (match.winnerId === match.playerOneId ? playerNames.p1 : playerNames.p2) : "In Progress"}
+                  <div className="text-lg font-bold">
+                    {match.winnerId ? (
+                      match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId 
+                        ? playerNames.p1 
+                        : playerNames.p2
+                    ) : "In Progress"}
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Players/Teams Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {isDoubles ? "Teams" : "Players"}
+                {isDoubles && <Users className="h-4 w-4 text-muted-foreground" />}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="font-medium text-blue-600">{isDoubles ? "Team 1" : "Player 1"}</div>
+                  {isDoubles ? (
+                    <>
+                      <div>{player1?.firstName} {player1?.lastName}</div>
+                      <div>{player3?.firstName} {player3?.lastName}</div>
+                    </>
+                  ) : (
+                    <div>{player1?.firstName} {player1?.lastName}</div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="font-medium text-red-600">{isDoubles ? "Team 2" : "Player 2"}</div>
+                  {isDoubles ? (
+                    <>
+                      <div>{player2?.firstName} {player2?.lastName}</div>
+                      <div>{player4?.firstName} {player4?.lastName}</div>
+                    </>
+                  ) : (
+                    <div>{player2?.firstName} {player2?.lastName}</div>
+                  )}
                 </div>
               </div>
             </CardContent>

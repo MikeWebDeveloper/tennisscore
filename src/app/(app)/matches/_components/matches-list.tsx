@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Eye } from "lucide-react"
+import { Trophy, Eye, Users } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 
@@ -13,8 +13,12 @@ interface MatchesListProps {
     $id: string
     playerOneId: string
     playerTwoId: string
+    playerThreeId?: string
+    playerFourId?: string
     playerOneName: string
     playerTwoName: string
+    playerThreeName?: string
+    playerFourName?: string
     matchDate: string
     status: string
     winnerId?: string
@@ -27,6 +31,8 @@ interface MatchesListProps {
     }
     playerOne?: Player
     playerTwo?: Player
+    playerThree?: Player
+    playerFour?: Player
   }>
 }
 
@@ -76,18 +82,47 @@ export function MatchesList({ matches }: MatchesListProps) {
     return "0-0"
   }
 
+  const formatMatchTitle = (match: MatchesListProps['matches'][0]) => {
+    const isDoubles = match.playerThreeId && match.playerFourId
+    
+    if (isDoubles) {
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-1">
+            <Users className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Doubles</span>
+          </div>
+          <div className="text-sm font-medium leading-tight">
+            {match.playerOneName} / {match.playerThreeName}
+          </div>
+          <div className="text-xs text-muted-foreground">vs</div>
+          <div className="text-sm font-medium leading-tight">
+            {match.playerTwoName} / {match.playerFourName}
+          </div>
+        </div>
+      )
+    }
+    
+    return `${match.playerOneName} vs ${match.playerTwoName}`
+  }
+
+  const getCardHeight = (match: MatchesListProps['matches'][0]) => {
+    const isDoubles = match.playerThreeId && match.playerFourId
+    return isDoubles ? "h-auto min-h-[200px]" : ""
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {matches.map((match) => (
-        <Card key={match.$id} className="hover:shadow-md transition-shadow">
+        <Card key={match.$id} className={`hover:shadow-md transition-shadow ${getCardHeight(match)}`}>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base leading-tight">
-                {match.playerOneName} vs {match.playerTwoName}
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-base leading-tight flex-1">
+                {formatMatchTitle(match)}
               </CardTitle>
               <Badge 
                 variant={match.status === "Completed" ? "default" : "secondary"}
-                className="text-xs"
+                className="text-xs shrink-0"
               >
                 {match.status}
               </Badge>

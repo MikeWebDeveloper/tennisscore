@@ -48,6 +48,19 @@ export default async function MatchesPage() {
     const playerTwo = match.playerTwoId.startsWith('anonymous-') 
       ? { firstName: "Player", lastName: "2", $id: match.playerTwoId } as Player
       : playersMap.get(match.playerTwoId)
+    
+    // Handle doubles players
+    const playerThree = match.playerThreeId 
+      ? (match.playerThreeId.startsWith('anonymous-') 
+        ? { firstName: "Player", lastName: "3", $id: match.playerThreeId } as Player
+        : playersMap.get(match.playerThreeId))
+      : undefined
+    const playerFour = match.playerFourId 
+      ? (match.playerFourId.startsWith('anonymous-') 
+        ? { firstName: "Player", lastName: "4", $id: match.playerFourId } as Player
+        : playersMap.get(match.playerFourId))
+      : undefined
+
     const winner = match.winnerId ? playersMap.get(match.winnerId) : null
 
     let scoreParsed: { sets: { p1: number; p2: number }[], games?: number[], points?: number[] } | undefined = undefined
@@ -75,8 +88,14 @@ export default async function MatchesPage() {
       ...match,
       playerOneName: playerOne ? `${playerOne.firstName} ${playerOne.lastName}` : "Unknown Player",
       playerTwoName: playerTwo ? `${playerTwo.firstName} ${playerTwo.lastName}` : "Unknown Player",
+      playerThreeName: playerThree ? `${playerThree.firstName} ${playerThree.lastName}` : undefined,
+      playerFourName: playerFour ? `${playerFour.firstName} ${playerFour.lastName}` : undefined,
       winnerName: winner ? `${winner.firstName} ${winner.lastName}` : "",
       scoreParsed: scoreParsed,
+      playerOne,
+      playerTwo,
+      playerThree,
+      playerFour
     }
   })
 
