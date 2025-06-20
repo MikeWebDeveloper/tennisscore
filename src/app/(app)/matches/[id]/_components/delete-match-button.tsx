@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Trash2 } from "lucide-react"
+import { X } from "lucide-react"
 import { deleteMatch } from "@/lib/actions/matches"
 import { toast } from "sonner"
 
@@ -50,9 +50,12 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="gap-2">
-          <Trash2 className="h-4 w-4" />
-          Delete
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+        >
+          <X className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

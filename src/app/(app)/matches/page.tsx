@@ -50,11 +50,25 @@ export default async function MatchesPage() {
       : playersMap.get(match.playerTwoId)
     const winner = match.winnerId ? playersMap.get(match.winnerId) : null
 
-    let scoreParsed: { sets: { p1: number; p2: number }[] } | undefined = undefined
+    let scoreParsed: { sets: { p1: number; p2: number }[], games?: number[], points?: number[] } | undefined = undefined
     try {
-      scoreParsed = JSON.parse(match.score)
+      const parsed = JSON.parse(match.score)
+      // Convert array format to object format if needed
+      if (parsed) {
+        scoreParsed = {
+          sets: parsed.sets || [],
+          games: parsed.games || [0, 0],
+          points: parsed.points || [0, 0]
+        }
+      }
     } catch (e) {
       console.error("Failed to parse score JSON", e)
+      // Provide default values
+      scoreParsed = {
+        sets: [],
+        games: [0, 0],
+        points: [0, 0]
+      }
     }
 
     return {

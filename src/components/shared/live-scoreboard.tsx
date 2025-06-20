@@ -66,11 +66,11 @@ export function LiveScoreboard({
 
   return (
     <div className={cn("bg-card rounded-lg border shadow-sm", className)}>
-      {/* Mobile-optimized layout */}
+      {/* Minimalist layout */}
       <div className="divide-y">
         {/* Player 1 */}
         <div className={cn(
-          "p-3 sm:p-4 transition-colors",
+          "p-2 sm:p-3 transition-colors",
           isWinner(playerOneId) && "bg-primary/5"
         )}>
           <div className="flex items-center justify-between gap-2">
@@ -87,26 +87,26 @@ export function LiveScoreboard({
                   disabled={!onServerClick || isInGame}
                   whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
                 >
-                  <TennisBallIcon className="w-4 h-4" />
+                  <TennisBallIcon className="w-3 h-3" />
                 </motion.button>
               )}
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-base sm:text-lg truncate">
+                <h3 className="font-medium text-sm sm:text-base truncate">
                   {playerOneName}
                 </h3>
               </div>
-              <Badge variant="secondary" className="text-xs flex-shrink-0">
+              <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
                 {setsWon[0]}
               </Badge>
             </div>
             
             {/* Scores */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Set scores - hide on very small screens if more than 3 sets */}
-              {score.sets.length <= 3 && (
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Set scores - show on larger screens */}
+              {score.sets.length > 0 && (
                 <div className="hidden sm:flex gap-1">
                   {score.sets.map((set, idx) => (
-                    <div key={idx} className="text-sm font-mono w-5 text-center">
+                    <div key={idx} className="text-xs font-mono w-4 text-center">
                       {set[0]}
                     </div>
                   ))}
@@ -114,12 +114,12 @@ export function LiveScoreboard({
               )}
               
               {/* Current game score */}
-              <div className="text-lg sm:text-xl font-mono font-bold w-6 text-center">
+              <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
                 {score.games[0]}
               </div>
               
               {/* Current point */}
-              <div className="text-xl sm:text-2xl font-mono font-bold text-primary w-10 text-center">
+              <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
                 {getPointDisplay(0)}
               </div>
             </div>
@@ -128,7 +128,7 @@ export function LiveScoreboard({
 
         {/* Player 2 */}
         <div className={cn(
-          "p-3 sm:p-4 transition-colors",
+          "p-2 sm:p-3 transition-colors",
           isWinner(playerTwoId) && "bg-primary/5"
         )}>
           <div className="flex items-center justify-between gap-2">
@@ -145,26 +145,26 @@ export function LiveScoreboard({
                   disabled={!onServerClick || isInGame}
                   whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
                 >
-                  <TennisBallIcon className="w-4 h-4" />
+                  <TennisBallIcon className="w-3 h-3" />
                 </motion.button>
               )}
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-base sm:text-lg truncate">
+                <h3 className="font-medium text-sm sm:text-base truncate">
                   {playerTwoName}
                 </h3>
               </div>
-              <Badge variant="secondary" className="text-xs flex-shrink-0">
+              <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
                 {setsWon[1]}
               </Badge>
             </div>
             
             {/* Scores */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Set scores - hide on very small screens if more than 3 sets */}
-              {score.sets.length <= 3 && (
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Set scores - show on larger screens */}
+              {score.sets.length > 0 && (
                 <div className="hidden sm:flex gap-1">
                   {score.sets.map((set, idx) => (
-                    <div key={idx} className="text-sm font-mono w-5 text-center">
+                    <div key={idx} className="text-xs font-mono w-4 text-center">
                       {set[1]}
                     </div>
                   ))}
@@ -172,12 +172,12 @@ export function LiveScoreboard({
               )}
               
               {/* Current game score */}
-              <div className="text-lg sm:text-xl font-mono font-bold w-6 text-center">
+              <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
                 {score.games[1]}
               </div>
               
               {/* Current point */}
-              <div className="text-xl sm:text-2xl font-mono font-bold text-primary w-10 text-center">
+              <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
                 {getPointDisplay(1)}
               </div>
             </div>
@@ -185,11 +185,11 @@ export function LiveScoreboard({
         </div>
       </div>
       
-      {/* Set scores for mobile when > 3 sets */}
-      {score.sets.length > 3 && (
+      {/* Set scores for mobile when sets exist */}
+      {score.sets.length > 0 && (
         <div className="border-t p-2 sm:hidden">
-          <div className="text-xs text-muted-foreground text-center mb-1">Set Scores</div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="text-xs text-muted-foreground text-center mb-1">Sets</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="text-center font-mono">
               {playerOneName.split(' ')[0]}: {score.sets.map(s => s[0]).join(' ')}
             </div>

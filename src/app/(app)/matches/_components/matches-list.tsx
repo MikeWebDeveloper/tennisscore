@@ -42,7 +42,7 @@ export function MatchesList({ matches }: MatchesListProps) {
     
     // Handle missing or invalid scoreParsed
     if (!scoreParsed) {
-      return "N/A"
+      return "0-0"
     }
 
     // If match is in progress and no sets completed, show current game score
@@ -65,54 +65,57 @@ export function MatchesList({ matches }: MatchesListProps) {
       return setsDisplay
     }
 
-    return "N/A"
+    return "0-0"
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {matches.map((match) => (
         <Card key={match.$id} className="hover:shadow-md transition-shadow">
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
+              <CardTitle className="text-base leading-tight">
                 {match.playerOneName} vs {match.playerTwoName}
               </CardTitle>
-              <Badge variant={match.status === "Completed" ? "default" : "secondary"}>
+              <Badge 
+                variant={match.status === "Completed" ? "default" : "secondary"}
+                className="text-xs"
+              >
                 {match.status}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-0">
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-semibold">
-                  {match.status === "Completed" ? "Final Score:" : "Score:"}
+                <span className="text-sm font-medium">
+                  {match.status === "Completed" ? "Final:" : "Score:"}
                 </span>
-                <span className={`font-mono ${match.status === "Completed" ? "text-xl font-bold" : "text-lg"}`}>
+                <span className={`font-mono text-sm ${match.status === "Completed" ? "font-bold" : ""}`}>
                   {formatScore(match)}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="font-semibold">Date:</span>
-                <span>{new Date(match.matchDate).toLocaleDateString()}</span>
+                <span className="text-sm font-medium">Date:</span>
+                <span className="text-sm">{new Date(match.matchDate).toLocaleDateString()}</span>
               </div>
               
               {match.winnerName && (
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Winner:</span>
-                  <span className="flex items-center gap-1 font-medium text-green-600">
-                    <Trophy className="h-4 w-4" />
+                  <span className="text-sm font-medium">Winner:</span>
+                  <span className="flex items-center gap-1 text-sm font-medium text-green-600">
+                    <Trophy className="h-3 w-3" />
                     {match.winnerName}
                   </span>
                 </div>
               )}
 
-              <div className="flex items-center gap-2 mt-4">
-                <Button variant="outline" size="sm" asChild>
+              <div className="flex items-center gap-2 mt-3 pt-2 border-t">
+                <Button variant="outline" size="sm" asChild className="flex-1 h-8 text-xs">
                   <Link href={`/matches/${match.$id}`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Details
+                    <Eye className="h-3 w-3 mr-1" />
+                    View
                   </Link>
                 </Button>
                 <DeleteMatchButton 
