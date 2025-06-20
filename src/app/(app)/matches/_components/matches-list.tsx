@@ -20,7 +20,11 @@ interface MatchesListProps {
     winnerId?: string
     winnerName?: string
     score: string // Original JSON string
-    scoreParsed?: { sets: { p1: number; p2: number }[] }
+    scoreParsed?: { 
+      sets: { p1: number; p2: number }[]
+      games?: number[]
+      points?: number[]
+    }
     playerOne?: Player
     playerTwo?: Player
   }>
@@ -33,11 +37,35 @@ export function MatchesList({ matches }: MatchesListProps) {
     )
   }
 
-  const formatScore = (score: { sets: { p1: number; p2: number }[] } | undefined) => {
-    if (!score || !score.sets || score.sets.length === 0) {
+  const formatScore = (match: MatchesListProps['matches'][0]) => {
+    const { scoreParsed, status } = match
+    
+    // Handle missing or invalid scoreParsed
+    if (!scoreParsed) {
       return "N/A"
     }
-    return score.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
+
+    // If match is in progress and no sets completed, show current game score
+    if (status === 'In Progress' && (!scoreParsed.sets || scoreParsed.sets.length === 0)) {
+      if (scoreParsed.games && scoreParsed.games.length >= 2) {
+        return `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
+      }
+      return "0-0"
+    }
+
+    // Show completed sets
+    if (scoreParsed.sets && scoreParsed.sets.length > 0) {
+      const setsDisplay = scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
+      
+      // For in-progress matches, also show current game score if available
+      if (status === 'In Progress' && scoreParsed.games && scoreParsed.games.length >= 2) {
+        return `${setsDisplay} (${scoreParsed.games[0]}-${scoreParsed.games[1]})`
+      }
+      
+      return setsDisplay
+    }
+
+    return "N/A"
   }
 
   return (
@@ -61,7 +89,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                   {match.status === "Completed" ? "Final Score:" : "Score:"}
                 </span>
                 <span className={`font-mono ${match.status === "Completed" ? "text-xl font-bold" : "text-lg"}`}>
-                  {formatScore(match.scoreParsed)}
+                  {formatScore(match)}
                 </span>
               </div>
               

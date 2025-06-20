@@ -106,7 +106,8 @@ function processPointLog(pointLog: PointDetail[]): GameData[] {
     const gameWinner = lastPoint.winner
     const finalGameScore = gameWinner === 'p1' ? "1-0" : "0-1"
 
-    // Check if this was a break (server lost the game)
+    // **CORRECTED BREAK LOGIC**
+    // A break occurs when the receiving player wins the entire game
     const isBreak = firstPoint.server !== gameWinner
 
     processedGames.push({

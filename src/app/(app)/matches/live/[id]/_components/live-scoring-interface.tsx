@@ -558,13 +558,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const handleSimplePoint = () => {
-    if (pendingPointWinner) {
-      handleAwardPoint(pendingPointWinner)
-      setPendingPointWinner(null)
-      setShowPointDetail(false)
-    }
-  }
+
 
   const handleUndo = async () => {
     if (pointLog.length === 0) return
@@ -768,7 +762,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         open={showPointDetail}
         onOpenChange={setShowPointDetail}
         onSave={handlePointDetailSave}
-        onSimplePoint={handleSimplePoint}
         pointContext={{
           pointNumber: pointLog.length + 1,
           setNumber: score.sets.length + 1,

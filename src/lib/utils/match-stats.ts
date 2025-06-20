@@ -75,24 +75,19 @@ export function calculateMatchStats(pointLog: PointDetail[]): MatchStats {
       winnerStats.returnPointsWon++
     }
 
-    // Enhanced serve statistics tracking
+    // **CORRECTED SERVE STATS CALCULATION**
+    // Every service point is a first serve attempt
+    serverStats.firstServesAttempted++
+    
     if (point.serveType === 'first') {
-      serverStats.firstServesAttempted++
-      
-      // First serve went in if it's not a double fault and not followed by second serve
-      if (point.serveOutcome !== 'double_fault') {
-        serverStats.firstServesMade++
-        serverStats.firstServePointsPlayed++
-        if (point.winner === point.server) {
-          serverStats.firstServePointsWon++
-        }
+      // First serve went in
+      serverStats.firstServesMade++
+      serverStats.firstServePointsPlayed++
+      if (point.winner === point.server) {
+        serverStats.firstServePointsWon++
       }
     } else if (point.serveType === 'second') {
-      // Second serve means first serve missed
-      if (serverStats.firstServesAttempted === 0) {
-        serverStats.firstServesAttempted++
-      }
-      
+      // Second serve means first serve missed, but we already counted the attempt above
       serverStats.secondServesAttempted++
       if (point.serveOutcome !== 'double_fault') {
         serverStats.secondServesMade++
@@ -173,9 +168,8 @@ export function calculatePlayerStats(points: PointDetail[], playerId: "p1" | "p2
 
   // **CORRECTED SERVE STATS CALCULATION**
   // In tennis, first serve % = (first serves in) / (total service points)
-  // When a player double faults, they attempted both first and second serves
+  // Every service point is a first serve attempt
   
-  // Count actual serve attempts
   const totalServicePoints = playerServes.length
   const doubleFaults = playerServes.filter(p => p.pointOutcome === "double_fault").length
   

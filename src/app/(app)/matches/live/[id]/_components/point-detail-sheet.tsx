@@ -24,7 +24,6 @@ interface PointDetailSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (pointDetail: Partial<PointDetail>) => void
-  onSimplePoint: () => void
   pointContext: {
     pointNumber: number
     setNumber: number
@@ -44,7 +43,6 @@ export function PointDetailSheet({
   open, 
   onOpenChange, 
   onSave, 
-  onSimplePoint,
   pointContext 
 }: PointDetailSheetProps) {
   const [serveType, setServeType] = useState<ServeType>("first")
@@ -103,7 +101,25 @@ export function PointDetailSheet({
     }
   }, [pointOutcome, pointContext.server])
 
-  const handleSave = () => {
+  const handleDirectSave = (outcome: PointOutcome) => {
+    const pointDetail: Partial<PointDetail> = {
+      serveType,
+      serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
+      servePlacement,
+      serveSpeed: serveSpeed ? parseInt(serveSpeed) : undefined,
+      rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : parseInt(rallyLength) || 1,
+      pointOutcome: outcome,
+      lastShotType: outcome === 'ace' || outcome === 'double_fault' ? 'serve' : lastShotType,
+      lastShotPlayer: pointContext.winner,
+      courtPosition,
+      notes: notes || undefined,
+    }
+
+    onSave(pointDetail)
+    resetForm()
+  }
+
+  const handleDetailedSave = () => {
     if (validationError) {
       return // Don't save if there's a validation error
     }
@@ -122,11 +138,6 @@ export function PointDetailSheet({
     }
 
     onSave(pointDetail)
-    resetForm()
-  }
-
-  const handleSimplePoint = () => {
-    onSimplePoint()
     resetForm()
   }
 
@@ -152,29 +163,16 @@ export function PointDetailSheet({
     return badges
   }
 
-  // Get available point outcomes based on serve type and context
-  const getAvailableOutcomes = () => {
-    const outcomes = [
-      { value: "winner", label: "Winner", disabled: false },
-      { value: "unforced_error", label: "Unforced Error", disabled: false },
-      { value: "forced_error", label: "Forced Error", disabled: false },
-    ] as Array<{ value: PointOutcome; label: string; disabled: boolean }>
-
-    // Ace option (disabled if winner is not server)
-    outcomes.push({
-      value: "ace",
-      label: "Ace",
-      disabled: pointContext.winner !== pointContext.server,
-    })
-
-    // Double fault option (only when second serve and winner is returner)
-    outcomes.push({
-      value: "double_fault",
-      label: "Double Fault",
-      disabled: pointContext.serveType !== "second" || pointContext.winner === pointContext.server,
-    })
-
-    return outcomes
+  // Check if outcome is disabled based on context
+  const isOutcomeDisabled = (outcome: PointOutcome) => {
+    switch (outcome) {
+      case 'ace':
+        return pointContext.winner !== pointContext.server
+      case 'double_fault':
+        return pointContext.serveType !== "second" || pointContext.winner === pointContext.server
+      default:
+        return false
+    }
   }
 
   return (
@@ -201,27 +199,98 @@ export function PointDetailSheet({
           </div>
         </SheetHeader>
 
-        {/* Validation Error Alert */}
-        {validationError && (
-          <div className="flex items-center gap-2 p-3 mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-            <span>{validationError}</span>
-          </div>
-        )}
-
         <div className="space-y-6">
-          {/* Serve Details */}
+          {/* Quick Actions - One-Click Simple Stats */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => handleDirectSave('ace')}
+                  disabled={isOutcomeDisabled('ace')}
+                  className="h-16 flex flex-col gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20"
+                  variant="outline"
+                >
+                  <span className="font-semibold">Ace</span>
+                  <span className="text-xs opacity-70">Unreturnable serve</span>
+                </Button>
+                
+                <Button
+                  onClick={() => handleDirectSave('winner')}
+                  className="h-16 flex flex-col gap-1 bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
+                  variant="outline"
+                >
+                  <span className="font-semibold">Winner</span>
+                  <span className="text-xs opacity-70">Clean winner</span>
+                </Button>
+                
+                <Button
+                  onClick={() => handleDirectSave('unforced_error')}
+                  className="h-16 flex flex-col gap-1 bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20"
+                  variant="outline"
+                >
+                  <span className="font-semibold">Unforced Error</span>
+                  <span className="text-xs opacity-70">Unforced mistake</span>
+                </Button>
+                
+                <Button
+                  onClick={() => handleDirectSave('forced_error')}
+                  className="h-16 flex flex-col gap-1 bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20"
+                  variant="outline"
+                >
+                  <span className="font-semibold">Forced Error</span>
+                  <span className="text-xs opacity-70">Opponent forced error</span>
+                </Button>
+                
+                <Button
+                  onClick={() => handleDirectSave('double_fault')}
+                  disabled={isOutcomeDisabled('double_fault')}
+                  className="h-16 flex flex-col gap-1 bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 col-span-2"
+                  variant="outline"
+                >
+                  <span className="font-semibold">Double Fault</span>
+                  <span className="text-xs opacity-70">Two consecutive faults</span>
+                </Button>
+              </div>
+              
+              {(isOutcomeDisabled('ace') || isOutcomeDisabled('double_fault')) && (
+                <div className="mt-3 text-xs text-muted-foreground">
+                  <p>
+                    {isOutcomeDisabled('ace') && "• Ace requires server to win the point"}
+                  </p>
+                  <p>
+                    {isOutcomeDisabled('double_fault') && "• Double fault only on 2nd serve when receiver wins"}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Detailed Stats Section (Collapsed by default) */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                Serve Details
-                <span className="text-sm font-normal text-muted-foreground">
-                  ({pointContext.playerNames[pointContext.server]} serving)
-                </span>
+                Detailed Statistics
+                <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Validation Error Alert */}
+              {validationError && (
+                <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                  <span>{validationError}</span>
+                </div>
+              )}
+
               <div>
                 <Label className="text-sm font-medium">Serve Type</Label>
                 <RadioGroup 
@@ -277,31 +346,34 @@ export function PointDetailSheet({
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Point Outcome */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Point Outcome
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium">How did the point end?</Label>
+                <Label className="text-sm font-medium">Point Outcome</Label>
                 <RadioGroup 
                   value={pointOutcome} 
                   onValueChange={(value) => setPointOutcome(value as PointOutcome)}
                   className="mt-2 grid grid-cols-2 gap-2"
                 >
-                  {getAvailableOutcomes().map((outcome) => (
-                    <div key={outcome.value} className="flex items-center space-x-2 opacity-100">
-                      <RadioGroupItem value={outcome.value} id={outcome.value} disabled={outcome.disabled} />
-                      <Label htmlFor={outcome.value} className={outcome.disabled ? "text-muted-foreground" : ""}>{outcome.label}</Label>
-                    </div>
-                  ))}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="winner" id="winner" />
+                    <Label htmlFor="winner">Winner</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="unforced_error" id="unforced_error" />
+                    <Label htmlFor="unforced_error">Unforced Error</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="forced_error" id="forced_error" />
+                    <Label htmlFor="forced_error">Forced Error</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="ace" id="ace" disabled={isOutcomeDisabled('ace')} />
+                    <Label htmlFor="ace" className={isOutcomeDisabled('ace') ? "text-muted-foreground" : ""}>Ace</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="double_fault" id="double_fault" disabled={isOutcomeDisabled('double_fault')} />
+                    <Label htmlFor="double_fault" className={isOutcomeDisabled('double_fault') ? "text-muted-foreground" : ""}>Double Fault</Label>
+                  </div>
                 </RadioGroup>
               </div>
 
@@ -354,15 +426,7 @@ export function PointDetailSheet({
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Additional Details */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Additional Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div>
                 <Label className="text-sm font-medium">Court Position</Label>
                 <RadioGroup 
@@ -394,23 +458,16 @@ export function PointDetailSheet({
                   rows={3}
                 />
               </div>
+
+              <Button 
+                onClick={handleDetailedSave} 
+                className="w-full"
+                disabled={!!validationError}
+              >
+                Save Detailed Point
+              </Button>
             </CardContent>
           </Card>
-        </div>
-
-        <Separator className="my-6" />
-
-        <div className="flex gap-3">
-          <Button 
-            onClick={handleSave} 
-            className="flex-1"
-            disabled={!!validationError}
-          >
-            Save Detailed Point
-          </Button>
-          <Button variant="outline" onClick={handleSimplePoint} className="flex-1">
-            Save Simple Point
-          </Button>
         </div>
       </SheetContent>
     </Sheet>
