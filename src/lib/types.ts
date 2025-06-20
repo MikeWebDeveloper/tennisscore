@@ -22,6 +22,8 @@ export interface Match {
   $id: string
   playerOneId: string
   playerTwoId: string
+  playerThreeId?: string   // For doubles
+  playerFourId?: string    // For doubles
   matchDate: string
   matchFormat: string
   status: "In Progress" | "Completed"

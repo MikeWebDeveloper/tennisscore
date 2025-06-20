@@ -9,6 +9,8 @@ import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition 
 export async function createMatch(matchData: {
   playerOneId: string
   playerTwoId: string
+  playerThreeId?: string  // For doubles
+  playerFourId?: string   // For doubles
   matchFormat: MatchFormat
 }): Promise<{ success?: boolean; matchId?: string; error?: string }> {
   try {
@@ -21,6 +23,9 @@ export async function createMatch(matchData: {
 
     const playerOneId = matchData.playerOneId;
     const playerTwoId = matchData.playerTwoId;
+    const playerThreeId = matchData.playerThreeId;
+    const playerFourId = matchData.playerFourId;
+    
     const docToCreate: Record<string, unknown> = {
       matchFormat: JSON.stringify(matchData.matchFormat),
       matchDate: new Date().toISOString(),
@@ -49,6 +54,23 @@ export async function createMatch(matchData: {
       docToCreate.playerTwoId = playerTwoId;
     } else {
       docToCreate.playerTwoId = playerTwoId;
+    }
+
+    // Handle doubles players
+    if (playerThreeId) {
+      if (playerThreeId.startsWith("anonymous-")) {
+        docToCreate.playerThreeId = playerThreeId;
+      } else {
+        docToCreate.playerThreeId = playerThreeId;
+      }
+    }
+
+    if (playerFourId) {
+      if (playerFourId.startsWith("anonymous-")) {
+        docToCreate.playerFourId = playerFourId;
+      } else {
+        docToCreate.playerFourId = playerFourId;
+      }
     }
 
     // The handleAnonymousPlayer function should be REMOVED.

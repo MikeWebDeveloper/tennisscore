@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Share2, Trophy, Clock, RefreshCw, Wifi, WifiOff } from "lucide-react"
+import { Share2, Trophy, RefreshCw, Wifi, WifiOff } from "lucide-react"
 import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
@@ -13,13 +13,15 @@ import { useRealtimeMatch } from "@/hooks/use-realtime-match"
 import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { PointByPointView } from "@/app/(app)/matches/[id]/_components/point-by-point-view"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
+import { LiveScoreboard } from "@/components/shared/live-scoreboard"
 
 interface PublicLiveMatchProps {
   match: {
     $id: string
     playerOne: Player
     playerTwo: Player
+    playerThree?: Player
+    playerFour?: Player
     scoreParsed: Score
     matchFormatParsed: MatchFormat
     status: "In Progress" | "Completed"
@@ -29,29 +31,20 @@ interface PublicLiveMatchProps {
   }
 }
 
-// Use shared scoreboard component
-const LiveScoreboard = SharedLiveScoreboard
-
 // Animation variants
 const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
+  hidden: { opacity: 0 },
+  show: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.4,
       staggerChildren: 0.1
     }
   }
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3 }
-  }
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 }
 
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
@@ -139,7 +132,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const hasPointData = pointLog.length > 0
   const playerNames = {
     p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`
+    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
+    p3: match.playerThree ? `${match.playerThree.firstName} ${match.playerThree.lastName}` : undefined,
+    p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
   }
 
   // Prevent hydration mismatch by showing loading state until mounted
@@ -164,7 +159,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       <motion.div
         variants={containerVariants}
         initial="hidden"
-        animate="visible"
+        animate="show"
         className="relative z-10 p-3 max-w-sm mx-auto space-y-3"
       >
         {/* Header */}
@@ -229,6 +224,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           <LiveScoreboard
             playerOneName={playerNames.p1}
             playerTwoName={playerNames.p2}
+            playerThreeName={playerNames.p3}
+            playerFourName={playerNames.p4}
             score={match.scoreParsed}
             status={match.status}
             winnerId={match.winnerId}
@@ -274,13 +271,24 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
         {/* Match Info Footer */}
         <motion.div variants={itemVariants} className="text-center text-xs text-muted-foreground">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Clock className="h-3 w-3" />
-            <span>Started {new Date(match.matchDate).toLocaleDateString()}</span>
+          <div className="text-center space-y-1">
+            <h1 className="text-xl font-bold">
+              {playerNames.p3 && playerNames.p4 
+                ? `${playerNames.p1} / ${playerNames.p3}`
+                : playerNames.p1
+              }
+            </h1>
+            <div className="text-sm text-muted-foreground">vs</div>
+            <h2 className="text-xl font-bold">
+              {playerNames.p3 && playerNames.p4 
+                ? `${playerNames.p2} / ${playerNames.p4}`
+                : playerNames.p2
+              }
+            </h2>
+            <div className="text-xs text-muted-foreground mt-2">
+              {new Date(match.matchDate).toLocaleDateString()}
+            </div>
           </div>
-          <p className="text-xs opacity-60">
-            TennisScore
-          </p>
         </motion.div>
       </motion.div>
     </div>

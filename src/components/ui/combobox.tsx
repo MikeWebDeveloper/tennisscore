@@ -82,10 +82,10 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-sm p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandList>
+          <CommandInput placeholder="Search..." className="h-8" />
+          <CommandList className="max-h-48">
             <CommandEmpty>{emptyText}</CommandEmpty>
             {Object.entries(groupedOptions).map(([groupName, groupOptions]) => (
               <CommandGroup
@@ -103,6 +103,7 @@ export function Combobox({
                         setOpen(false)
                       }
                     }}
+                    className="text-sm py-1.5"
                   >
                     <div className="flex items-center gap-2 flex-1">
                       {option.icon}

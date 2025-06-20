@@ -11,7 +11,12 @@ type PointDetail = BasePointDetail & { isTiebreak?: boolean }
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
-  playerNames: { p1: string; p2: string }
+  playerNames: { 
+    p1: string; 
+    p2: string;
+    p3?: string;  // For doubles
+    p4?: string;  // For doubles
+  }
 }
 
 interface SetData {
@@ -75,46 +80,86 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         const gamePoints = gamesInSet[gameNumber].sort((a, b) => a.pointNumber - b.pointNumber);
         if (gamePoints.length === 0) return;
 
-        const firstPoint = gamePoints[0];
-        const isTiebreak = !!firstPoint.isTiebreak;
-        const gameWinningPoint = gamePoints.find(p => p.isGameWinning);
-        const isCompleted = !!gameWinningPoint;
-        
         const pointProgression: { score: string; indicators: string[] }[] = [];
 
-        gamePoints.forEach(point => {
-            // Use the score that was stored BEFORE this point was played
-            const scoreBeforePoint = point.gameScore || "0-0";
+        // Check if this is a tiebreak game
+        const isTiebreak = gamePoints.length > 0 ? !!gamePoints[0].isTiebreak : false;
+
+        // Calculate score progression by simulating the game point by point
+        let p1Points = 0;
+        let p2Points = 0;
+        
+        // Filter out the game-winning point from the detailed progression
+        // We'll show it separately in the final game score
+        const progressionPoints = gamePoints.filter(point => !point.isGameWinning);
+        
+        progressionPoints.forEach((point) => {
+            // Award the point
+            if (point.winner === 'p1') {
+                p1Points++;
+            } else {
+                p2Points++;
+            }
+            
+            // Calculate the tennis score after this point
+            let scoreDisplay: string;
+            if (isTiebreak) {
+                scoreDisplay = `${p1Points}-${p2Points}`;
+            } else {
+                // Use standard tennis scoring
+                const scoreMap = ["0", "15", "30", "40"];
+                
+                if (p1Points >= 3 && p2Points >= 3) {
+                    if (p1Points === p2Points) {
+                        scoreDisplay = "40-40";
+                    } else if (p1Points > p2Points) {
+                        scoreDisplay = "AD-40";
+                    } else {
+                        scoreDisplay = "40-AD";
+                    }
+                } else {
+                    const p1Score = scoreMap[Math.min(p1Points, 3)] || "40";
+                    const p2Score = scoreMap[Math.min(p2Points, 3)] || "40";
+                    scoreDisplay = `${p1Score}-${p2Score}`;
+                }
+            }
             
             const indicators: string[] = [];
             if (point.isBreakPoint) indicators.push("BP");
             if (point.isSetPoint) indicators.push("SP");
             if (point.isMatchPoint) indicators.push("MP");
-            pointProgression.push({ score: scoreBeforePoint, indicators });
+            
+            pointProgression.push({ score: scoreDisplay, indicators });
         });
 
         let gameWinner: 'p1' | 'p2' | undefined;
         let gameScore: string | undefined;
         let isBreak: boolean | undefined;
 
-        if (isCompleted && gameWinningPoint) {
-            gameWinner = gameWinningPoint.winner;
-            if (gameWinner === 'p1') p1GamesWon++;
-            else p2GamesWon++;
-            gameScore = `${p1GamesWon}-${p2GamesWon}`;
-            isBreak = firstPoint.server !== gameWinner;
+        if (gamePoints.length > 0) {
+            // Check if this game is complete by looking at if it's marked as game winning
+            const gameWinningPoint = gamePoints.find(p => p.isGameWinning);
+            const isCompleted = !!gameWinningPoint;
+            
+            if (isCompleted && gameWinningPoint) {
+                gameWinner = gameWinningPoint.winner;
+                if (gameWinner === 'p1') p1GamesWon++;
+                else p2GamesWon++;
+                gameScore = `${p1GamesWon}-${p2GamesWon}`;
+                isBreak = gamePoints[0].server !== gameWinner;
+            }
         }
 
         processedGames.push({
-            setNumber: firstPoint.setNumber,
-            gameNumber: firstPoint.gameNumber,
-            server: firstPoint.server,
+            setNumber: gamePoints[0].setNumber,
+            gameNumber: gamePoints[0].gameNumber,
+            server: gamePoints[0].server,
             winner: gameWinner,
             pointProgression,
             gameScore,
             isBreak,
             isTiebreak,
-            isCompleted
+            isCompleted: !!gameWinner
         });
     });
 
@@ -130,6 +175,13 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
 export function PointByPointView({ pointLog, playerNames }: PointByPointViewProps) {
   const processedSets = processPointLogBySets(pointLog)
   const [selectedSet, setSelectedSet] = useState<number>(1)
+
+  // Check if this is a doubles match
+  const isDoubles = !!(playerNames.p3 && playerNames.p4)
+  
+  // Format team names for doubles
+  const teamOneName = isDoubles ? `${playerNames.p1} / ${playerNames.p3}` : playerNames.p1
+  const teamTwoName = isDoubles ? `${playerNames.p2} / ${playerNames.p4}` : playerNames.p2
 
   if (processedSets.length === 0) {
     return (
@@ -174,7 +226,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
       {/* Games in Selected Set */}
       <div className="space-y-3">
         {currentSetData?.games.map((game) => {
-          const serverName = game.server === 'p1' ? playerNames.p1 : playerNames.p2
+          const serverName = game.server === 'p1' ? teamOneName : teamTwoName
           
           return (
             <motion.div

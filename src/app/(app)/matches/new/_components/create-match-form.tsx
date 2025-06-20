@@ -96,6 +96,8 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       const result = await createMatch({
         playerOneId: validatedData.playerOneId,
         playerTwoId: validatedData.playerTwoId,
+        playerThreeId: validatedData.playerThreeId,
+        playerFourId: validatedData.playerFourId,
         matchFormat: {
           ...validatedData.matchFormat,
           detailLevel: validatedData.detailLevel

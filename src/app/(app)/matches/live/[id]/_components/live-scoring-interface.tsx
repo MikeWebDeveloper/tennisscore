@@ -41,6 +41,8 @@ interface LiveScoringInterfaceProps {
     $id: string
     playerOne: Player
     playerTwo: Player
+    playerThree?: Player
+    playerFour?: Player
     matchFormat: string
     score: string
     pointLog?: string[]
@@ -226,6 +228,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const playerNames = {
     p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
+    p3: match.playerThree ? `${match.playerThree.firstName} ${match.playerThree.lastName}` : undefined,
+    p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
   }
 
   // Convert store point details to lib point details for stats calculation
@@ -539,7 +543,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <div>
             <h1 className="font-semibold text-lg">Live Match</h1>
             <p className="text-sm text-muted-foreground">
-              {playerNames.p1} vs {playerNames.p2}
+              {playerNames.p3 && playerNames.p4 
+                ? `${playerNames.p1} / ${playerNames.p3} vs ${playerNames.p2} / ${playerNames.p4}`
+                : `${playerNames.p1} vs ${playerNames.p2}`
+              }
             </p>
           </div>
         </div>
@@ -561,6 +568,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         <LiveScoreboard
           playerOneName={playerNames.p1}
           playerTwoName={playerNames.p2}
+          playerThreeName={playerNames.p3}
+          playerFourName={playerNames.p4}
           score={{ ...score, isTiebreak }}
           currentServer={currentServer}
           isInGame={isInGame}

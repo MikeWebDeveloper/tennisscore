@@ -64,7 +64,7 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
     // Handle new anonymous player logic: check for embedded player data first
     const playersMap = new Map(players.map(player => [player.$id, player]))
 
-    let playerOne, playerTwo
+    let playerOne, playerTwo, playerThree, playerFour
     
     // Check for embedded player data first, then fall back to player lookup
     if (match.playerOneData) {
@@ -93,6 +93,29 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       }
     }
 
+    // Handle doubles players
+    if (match.playerThreeId) {
+      playerThree = playersMap.get(match.playerThreeId) || {
+        $id: match.playerThreeId,
+        firstName: "Player",
+        lastName: "3",
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      }
+    }
+
+    if (match.playerFourId) {
+      playerFour = playersMap.get(match.playerFourId) || {
+        $id: match.playerFourId,
+        firstName: "Player",
+        lastName: "4",
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      }
+    }
+
     // Parse the score
     let scoreParsed
     try {
@@ -115,6 +138,8 @@ export default async function LiveScoringPage({ params }: LiveScoringPageProps) 
       $id: match.$id,
       playerOne,
       playerTwo,
+      playerThree,
+      playerFour,
       matchFormat: match.matchFormat,
       score: match.score,
       pointLog: match.pointLog,

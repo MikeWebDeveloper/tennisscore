@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils"
 interface LiveScoreboardProps {
   playerOneName: string
   playerTwoName: string
+  playerThreeName?: string  // For doubles
+  playerFourName?: string   // For doubles
   score: Score & { server?: "p1" | "p2", isTiebreak?: boolean, tiebreakPoints?: number[] }
   currentServer?: "p1" | "p2" | null
   status?: string
@@ -23,6 +25,8 @@ interface LiveScoreboardProps {
 export function LiveScoreboard({
   playerOneName,
   playerTwoName,
+  playerThreeName,
+  playerFourName,
   score,
   currentServer,
   status = "In Progress",
@@ -35,6 +39,13 @@ export function LiveScoreboard({
 }: LiveScoreboardProps) {
   const isTiebreak = score.isTiebreak || false
   const server = currentServer || score.server
+  
+  // Check if this is a doubles match
+  const isDoubles = !!(playerThreeName && playerFourName)
+  
+  // Format team names for doubles
+  const teamOneName = isDoubles ? `${playerOneName} / ${playerThreeName}` : playerOneName
+  const teamTwoName = isDoubles ? `${playerTwoName} / ${playerFourName}` : playerTwoName
   
   const getPointDisplay = (playerIndex: number) => {
     if (status !== "In Progress") return ""
@@ -96,7 +107,7 @@ export function LiveScoreboard({
               </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">
-                  {playerOneName}
+                  {teamOneName}
                 </h3>
               </div>
               <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
@@ -158,7 +169,7 @@ export function LiveScoreboard({
               </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">
-                  {playerTwoName}
+                  {teamTwoName}
                 </h3>
               </div>
               <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
@@ -199,10 +210,10 @@ export function LiveScoreboard({
           <div className="text-xs text-muted-foreground text-center mb-1">Sets</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="text-center font-mono">
-              {playerOneName.split(' ')[0]}: {score.sets.map(s => s[0]).join(' ')}
+              {teamOneName.split(' ')[0]}: {score.sets.map(s => s[0]).join(' ')}
             </div>
             <div className="text-center font-mono">
-              {playerTwoName.split(' ')[0]}: {score.sets.map(s => s[1]).join(' ')}
+              {teamTwoName.split(' ')[0]}: {score.sets.map(s => s[1]).join(' ')}
             </div>
           </div>
         </div>
