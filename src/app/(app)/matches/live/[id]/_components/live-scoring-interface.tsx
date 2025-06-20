@@ -28,10 +28,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { PointDetailSheet } from "./point-detail-sheet"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
-import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
+import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+
 import { MatchStatsComponentSimple } from "../../../[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
@@ -57,19 +57,61 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
   matchId: string
   playerNames: { p1: string; p2: string }
 }) {
-  const shareUrl = `${window.location.origin}/live/${matchId}`
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/live/${matchId}` : ''
   const shareText = `🎾 Live Tennis Match: ${playerNames.p1} vs ${playerNames.p2}`
+  const fullMessage = `${shareText}\n${shareUrl}`
 
   const shareOptions = [
-    { name: "Messenger", icon: MessageCircle, url: `fb-messenger://share?link=${encodeURIComponent(shareUrl)}`, color: "bg-blue-500" },
-    { name: "WhatsApp", icon: MessageSquare, url: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, color: "bg-green-500" },
-    { name: "SMS", icon: Mail, url: `sms:?body=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, color: "bg-gray-500" },
-    { name: "Copy Link", icon: Copy, action: () => {
-        navigator.clipboard.writeText(shareUrl)
-        toast.success("Link copied to clipboard!")
-        onOpenChange(false)
+    { 
+      name: "Copy Link", 
+      icon: Copy, 
+      action: async () => {
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          toast.success("Link copied to clipboard!")
+          onOpenChange(false)
+        } catch {
+          toast.error("Failed to copy link")
+        }
       },
       color: "bg-primary"
+    },
+    { 
+      name: "WhatsApp", 
+      icon: MessageSquare, 
+      action: () => {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        const whatsappUrl = isMobile 
+          ? `whatsapp://send?text=${encodeURIComponent(fullMessage)}`
+          : `https://wa.me/?text=${encodeURIComponent(fullMessage)}`
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+        onOpenChange(false)
+      },
+      color: "bg-green-500"
+    },
+    { 
+      name: "SMS", 
+      icon: Mail, 
+      action: () => {
+        // SMS works differently on iOS vs Android
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+        const smsUrl = isIOS 
+          ? `sms:&body=${encodeURIComponent(fullMessage)}`
+          : `sms:?body=${encodeURIComponent(fullMessage)}`
+        window.location.href = smsUrl
+        onOpenChange(false)
+      },
+      color: "bg-blue-500"
+    },
+    { 
+      name: "Facebook", 
+      icon: MessageCircle, 
+      action: () => {
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
+        window.open(fbUrl, '_blank', 'noopener,noreferrer')
+        onOpenChange(false)
+      },
+      color: "bg-blue-600"
     }
   ]
 
@@ -80,16 +122,16 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
           <DialogTitle>Share Live Match</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          <div className="text-sm text-muted-foreground text-center p-3 bg-muted rounded-lg">
+            {shareUrl}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {shareOptions.map((option) => (
               <Button
                 key={option.name}
                 variant="outline"
                 className={`h-16 flex flex-col gap-1 text-white border-0 hover:opacity-90 ${option.color}`}
-                onClick={() => {
-                  if (option.action) option.action()
-                  else if (option.url) window.open(option.url, '_blank', 'noopener,noreferrer')
-                }}
+                onClick={option.action}
               >
                 <option.icon className="h-5 w-5" />
                 <span className="text-xs">{option.name}</span>
@@ -102,148 +144,8 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
   )
 }
 
-// Redesigned Scoreboard Component - More Fluid and Responsive
-function LiveScoreboard({
-  playerOneName,
-  playerTwoName,
-  score,
-  currentServer,
-  isInGame,
-  onServerClick,
-  isTiebreak,
-}: {
-  playerOneName: string
-  playerTwoName: string
-  score: Score
-  currentServer: 'p1' | 'p2' | null
-  isInGame: boolean
-  onServerClick: () => void
-  isTiebreak: boolean
-}) {
-  const getPointDisplay = (playerIndex: number) => {
-    if (isTiebreak) {
-      return score.tiebreakPoints?.[playerIndex] || 0
-    }
-    
-    const p1 = score.points[0]
-    const p2 = score.points[1]
-    
-    if (p1 >= 3 && p2 >= 3) {
-      if (p1 === p2) return "40"
-      if (p1 > p2 && playerIndex === 0) return "AD"
-      if (p2 > p1 && playerIndex === 1) return "AD"
-    }
-    
-    const pointMap = ["0", "15", "30", "40"]
-    return pointMap[score.points[playerIndex]] || "40"
-  }
-
-  // Helper to render set score
-  const renderSetScore = (playerIndex: number) => {
-    return score.sets.map((set, setIndex) => {
-      const isWinner = set[playerIndex] > set[1 - playerIndex]
-      return (
-        <div 
-          key={setIndex} 
-          className={cn(
-            "text-center font-mono text-sm sm:text-base",
-            isWinner && "font-bold"
-          )}
-        >
-          {set[playerIndex]}
-        </div>
-      )
-    })
-  }
-
-  return (
-    <div className="bg-card rounded-lg border shadow-sm">
-      {/* Player 1 */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            {currentServer === "p1" && (
-              <motion.button 
-                layoutId="tennis-ball" 
-                onClick={onServerClick} 
-                className="flex-shrink-0 hover:bg-muted rounded-full p-1 transition-colors" 
-                disabled={isInGame} 
-                whileTap={!isInGame ? { scale: 0.95 } : {}}
-                title={isInGame ? "Cannot change server after match started" : "Click to change server"}
-              >
-                <TennisBallIcon className="w-4 h-4" />
-              </motion.button>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-lg sm:text-xl md:text-2xl truncate">
-                {playerOneName}
-              </h3>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Set scores */}
-            <div className="flex gap-2">
-              {renderSetScore(0)}
-            </div>
-            
-            {/* Games */}
-            <div className="text-xl sm:text-2xl font-mono font-bold min-w-[2rem] text-center">
-              {score.games[0]}
-            </div>
-            
-            {/* Points */}
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-primary min-w-[3rem] text-center">
-              {getPointDisplay(0)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Player 2 */}
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            {currentServer === "p2" && (
-              <motion.button 
-                layoutId="tennis-ball" 
-                onClick={onServerClick} 
-                className="flex-shrink-0 hover:bg-muted rounded-full p-1 transition-colors" 
-                disabled={isInGame} 
-                whileTap={!isInGame ? { scale: 0.95 } : {}}
-                title={isInGame ? "Cannot change server after match started" : "Click to change server"}
-              >
-                <TennisBallIcon className="w-4 h-4" />
-              </motion.button>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-lg sm:text-xl md:text-2xl truncate">
-                {playerTwoName}
-              </h3>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Set scores */}
-            <div className="flex gap-2">
-              {renderSetScore(1)}
-            </div>
-            
-            {/* Games */}
-            <div className="text-xl sm:text-2xl font-mono font-bold min-w-[2rem] text-center">
-              {score.games[1]}
-            </div>
-            
-            {/* Points */}
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-primary min-w-[3rem] text-center">
-              {getPointDisplay(1)}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+// Use shared scoreboard component
+const LiveScoreboard = SharedLiveScoreboard
 
 // Point Entry Component
 function PointEntry({ 
@@ -558,8 +460,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-
-
   const handleUndo = async () => {
     if (pointLog.length === 0) return
 
@@ -583,16 +483,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     router.push(`/matches/${match.$id}`)
   }
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Live Tennis Match',
-        text: `🎾 ${playerNames.p1} vs ${playerNames.p2}`,
-        url: `${window.location.origin}/live/${match.$id}`
-      }).catch(console.error)
-    } else {
-      setShowShareDialog(true)
+  const handleShare = async () => {
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/live/${match.$id}` : ''
+    const shareTitle = `${playerNames.p1} vs ${playerNames.p2} - Live Tennis Match`
+    const shareText = `Watch this live tennis match between ${playerNames.p1} and ${playerNames.p2}!`
+    
+    // Try native share first (works best on mobile)
+    if (typeof navigator !== 'undefined' && navigator.share && /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl
+        })
+        toast.success("Match shared successfully!")
+        return
+      } catch (err) {
+        // User canceled or share failed
+        console.log("Native share failed:", err)
+        // Fall through to show dialog
+      }
     }
+    
+    // Show custom share dialog as fallback
+    setShowShareDialog(true)
   }
 
   return (
@@ -628,11 +542,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         <LiveScoreboard
           playerOneName={playerNames.p1}
           playerTwoName={playerNames.p2}
-          score={score}
+          score={{ ...score, isTiebreak }}
           currentServer={currentServer}
           isInGame={isInGame}
           onServerClick={() => setShowServeSwapConfirm(true)}
-          isTiebreak={isTiebreak}
         />
 
         {/* Point Entry */}

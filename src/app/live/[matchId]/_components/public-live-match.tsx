@@ -13,7 +13,7 @@ import { useRealtimeMatch } from "@/hooks/use-realtime-match"
 import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { PointByPointView } from "@/app/(app)/matches/[id]/_components/point-by-point-view"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
+import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 
 interface PublicLiveMatchProps {
   match: {
@@ -29,107 +29,8 @@ interface PublicLiveMatchProps {
   }
 }
 
-// Live Scoreboard Component matching the live interface
-function LiveScoreboard({
-  playerOneName,
-  playerTwoName,
-  score,
-  status,
-  winnerId,
-  playerOneId,
-  playerTwoId
-}: {
-  playerOneName: string
-  playerTwoName: string
-  score: Score & { server?: "p1" | "p2" }
-  status: string
-  winnerId?: string
-  playerOneId: string
-  playerTwoId: string
-}) {
-  const getPointDisplay = (points: number[], playerIndex: number) => {
-    const p1 = points[0]
-    const p2 = points[1]
-    if (p1 >= 3 && p2 >= 3) {
-      if (p1 === p2) return "40"
-      if (p1 > p2 && playerIndex === 0) return "AD"
-      if (p2 > p1 && playerIndex === 1) return "AD"
-    }
-    const pointMap = ["0", "15", "30", "40"]
-    return pointMap[points[playerIndex]] || "40"
-  }
-
-  // Create dynamic columns based on completed sets plus current set
-  const completedSets = score.sets.length
-  const totalSetsToShow = Math.max(completedSets + 1, 3) // Show at least 3 set columns
-  const setsWon = [
-    score.sets.filter(set => set[0] > set[1]).length,
-    score.sets.filter(set => set[1] > set[0]).length
-  ]
-
-  // Create grid template for dynamic columns
-  const gridCols = `1fr repeat(${totalSetsToShow}, minmax(40px, 1fr)) minmax(50px, 1fr) minmax(60px, 1fr)`
-
-  return (
-    <div className="bg-card text-card-foreground rounded-lg border my-4 overflow-x-auto">
-      {/* Header Row */}
-      <div className="grid items-center p-2 border-b text-xs text-muted-foreground min-w-max" style={{ gridTemplateColumns: gridCols }}>
-        <div className="font-semibold uppercase tracking-wider">Player</div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center">Set {i + 1}</div>
-        ))}
-        <div className="text-center">Games</div>
-        <div className="text-center">Points</div>
-      </div>
-      
-      {/* Player 1 Row */}
-      <div className={`grid items-center p-3 font-medium min-w-max ${winnerId === playerOneId ? 'bg-primary/10' : ''}`} style={{ gridTemplateColumns: gridCols }}>
-        <div className="flex items-center gap-3">
-          {score.server === "p1" && (
-            <motion.div layoutId="tennis-ball" className="flex-shrink-0">
-              <TennisBallIcon className="w-4 h-4" />
-            </motion.div>
-          )}
-          <span className="font-sans font-semibold tracking-wide">{playerOneName}</span>
-          <Badge variant="secondary" className="text-xs">{setsWon[0]}</Badge>
-        </div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center font-mono text-lg">
-            {i < completedSets ? score.sets[i][0] : (i === completedSets ? score.games[0] : '-')}
-          </div>
-        ))}
-        <div className="text-center font-mono text-xl">{score.games[0]}</div>
-        <div className="text-center font-mono text-xl font-bold text-primary">
-          {status === "In Progress" ? getPointDisplay(score.points, 0) : ""}
-        </div>
-      </div>
-
-      <div className="border-t"></div>
-
-      {/* Player 2 Row */}
-      <div className={`grid items-center p-3 font-medium min-w-max ${winnerId === playerTwoId ? 'bg-primary/10' : ''}`} style={{ gridTemplateColumns: gridCols }}>
-        <div className="flex items-center gap-3">
-          {score.server === "p2" && (
-            <motion.div layoutId="tennis-ball" className="flex-shrink-0">
-              <TennisBallIcon className="w-4 h-4" />
-            </motion.div>
-          )}
-          <span className="font-sans font-semibold tracking-wide">{playerTwoName}</span>
-          <Badge variant="secondary" className="text-xs">{setsWon[1]}</Badge>
-        </div>
-        {Array.from({ length: totalSetsToShow }, (_, i) => (
-          <div key={i} className="text-center font-mono text-lg">
-            {i < completedSets ? score.sets[i][1] : (i === completedSets ? score.games[1] : '-')}
-          </div>
-        ))}
-        <div className="text-center font-mono text-xl">{score.games[1]}</div>
-        <div className="text-center font-mono text-xl font-bold text-primary">
-          {status === "In Progress" ? getPointDisplay(score.points, 1) : ""}
-        </div>
-      </div>
-    </div>
-  )
-}
+// Use shared scoreboard component
+const LiveScoreboard = SharedLiveScoreboard
 
 // Animation variants
 const containerVariants = {
@@ -195,31 +96,36 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const shareMatch = async () => {
     const url = window.location.href
     const title = `${match.playerOne.firstName} ${match.playerOne.lastName} vs ${match.playerTwo.firstName} ${match.playerTwo.lastName} - Live Tennis Match`
+    const text = "Watch this live tennis match!"
     
-    if (navigator.share) {
+    // Try native share first (works best on mobile)
+    if (typeof navigator !== 'undefined' && navigator.share && /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       try {
         await navigator.share({
           title,
-          text: "Watch this live tennis match!",
+          text,
           url
         })
+        toast.success("Match shared successfully!")
+        return
       } catch (err) {
         // User canceled share or error occurred
-        if (err instanceof Error && err.name !== 'AbortError') {
-          fallbackShare(url)
-        }
+        console.log("Native share failed or canceled:", err)
+        // Fall through to clipboard copy
       }
-    } else {
-      fallbackShare(url)
     }
+    
+    // Fallback to clipboard copy
+    fallbackShare(url)
   }
 
-  const fallbackShare = (url: string) => {
-    navigator.clipboard.writeText(url).then(() => {
+  const fallbackShare = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
       toast.success("Match link copied to clipboard!")
-    }).catch(() => {
-      toast.error("Failed to copy link")
-    })
+    } catch {
+      toast.error("Failed to copy link. Please copy manually: " + url)
+    }
   }
 
   const refreshMatch = () => {
