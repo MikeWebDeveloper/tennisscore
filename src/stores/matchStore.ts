@@ -353,31 +353,33 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       const [currentP1, currentP2] = state.score.points // Points BEFORE this point is awarded
       
       if (currentServer === 'p1') {
-        // Player 2 is receiving - check if P2 is in a break point situation
-        if (matchFormat.noAd) {
-          // No-Ad: P2 needs 4 points and to be ahead
-          if (currentP2 >= 3) isThisPointBreakPoint = true
-                 } else {
-           // Traditional: Check for 40-X (P2 has 40) or advantage situations
-           if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
-               (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1)) { // P2 has advantage
-             isThisPointBreakPoint = true
-           }
-           // Note: At deuce (40-40), it's NOT a break point until someone gets advantage
-         }
+        // Player 2 is receiving - check if P2 is in a break point situation AND wins the point
+        if (winner === 'p2') {
+          if (matchFormat.noAd) {
+            // No-Ad: P2 needs 4 points and to be ahead
+            if (currentP2 >= 3) isThisPointBreakPoint = true
+          } else {
+            // Traditional: Check for 40-X (P2 has 40) or advantage situations
+            if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
+                (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1)) { // P2 has advantage
+              isThisPointBreakPoint = true
+            }
+          }
+        }
       } else {
-        // Player 1 is receiving - check if P1 is in a break point situation  
-        if (matchFormat.noAd) {
-          // No-Ad: P1 needs 4 points and to be ahead
-          if (currentP1 >= 3) isThisPointBreakPoint = true
-                 } else {
-           // Traditional: Check for 40-X (P1 has 40) or advantage situations
-           if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
-               (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2)) { // P1 has advantage
-             isThisPointBreakPoint = true
-           }
-           // Note: At deuce (40-40), it's NOT a break point until someone gets advantage
-         }
+        // Player 1 is receiving - check if P1 is in a break point situation AND wins the point
+        if (winner === 'p1') {
+          if (matchFormat.noAd) {
+            // No-Ad: P1 needs 4 points and to be ahead
+            if (currentP1 >= 3) isThisPointBreakPoint = true
+          } else {
+            // Traditional: Check for 40-X (P1 has 40) or advantage situations
+            if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
+                (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2)) { // P1 has advantage
+              isThisPointBreakPoint = true
+            }
+          }
+        }
       }
       
       // Check for set point (one game away from winning set)
