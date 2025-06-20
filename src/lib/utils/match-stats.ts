@@ -3,6 +3,12 @@ import { PointDetail, PlayerStats } from "@/lib/types"
 export interface EnhancedMatchStats {
   totalPoints: number
   totalPointsWonByPlayer: [number, number]
+  servicePointsWonByPlayer: [number, number]
+  servicePointsPlayedByPlayer: [number, number]
+  servicePointsWonPercentageByPlayer: [number, number]
+  receivingPointsWonByPlayer: [number, number]
+  receivingPointsPlayedByPlayer: [number, number]
+  receivingPointsWonPercentageByPlayer: [number, number]
   winnersByPlayer: [number, number]
   unforcedErrorsByPlayer: [number, number]
   acesByPlayer: [number, number]
@@ -22,6 +28,12 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
   const stats: EnhancedMatchStats = {
     totalPoints: pointLog.length,
     totalPointsWonByPlayer: [0, 0],
+    servicePointsWonByPlayer: [0, 0],
+    servicePointsPlayedByPlayer: [0, 0],
+    servicePointsWonPercentageByPlayer: [0, 0],
+    receivingPointsWonByPlayer: [0, 0],
+    receivingPointsPlayedByPlayer: [0, 0],
+    receivingPointsWonPercentageByPlayer: [0, 0],
     winnersByPlayer: [0, 0],
     unforcedErrorsByPlayer: [0, 0],
     acesByPlayer: [0, 0],
@@ -58,6 +70,25 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
 
     // Count total points won
     stats.totalPointsWonByPlayer[isP1 ? 0 : 1]++
+
+    // Count service and receiving points
+    if (isP1Serving) {
+      stats.servicePointsPlayedByPlayer[0]++
+      stats.receivingPointsPlayedByPlayer[1]++
+      if (isP1) {
+        stats.servicePointsWonByPlayer[0]++
+      } else {
+        stats.receivingPointsWonByPlayer[1]++
+      }
+    } else {
+      stats.servicePointsPlayedByPlayer[1]++
+      stats.receivingPointsPlayedByPlayer[0]++
+      if (isP1) {
+        stats.receivingPointsWonByPlayer[0]++
+      } else {
+        stats.servicePointsWonByPlayer[1]++
+      }
+    }
 
     // Count winners and errors
     if (point.pointOutcome === 'winner') {
@@ -138,6 +169,17 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
   stats.secondServePointsWonByPlayer = [
     p1SecondServePoints > 0 ? Math.round((p1SecondServePointsWon / p1SecondServePoints) * 100) : 0,
     p2SecondServePoints > 0 ? Math.round((p2SecondServePointsWon / p2SecondServePoints) * 100) : 0
+  ]
+
+  // Calculate service and receiving percentages
+  stats.servicePointsWonPercentageByPlayer = [
+    stats.servicePointsPlayedByPlayer[0] > 0 ? Math.round((stats.servicePointsWonByPlayer[0] / stats.servicePointsPlayedByPlayer[0]) * 100) : 0,
+    stats.servicePointsPlayedByPlayer[1] > 0 ? Math.round((stats.servicePointsWonByPlayer[1] / stats.servicePointsPlayedByPlayer[1]) * 100) : 0
+  ]
+
+  stats.receivingPointsWonPercentageByPlayer = [
+    stats.receivingPointsPlayedByPlayer[0] > 0 ? Math.round((stats.receivingPointsWonByPlayer[0] / stats.receivingPointsPlayedByPlayer[0]) * 100) : 0,
+    stats.receivingPointsPlayedByPlayer[1] > 0 ? Math.round((stats.receivingPointsWonByPlayer[1] / stats.receivingPointsPlayedByPlayer[1]) * 100) : 0
   ]
 
   // Calculate break point conversion rates

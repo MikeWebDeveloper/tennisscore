@@ -234,35 +234,61 @@ export function MatchStatsComponentSimple({
       animate="show"
       className="space-y-4"
     >
-      {/* Points Section */}
+      {/* Points Section - Different content based on detail level */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Points & Outcomes
+            {detailLevel === "points" ? "Points" : "Points & Outcomes"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <StatRow 
-            label="Winners" 
-            value1={stats.winnersByPlayer[0]} 
-            value2={stats.winnersByPlayer[1]} 
-          />
-          <StatRow 
-            label="Unforced Errors" 
-            value1={stats.unforcedErrorsByPlayer[0]} 
-            value2={stats.unforcedErrorsByPlayer[1]} 
-          />
-          <StatRow 
-            label="Aces" 
-            value1={stats.acesByPlayer[0]} 
-            value2={stats.acesByPlayer[1]} 
-          />
-          <StatRow 
-            label="Double Faults" 
-            value1={stats.doubleFaultsByPlayer[0]} 
-            value2={stats.doubleFaultsByPlayer[1]} 
-          />
+          {detailLevel === "points" ? (
+            // Points-only scoring: Show total points and serve/receive stats
+            <>
+              <StatRow 
+                label="Total Points" 
+                value1={stats.totalPointsWonByPlayer[0]} 
+                value2={stats.totalPointsWonByPlayer[1]} 
+              />
+              <StatRow 
+                label="Service Points %" 
+                value1={stats.servicePointsWonPercentageByPlayer[0]} 
+                value2={stats.servicePointsWonPercentageByPlayer[1]}
+                format="percentage"
+              />
+              <StatRow 
+                label="Receiving Points %" 
+                value1={stats.receivingPointsWonPercentageByPlayer[0]} 
+                value2={stats.receivingPointsWonPercentageByPlayer[1]}
+                format="percentage"
+              />
+            </>
+          ) : (
+            // Detailed scoring: Show winners, errors, aces, double faults
+            <>
+              <StatRow 
+                label="Winners" 
+                value1={stats.winnersByPlayer[0]} 
+                value2={stats.winnersByPlayer[1]} 
+              />
+              <StatRow 
+                label="Unforced Errors" 
+                value1={stats.unforcedErrorsByPlayer[0]} 
+                value2={stats.unforcedErrorsByPlayer[1]} 
+              />
+              <StatRow 
+                label="Aces" 
+                value1={stats.acesByPlayer[0]} 
+                value2={stats.acesByPlayer[1]} 
+              />
+              <StatRow 
+                label="Double Faults" 
+                value1={stats.doubleFaultsByPlayer[0]} 
+                value2={stats.doubleFaultsByPlayer[1]} 
+              />
+            </>
+          )}
         </CardContent>
       </Card>
       

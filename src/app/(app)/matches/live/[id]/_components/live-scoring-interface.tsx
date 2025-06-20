@@ -74,7 +74,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
           toast.error("Failed to copy link")
         }
       },
-      color: "bg-primary"
+      color: "bg-gray-900 dark:bg-gray-700"
     },
     { 
       name: "WhatsApp", 
@@ -122,7 +122,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
           <DialogTitle>Share Live Match</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="text-sm text-muted-foreground text-center p-3 bg-muted rounded-lg">
+          <div className="text-sm text-foreground bg-muted dark:bg-gray-800 dark:text-gray-300 text-center p-3 rounded-lg break-all">
             {shareUrl}
           </div>
           <div className="grid grid-cols-2 gap-3">
