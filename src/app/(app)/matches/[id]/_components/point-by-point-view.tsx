@@ -57,33 +57,24 @@ function getTiebreakScore(p1Points: number, p2Points: number): string {
 function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
   if (!pointLog || pointLog.length === 0) return []
 
-  // Sort points by their natural order (timestamp, point number, etc.)
+  // Sort points by their natural order first
   const sortedPoints = [...pointLog].sort((a, b) => {
-    // First sort by set number
-    if (a.setNumber !== b.setNumber) {
-      return a.setNumber - b.setNumber
-    }
-    // Then by game number
-    if (a.gameNumber !== b.gameNumber) {
-      return a.gameNumber - b.gameNumber
-    }
-    // Finally by point number within the game
+    if (a.setNumber !== b.setNumber) return a.setNumber - b.setNumber
+    if (a.gameNumber !== b.gameNumber) return a.gameNumber - b.gameNumber
     return a.pointNumber - b.pointNumber
   })
 
   // Group points by set and game
-  const setGroups: { [setNumber: number]: { [gameKey: string]: PointDetail[] } } = {}
+  const setGroups: { [setNumber: number]: { [gameNumber: number]: PointDetail[] } } = {}
   
   sortedPoints.forEach(point => {
     if (!setGroups[point.setNumber]) {
       setGroups[point.setNumber] = {}
     }
-    
-    const gameKey = `${point.gameNumber}-${point.isTiebreak ? 'tb' : 'reg'}`
-    if (!setGroups[point.setNumber][gameKey]) {
-      setGroups[point.setNumber][gameKey] = []
+    if (!setGroups[point.setNumber][point.gameNumber]) {
+      setGroups[point.setNumber][point.gameNumber] = []
     }
-    setGroups[point.setNumber][gameKey].push(point)
+    setGroups[point.setNumber][point.gameNumber].push(point)
   })
 
   const processedSets: SetData[] = []
@@ -91,79 +82,66 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
   // Process each set
   Object.keys(setGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(setNumberStr => {
     const setNumber = parseInt(setNumberStr)
-    const gameGroups = setGroups[setNumber]
+    const gamesInSet = setGroups[setNumber]
     const processedGames: GameData[] = []
 
     // Track cumulative game scores for this set
     let p1GamesWon = 0
     let p2GamesWon = 0
 
-    // Sort games by game number to process them in order
-    const sortedGameEntries = Object.entries(gameGroups).sort(([keyA], [keyB]) => {
-      const gameNumA = parseInt(keyA.split('-')[0])
-      const gameNumB = parseInt(keyB.split('-')[0])
-      return gameNumA - gameNumB
-    })
-
-    // Process each game in the set
-    sortedGameEntries.forEach(([, gamePoints]) => {
+    // Process games in order
+    Object.keys(gamesInSet).sort((a, b) => parseInt(a) - parseInt(b)).forEach(gameNumberStr => {
+      const gameNumber = parseInt(gameNumberStr)
+      const gamePoints = gamesInSet[gameNumber]
+      
       if (gamePoints.length === 0) return
 
-      // Sort points within the game by point number to ensure correct order
+      // Sort points within this specific game by point number
       const sortedGamePoints = gamePoints.sort((a, b) => a.pointNumber - b.pointNumber)
       
       const firstPoint = sortedGamePoints[0]
+      const lastPoint = sortedGamePoints[sortedGamePoints.length - 1]
       const isTiebreak = !!firstPoint.isTiebreak
       
+      // Build point progression for this game only
       let p1Points = 0
       let p2Points = 0
       const pointProgression: string[] = []
 
-      // Process each point in the game to build progression
-      // CRITICAL FIX: Only process points that belong to THIS game
+      // Process ONLY points that belong to this exact game
       sortedGamePoints.forEach((point) => {
-        // Double-check that this point belongs to the current game
-        if (point.setNumber === firstPoint.setNumber && 
-            point.gameNumber === firstPoint.gameNumber &&
-            !!point.isTiebreak === isTiebreak) {
-          
-          // Award the point
-          if (point.winner === 'p1') {
-            p1Points++
-          } else {
-            p2Points++
-          }
-
-          // Store the score AFTER this point
-          const scoreAfterPoint = isTiebreak 
-            ? getTiebreakScore(p1Points, p2Points)
-            : getTennisScore(p1Points, p2Points)
-
-          pointProgression.push(scoreAfterPoint)
+        // Award the point
+        if (point.winner === 'p1') {
+          p1Points++
+        } else {
+          p2Points++
         }
+
+        // Store the score AFTER this point
+        const scoreAfterPoint = isTiebreak 
+          ? getTiebreakScore(p1Points, p2Points)
+          : getTennisScore(p1Points, p2Points)
+
+        pointProgression.push(scoreAfterPoint)
       })
 
-      // Add "Game" at the end if it's not a tiebreak
-      // CRITICAL FIX: Only add "Game" if this is actually the end of a game
-      if (!isTiebreak && pointProgression.length > 0) {
-        pointProgression.push("Game")
-      }
-
-      // Find the actual last point of this game (the game-winning point)
-      const lastGamePoint = sortedGamePoints[sortedGamePoints.length - 1]
-      
       // Determine game winner and update cumulative score
-      const gameWinner = lastGamePoint.winner
+      const gameWinner = lastPoint.winner
       if (gameWinner === 'p1') {
         p1GamesWon++
       } else {
         p2GamesWon++
       }
 
-      // Create cumulative game score string
+      // Add game score AFTER the last point (this is the key fix!)
       const gameScore = `${p1GamesWon}-${p2GamesWon}`
+      if (!isTiebreak) {
+        pointProgression.push(gameScore)
+      } else {
+        pointProgression.push(`Set ${gameScore}`)
+      }
       
-      // A break occurs when the receiving player wins the entire game
+      // CORRECT BREAK LOGIC: A break occurs when the SERVING player loses their service game
       const isBreak = firstPoint.server !== gameWinner
 
       processedGames.push({
@@ -174,8 +152,8 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         pointProgression,
         gameScore,
         isBreak,
-        isSetPoint: !!lastGamePoint.isSetPoint,
-        isMatchPoint: !!lastGamePoint.isMatchPoint,
+        isSetPoint: !!lastPoint.isSetPoint,
+        isMatchPoint: !!lastPoint.isMatchPoint,
         isTiebreak
       })
     })
@@ -276,15 +254,12 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 
                 <div className="text-right">
                   <span className="text-sm text-muted-foreground">
-                    {game.isTiebreak ? 'Tiebreak' : `Game ${game.gameNumber}`} • 
-                  </span>
-                  <span className="font-bold text-lg ml-1">
-                    {game.gameScore}
+                    {game.isTiebreak ? 'Tiebreak' : `Game ${game.gameNumber}`}
                   </span>
                 </div>
               </div>
 
-              {/* Point Progression - Single elegant line */}
+              {/* Point Progression - Single elegant line with game score at the end */}
               <div className="text-right">
                 <div className="font-mono text-sm text-muted-foreground">
                   {game.pointProgression.join(' → ')}

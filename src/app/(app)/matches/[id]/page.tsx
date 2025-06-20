@@ -108,13 +108,18 @@ export default async function MatchPage({
   const matchStats = calculateMatchStats(parsedPoints)
 
   // Format match score for header display
-  const formatMatchScore = (scoreData: { sets?: { p1?: number; p2?: number }[] }) => {
+  const formatMatchScore = (scoreData: { sets?: (number[] | { p1?: number; p2?: number })[] }) => {
     if (!scoreData.sets || scoreData.sets.length === 0) {
       return "0-0"
     }
-    return scoreData.sets.map((set: { p1?: number; p2?: number }) => 
-      `${set.p1 || 0}-${set.p2 || 0}`
-    ).join(", ")
+    return scoreData.sets.map((set: number[] | { p1?: number; p2?: number }) => {
+      // Handle both array format [p1, p2] and object format {p1, p2}
+      if (Array.isArray(set)) {
+        return `${set[0] || 0}-${set[1] || 0}`
+      } else {
+        return `${set.p1 || 0}-${set.p2 || 0}`
+      }
+    }).join(", ")
   }
 
   const matchScore = formatMatchScore(score)
@@ -184,9 +189,7 @@ export default async function MatchPage({
                 <div className="text-center">
                   <div className="text-sm text-muted-foreground">Score</div>
                   <div className="text-2xl font-bold">
-                    {score.sets?.map((set: { p1?: number; p2?: number }) => 
-                      `${set.p1 || 0}-${set.p2 || 0}`
-                    ).join(", ") || "0-0"}
+                    {matchScore}
                   </div>
                 </div>
                 <div className="text-center">
