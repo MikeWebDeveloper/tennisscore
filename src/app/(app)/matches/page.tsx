@@ -53,12 +53,12 @@ export default async function MatchesPage() {
     let scoreParsed: { sets: { p1: number; p2: number }[], games?: number[], points?: number[] } | undefined = undefined
     try {
       const parsed = JSON.parse(match.score)
-      // Convert array format to object format if needed
-      if (parsed) {
+      // The score should already be in the correct format: { sets: [], games: [0, 0], points: [0, 0] }
+      if (parsed && typeof parsed === 'object') {
         scoreParsed = {
-          sets: parsed.sets || [],
-          games: parsed.games || [0, 0],
-          points: parsed.points || [0, 0]
+          sets: Array.isArray(parsed.sets) ? parsed.sets.map((set: number[]) => ({ p1: set[0] || 0, p2: set[1] || 0 })) : [],
+          games: Array.isArray(parsed.games) ? parsed.games : [0, 0],
+          points: Array.isArray(parsed.points) ? parsed.points : [0, 0]
         }
       }
     } catch (e) {

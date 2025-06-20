@@ -277,14 +277,20 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         tiebreakPoints = [0, 0]
         newScore.isTiebreak = false
         newScore.tiebreakPoints = [0, 0]
-        // --- MATCH COMPLETION LOGIC ---
+        
+        // --- IMPROVED MATCH COMPLETION LOGIC ---
         const p1SetsWon = newScore.sets.filter(set => set[0] > set[1]).length
         const p2SetsWon = newScore.sets.filter(set => set[1] > set[0]).length
-        const setsToWin = Math.ceil(state.matchFormat.sets / 2)
-        if (p1SetsWon === setsToWin || p2SetsWon === setsToWin) {
+        const setsToWin = Math.ceil(state.matchFormat.sets / 2)  // For best-of-3: need 2 sets, for best-of-5: need 3 sets
+        
+        if (p1SetsWon >= setsToWin) {
           matchStatus = "Completed"
-          matchWinnerId = p1SetsWon === setsToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+          matchWinnerId = state.currentMatch.playerOneId
+        } else if (p2SetsWon >= setsToWin) {
+          matchStatus = "Completed"
+          matchWinnerId = state.currentMatch.playerTwoId
         }
+        
         pointDetail = {
           ...details,
           id: `point-${state.pointLog.length + 1}`,
@@ -371,18 +377,23 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         newScore.sets.push([newScore.games[0], newScore.games[1]])
         newScore.games = [0, 0]
 
-        // --- MATCH & SUPER TIE-BREAK COMPLETION LOGIC ---
+        // --- IMPROVED MATCH & SUPER TIE-BREAK COMPLETION LOGIC ---
         const p1SetsWon = newScore.sets.filter(set => set[0] > set[1]).length
         const p2SetsWon = newScore.sets.filter(set => set[1] > set[0]).length
-        const setsToWin = Math.ceil(state.matchFormat.sets / 2)
+        const setsToWin = Math.ceil(state.matchFormat.sets / 2)  // For best-of-3: need 2 sets, for best-of-5: need 3 sets
 
-        // Check for match completion
-        if (p1SetsWon === setsToWin || p2SetsWon === setsToWin) {
+        // Check for match completion FIRST
+        if (p1SetsWon >= setsToWin) {
           matchStatus = "Completed"
-          matchWinnerId = p1SetsWon === setsToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+          matchWinnerId = state.currentMatch.playerOneId
+        } else if (p2SetsWon >= setsToWin) {
+          matchStatus = "Completed"
+          matchWinnerId = state.currentMatch.playerTwoId
         } 
-        // Check if a super tie-break should start instead of a final set
+        // Only check for super tie-break if match is NOT complete
         else if (state.matchFormat.finalSetTiebreak && p1SetsWon === p2SetsWon && p1SetsWon === setsToWin - 1) {
+          // This means it's tied at one set each in best-of-3, or two sets each in best-of-5
+          // Start a super tie-break instead of a final set
           isTiebreak = true
           tiebreakPoints = [0, 0]
           newScore.isTiebreak = true

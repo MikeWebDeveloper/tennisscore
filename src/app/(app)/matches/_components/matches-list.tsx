@@ -45,26 +45,34 @@ export function MatchesList({ matches }: MatchesListProps) {
       return "0-0"
     }
 
-    // If match is in progress and no sets completed, show current game score
-    if (status === 'In Progress' && (!scoreParsed.sets || scoreParsed.sets.length === 0)) {
-      if (scoreParsed.games && scoreParsed.games.length >= 2) {
-        return `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
-      }
-      return "0-0"
-    }
-
-    // Show completed sets
-    if (scoreParsed.sets && scoreParsed.sets.length > 0) {
+    // For completed matches, show the final set scores
+    if (status === 'Completed' && scoreParsed.sets && scoreParsed.sets.length > 0) {
       const setsDisplay = scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
-      
-      // For in-progress matches, also show current game score if available
-      if (status === 'In Progress' && scoreParsed.games && scoreParsed.games.length >= 2) {
-        return `${setsDisplay} (${scoreParsed.games[0]}-${scoreParsed.games[1]})`
-      }
-      
       return setsDisplay
     }
 
+    // For in-progress matches
+    if (status === 'In Progress') {
+      // If we have completed sets, show them plus current game score
+      if (scoreParsed.sets && scoreParsed.sets.length > 0) {
+        const completedSets = scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
+        
+        // Add current set/game status if available
+        if (scoreParsed.games && Array.isArray(scoreParsed.games) && scoreParsed.games.length >= 2) {
+          const currentGameScore = `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
+          return `${completedSets}, ${currentGameScore}`
+        }
+        
+        return completedSets
+      }
+      
+      // If no sets completed yet, show current game score
+      if (scoreParsed.games && Array.isArray(scoreParsed.games) && scoreParsed.games.length >= 2) {
+        return `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
+      }
+    }
+
+    // Fallback
     return "0-0"
   }
 

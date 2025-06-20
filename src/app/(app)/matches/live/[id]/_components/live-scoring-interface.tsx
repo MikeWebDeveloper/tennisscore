@@ -413,13 +413,32 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const result = awardPoint(winner, pointDetails || {})
       setIsInGame(true)
 
-      await updateMatchScore(match.$id, {
+      // Prepare update data with match completion if necessary
+      const updateData: {
+        score: Score
+        pointLog: StorePointDetail[]
+        status?: "In Progress" | "Completed"
+        winnerId?: string
+      } = {
         score: result.newScore,
         pointLog: [...pointLog, result.pointDetail]
-      })
+      }
+      
+      if (result.isMatchComplete && result.winnerId) {
+        updateData.status = "Completed"
+        updateData.winnerId = result.winnerId
+      }
+
+      await updateMatchScore(match.$id, updateData)
 
       if (result.isMatchComplete) {
-        toast.success(`Match completed! ${result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2} wins!`)
+        const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
+        toast.success(`Match completed! ${winnerName} wins!`)
+        
+        // Navigate to match details after a short delay
+        setTimeout(() => {
+          router.push(`/matches/${match.$id}`)
+        }, 2000)
       }
     } catch (error) {
       console.error("Failed to award point:", error)
