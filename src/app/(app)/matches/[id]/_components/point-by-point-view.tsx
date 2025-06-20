@@ -89,11 +89,9 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         let p1Points = 0;
         let p2Points = 0;
         
-        // Filter out the game-winning point from the detailed progression
-        // We'll show it separately in the final game score
-        const progressionPoints = gamePoints.filter(point => !point.isGameWinning);
-        
-        progressionPoints.forEach((point) => {
+        // Include ALL points in the progression - don't filter out game-winning points
+        // since they often contain important indicators like BP, SP, MP
+        gamePoints.forEach((point) => {
             // Award the point
             if (point.winner === 'p1') {
                 p1Points++;
@@ -253,12 +251,19 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 </div>
               </div>
 
-              {/* Point Progression - Single elegant line with indicators and bold final score */}
+              {/* Point Progression - Single elegant line with indicators and final score included */}
               <div className="text-right">
                 <div className="font-mono text-sm text-muted-foreground space-x-2">
                   {game.pointProgression.map((point, index) => (
                     <span key={index} className="inline-flex items-baseline gap-1">
-                      <span className="text-foreground">{point.score}</span>
+                      {/* Make the final point score bold if it's game-winning */}
+                      <span className={
+                        index === game.pointProgression.length - 1 && game.isCompleted 
+                          ? "text-foreground font-bold text-base" 
+                          : "text-foreground"
+                      }>
+                        {point.score}
+                      </span>
                       {point.indicators.length > 0 && (
                         <span className="text-xs space-x-1">
                           {point.indicators.map((indicator, i) => (
