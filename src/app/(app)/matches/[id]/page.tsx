@@ -107,22 +107,28 @@ export default async function MatchPage({
   // Calculate match statistics
   const matchStats = calculateMatchStats(parsedPoints)
 
-  // Format match score for header display
-  const formatMatchScore = (scoreData: { sets?: (number[] | { p1?: number; p2?: number })[] }) => {
+  // Format match score for header display - simplified for mobile
+  const formatHeaderScore = (scoreData: { sets?: (number[] | { p1?: number; p2?: number })[] }) => {
     if (!scoreData.sets || scoreData.sets.length === 0) {
       return "0-0"
     }
-    return scoreData.sets.map((set: number[] | { p1?: number; p2?: number }) => {
-      // Handle both array format [p1, p2] and object format {p1, p2}
-      if (Array.isArray(set)) {
-        return `${set[0] || 0}-${set[1] || 0}`
-      } else {
-        return `${set.p1 || 0}-${set.p2 || 0}`
-      }
-    }).join(", ")
+    
+    // For mobile readability, just show the number of sets won by each player
+    let p1Sets = 0;
+    let p2Sets = 0;
+    
+    scoreData.sets.forEach((set: number[] | { p1?: number; p2?: number }) => {
+      const p1Score = Array.isArray(set) ? set[0] || 0 : set.p1 || 0;
+      const p2Score = Array.isArray(set) ? set[1] || 0 : set.p2 || 0;
+      
+      if (p1Score > p2Score) p1Sets++;
+      else if (p2Score > p1Score) p2Sets++;
+    });
+    
+    return `${p1Sets}-${p2Sets}`;
   }
 
-  const matchScore = formatMatchScore(score)
+  const headerScore = formatHeaderScore(score)
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -136,8 +142,8 @@ export default async function MatchPage({
             {/* Always visible match score */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">•</span>
-              <Badge variant="outline" className="font-mono text-sm px-2 py-1">
-                {matchScore}
+              <Badge variant="outline" className="font-mono text-base px-3 py-1">
+                {headerScore}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -188,9 +194,22 @@ export default async function MatchPage({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-sm text-muted-foreground">Score</div>
-                  <div className="text-2xl font-bold">
-                    {matchScore}
-                  </div>
+                  {score.sets && score.sets.length > 0 ? (
+                    <div className="space-y-1">
+                      {score.sets.map((set: number[] | { p1?: number; p2?: number }, index: number) => {
+                        const setScore = Array.isArray(set) 
+                          ? `${set[0] || 0}-${set[1] || 0}` 
+                          : `${set.p1 || 0}-${set.p2 || 0}`;
+                        return (
+                          <div key={index} className="text-lg font-bold font-mono">
+                            {setScore}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold">0-0</div>
+                  )}
                 </div>
                 <div className="text-center">
                   <div className="text-sm text-muted-foreground">Duration</div>

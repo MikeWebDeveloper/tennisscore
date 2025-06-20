@@ -76,20 +76,24 @@ export function LiveScoreboard({
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {server === "p1" && (
-                <motion.button 
-                  layoutId="tennis-ball" 
-                  onClick={onServerClick} 
-                  className={cn(
-                    "flex-shrink-0 p-1 rounded-full transition-colors",
-                    onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
-                  )}
-                  disabled={!onServerClick || isInGame}
-                  whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
-                >
-                  <TennisBallIcon className="w-3 h-3" />
-                </motion.button>
-              )}
+              {/* Always show tennis ball icon, colored for server, grayed for non-server */}
+              <motion.button 
+                layoutId="tennis-ball-p1" 
+                onClick={onServerClick} 
+                className={cn(
+                  "flex-shrink-0 p-1 rounded-full transition-colors",
+                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer",
+                  server === "p1" ? "text-primary" : "text-muted-foreground/40"
+                )}
+                disabled={!onServerClick || isInGame}
+                whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
+                title={server === "p1" ? "Currently serving" : "Click to change server"}
+              >
+                <TennisBallIcon className={cn(
+                  "w-4 h-4 transition-colors",
+                  server === "p1" ? "fill-current" : "stroke-current fill-transparent"
+                )} />
+              </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">
                   {playerOneName}
@@ -134,20 +138,24 @@ export function LiveScoreboard({
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {server === "p2" && (
-                <motion.button 
-                  layoutId="tennis-ball" 
-                  onClick={onServerClick} 
-                  className={cn(
-                    "flex-shrink-0 p-1 rounded-full transition-colors",
-                    onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
-                  )}
-                  disabled={!onServerClick || isInGame}
-                  whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
-                >
-                  <TennisBallIcon className="w-3 h-3" />
-                </motion.button>
-              )}
+              {/* Always show tennis ball icon, colored for server, grayed for non-server */}
+              <motion.button 
+                layoutId="tennis-ball-p2" 
+                onClick={onServerClick} 
+                className={cn(
+                  "flex-shrink-0 p-1 rounded-full transition-colors",
+                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer",
+                  server === "p2" ? "text-primary" : "text-muted-foreground/40"
+                )}
+                disabled={!onServerClick || isInGame}
+                whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
+                title={server === "p2" ? "Currently serving" : "Click to change server"}
+              >
+                <TennisBallIcon className={cn(
+                  "w-4 h-4 transition-colors",
+                  server === "p2" ? "fill-current" : "stroke-current fill-transparent"
+                )} />
+              </motion.button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-sm sm:text-base truncate">
                   {playerTwoName}

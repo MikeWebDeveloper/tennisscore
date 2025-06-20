@@ -1,10 +1,10 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { MatchStats } from "@/lib/types"
+import { EnhancedMatchStats } from "@/lib/utils/match-stats"
 
 interface MinimalistStatsProps {
-  matchStats: MatchStats
+  matchStats: EnhancedMatchStats
   playerNames: {
     p1: string
     p2: string
@@ -145,104 +145,80 @@ export function MinimalistStats({ matchStats, playerNames }: MinimalistStatsProp
       <div className="space-y-0.5">
         <StatRow
           label="Aces"
-          player1Value={matchStats.player1.aces}
-          player2Value={matchStats.player2.aces}
+          player1Value={matchStats.acesByPlayer[0]}
+          player2Value={matchStats.acesByPlayer[1]}
           delay={0}
         />
         
         <StatRow
           label="Double Faults"
-          player1Value={matchStats.player1.doubleFaults}
-          player2Value={matchStats.player2.doubleFaults}
+          player1Value={matchStats.doubleFaultsByPlayer[0]}
+          player2Value={matchStats.doubleFaultsByPlayer[1]}
           delay={1}
         />
         
         <StatRow
           label="1st Serve Percentage"
-          player1Value={Math.round(matchStats.player1.firstServePercentage)}
-          player2Value={Math.round(matchStats.player2.firstServePercentage)}
+          player1Value={matchStats.firstServePercentageByPlayer[0]}
+          player2Value={matchStats.firstServePercentageByPlayer[1]}
           isPercentage={true}
           delay={2}
         />
         
         <StatRow
           label="1st Serve Points Won"
-          player1Value={Math.round(matchStats.player1.firstServeWinPercentage)}
-          player2Value={Math.round(matchStats.player2.firstServeWinPercentage)}
+          player1Value={matchStats.firstServePointsWonByPlayer[0]}
+          player2Value={matchStats.firstServePointsWonByPlayer[1]}
           isPercentage={true}
-          player1Detail={`${Math.round(matchStats.player1.firstServePointsWon)}/${Math.round(matchStats.player1.firstServePointsPlayed)}`}
-          player2Detail={`${Math.round(matchStats.player2.firstServePointsWon)}/${Math.round(matchStats.player2.firstServePointsPlayed)}`}
           delay={3}
         />
         
         <StatRow
           label="2nd Serve Points Won"
-          player1Value={Math.round(matchStats.player1.secondServeWinPercentage)}
-          player2Value={Math.round(matchStats.player2.secondServeWinPercentage)}
+          player1Value={matchStats.secondServePointsWonByPlayer[0]}
+          player2Value={matchStats.secondServePointsWonByPlayer[1]}
           isPercentage={true}
-          player1Detail={`${Math.round(matchStats.player1.secondServePointsWon)}/${Math.round(matchStats.player1.secondServePointsPlayed)}`}
-          player2Detail={`${Math.round(matchStats.player2.secondServePointsWon)}/${Math.round(matchStats.player2.secondServePointsPlayed)}`}
           delay={4}
         />
         
-        <StatRow
-          label="Break Points Saved"
-          player1Value={Math.round(matchStats.player1.breakPointSavePercentage)}
-          player2Value={Math.round(matchStats.player2.breakPointSavePercentage)}
-          isPercentage={true}
-          player1Detail={`${matchStats.player1.breakPointsSaved}/${matchStats.player1.breakPointsFaced}`}
-          player2Detail={`${matchStats.player2.breakPointsSaved}/${matchStats.player2.breakPointsFaced}`}
-          delay={5}
-        />
+        {/* Break Points Section - only show if there are break points */}
+        {(matchStats.breakPointsByPlayer.faced[0] > 0 || matchStats.breakPointsByPlayer.faced[1] > 0) && (
+          <>
+            <StatRow
+              label="Break Points Saved"
+              player1Value={matchStats.breakPointsByPlayer.faced[0] > 0 ? 
+                Math.round((matchStats.breakPointsByPlayer.saved[0] / matchStats.breakPointsByPlayer.faced[0]) * 100) : 0}
+              player2Value={matchStats.breakPointsByPlayer.faced[1] > 0 ? 
+                Math.round((matchStats.breakPointsByPlayer.saved[1] / matchStats.breakPointsByPlayer.faced[1]) * 100) : 0}
+              isPercentage={true}
+              player1Detail={`${matchStats.breakPointsByPlayer.saved[0]}/${matchStats.breakPointsByPlayer.faced[0]}`}
+              player2Detail={`${matchStats.breakPointsByPlayer.saved[1]}/${matchStats.breakPointsByPlayer.faced[1]}`}
+              delay={5}
+            />
+
+            <StatRow
+              label="Break Points Converted"
+              player1Value={`${matchStats.breakPointsByPlayer.converted[0]}/${matchStats.breakPointsByPlayer.faced[1]}`}
+              player2Value={`${matchStats.breakPointsByPlayer.converted[1]}/${matchStats.breakPointsByPlayer.faced[0]}`}
+              player1Detail={`${matchStats.breakPointsByPlayer.conversionRate[0]}%`}
+              player2Detail={`${matchStats.breakPointsByPlayer.conversionRate[1]}%`}
+              delay={6}
+            />
+          </>
+        )}
 
         <StatRow
-          label="1st Return Points Won"
-          player1Value={Math.round(matchStats.player1.firstReturnWinPercentage)}
-          player2Value={Math.round(matchStats.player2.firstReturnWinPercentage)}
-          isPercentage={true}
-          delay={6}
-        />
-        
-        <StatRow
-          label="2nd Return Points Won"
-          player1Value={Math.round(matchStats.player1.secondReturnWinPercentage)}
-          player2Value={Math.round(matchStats.player2.secondReturnWinPercentage)}
-          isPercentage={true}
+          label="Total Points Won"
+          player1Value={matchStats.totalPointsWonByPlayer[0]}
+          player2Value={matchStats.totalPointsWonByPlayer[1]}
           delay={7}
         />
         
         <StatRow
-          label="Break Points Converted"
-          player1Value={Math.round(matchStats.player1.breakPointConversionPercentage)}
-          player2Value={Math.round(matchStats.player2.breakPointConversionPercentage)}
-          isPercentage={true}
-          player1Detail={`${matchStats.player1.breakPointsWon}/${matchStats.player1.breakPointsPlayed}`}
-          player2Detail={`${matchStats.player2.breakPointsWon}/${matchStats.player2.breakPointsPlayed}`}
-          delay={8}
-        />
-
-        <StatRow
-          label="Winners"
-          player1Value={matchStats.player1.winners}
-          player2Value={matchStats.player2.winners}
-          delay={9}
-        />
-        
-        <StatRow
           label="Unforced Errors"
-          player1Value={matchStats.player1.unforcedErrors}
-          player2Value={matchStats.player2.unforcedErrors}
-          delay={10}
-        />
-        
-        <StatRow
-          label="Net Points Won"
-          player1Value={Math.round(matchStats.player1.netPointWinPercentage)}
-          player2Value={Math.round(matchStats.player2.netPointWinPercentage)}
-          isPercentage={true}
-          player1Detail={`${matchStats.player1.netPointsWon}/${matchStats.player1.netPointsPlayed}`}
-          player2Detail={`${matchStats.player2.netPointsWon}/${matchStats.player2.netPointsPlayed}`}
-          delay={11}
+          player1Value={matchStats.unforcedErrorsByPlayer[0]}
+          player2Value={matchStats.unforcedErrorsByPlayer[1]}
+          delay={8}
         />
       </div>
     </div>

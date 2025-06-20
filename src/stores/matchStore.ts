@@ -7,7 +7,8 @@ import {
   shouldStartTiebreak,
   isTiebreakWon,
   getTiebreakWinner,
-  getTiebreakServer
+  getTiebreakServer,
+  getTennisScore
 } from '@/lib/utils/tennis-scoring'
 
 export interface MatchFormat {
@@ -26,6 +27,7 @@ export interface Score {
   points: [number, number];
   isTiebreak?: boolean;
   tiebreakPoints?: [number, number];
+  initialTiebreakServer?: 'p1' | 'p2';
 }
 
 export interface PointDetail {
@@ -84,6 +86,7 @@ interface MatchState {
   pointLog: PointDetail[]
   currentServer: 'p1' | 'p2' | null
   matchFormat: MatchFormat | null
+  initialTiebreakServer: 'p1' | 'p2' | null
   
   // Match state
   isMatchComplete: boolean
@@ -118,6 +121,7 @@ const initialScore: Score = {
   points: [0, 0],
   isTiebreak: false,
   tiebreakPoints: [0, 0],
+  initialTiebreakServer: undefined,
 }
 
 // Helper function to recalculate score from point log with enhanced logic
@@ -127,25 +131,50 @@ const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Sc
   let points: [number, number] = [0, 0]
   let isTiebreak = false
   let tiebreakPoints: [number, number] = [0, 0]
+  let initialTiebreakServer: 'p1' | 'p2' | undefined = undefined
+
+  // Calculate sets needed to win match
+  const setsToWin = Math.ceil(format.sets / 2)
 
   for (const point of log) {
-    if (isTiebreak) {
+    // Check if match is already complete before processing this point
+    const p1SetsWon = sets.filter(set => set[0] > set[1]).length
+    const p2SetsWon = sets.filter(set => set[1] > set[0]).length
+    if (p1SetsWon >= setsToWin || p2SetsWon >= setsToWin) {
+      // Match is complete, stop processing points
+      break
+    }
+
+    // Check if this should be a super tie-break (deciding set with tied sets)
+    const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1
+    const shouldBeSupetTiebreak = isDecidingSet && format.finalSetTiebreak && games[0] === 0 && games[1] === 0
+
+    if (isTiebreak || shouldBeSupetTiebreak) {
+      if (!isTiebreak) {
+        // Start super tie-break
+        isTiebreak = true
+        tiebreakPoints = [0, 0]
+        initialTiebreakServer = 'p1'
+      }
+      
       if (point.winner === "p1") {
         tiebreakPoints[0]++
       } else {
         tiebreakPoints[1]++
       }
-      const tiebreakTarget = format.finalSetTiebreakAt && shouldStartTiebreak(games[0], games[1], format) ? format.finalSetTiebreakAt : 7
+      const tiebreakTarget = (format.finalSetTiebreak && isDecidingSet) ? (format.finalSetTiebreakAt || 10) : 7
       if (isTiebreakWon(tiebreakPoints[0], tiebreakPoints[1], tiebreakTarget)) {
         const tiebreakWinner = getTiebreakWinner(tiebreakPoints[0], tiebreakPoints[1], tiebreakTarget)
         if (tiebreakWinner === "p1") games[0]++
         else if (tiebreakWinner === "p2") games[1]++
-        isTiebreak = false
-        tiebreakPoints = [0, 0]
+        
         if (isSetWon(games[0], games[1], format)) {
           sets.push([games[0], games[1]])
           games = [0, 0]
         }
+        isTiebreak = false
+        tiebreakPoints = [0, 0]
+        initialTiebreakServer = undefined
       }
     } else {
       if (point.winner === "p1") {
@@ -161,6 +190,8 @@ const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Sc
         if (shouldStartTiebreak(games[0], games[1], format)) {
           isTiebreak = true
           tiebreakPoints = [0, 0]
+          const totalGamesPlayed = sets.reduce((sum, set) => sum + set[0] + set[1], 0) + games[0] + games[1]
+          initialTiebreakServer = getServer(totalGamesPlayed)
         } else if (isSetWon(games[0], games[1], format)) {
           sets.push([games[0], games[1]])
           games = [0, 0]
@@ -173,7 +204,8 @@ const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Sc
     games: games.length === 2 ? [games[0], games[1]] : [0, 0],
     points,
     isTiebreak,
-    tiebreakPoints
+    tiebreakPoints,
+    initialTiebreakServer,
   }
 }
 
@@ -185,6 +217,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   pointLog: [],
   currentServer: null,
   matchFormat: null,
+  initialTiebreakServer: null,
   isMatchComplete: false,
   winnerId: null,
   
@@ -206,7 +239,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       const recalculatedScore = calculateScoreFromPointLog(pointLog, match.matchFormat)
       if (recalculatedScore.isTiebreak) {
         const totalTiebreakPoints = recalculatedScore.tiebreakPoints![0] + recalculatedScore.tiebreakPoints![1]
-        calculatedServer = getTiebreakServer(totalTiebreakPoints + 1)
+        calculatedServer = getTiebreakServer(totalTiebreakPoints, recalculatedScore.initialTiebreakServer!)
       } else {
         const totalGamesPlayed = recalculatedScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + recalculatedScore.games[0] + recalculatedScore.games[1]
         calculatedServer = getServer(totalGamesPlayed + 1)
@@ -218,6 +251,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         pointLog,
         currentServer: calculatedServer,
         matchFormat: match.matchFormat,
+        initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
         events: match.events || []
@@ -232,6 +266,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         pointLog,
         currentServer: calculatedServer,
         matchFormat: match.matchFormat,
+        initialTiebreakServer: score.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
         events: match.events || []
@@ -242,202 +277,237 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   awardPoint: (winner, details) => {
     const state = get()
     
-    // Guard clause: Prevent scoring if match is already complete
-    if (state.isMatchComplete) {
-      // Note: toast import would need to be added at the top of the file
-      // For now, we'll just throw an error to prevent further scoring
-      throw new Error('Match is already complete and cannot be modified.')
-    }
-    
-    if (!state.currentServer || !state.matchFormat || !state.currentMatch) {
-      throw new Error('Match not properly initialized')
-    }
+    if (state.isMatchComplete) throw new Error('Match is already complete.')
+    if (!state.currentServer || !state.matchFormat || !state.currentMatch) throw new Error('Match not properly initialized')
 
-    const newScore = { ...state.score }
-    let isTiebreak = state.score.isTiebreak || false
-    let tiebreakPoints = state.score.tiebreakPoints ? [...state.score.tiebreakPoints] : [0, 0]
+    const newScore: Score = JSON.parse(JSON.stringify(state.score))
+    const { matchFormat, currentServer } = state
+    const winnerIdx = winner === 'p1' ? 0 : 1
+    
+    let isThisPointGameWinning = false
+    let isThisPointSetWinning = false
+    let isThisPointMatchWinning = false
     let matchStatus: "In Progress" | "Completed" = "In Progress"
     let matchWinnerId: string | undefined = undefined
-    let newServer = state.currentServer
-    let pointDetail: PointDetail | undefined = undefined;
+    let nextServer = currentServer
 
-    // --- TIE-BREAK SCORING LOGIC ---
-    if (isTiebreak) {
-      const winnerIdx = winner === 'p1' ? 0 : 1
-      tiebreakPoints[winnerIdx]++
-      const target = (state.matchFormat.finalSetTiebreak && newScore.sets.length + 1 === state.matchFormat.sets) ? 10 : 7
-      if (isTiebreakWon(tiebreakPoints[0], tiebreakPoints[1], target)) {
-        // Award set 7-6 or 6-7
-        const setWinner = getTiebreakWinner(tiebreakPoints[0], tiebreakPoints[1], target)
-        const setScore: [number, number] = setWinner === 'p1' ? [7, 6] : [6, 7]
-        newScore.sets = [...newScore.sets, setScore]
-        newScore.games = [0, 0]
-        newScore.points = [0, 0]
-        isTiebreak = false
-        tiebreakPoints = [0, 0]
-        newScore.isTiebreak = false
-        newScore.tiebreakPoints = [0, 0]
-        
-        // --- IMPROVED MATCH COMPLETION LOGIC ---
-        const p1SetsWon = newScore.sets.filter(set => set[0] > set[1]).length
-        const p2SetsWon = newScore.sets.filter(set => set[1] > set[0]).length
-        const setsToWin = Math.ceil(state.matchFormat.sets / 2)  // For best-of-3: need 2 sets, for best-of-5: need 3 sets
-        
-        if (p1SetsWon >= setsToWin) {
-          matchStatus = "Completed"
-          matchWinnerId = state.currentMatch.playerOneId
-        } else if (p2SetsWon >= setsToWin) {
-          matchStatus = "Completed"
-          matchWinnerId = state.currentMatch.playerTwoId
+    // Check if this is a break point BEFORE awarding the point
+    const setsNeededToWin = Math.ceil(matchFormat.sets / 2)
+    const currentP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
+    const currentP2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
+    const isDecidingSet = currentP1SetsWon === setsNeededToWin - 1 && currentP2SetsWon === setsNeededToWin - 1
+
+    let isThisPointBreakPoint = false
+    let isThisPointSetPoint = false
+    let isThisPointMatchPoint = false
+
+    if (newScore.isTiebreak) {
+      const [p1_tb, p2_tb] = newScore.tiebreakPoints || [0, 0]
+      const tiebreakTarget = (matchFormat.finalSetTiebreak && isDecidingSet) 
+        ? (matchFormat.finalSetTiebreakAt || 10) 
+        : 7
+      
+      // Check for set/match point in tiebreak
+      if (winner === 'p1' && p1_tb + 1 >= tiebreakTarget && p1_tb + 1 - p2_tb >= 2) {
+        isThisPointSetPoint = true
+        if (currentP1SetsWon + 1 >= setsNeededToWin) {
+          isThisPointMatchPoint = true
         }
-        
-        pointDetail = {
-          ...details,
-          id: `point-${state.pointLog.length + 1}`,
-          timestamp: new Date().toISOString(),
-          pointNumber: state.pointLog.length + 1,
-          setNumber: newScore.sets.length,
-          gameNumber: 0,
-          gameScore: `${tiebreakPoints[0]}-${tiebreakPoints[1]}`,
-          winner,
-          server: state.currentServer,
-          serveType: details.serveType || 'first',
-          serveOutcome: details.serveOutcome || 'winner',
-          rallyLength: details.rallyLength || 1,
-          pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
-          lastShotPlayer: winner,
-          isBreakPoint: false,
-          isSetPoint: false,
-          isMatchPoint: matchStatus === 'Completed',
-          isGameWinning: false,
-          isSetWinning: false,
-          isMatchWinning: matchStatus === 'Completed',
-          isTiebreak: true,
-        } as PointDetail;
-      } else {
-        // Continue tiebreak, alternate server every 2 points
-        const totalTiebreakPoints = tiebreakPoints[0] + tiebreakPoints[1]
-        // In tiebreak: first point by player who would serve next game, then alternate every 2 points
-        // Points 1,2 -> server A, points 3,4 -> server B, points 5,6 -> server A, etc.
-        const totalGamesBeforeTiebreak = newScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + newScore.games[0] + newScore.games[1]
-        const initialTiebreakServer = getServer(totalGamesBeforeTiebreak + 1)
-        newServer = Math.floor((totalTiebreakPoints - 1) / 2) % 2 === 0 ? initialTiebreakServer : (initialTiebreakServer === 'p1' ? 'p2' : 'p1')
-        newScore.isTiebreak = true
-        newScore.tiebreakPoints = [tiebreakPoints[0], tiebreakPoints[1]]
-        pointDetail = {
-          ...details,
-          id: `point-${state.pointLog.length + 1}`,
-          timestamp: new Date().toISOString(),
-          pointNumber: state.pointLog.length + 1,
-          setNumber: newScore.sets.length + 1,
-          gameNumber: 0, // Tiebreak is game 0
-          gameScore: `${tiebreakPoints[0]}-${tiebreakPoints[1]}`,
-          winner,
-          server: state.currentServer,
-          serveType: details.serveType || 'first',
-          serveOutcome: details.serveOutcome || 'winner',
-          rallyLength: details.rallyLength || 1,
-          pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
-          lastShotPlayer: winner,
-          isBreakPoint: false,
-          isSetPoint: false,
-          isMatchPoint: false,
-          isGameWinning: false,
-          isSetWinning: false,
-          isMatchWinning: false,
-          isTiebreak: true,
-        } as PointDetail;
+      } else if (winner === 'p2' && p2_tb + 1 >= tiebreakTarget && p2_tb + 1 - p1_tb >= 2) {
+        isThisPointSetPoint = true
+        if (currentP2SetsWon + 1 >= setsNeededToWin) {
+          isThisPointMatchPoint = true
+        }
       }
-      set({
-        score: newScore,
-        pointLog: [...state.pointLog, pointDetail!],
-        currentServer: newServer,
-        isMatchComplete: matchStatus === "Completed",
-        winnerId: matchWinnerId || null
-      })
-      return { newScore, pointDetail: pointDetail!, isMatchComplete: matchStatus === "Completed", winnerId: matchWinnerId }
-    }
-
-    // --- STANDARD GAME SCORING LOGIC ---
-    const winnerIdx = winner === 'p1' ? 0 : 1
-    newScore.points[winnerIdx]++
-    if (isGameWon(newScore.points[0], newScore.points[1], state.matchFormat.noAd)) {
-      newScore.games[winnerIdx]++
-      newScore.points = [0, 0]
-      // After a game is won, check for tie-break condition:
-      if (shouldStartTiebreak(newScore.games[0], newScore.games[1], state.matchFormat)) {
-        isTiebreak = true
-        tiebreakPoints = [0, 0]
-        newScore.isTiebreak = true
-        newScore.tiebreakPoints = [0, 0]
-        // The server for tiebreak is the player who would serve the next game (13th game)
-        // Don't change server here - it will be set correctly for the first tiebreak point
-      } else if (isSetWon(newScore.games[0], newScore.games[1], state.matchFormat)) {
-        // Award set
-        newScore.sets.push([newScore.games[0], newScore.games[1]])
-        newScore.games = [0, 0]
-
-        // --- IMPROVED MATCH & SUPER TIE-BREAK COMPLETION LOGIC ---
-        const p1SetsWon = newScore.sets.filter(set => set[0] > set[1]).length
-        const p2SetsWon = newScore.sets.filter(set => set[1] > set[0]).length
-        const setsToWin = Math.ceil(state.matchFormat.sets / 2)  // For best-of-3: need 2 sets, for best-of-5: need 3 sets
-
-        // Check for match completion FIRST
-        if (p1SetsWon >= setsToWin) {
-          matchStatus = "Completed"
-          matchWinnerId = state.currentMatch.playerOneId
-        } else if (p2SetsWon >= setsToWin) {
-          matchStatus = "Completed"
-          matchWinnerId = state.currentMatch.playerTwoId
-        } 
-        // Only check for super tie-break if match is NOT complete
-        else if (state.matchFormat.finalSetTiebreak && p1SetsWon === p2SetsWon && p1SetsWon === setsToWin - 1) {
-          // This means it's tied at one set each in best-of-3, or two sets each in best-of-5
-          // Start a super tie-break instead of a final set
-          isTiebreak = true
-          tiebreakPoints = [0, 0]
-          newScore.isTiebreak = true
-          newScore.tiebreakPoints = [0, 0]
-          // Server for the super tiebreak remains the same as current server
-          // (the player who would serve the next game)
-        }
+    } else {
+      const [p1, p2] = newScore.points
+      const [g1, g2] = newScore.games
+      
+      // Check for break point - ANY point where the receiver can break serve
+      const [currentP1, currentP2] = state.score.points // Points BEFORE this point is awarded
+      
+      if (currentServer === 'p1') {
+        // Player 2 is receiving - check if P2 is in a break point situation
+        if (matchFormat.noAd) {
+          // No-Ad: P2 needs 4 points and to be ahead
+          if (currentP2 >= 3) isThisPointBreakPoint = true
+                 } else {
+           // Traditional: Check for 40-X (P2 has 40) or advantage situations
+           if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
+               (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1) || // P2 has advantage
+               (currentP2 >= 3 && currentP1 >= 3 && currentP2 === currentP1)) { // Deuce - any point is a break point for returner
+             isThisPointBreakPoint = true
+           }
+         }
+      } else {
+        // Player 1 is receiving - check if P1 is in a break point situation  
+        if (matchFormat.noAd) {
+          // No-Ad: P1 needs 4 points and to be ahead
+          if (currentP1 >= 3) isThisPointBreakPoint = true
+                 } else {
+           // Traditional: Check for 40-X (P1 has 40) or advantage situations
+           if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
+               (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2) || // P1 has advantage
+               (currentP1 >= 3 && currentP2 >= 3 && currentP1 === currentP2)) { // Deuce - any point is a break point for returner
+             isThisPointBreakPoint = true
+           }
+         }
       }
       
-      // Server alternates after each game, but NOT when a super tiebreak is about to start
-      if (!isTiebreak) {
-        newServer = newServer === 'p1' ? 'p2' : 'p1'
+      // Check for set point (one game away from winning set)
+      const gameWinCondition = winner === 'p1' ? 
+        (p1 + 1 >= 4 && (p1 + 1 - p2 >= 2 || matchFormat.noAd && p1 + 1 > p2)) :
+        (p2 + 1 >= 4 && (p2 + 1 - p1 >= 2 || matchFormat.noAd && p2 + 1 > p1))
+      
+      if (gameWinCondition) {
+        const gamesAfterWin = winner === 'p1' ? [g1 + 1, g2] : [g1, g2 + 1]
+        if (isSetWon(gamesAfterWin[0], gamesAfterWin[1], matchFormat)) {
+          isThisPointSetPoint = true
+          const setsAfterWin = winner === 'p1' ? currentP1SetsWon + 1 : currentP2SetsWon + 1
+          if (setsAfterWin >= setsNeededToWin) {
+            isThisPointMatchPoint = true
+          }
+        }
       }
     }
-    pointDetail = {
+
+    // --- TIE-BREAK LOGIC ---
+    if (newScore.isTiebreak) {
+      if (!newScore.tiebreakPoints) newScore.tiebreakPoints = [0, 0]
+      newScore.tiebreakPoints[winnerIdx]++
+      const [p1_tb, p2_tb] = newScore.tiebreakPoints
+      
+      const tiebreakTarget = (matchFormat.finalSetTiebreak && isDecidingSet) 
+        ? (matchFormat.finalSetTiebreakAt || 10) 
+        : 7
+      
+      if (isTiebreakWon(p1_tb, p2_tb, tiebreakTarget)) {
+        isThisPointGameWinning = true
+        isThisPointSetWinning = true
+        const setWinner = getTiebreakWinner(p1_tb, p2_tb, tiebreakTarget)
+        
+        newScore.games[setWinner === 'p1' ? 0 : 1]++
+        newScore.sets.push(newScore.games as [number, number])
+
+        // Check for match win
+        const p1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
+        const p2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
+        
+        if (p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin) {
+          isThisPointMatchWinning = true
+          matchStatus = "Completed"
+          matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+        }
+        
+        // Reset for next set - Player 1 always serves first game of new set
+        newScore.games = [0, 0]
+        newScore.points = [0, 0]
+        newScore.isTiebreak = false
+        newScore.tiebreakPoints = [0, 0]
+        newScore.initialTiebreakServer = undefined
+        nextServer = 'p1' // P1 serves first game of new set
+      } else {
+        // Continue tiebreak, determine next server
+        const totalTbPoints = p1_tb + p2_tb
+        nextServer = getTiebreakServer(totalTbPoints, newScore.initialTiebreakServer!)
+      }
+    } 
+    // --- STANDARD GAME LOGIC ---
+    else {
+      newScore.points[winnerIdx]++
+      const [p1, p2] = newScore.points
+      
+      if (isGameWon(p1, p2, matchFormat.noAd)) {
+        isThisPointGameWinning = true
+        newScore.games[winnerIdx]++
+        newScore.points = [0, 0]
+        
+        // FIXED: Proper serve alternation for regular games
+        nextServer = currentServer === 'p1' ? 'p2' : 'p1'
+
+        // Check for set win
+        const [g1, g2] = newScore.games
+        if (shouldStartTiebreak(g1, g2, matchFormat)) {
+          newScore.isTiebreak = true
+          // FIXED: Keep the nextServer as the one who should serve next in tiebreak
+          newScore.initialTiebreakServer = nextServer 
+        } else if (isSetWon(g1, g2, matchFormat)) {
+          isThisPointSetWinning = true
+          newScore.sets.push(newScore.games as [number, number])
+
+          // Check for match win
+          const p1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
+          const p2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
+
+          if (p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin) {
+            isThisPointMatchWinning = true
+            matchStatus = "Completed"
+            matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+          } else {
+            // FIXED: Check if next set should start as super tie-break
+            const newP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
+            const newP2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
+            const willBeDecidingSet = newP1SetsWon === setsNeededToWin - 1 && newP2SetsWon === setsNeededToWin - 1
+            
+            if (willBeDecidingSet && matchFormat.finalSetTiebreak) {
+              // Start super tie-break immediately
+              newScore.isTiebreak = true
+              newScore.tiebreakPoints = [0, 0]
+              newScore.initialTiebreakServer = 'p1' // P1 serves first in super tie-break
+              nextServer = 'p1'
+            } else {
+              nextServer = 'p1'
+            }
+          }
+          
+          // Reset for next set 
+          newScore.games = [0, 0]
+        }
+      }
+      // FIXED: For regular points within a game, server doesn't change
+      // nextServer remains the same as currentServer
+    }
+
+    // --- CREATE POINT DETAIL ---
+    // FIXED: Calculate set and game numbers based on state BEFORE this point was awarded
+    const currentSetNumber = state.score.sets.length + 1  // Set being played before this point
+    const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1  // Game being played before this point
+    
+    const pointDetail: PointDetail = {
       ...details,
       id: `point-${state.pointLog.length + 1}`,
       timestamp: new Date().toISOString(),
       pointNumber: state.pointLog.length + 1,
-      setNumber: newScore.sets.length + 1,
-      gameNumber: newScore.games[0] + newScore.games[1] + 1,
-      gameScore: `${newScore.points[0]}-${newScore.points[1]}`,
+      setNumber: currentSetNumber,
+      gameNumber: currentGameNumber,
+      gameScore: state.score.isTiebreak 
+        ? `${state.score.tiebreakPoints ? state.score.tiebreakPoints[0] : 0}-${state.score.tiebreakPoints ? state.score.tiebreakPoints[1] : 0}`
+        : getTennisScore(state.score.points[0], state.score.points[1]),
       winner,
-      server: state.currentServer,
+      server: currentServer,
+      isBreakPoint: isThisPointBreakPoint,
+      isSetPoint: isThisPointSetPoint,
+      isMatchPoint: isThisPointMatchPoint,
+      isGameWinning: isThisPointGameWinning,
+      isSetWinning: isThisPointSetWinning,
+      isMatchWinning: isThisPointMatchWinning,
+      isTiebreak: state.score.isTiebreak,
       serveType: details.serveType || 'first',
       serveOutcome: details.serveOutcome || 'winner',
       rallyLength: details.rallyLength || 1,
       pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
       lastShotPlayer: winner,
-      isBreakPoint: false,
-      isSetPoint: false,
-      isMatchPoint: matchStatus === 'Completed',
-      isGameWinning: false,
-      isSetWinning: false,
-      isMatchWinning: matchStatus === 'Completed',
-      isTiebreak: false,
     }
+
     set({
       score: newScore,
       pointLog: [...state.pointLog, pointDetail],
-      currentServer: newServer,
+      currentServer: nextServer,
+      initialTiebreakServer: newScore.initialTiebreakServer || null,
       isMatchComplete: matchStatus === "Completed",
       winnerId: matchWinnerId || null
     })
+    
     return { newScore, pointDetail, isMatchComplete: matchStatus === "Completed", winnerId: matchWinnerId }
   },
   
@@ -447,21 +517,19 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       throw new Error('No points to undo or match not initialized')
     }
     const newPointLog = state.pointLog.slice(0, -1)
+    const lastPoint = state.pointLog[state.pointLog.length -1]
+    
+    // Recalculate score from the new (shorter) point log
     const recalculatedScore = calculateScoreFromPointLog(newPointLog, state.matchFormat)
-    let newServer: 'p1' | 'p2' | null = null
-    if (newPointLog.length > 0) {
-      if (recalculatedScore.isTiebreak) {
-        const totalTiebreakPoints = recalculatedScore.tiebreakPoints![0] + recalculatedScore.tiebreakPoints![1]
-        newServer = getTiebreakServer(totalTiebreakPoints + 1)
-      } else {
-        const totalGamesPlayed = recalculatedScore.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + recalculatedScore.games[0] + recalculatedScore.games[1]
-        newServer = getServer(totalGamesPlayed + 1)
-      }
-    }
+    
+    // The server for the *next* point is the server from the point we just undid.
+    const newServer = lastPoint.server
+    
     set({
       score: recalculatedScore,
       pointLog: newPointLog,
       currentServer: newServer,
+      initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
       isMatchComplete: false,
       winnerId: null
     })
@@ -476,6 +544,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     pointLog: [],
     currentServer: null,
     matchFormat: null,
+    initialTiebreakServer: null,
     events: [],
     isMatchComplete: false,
     winnerId: null,

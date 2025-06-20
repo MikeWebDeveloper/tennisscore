@@ -211,12 +211,12 @@ export function MatchStatsComponentSimple({
   playerNames,
   detailLevel
 }: { 
-  stats: MatchStats
+  stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
   detailLevel: "points" | "simple" | "complex"
 }) {
 
-  const hasPoints = stats.player1.totalPointsWon > 0 || stats.player2.totalPointsWon > 0
+  const hasPoints = stats.totalPoints > 0
 
   if (!hasPoints) {
     return (
@@ -239,31 +239,35 @@ export function MatchStatsComponentSimple({
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Points
+            Points & Outcomes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <StatRow 
-            label="Total Points Won" 
-            value1={stats.player1.totalPointsWon} 
-            value2={stats.player2.totalPointsWon} 
+            label="Winners" 
+            value1={stats.winnersByPlayer[0]} 
+            value2={stats.winnersByPlayer[1]} 
           />
-           <StatRow 
-            label="Service Points Won" 
-            value1={stats.player1.servicePointsWon} 
-            value2={stats.player2.servicePointsWon} 
+          <StatRow 
+            label="Unforced Errors" 
+            value1={stats.unforcedErrorsByPlayer[0]} 
+            value2={stats.unforcedErrorsByPlayer[1]} 
           />
-           <StatRow 
-            label="Receiving Points Won" 
-            value1={stats.player1.returnPointsWon} 
-            value2={stats.player2.returnPointsWon} 
+          <StatRow 
+            label="Aces" 
+            value1={stats.acesByPlayer[0]} 
+            value2={stats.acesByPlayer[1]} 
+          />
+          <StatRow 
+            label="Double Faults" 
+            value1={stats.doubleFaultsByPlayer[0]} 
+            value2={stats.doubleFaultsByPlayer[1]} 
           />
         </CardContent>
       </Card>
       
-      {/* Break Points Section (Always shown for both modes if available) */}
-      {(stats.player1.breakPointsPlayed > 0 || stats.player2.breakPointsPlayed > 0 || 
-        stats.player1.breakPointsFaced > 0 || stats.player2.breakPointsFaced > 0) && (
+      {/* Break Points Section */}
+      {(stats.breakPointsByPlayer.faced[0] > 0 || stats.breakPointsByPlayer.faced[1] > 0) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -273,31 +277,26 @@ export function MatchStatsComponentSimple({
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Break Points Won" 
-              value1={stats.player1.breakPointsWon} 
-              value2={stats.player2.breakPointsWon} 
+              label="Break Points Faced" 
+              value1={stats.breakPointsByPlayer.faced[0]} 
+              value2={stats.breakPointsByPlayer.faced[1]} 
+            />
+            <StatRow 
+              label="Break Points Converted" 
+              value1={stats.breakPointsByPlayer.converted[0]} 
+              value2={stats.breakPointsByPlayer.converted[1]} 
             />
             <StatRow 
               label="Break Points Saved" 
-              value1={stats.player1.breakPointsSaved} 
-              value2={stats.player2.breakPointsSaved} 
+              value1={stats.breakPointsByPlayer.saved[0]} 
+              value2={stats.breakPointsByPlayer.saved[1]} 
             />
-            {detailLevel === 'simple' && (
-              <>
-                <StatRow 
-                  label="Break Point Conversion %" 
-                  value1={Math.round(stats.player1.breakPointConversionPercentage)} 
-                  value2={Math.round(stats.player2.breakPointConversionPercentage)}
-                  format="percentage"
-                />
-                <StatRow 
-                  label="Break Point Save %" 
-                  value1={Math.round(stats.player1.breakPointSavePercentage)} 
-                  value2={Math.round(stats.player2.breakPointSavePercentage)}
-                  format="percentage"
-                />
-              </>
-            )}
+            <StatRow 
+              label="Conversion Rate" 
+              value1={stats.breakPointsByPlayer.conversionRate[0]} 
+              value2={stats.breakPointsByPlayer.conversionRate[1]}
+              format="percentage"
+            />
           </CardContent>
         </Card>
       )}
@@ -308,58 +307,26 @@ export function MatchStatsComponentSimple({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="h-4 w-4" />
-              Service & Point Outcomes
+              Service Statistics
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Aces" 
-              value1={stats.player1.aces} 
-              value2={stats.player2.aces} 
-            />
-            <StatRow 
-              label="Double Faults" 
-              value1={stats.player1.doubleFaults} 
-              value2={stats.player2.doubleFaults} 
-            />
-             <StatRow 
-              label="Winners" 
-              value1={stats.player1.winners} 
-              value2={stats.player2.winners} 
-            />
-            <StatRow 
-              label="Unforced Errors" 
-              value1={stats.player1.unforcedErrors} 
-              value2={stats.player2.unforcedErrors} 
-            />
-            <StatRow 
               label="1st Serve %" 
-              value1={Math.round(stats.player1.firstServePercentage)} 
-              value2={Math.round(stats.player2.firstServePercentage)}
-              format="percentage"
-            />
-            <StatRow 
-              label="2nd Serve %" 
-              value1={Math.round(stats.player1.secondServePercentage)} 
-              value2={Math.round(stats.player2.secondServePercentage)}
+              value1={stats.firstServePercentageByPlayer[0]} 
+              value2={stats.firstServePercentageByPlayer[1]}
               format="percentage"
             />
             <StatRow 
               label="1st Serve Points Won %" 
-              value1={Math.round(stats.player1.firstServeWinPercentage)} 
-              value2={Math.round(stats.player2.firstServeWinPercentage)}
+              value1={stats.firstServePointsWonByPlayer[0]} 
+              value2={stats.firstServePointsWonByPlayer[1]}
               format="percentage"
             />
             <StatRow 
               label="2nd Serve Points Won %" 
-              value1={Math.round(stats.player1.secondServeWinPercentage)} 
-              value2={Math.round(stats.player2.secondServeWinPercentage)}
-              format="percentage"
-            />
-            <StatRow 
-              label="Total Return Points Won %" 
-              value1={Math.round(stats.player1.totalReturnWinPercentage)} 
-              value2={Math.round(stats.player2.totalReturnWinPercentage)}
+              value1={stats.secondServePointsWonByPlayer[0]} 
+              value2={stats.secondServePointsWonByPlayer[1]}
               format="percentage"
             />
           </CardContent>

@@ -65,18 +65,18 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Player</DialogTitle>
-          <DialogDescription>
-            Update player information, profile picture, and settings.
+      <DialogContent className="max-w-sm mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-lg">Edit Player</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Update player information and settings.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleUpdatePlayer} className="space-y-4">
+        <form onSubmit={handleUpdatePlayer} className="space-y-3">
           {/* Profile Picture Upload */}
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center space-y-3">
             <div className="relative">
-              <Avatar className="h-20 w-20">
+              <Avatar className="h-16 w-16">
                 {editPreviewImage ? (
                   <AvatarImage src={editPreviewImage} alt="Preview" />
                 ) : player.profilePictureId ? (
@@ -85,8 +85,8 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
                     alt={`${player.firstName} ${player.lastName}`} 
                   />
                 ) : (
-                  <AvatarFallback className="text-2xl">
-                    <User className="h-8 w-8" />
+                  <AvatarFallback className="text-lg">
+                    <User className="h-6 w-6" />
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -106,36 +106,36 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
               onChange={handleImageChange}
             />
             <p className="text-xs text-muted-foreground text-center">
-              Upload a new profile picture (optional)
+              Upload new picture (optional)
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="editFirstName" className="text-sm">First Name *</Label>
+              <Label htmlFor="editFirstName" className="text-xs font-medium">First Name *</Label>
               <Input 
                 id="editFirstName" 
                 name="firstName" 
                 defaultValue={player.firstName}
                 required 
-                className="text-sm" 
+                className="text-sm h-8" 
               />
             </div>
             <div>
-              <Label htmlFor="editLastName" className="text-sm">Last Name *</Label>
+              <Label htmlFor="editLastName" className="text-xs font-medium">Last Name *</Label>
               <Input 
                 id="editLastName" 
                 name="lastName" 
                 defaultValue={player.lastName}
                 required 
-                className="text-sm" 
+                className="text-sm h-8" 
               />
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="editYearOfBirth" className="text-sm">Birth Year</Label>
+              <Label htmlFor="editYearOfBirth" className="text-xs font-medium">Birth Year</Label>
               <Input 
                 id="editYearOfBirth" 
                 name="yearOfBirth" 
@@ -143,17 +143,17 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
                 min="1900" 
                 max={new Date().getFullYear()} 
                 defaultValue={player.yearOfBirth || ""}
-                className="text-sm"
+                className="text-sm h-8"
               />
             </div>
             <div>
-              <Label htmlFor="editRating" className="text-sm">Rating</Label>
+              <Label htmlFor="editRating" className="text-xs font-medium">Rating</Label>
               <Input 
                 id="editRating" 
                 name="rating" 
-                placeholder="e.g., 4.0, UTR 8" 
+                placeholder="4.0, UTR 8" 
                 defaultValue={player.rating || ""}
-                className="text-sm"
+                className="text-sm h-8"
               />
             </div>
           </div>
@@ -164,21 +164,22 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
               checked={isMainPlayer}
               onCheckedChange={(checked) => setIsMainPlayer(checked as boolean)}
             />
-            <Label htmlFor="editIsMainPlayer" className="text-sm">
+            <Label htmlFor="editIsMainPlayer" className="text-xs">
               Set as main player
             </Label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-8 text-xs"
+              size="sm"
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
               Update Player
             </Button>
           </div>

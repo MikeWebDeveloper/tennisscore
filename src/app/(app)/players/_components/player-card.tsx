@@ -14,9 +14,29 @@ interface PlayerCardProps {
 
 export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
   return (
-    <Card className="h-full">
+    <Card className="h-full relative group">
+      {/* Action buttons in corner */}
+      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        <Button 
+          size="sm" 
+          variant="ghost"
+          onClick={onEdit}
+          className="h-6 w-6 p-0 hover:bg-background/80 backdrop-blur-sm border border-border/50"
+        >
+          <Edit className="h-3 w-3" />
+        </Button>
+        <Button 
+          size="sm" 
+          variant="ghost"
+          onClick={onDelete}
+          className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive backdrop-blur-sm border border-border/50"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+      
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-base md:text-lg">
+        <CardTitle className="text-base md:text-lg pr-16">
           <div className="flex items-center space-x-3">
             <PlayerAvatar player={player} size="md" />
             <div className="min-w-0 flex-1">
@@ -25,28 +45,10 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                   {player.firstName} {player.lastName}
                 </span>
                 {player.isMainPlayer && (
-                  <Star className="h-4 w-4 text-muted-foreground flex-shrink-0" fill="currentColor" />
+                  <Star className="h-4 w-4 text-amber-500 flex-shrink-0" fill="currentColor" />
                 )}
               </div>
             </div>
-          </div>
-          <div className="flex gap-1">
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={onEdit}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={onDelete}
-              className="h-8 w-8 p-0"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
           </div>
         </CardTitle>
       </CardHeader>

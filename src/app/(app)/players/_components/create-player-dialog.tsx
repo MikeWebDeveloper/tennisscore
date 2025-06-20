@@ -41,23 +41,23 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Player</DialogTitle>
-          <DialogDescription>
-            Add a new player to track their matches and statistics. You can upload a profile picture and set basic information.
+      <DialogContent className="max-w-sm mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-lg">Create New Player</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Add a new player to track matches and statistics.
           </DialogDescription>
         </DialogHeader>
-        <form action={handleCreatePlayer} className="space-y-4">
+        <form action={handleCreatePlayer} className="space-y-3">
           {/* Profile Picture Upload */}
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center space-y-3">
             <div className="relative">
-              <Avatar className="h-20 w-20">
+              <Avatar className="h-16 w-16">
                 {previewImage ? (
                   <AvatarImage src={previewImage} alt="Preview" />
                 ) : (
-                  <AvatarFallback className="text-2xl">
-                    <User className="h-8 w-8" />
+                  <AvatarFallback className="text-lg">
+                    <User className="h-6 w-6" />
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -77,61 +77,62 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
               onChange={handleImageChange}
             />
             <p className="text-xs text-muted-foreground text-center">
-              Upload a profile picture (optional)
+              Upload picture (optional)
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="firstName" className="text-sm">First Name *</Label>
-              <Input id="firstName" name="firstName" required className="text-sm" />
+              <Label htmlFor="firstName" className="text-xs font-medium">First Name *</Label>
+              <Input id="firstName" name="firstName" required className="text-sm h-8" />
             </div>
             <div>
-              <Label htmlFor="lastName" className="text-sm">Last Name *</Label>
-              <Input id="lastName" name="lastName" required className="text-sm" />
+              <Label htmlFor="lastName" className="text-xs font-medium">Last Name *</Label>
+              <Input id="lastName" name="lastName" required className="text-sm h-8" />
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="yearOfBirth" className="text-sm">Birth Year</Label>
+              <Label htmlFor="yearOfBirth" className="text-xs font-medium">Birth Year</Label>
               <Input 
                 id="yearOfBirth" 
                 name="yearOfBirth" 
                 type="number" 
                 min="1900" 
                 max={new Date().getFullYear()} 
-                className="text-sm"
+                className="text-sm h-8"
               />
             </div>
             <div>
-              <Label htmlFor="rating" className="text-sm">Rating</Label>
+              <Label htmlFor="rating" className="text-xs font-medium">Rating</Label>
               <Input 
                 id="rating" 
                 name="rating" 
-                placeholder="e.g., 4.0, UTR 8" 
-                className="text-sm"
+                placeholder="4.0, UTR 8" 
+                className="text-sm h-8"
               />
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox id="isMainPlayer" name="isMainPlayer" />
-            <Label htmlFor="isMainPlayer" className="text-sm">
+            <Label htmlFor="isMainPlayer" className="text-xs">
               Set as main player
             </Label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-8 text-xs"
+              size="sm"
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
               Create Player
             </Button>
           </div>

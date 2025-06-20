@@ -1,7 +1,6 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointDetail as BasePointDetail } from "@/lib/types"
 import { Target } from "lucide-react"
@@ -24,13 +23,12 @@ interface GameData {
   setNumber: number
   gameNumber: number
   server: 'p1' | 'p2'
-  winner: 'p1' | 'p2'
-  pointProgression: string[]
-  gameScore: string // e.g., "1-0", "1-1", etc.
-  isBreak: boolean
-  isSetPoint: boolean
-  isMatchPoint: boolean
+  winner?: 'p1' | 'p2'
+  pointProgression: { score: string; indicators: string[] }[]
+  gameScore?: string
+  isBreak?: boolean
   isTiebreak: boolean
+  isCompleted: boolean
 }
 
 // Tennis score mapping
@@ -89,78 +87,65 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
     let p1GamesWon = 0
     let p2GamesWon = 0
 
-    // Process games in order
-    Object.keys(gamesInSet).sort((a, b) => parseInt(a) - parseInt(b)).forEach(gameNumberStr => {
-      const gameNumber = parseInt(gameNumberStr)
-      const gamePoints = gamesInSet[gameNumber]
-      
-      if (gamePoints.length === 0) return
+    const gameKeys = Object.keys(gamesInSet).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    gameKeys.forEach(gameNumberStr => {
+        const gameNumber = parseInt(gameNumberStr);
+        const gamePoints = gamesInSet[gameNumber].sort((a, b) => a.pointNumber - b.pointNumber);
+        if (gamePoints.length === 0) return;
 
-      // Sort points within this specific game by point number
-      const sortedGamePoints = gamePoints.sort((a, b) => a.pointNumber - b.pointNumber)
-      
-      const firstPoint = sortedGamePoints[0]
-      const lastPoint = sortedGamePoints[sortedGamePoints.length - 1]
-      const isTiebreak = !!firstPoint.isTiebreak
-      
-      // Build point progression for this game only
-      let p1Points = 0
-      let p2Points = 0
-      const pointProgression: string[] = []
+        const firstPoint = gamePoints[0];
+        const isTiebreak = !!firstPoint.isTiebreak;
+        const gameWinningPoint = gamePoints.find(p => p.isGameWinning);
+        const isCompleted = !!gameWinningPoint;
+        
+        const pointProgression: { score: string; indicators: string[] }[] = [];
+        let p1Points = 0;
+        let p2Points = 0;
 
-      // Process ONLY points that belong to this exact game
-      sortedGamePoints.forEach((point) => {
-        // Award the point
-        if (point.winner === 'p1') {
-          p1Points++
-        } else {
-          p2Points++
+        gamePoints.forEach(point => {
+            if (point.winner === 'p1') p1Points++;
+            else p2Points++;
+            
+            const scoreAfterPoint = isTiebreak ? 
+              getTiebreakScore(p1Points, p2Points) : 
+              getTennisScore(p1Points, p2Points);
+            
+            const indicators: string[] = [];
+            if (point.isBreakPoint) indicators.push("BP");
+            if (point.isSetPoint) indicators.push("SP");
+            if (point.isMatchPoint) indicators.push("MP");
+            pointProgression.push({ score: scoreAfterPoint, indicators });
+        });
+
+        let gameWinner: 'p1' | 'p2' | undefined;
+        let gameScore: string | undefined;
+        let isBreak: boolean | undefined;
+
+        if (isCompleted && gameWinningPoint) {
+            gameWinner = gameWinningPoint.winner;
+            if (gameWinner === 'p1') p1GamesWon++;
+            else p2GamesWon++;
+            gameScore = `${p1GamesWon}-${p2GamesWon}`;
+            isBreak = firstPoint.server !== gameWinner;
         }
 
-        // Store the score AFTER this point
-        const scoreAfterPoint = isTiebreak 
-          ? getTiebreakScore(p1Points, p2Points)
-          : getTennisScore(p1Points, p2Points)
-
-        pointProgression.push(scoreAfterPoint)
-      })
-
-      // Determine game winner and update cumulative score
-      const gameWinner = lastPoint.winner
-      if (gameWinner === 'p1') {
-        p1GamesWon++
-      } else {
-        p2GamesWon++
-      }
-
-      // Add game score AFTER the last point (this is the key fix!)
-      const gameScore = `${p1GamesWon}-${p2GamesWon}`
-      if (!isTiebreak) {
-        pointProgression.push(gameScore)
-      } else {
-        pointProgression.push(`Set ${gameScore}`)
-      }
-      
-      // CORRECT BREAK LOGIC: A break occurs when the SERVING player loses their service game
-      const isBreak = firstPoint.server !== gameWinner
-
-      processedGames.push({
-        setNumber: firstPoint.setNumber,
-        gameNumber: firstPoint.gameNumber,
-        server: firstPoint.server,
-        winner: gameWinner,
-        pointProgression,
-        gameScore,
-        isBreak,
-        isSetPoint: !!lastPoint.isSetPoint,
-        isMatchPoint: !!lastPoint.isMatchPoint,
-        isTiebreak
-      })
-    })
+        processedGames.push({
+            setNumber: firstPoint.setNumber,
+            gameNumber: firstPoint.gameNumber,
+            server: firstPoint.server,
+            winner: gameWinner,
+            pointProgression,
+            gameScore,
+            isBreak,
+            isTiebreak,
+            isCompleted
+        });
+    });
 
     processedSets.push({
       setNumber,
-      games: processedGames
+      games: processedGames,
     })
   })
 
@@ -229,26 +214,8 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                   <div className="flex items-center gap-2">
                     <TennisBallIcon className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {serverName.split(' ')[0]} serving
+                      {serverName} serving
                     </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {game.isBreak && (
-                      <Badge variant="destructive" className="text-xs px-2 py-0">
-                        BREAK
-                      </Badge>
-                    )}
-                    {game.isSetPoint && (
-                      <Badge className="bg-amber-500 text-white text-xs px-2 py-0">
-                        SET POINT
-                      </Badge>
-                    )}
-                    {game.isMatchPoint && (
-                      <Badge className="bg-green-500 text-white text-xs px-2 py-0">
-                        MATCH POINT
-                      </Badge>
-                    )}
                   </div>
                 </div>
                 
@@ -259,10 +226,44 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 </div>
               </div>
 
-              {/* Point Progression - Single elegant line with game score at the end */}
+              {/* Point Progression - Single elegant line with indicators and bold final score */}
               <div className="text-right">
-                <div className="font-mono text-sm text-muted-foreground">
-                  {game.pointProgression.join(' → ')}
+                <div className="font-mono text-sm text-muted-foreground space-x-2">
+                  {game.pointProgression.map((point, index) => (
+                    <span key={index} className="inline-flex items-baseline gap-1">
+                      <span className="text-foreground">{point.score}</span>
+                      {point.indicators.length > 0 && (
+                        <span className="text-xs space-x-1">
+                          {point.indicators.map((indicator, i) => (
+                            <span 
+                              key={i}
+                              className={
+                                indicator === "BP" ? "text-orange-500" :
+                                indicator === "SP" ? "text-blue-500" :
+                                indicator === "MP" ? "text-red-500" : ""
+                              }
+                            >
+                              {indicator}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                      {index < game.pointProgression.length - 1 && (
+                        <span className="text-muted-foreground"> → </span>
+                      )}
+                    </span>
+                  ))}
+                  {game.isCompleted && game.gameScore && (
+                    <>
+                      <span className="text-muted-foreground ml-2">→</span>
+                      <span className="font-bold text-foreground ml-2 text-base">
+                        {game.isTiebreak ? `Set ${game.gameScore}` : game.gameScore}
+                        {game.isBreak && !game.isTiebreak && (
+                          <span className="text-xs text-red-500 ml-1">(BREAK)</span>
+                        )}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

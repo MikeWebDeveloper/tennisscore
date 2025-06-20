@@ -96,19 +96,31 @@ export function getGameWinner(p1Points: number, p2Points: number, noAd: boolean 
 export function getServer(gameNumber: number): "p1" | "p2" {
   // Player 1 serves first game, then alternate each game
   // In tennis, server alternates each game
-  const totalGames = gameNumber - 1 // Convert to 0-indexed
+  // gameNumber is 1-indexed. totalGames played is gameNumber - 1.
+  const totalGames = gameNumber > 0 ? gameNumber - 1 : 0;
   return totalGames % 2 === 0 ? "p1" : "p2"
 }
 
-export function getTiebreakServer(point: number): "p1" | "p2" {
-  // In tiebreak, server alternates every 2 points after first point
-  // First point: player who would serve next game serves
-  // Then alternate every 2 points
-  if (point === 1) return getServer(1) // Whoever would serve next game
+export function getTiebreakServer(
+  totalPointsInTiebreak: number, 
+  initialServer: 'p1' | 'p2'
+): 'p1' | 'p2' {
+  // First point is served by the initial server.
+  if (totalPointsInTiebreak === 0) {
+    return initialServer
+  }
+  // After the first point, the serve swaps and then alternates every two points.
+  // Points: 1 (initial) | 2,3 (other) | 4,5 (initial) | 6,7 (other) ...
+  const pointsAfterFirst = totalPointsInTiebreak - 1
+  const serverSwaps = Math.floor(pointsAfterFirst / 2)
   
-  // After first point, alternate every 2 points
-  const serverIndex = Math.floor((point - 1) / 2) % 2
-  return serverIndex === 0 ? "p1" : "p2"
+  // If serverSwaps is even, it's the other player. If odd, it's back to the initial player.
+  if (serverSwaps % 2 === 0) {
+    // This covers points 2,3 and 6,7 etc.
+    return initialServer === 'p1' ? 'p2' : 'p1'
+  }
+  // This covers points 4,5 and 8,9 etc.
+  return initialServer
 }
 
 export function isBreakPoint(
@@ -265,65 +277,19 @@ export function reconstructMatchScore(pointLog: { winner: "p1" | "p2"; setNumber
   }
 }
 
-// New function to calculate comprehensive game context
-export function getGameContext(
-  score: TennisScore, 
-  format: MatchFormat, 
-  server: "p1" | "p2"
-): {
-  isBreakPoint: boolean
-  isSetPoint: boolean
-  isMatchPoint: boolean
-  nextServer: "p1" | "p2"
-  isTiebreak: boolean
-} {
-  const currentPoints = score.isTiebreak ? (score.tiebreakPoints || [0, 0]) : score.points
-  const serverIndex = server === "p1" ? 0 : 1
-  const returnerIndex = 1 - serverIndex
-  
-  const isBreakPoint = score.isTiebreak ? false : 
-    currentPoints[returnerIndex] >= 3 && 
-    (format.noAd ? currentPoints[returnerIndex] >= currentPoints[serverIndex] : 
-     currentPoints[returnerIndex] >= currentPoints[serverIndex] || 
-     (currentPoints[returnerIndex] >= 3 && currentPoints[serverIndex] >= 3 && currentPoints[returnerIndex] > currentPoints[serverIndex]))
-  
-  // Check if this could be a set point
-  const gamesAfterWin = [...score.games]
-  if (currentPoints[0] >= (format.noAd ? 4 : 4) || currentPoints[1] >= (format.noAd ? 4 : 4)) {
-    // Someone could win this game
-    if (currentPoints[0] > currentPoints[1]) gamesAfterWin[0]++
-    else gamesAfterWin[1]++
+// Tennis score mapping (simple version for UI consistency)
+const TENNIS_SCORES = ["0", "15", "30", "40"]
+
+export function getTennisScore(p1Points: number, p2Points: number): string {
+  // Handle deuce and advantage situations
+  if (p1Points >= 3 && p2Points >= 3) {
+    if (p1Points === p2Points) return "40-40" // Deuce
+    if (p1Points > p2Points) return "AD-40" // Advantage P1
+    return "40-AD" // Advantage P2
   }
   
-  const wouldWinSet = isSetWon(gamesAfterWin[0], gamesAfterWin[1], format)
-  
-  // Check if this could be a match point
-  let wouldWinMatch = false
-  if (wouldWinSet) {
-    const newSets = [...score.sets]
-    newSets.push([gamesAfterWin[0], gamesAfterWin[1]])
-    const matchResult = isMatchWon(newSets, format)
-    wouldWinMatch = matchResult.won
-  }
-  
-  const isTiebreak = shouldStartTiebreak(score.games[0], score.games[1], format)
-  
-  // Calculate next server
-  let nextServer: "p1" | "p2"
-  if (score.isTiebreak) {
-    // In tiebreak, alternate every 2 points
-    const totalTiebreakPoints = (score.tiebreakPoints?.[0] || 0) + (score.tiebreakPoints?.[1] || 0)
-    nextServer = getTiebreakServer(totalTiebreakPoints + 1)
-  } else {
-    // Normal game: same server until game ends
-    nextServer = server
-  }
-  
-  return {
-    isBreakPoint,
-    isSetPoint: wouldWinSet,
-    isMatchPoint: wouldWinMatch,
-    nextServer,
-    isTiebreak
-  }
+  // Regular scoring
+  const p1Score = TENNIS_SCORES[Math.min(p1Points, 3)] || "40"
+  const p2Score = TENNIS_SCORES[Math.min(p2Points, 3)] || "40"
+  return `${p1Score}-${p2Score}`
 } 
