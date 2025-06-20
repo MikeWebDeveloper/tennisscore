@@ -280,6 +280,13 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     if (state.isMatchComplete) throw new Error('Match is already complete.')
     if (!state.currentServer || !state.matchFormat || !state.currentMatch) throw new Error('Match not properly initialized')
 
+    console.log('🎾 Award Point Debug:', {
+      winner,
+      currentScore: state.score,
+      currentServer: state.currentServer,
+      pointNumber: state.pointLog.length + 1
+    })
+
     const newScore: Score = JSON.parse(JSON.stringify(state.score))
     const { matchFormat, currentServer } = state
     const winnerIdx = winner === 'p1' ? 0 : 1
@@ -417,7 +424,14 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       newScore.points[winnerIdx]++
       const [p1, p2] = newScore.points
       
+      console.log('🎾 Game Logic Debug:', {
+        pointsAfterAward: [p1, p2],
+        isGameWon: isGameWon(p1, p2, matchFormat.noAd),
+        gameWinner: getGameWinner(p1, p2, matchFormat.noAd)
+      })
+      
       if (isGameWon(p1, p2, matchFormat.noAd)) {
+        console.log('🎾 Game Won! Resetting points to [0, 0]')
         isThisPointGameWinning = true
         newScore.games[winnerIdx]++
         newScore.points = [0, 0]
@@ -473,6 +487,18 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const currentSetNumber = state.score.sets.length + 1  // Set being played before this point
     const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1  // Game being played before this point
     
+    const gameScoreToStore = state.score.isTiebreak 
+      ? `${state.score.tiebreakPoints ? state.score.tiebreakPoints[0] : 0}-${state.score.tiebreakPoints ? state.score.tiebreakPoints[1] : 0}`
+      : getTennisScore(state.score.points[0], state.score.points[1])
+
+    console.log('🎾 Point Detail Debug:', {
+      gameScoreToStore,
+      currentSetNumber,
+      currentGameNumber,
+      statePointsBeforeAward: state.score.points,
+      isTiebreak: state.score.isTiebreak
+    })
+    
     const pointDetail: PointDetail = {
       ...details,
       id: `point-${state.pointLog.length + 1}`,
@@ -480,9 +506,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       pointNumber: state.pointLog.length + 1,
       setNumber: currentSetNumber,
       gameNumber: currentGameNumber,
-      gameScore: state.score.isTiebreak 
-        ? `${state.score.tiebreakPoints ? state.score.tiebreakPoints[0] : 0}-${state.score.tiebreakPoints ? state.score.tiebreakPoints[1] : 0}`
-        : getTennisScore(state.score.points[0], state.score.points[1]),
+      gameScore: gameScoreToStore,
       winner,
       server: currentServer,
       isBreakPoint: isThisPointBreakPoint,
@@ -498,6 +522,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
       lastShotPlayer: winner,
     }
+
+    console.log('🎾 Final Score Update:', {
+      oldScore: state.score,
+      newScore,
+      nextServer,
+      pointDetail: {
+        gameScore: pointDetail.gameScore,
+        setNumber: pointDetail.setNumber,
+        gameNumber: pointDetail.gameNumber
+      }
+    })
 
     set({
       score: newScore,

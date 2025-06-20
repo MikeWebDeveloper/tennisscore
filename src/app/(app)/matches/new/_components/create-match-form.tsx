@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { ArrowLeft, Users, User, Plus } from "lucide-react"
 import Link from "next/link"
@@ -18,6 +17,7 @@ import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
 import { CreatePlayerDialog } from "../../../players/_components/create-player-dialog"
 import { MobileBottomNavSpacer } from "@/components/layout/mobile-bottom-nav"
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -129,6 +129,55 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
     }
   }
 
+  // Create options for the combobox
+  const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
+    const options: ComboboxOption[] = []
+
+    // Add anonymous players
+    ANONYMOUS_PLAYERS.forEach((player) => {
+      if (!excludeIds.includes(player.$id)) {
+        options.push({
+          value: player.$id,
+          label: player.displayName,
+          group: "Quick Match",
+          icon: <User className="h-4 w-4 text-muted-foreground" />,
+        })
+      }
+    })
+
+    // Add create new player option
+    options.push({
+      value: "create-new",
+      label: "Create New Player",
+      group: "Actions",
+      icon: <Plus className="h-4 w-4 text-primary" />,
+    })
+
+    // Add real players if they exist
+    if (players.length > 0) {
+      players.forEach((player) => {
+        if (!excludeIds.includes(player.$id)) {
+          options.push({
+            value: player.$id,
+            label: `${player.firstName} ${player.lastName}`,
+            group: "Tracked Players",
+            icon: <Users className="h-4 w-4 text-muted-foreground" />,
+          })
+        }
+      })
+    }
+
+    return options
+  }
+
+  const handlePlayerChange = (value: string, setter: (value: string) => void) => {
+    if (value === "create-new") {
+      setShowCreatePlayerDialog(true)
+    } else {
+      setter(value)
+    }
+  }
+
   const renderPlayerSelect = (
     value: string,
     onChange: (value: string) => void,
@@ -137,67 +186,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   ) => (
     <div className="space-y-2">
       <Label htmlFor={label.toLowerCase().replace(" ", "-")}>{label}</Label>
-      <Select value={value} onValueChange={(val) => {
-        if (val === "create-new") {
-          setShowCreatePlayerDialog(true)
-        } else {
-          onChange(val)
-        }
-      }}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select player" />
-        </SelectTrigger>
-        <SelectContent>
-          {/* Anonymous players section */}
-          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
-            Quick Match
-          </div>
-          {ANONYMOUS_PLAYERS.map((player) => (
-            <SelectItem 
-              key={player.$id} 
-              value={player.$id}
-              disabled={excludeIds.includes(player.$id)}
-            >
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                {player.displayName}
-              </div>
-            </SelectItem>
-          ))}
-          
-          {/* Create new player option */}
-          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
-            Actions
-          </div>
-          <SelectItem value="create-new">
-            <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-primary" />
-              <span className="text-primary font-medium">Create New Player</span>
-            </div>
-          </SelectItem>
-          
-          {/* Real players section */}
-          {players.length > 0 && (
-            <>
-              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
-                Tracked Players
-              </div>
-              {players.map((player) => (
-                <SelectItem 
-                  key={player.$id} 
-                  value={player.$id}
-                  disabled={excludeIds.includes(player.$id)}
-                >
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    {player.firstName} {player.lastName}
-                  </div>
-                </SelectItem>
-              ))}
-            </>
-          )}
-        </SelectContent>
-      </Select>
+      <Combobox
+        options={createPlayerOptions(excludeIds)}
+        value={value}
+        onValueChange={(val) => handlePlayerChange(val, onChange)}
+        placeholder="Search or select player..."
+        emptyText="No players found. Try searching or create a new player."
+      />
     </div>
   )
 
@@ -250,7 +245,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
               <div className="flex items-center gap-2 mb-4">
                 <h3 className="font-medium">Players</h3>
                 <div className="text-sm text-muted-foreground">
-                  Default: Quick match with anonymous players
+                  Search by typing or scroll through options
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
