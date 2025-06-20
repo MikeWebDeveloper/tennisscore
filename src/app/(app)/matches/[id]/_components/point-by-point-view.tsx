@@ -25,19 +25,12 @@ interface GameData {
   gameNumber: number
   server: 'p1' | 'p2'
   winner: 'p1' | 'p2'
-  points: PointProgressionData[]
+  pointProgression: string[]
+  gameScore: string // e.g., "1-0", "1-1", etc.
   isBreak: boolean
   isSetPoint: boolean
   isMatchPoint: boolean
   isTiebreak: boolean
-}
-
-interface PointProgressionData {
-  beforeScore: string
-  afterScore: string
-  winner: 'p1' | 'p2'
-  server: 'p1' | 'p2'
-  pointDetail: PointDetail
 }
 
 // Tennis score mapping
@@ -87,8 +80,19 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
     const gameGroups = setGroups[setNumber]
     const processedGames: GameData[] = []
 
+    // Track cumulative game scores for this set
+    let p1GamesWon = 0
+    let p2GamesWon = 0
+
+    // Sort games by game number to process them in order
+    const sortedGameEntries = Object.entries(gameGroups).sort(([keyA], [keyB]) => {
+      const gameNumA = parseInt(keyA.split('-')[0])
+      const gameNumB = parseInt(keyB.split('-')[0])
+      return gameNumA - gameNumB
+    })
+
     // Process each game in the set
-    Object.values(gameGroups).forEach(gamePoints => {
+    sortedGameEntries.forEach(([, gamePoints]) => {
       if (gamePoints.length === 0) return
 
       const firstPoint = gamePoints[0]
@@ -97,15 +101,10 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
       
       let p1Points = 0
       let p2Points = 0
-      const pointProgression: PointProgressionData[] = []
+      const pointProgression: string[] = []
 
-      // Process each point in the game
+      // Process each point in the game to build progression
       gamePoints.forEach((point) => {
-        // Store the score BEFORE this point
-        const beforeScore = isTiebreak 
-          ? getTiebreakScore(p1Points, p2Points)
-          : getTennisScore(p1Points, p2Points)
-
         // Award the point
         if (point.winner === 'p1') {
           p1Points++
@@ -113,22 +112,29 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
           p2Points++
         }
 
-        // Store the score AFTER this point
-        const afterScore = isTiebreak 
+        // Store the score AFTER this point (this is the key fix!)
+        const scoreAfterPoint = isTiebreak 
           ? getTiebreakScore(p1Points, p2Points)
           : getTennisScore(p1Points, p2Points)
 
-        pointProgression.push({
-          beforeScore,
-          afterScore,
-          winner: point.winner,
-          server: point.server,
-          pointDetail: point
-        })
+        pointProgression.push(scoreAfterPoint)
       })
 
-      // Determine game winner
+      // Add "Game" at the end if it's not a tiebreak
+      if (!isTiebreak) {
+        pointProgression.push("Game")
+      }
+
+      // Determine game winner and update cumulative score
       const gameWinner = lastPoint.winner
+      if (gameWinner === 'p1') {
+        p1GamesWon++
+      } else {
+        p2GamesWon++
+      }
+
+      // Create cumulative game score string
+      const gameScore = `${p1GamesWon}-${p2GamesWon}`
       
       // A break occurs when the receiving player wins the entire game
       const isBreak = firstPoint.server !== gameWinner
@@ -138,16 +144,14 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         gameNumber: firstPoint.gameNumber,
         server: firstPoint.server,
         winner: gameWinner,
-        points: pointProgression,
+        pointProgression,
+        gameScore,
         isBreak,
         isSetPoint: !!lastPoint.isSetPoint,
         isMatchPoint: !!lastPoint.isMatchPoint,
         isTiebreak
       })
     })
-
-    // Sort games by game number
-    processedGames.sort((a, b) => a.gameNumber - b.gameNumber)
 
     processedSets.push({
       setNumber,
@@ -203,10 +207,9 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
       </div>
 
       {/* Games in Selected Set */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {currentSetData?.games.map((game) => {
           const serverName = game.server === 'p1' ? playerNames.p1 : playerNames.p2
-          const winnerName = game.winner === 'p1' ? playerNames.p1 : playerNames.p2
           
           return (
             <motion.div
@@ -216,12 +219,12 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
               className="border rounded-lg p-4 bg-card"
             >
               {/* Game Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <TennisBallIcon className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      {serverName} serving
+                    <TennisBallIcon className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {serverName.split(' ')[0]} serving
                     </span>
                   </div>
                   
@@ -245,53 +248,20 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-xs text-muted-foreground">
-                    {game.isTiebreak ? 'Tiebreak' : `Game ${game.gameNumber}`}
-                  </div>
-                  <div className="font-bold text-lg text-primary">
-                    {winnerName.split(' ')[0]} wins
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {game.isTiebreak ? 'Tiebreak' : `Game ${game.gameNumber}`} • 
+                  </span>
+                  <span className="font-bold text-lg ml-1">
+                    {game.gameScore}
+                  </span>
                 </div>
               </div>
 
-              {/* Point Progression */}
-              <div className="space-y-2">
-                {game.points.map((point, pointIndex) => (
-                  <div 
-                    key={pointIndex} 
-                    className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded text-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        {point.server === 'p1' ? (
-                          <>
-                            <TennisBallIcon className="w-3 h-3 text-blue-500" />
-                            <span className="text-xs text-muted-foreground">
-                              {playerNames.p1.split(' ')[0]}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <TennisBallIcon className="w-3 h-3 text-red-500" />
-                            <span className="text-xs text-muted-foreground">
-                              {playerNames.p2.split(' ')[0]}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      
-                      <div className="font-mono text-xs">
-                        {point.beforeScore} → {point.afterScore}
-                      </div>
-                    </div>
-                    
-                    <div className="text-xs font-medium">
-                      <span className={point.winner === 'p1' ? 'text-blue-500' : 'text-red-500'}>
-                        {point.winner === 'p1' ? playerNames.p1.split(' ')[0] : playerNames.p2.split(' ')[0]}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              {/* Point Progression - Single elegant line */}
+              <div className="text-right">
+                <div className="font-mono text-sm text-muted-foreground">
+                  {game.pointProgression.join(' → ')}
+                </div>
               </div>
             </motion.div>
           )
