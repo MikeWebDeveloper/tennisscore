@@ -21,6 +21,23 @@ function createClientWithRetry() {
   return client
 }
 
+// Create session-based client for user operations
+function createSessionClientWithToken(sessionToken: string) {
+  const client = new Client()
+    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)
+    .setSession(sessionToken) // Use session token instead of API key
+
+  client.headers = {
+    ...client.headers,
+    'X-Appwrite-Request-Timeout': '45',
+    'Connection': 'keep-alive',
+    'Keep-Alive': 'timeout=30, max=100'
+  }
+
+  return client
+}
+
 // Utility function for retrying operations (exported for use in actions)
 export async function withRetry<T>(
   operation: () => Promise<T>, 
@@ -74,7 +91,15 @@ export async function createSessionClient() {
     throw new Error("No session")
   }
 
-  const client = createClientWithRetry()
+  // We need the actual JWT token from cookies, not just the session data
+  const { cookies } = await import("next/headers")
+  const sessionToken = (await cookies()).get("session")?.value
+
+  if (!sessionToken) {
+    throw new Error("No session token")
+  }
+
+  const client = createSessionClientWithToken(sessionToken)
 
   return {
     get account() {
