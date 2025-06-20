@@ -287,7 +287,7 @@ export async function addMatchComment(matchId: string, comment: string): Promise
       type: 'comment',
       content: comment,
       timestamp: new Date().toISOString(),
-      author: `${user.name || user.email}`
+      author: user.email
     }
 
     // Get existing events and add new one

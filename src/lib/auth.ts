@@ -14,7 +14,9 @@ export async function getCurrentUser() {
     return {
       $id: sessionData.userId,
       email: sessionData.email,
-      // Add other needed fields from session if available
+      // Add required fields for User type compatibility
+      $createdAt: new Date().toISOString(), // Placeholder since we don't have this from session
+      $updatedAt: new Date().toISOString(), // Placeholder since we don't have this from session
     }
   } catch {
     return null
