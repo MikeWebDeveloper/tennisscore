@@ -141,13 +141,13 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="relative z-10 p-4 max-w-md mx-auto space-y-4">
-          <div className="text-center pt-4">
-            <div className="flex items-center justify-center gap-2 mb-3">
+        <div className="relative z-10 p-4 max-w-4xl mx-auto space-y-4">
+          <div className="text-center pt-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
               <Trophy className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">Live Tennis Match</h1>
+              <h1 className="text-xl md:text-2xl font-bold">Live Tennis Match</h1>
             </div>
-            <div className="animate-pulse">Loading...</div>
+            <div className="animate-pulse text-muted-foreground">Loading...</div>
           </div>
         </div>
       </div>
@@ -160,51 +160,53 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 p-3 max-w-sm mx-auto space-y-3"
+        className="relative z-10 p-4 max-w-4xl mx-auto space-y-4"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center pt-2">
-          <div className="flex items-center justify-between mb-2">
+        <motion.div variants={itemVariants} className="text-center pt-4">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">Live Tennis</h1>
+              <Trophy className="h-6 w-6 text-primary" />
+              <h1 className="text-xl md:text-2xl font-bold">Live Tennis</h1>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={refreshMatch}
-                className="h-8 w-8 p-0"
+                className="h-9 px-3"
               >
-                <RefreshCw className="h-3 w-3" />
+                <RefreshCw className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={shareMatch}
-                className="h-8 w-8 p-0"
+                className="h-9 px-3"
               >
-                <Share2 className="h-3 w-3" />
+                <Share2 className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Share</span>
               </Button>
             </div>
           </div>
           
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white">
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
             
             {/* Connection Status - only show if match is in progress */}
             {match.status === "In Progress" && (
-              <Badge variant={connected ? "outline" : "destructive"} className={`text-xs border ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
+              <Badge variant={connected ? "outline" : "destructive"} className={`border ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
                 {connected ? (
                   <>
-                    <Wifi className="w-2 h-2 mr-1" />
+                    <Wifi className="w-3 h-3 mr-1" />
                     Connected
                   </>
                 ) : (
                   <>
-                    <WifiOff className="w-2 h-2 mr-1" />
+                    <WifiOff className="w-3 h-3 mr-1" />
                     {retryCount > 0 ? `Retry ${retryCount}/3` : 'Connecting'}
                   </>
                 )}
@@ -213,7 +215,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </div>
           
           {error && match.status === "In Progress" && (
-            <div className="text-xs text-red-500 mt-2 p-2 bg-red-50 rounded border">
+            <div className="text-sm text-red-500 mt-3 p-3 bg-red-50 rounded border max-w-md mx-auto">
               Connection error: {error}
             </div>
           )}
@@ -237,16 +239,16 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         {/* Match Details Tabs */}
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="stats" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-8">
-              <TabsTrigger value="stats" className="text-xs">Stats</TabsTrigger>
-              <TabsTrigger value="points" disabled={!hasPointData} className="text-xs">
+            <TabsList className="grid w-full grid-cols-2 h-10 max-w-md mx-auto">
+              <TabsTrigger value="stats" className="text-sm">Stats</TabsTrigger>
+              <TabsTrigger value="points" disabled={!hasPointData} className="text-sm">
                 Points
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="stats" className="mt-3">
+            <TabsContent value="stats" className="mt-4">
               <Card>
-                <CardContent className="p-3">
+                <CardContent className="p-4 md:p-6">
                   <MatchStatsComponentSimple 
                     stats={matchStats}
                     playerNames={playerNames}
@@ -256,9 +258,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               </Card>
             </TabsContent>
             
-            <TabsContent value="points" className="mt-3">
+            <TabsContent value="points" className="mt-4">
               <Card>
-                <CardContent className="p-3">
+                <CardContent className="p-4 md:p-6">
                   <PointByPointView
                     pointLog={pointLog}
                     playerNames={playerNames}
@@ -270,22 +272,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         </motion.div>
 
         {/* Match Info Footer */}
-        <motion.div variants={itemVariants} className="text-center text-xs text-muted-foreground">
-          <div className="text-center space-y-1">
-            <h1 className="text-xl font-bold">
+        <motion.div variants={itemVariants} className="text-center py-4 border-t">
+          <div className="text-center space-y-2">
+            <h1 className="text-lg md:text-xl font-bold">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p1} / ${playerNames.p3}`
                 : playerNames.p1
               }
             </h1>
             <div className="text-sm text-muted-foreground">vs</div>
-            <h2 className="text-xl font-bold">
+            <h2 className="text-lg md:text-xl font-bold">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p2} / ${playerNames.p4}`
                 : playerNames.p2
               }
             </h2>
-            <div className="text-xs text-muted-foreground mt-2">
+            <div className="text-sm text-muted-foreground mt-3">
               {new Date(match.matchDate).toLocaleDateString()}
             </div>
           </div>
