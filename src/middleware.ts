@@ -43,7 +43,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - live (public live match page)
+     * - clear-session (session clearing page)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|live).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|live|clear-session).*)",
   ],
 } 
