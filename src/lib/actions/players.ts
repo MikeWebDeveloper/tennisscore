@@ -1,7 +1,7 @@
 "use server"
 
 import { ID, Query } from "node-appwrite"
-import { createAdminClient } from "@/lib/appwrite-server"
+import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
@@ -69,20 +69,22 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       }
     }
     
-    const player = await databases.createDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      ID.unique(),
-      {
-        ...validatedData,
-        profilePictureId,
-        userId: user.$id,
-      }
-    ) as unknown as Player
+    const player = await withRetry(() => 
+      databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        ID.unique(),
+        {
+          ...validatedData,
+          profilePictureId,
+          userId: user.$id,
+        }
+      )
+    )
     
     revalidatePath("/players")
     revalidatePath("/dashboard")
-    return { success: true, player }
+    return { success: true, player: player as unknown as Player }
   } catch (error: unknown) {
     console.error("Error creating player:", error)
     return { error: error instanceof Error ? error.message : "Failed to create player" }
@@ -92,41 +94,21 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
 export async function getPlayersByUser(): Promise<Player[]> {
   try {
     const user = await getCurrentUser()
-    if (!user) return []
+    if (!user) {
+      return []
+    }
     
     const { databases } = await createAdminClient()
     
-    // Add retry logic for network issues
-    let retries = 3
-    while (retries > 0) {
-      try {
-        const response = await databases.listDocuments(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-          [Query.equal("userId", user.$id)]
-        )
-        
-        return response.documents as unknown as Player[]
-      } catch (error: unknown) {
-        retries--
-        if (retries === 0) throw error
-        
-        // Check if it's a network error
-        if (error instanceof Error && (
-          error.message.includes('ECONNRESET') || 
-          error.message.includes('fetch failed') ||
-          error.message.includes('network')
-        )) {
-          console.warn(`Network error, retrying... (${3 - retries}/3)`)
-          await new Promise(resolve => setTimeout(resolve, 1000 * (3 - retries))) // Exponential backoff
-          continue
-        }
-        
-        throw error
-      }
-    }
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [Query.equal("userId", user.$id)]
+      )
+    )
     
-    return []
+    return response.documents as unknown as Player[]
   } catch (error: unknown) {
     console.error("Error fetching players:", error)
     // Return empty array instead of throwing to prevent page crashes
@@ -137,17 +119,25 @@ export async function getPlayersByUser(): Promise<Player[]> {
 export async function getMainPlayer(): Promise<Player | null> {
   try {
     const user = await getCurrentUser()
-    if (!user) return null
+    if (!user) {
+      return null
+    }
     
     const { databases } = await createAdminClient()
     
-    const response = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
+      )
     )
     
-    return response.documents[0] as unknown as Player || null
+    if (response.documents.length > 0) {
+      return response.documents[0] as unknown as Player
+    }
+    
+    return null
   } catch (error: unknown) {
     console.error("Error fetching main player:", error)
     return null
@@ -213,11 +203,13 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       updateData.profilePictureId = profilePictureId
     }
     
-    const player = await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      playerId,
-      updateData
+    const player = await withRetry(() =>
+      databases.updateDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        playerId,
+        updateData
+      )
     )
     
     revalidatePath("/players")
@@ -278,10 +270,25 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
     
     const { databases } = await createAdminClient()
     
-    await databases.deleteDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      playerId
+    // Verify ownership
+    const existingPlayer = await withRetry(() =>
+      databases.getDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        playerId
+      )
+    )
+
+    if (existingPlayer.userId !== user.$id) {
+      return { error: "Unauthorized to delete this player" }
+    }
+    
+    await withRetry(() =>
+      databases.deleteDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        playerId
+      )
     )
     
     revalidatePath("/players")
@@ -289,6 +296,6 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
     return { success: true }
   } catch (error: unknown) {
     console.error("Error deleting player:", error)
-    return { error: "Failed to delete player" }
+    return { error: error instanceof Error ? error.message : "Failed to delete player" }
   }
 } 
