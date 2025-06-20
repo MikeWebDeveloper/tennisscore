@@ -417,6 +417,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const result = awardPoint(winner, pointDetails || {})
       setIsInGame(true)
 
+      // Reset serve type back to first serve for next point
+      setServeType('first')
+
       // Prepare update data with match completion if necessary
       const updateData: {
         score: Score
@@ -467,6 +470,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       
       handleAwardPoint(pendingPointWinner, storePointDetail)
       setPendingPointWinner(null)
+      setShowSimpleStats(false)
     }
   }
 
