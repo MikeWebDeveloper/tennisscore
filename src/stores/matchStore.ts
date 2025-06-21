@@ -349,30 +349,35 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       const [p1, p2] = newScore.points
       const [g1, g2] = newScore.games
       
-      // Check for break point - ANY point where the receiver can break serve
+      // Check for break point - receiver is one point away from winning the game
       const [currentP1, currentP2] = state.score.points // Points BEFORE this point is awarded
       
-      if (currentServer === 'p1') {
-        // Player 2 is receiving - check if P2 CAN win a break point
+      // Only check break point if the receiver is actually winning this point
+      if (currentServer === 'p1' && winner === 'p2') {
+        // P2 is receiving and winning this point - check if this wins the game (break)
+        const pointsAfter = [currentP1, currentP2 + 1]
         if (matchFormat.noAd) {
-          // No-Ad: P2 needs 3 points (game point when receiving)
-          if (currentP2 >= 3) isThisPointBreakPoint = true
+          // No-Ad: P2 wins if they reach 4 points and lead
+          if (pointsAfter[1] >= 4 && pointsAfter[1] > pointsAfter[0]) {
+            isThisPointBreakPoint = true
+          }
         } else {
-          // Traditional: P2 has break point opportunity
-          if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
-              (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1)) { // P2 has advantage (NOT deuce)
+          // Traditional: P2 wins if they have 4+ points and lead by 2, or win from advantage
+          if ((pointsAfter[1] >= 4 && pointsAfter[1] - pointsAfter[0] >= 2)) {
             isThisPointBreakPoint = true
           }
         }
-      } else {
-        // Player 1 is receiving - check if P1 CAN win a break point
+      } else if (currentServer === 'p2' && winner === 'p1') {
+        // P1 is receiving and winning this point - check if this wins the game (break)
+        const pointsAfter = [currentP1 + 1, currentP2]
         if (matchFormat.noAd) {
-          // No-Ad: P1 needs 3 points (game point when receiving)
-          if (currentP1 >= 3) isThisPointBreakPoint = true
+          // No-Ad: P1 wins if they reach 4 points and lead
+          if (pointsAfter[0] >= 4 && pointsAfter[0] > pointsAfter[1]) {
+            isThisPointBreakPoint = true
+          }
         } else {
-          // Traditional: P1 has break point opportunity
-          if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
-              (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2)) { // P1 has advantage (NOT deuce)
+          // Traditional: P1 wins if they have 4+ points and lead by 2, or win from advantage
+          if ((pointsAfter[0] >= 4 && pointsAfter[0] - pointsAfter[1] >= 2)) {
             isThisPointBreakPoint = true
           }
         }
@@ -497,10 +502,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const currentSetNumber = state.score.sets.length + 1  // Set being played before this point
     const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1  // Game being played before this point
     
-    // Store the score AFTER this point is awarded (what the scoreboard shows)
-    const gameScoreToStore = newScore.isTiebreak 
-      ? `${newScore.tiebreakPoints ? newScore.tiebreakPoints[0] : 0}-${newScore.tiebreakPoints ? newScore.tiebreakPoints[1] : 0}`
-      : getTennisScore(newScore.points[0], newScore.points[1])
+    // Store the score AFTER this point is awarded, but handle game-winning points correctly
+    let gameScoreToStore: string
+    if (newScore.isTiebreak) {
+      gameScoreToStore = `${newScore.tiebreakPoints ? newScore.tiebreakPoints[0] : 0}-${newScore.tiebreakPoints ? newScore.tiebreakPoints[1] : 0}`
+    } else if (isThisPointGameWinning) {
+      // For game-winning points, store the final game score (e.g., "1-0") instead of reset points
+      gameScoreToStore = `${newScore.games[0]}-${newScore.games[1]}`
+    } else {
+      // For regular points, store the tennis score after the point
+      gameScoreToStore = getTennisScore(newScore.points[0], newScore.points[1])
+    }
     
     const pointDetail: PointDetail = {
       ...details,
