@@ -137,6 +137,30 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
   }
 
+  // Extract current server from the latest point or score
+  let currentServer: "p1" | "p2" | undefined = undefined
+  if (pointLog.length > 0) {
+    // For simplicity, we'll calculate based on the game count and who served first
+    const totalGames = match.scoreParsed.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + 
+                      match.scoreParsed.games[0] + match.scoreParsed.games[1]
+    const firstServer = pointLog[0]?.server || 'p1'
+    
+    if (match.scoreParsed.isTiebreak) {
+      // In tiebreak, server alternates every 2 points
+      const totalTiebreakPoints = (match.scoreParsed.tiebreakPoints?.[0] || 0) + 
+                                  (match.scoreParsed.tiebreakPoints?.[1] || 0)
+      // The player who would normally serve this game starts the tiebreak
+      const tiebreakStartServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
+      // Then alternate every 2 points
+      currentServer = Math.floor(totalTiebreakPoints / 2) % 2 === 0 ? 
+                      tiebreakStartServer : 
+                      (tiebreakStartServer === 'p1' ? 'p2' : 'p1')
+    } else {
+      // In regular games, server alternates each game
+      currentServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
+    }
+  }
+
   // Prevent hydration mismatch by showing loading state until mounted
   if (!mounted) {
     return (
@@ -233,6 +257,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             winnerId={match.winnerId}
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
+            currentServer={currentServer}
           />
         </motion.div>
 

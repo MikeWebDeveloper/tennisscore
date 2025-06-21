@@ -92,14 +92,14 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
     if (point.pointOutcome === 'winner') {
       stats.winnersByPlayer[isP1 ? 0 : 1]++
     } else if (point.pointOutcome === 'unforced_error') {
-      stats.unforcedErrorsByPlayer[isP1 ? 0 : 1]++
+      stats.unforcedErrorsByPlayer[isP1 ? 1 : 0]++
     }
 
     // Count aces and double faults
     if (point.pointOutcome === 'ace') {
       stats.acesByPlayer[isP1 ? 0 : 1]++
     } else if (point.pointOutcome === 'double_fault') {
-      stats.doubleFaultsByPlayer[isP1 ? 0 : 1]++
+      stats.doubleFaultsByPlayer[isP1Serving ? 0 : 1]++
     }
 
     // Break point statistics
