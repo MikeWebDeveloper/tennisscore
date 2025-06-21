@@ -85,53 +85,18 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         // Check if this is a tiebreak game
         const isTiebreak = gamePoints.length > 0 ? !!gamePoints[0].isTiebreak : false;
 
-        // Calculate score progression by simulating the game point by point
-        let p1Points = 0;
-        let p2Points = 0;
-        
-        // Include ALL points in the progression - don't filter out game-winning points
-        // since they often contain important indicators like BP, SP, MP
+        // Use the stored gameScore from each point (score AFTER the point was awarded)
         gamePoints.forEach((point) => {
-            // Calculate the tennis score BEFORE this point
-            let scoreDisplay: string;
-            if (isTiebreak) {
-                scoreDisplay = `${p1Points}-${p2Points}`;
-            } else {
-                // Use standard tennis scoring
-                const scoreMap = ["0", "15", "30", "40"];
-                
-                if (p1Points >= 3 && p2Points >= 3) {
-                    if (p1Points === p2Points) {
-                        scoreDisplay = "40-40";
-                    } else if (p1Points > p2Points) {
-                        scoreDisplay = "AD-40";
-                    } else {
-                        scoreDisplay = "40-AD";
-                    }
-                } else {
-                    const p1Score = scoreMap[Math.min(p1Points, 3)] || "40";
-                    const p2Score = scoreMap[Math.min(p2Points, 3)] || "40";
-                    scoreDisplay = `${p1Score}-${p2Score}`;
-                }
-            }
-            
             const indicators: string[] = [];
             if (point.isBreakPoint) indicators.push("BP");
             if (point.isSetPoint) indicators.push("SP");
             if (point.isMatchPoint) indicators.push("MP");
             
-            // Only add to progression if this isn't the game-winning point
-            // Game-winning points will be shown in the final game score
-            if (!point.isGameWinning) {
-                pointProgression.push({ score: scoreDisplay, indicators });
-            }
+            // Use the stored gameScore which represents the score after this point
+            const scoreDisplay = point.gameScore;
             
-            // Award the point AFTER displaying the score
-            if (point.winner === 'p1') {
-                p1Points++;
-            } else {
-                p2Points++;
-            }
+            // Add all points to progression - the stored score shows the result after each point
+            pointProgression.push({ score: scoreDisplay, indicators });
         });
 
         let gameWinner: 'p1' | 'p2' | undefined;

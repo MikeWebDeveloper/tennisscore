@@ -493,13 +493,14 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     }
 
     // --- CREATE POINT DETAIL ---
-    // FIXED: Calculate set and game numbers based on state BEFORE this point was awarded
+    // Calculate set and game numbers based on state BEFORE this point was awarded
     const currentSetNumber = state.score.sets.length + 1  // Set being played before this point
     const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1  // Game being played before this point
     
-    const gameScoreToStore = state.score.isTiebreak 
-      ? `${state.score.tiebreakPoints ? state.score.tiebreakPoints[0] : 0}-${state.score.tiebreakPoints ? state.score.tiebreakPoints[1] : 0}`
-      : getTennisScore(state.score.points[0], state.score.points[1])
+    // Store the score AFTER this point is awarded (what the scoreboard shows)
+    const gameScoreToStore = newScore.isTiebreak 
+      ? `${newScore.tiebreakPoints ? newScore.tiebreakPoints[0] : 0}-${newScore.tiebreakPoints ? newScore.tiebreakPoints[1] : 0}`
+      : getTennisScore(newScore.points[0], newScore.points[1])
     
     const pointDetail: PointDetail = {
       ...details,
