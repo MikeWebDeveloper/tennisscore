@@ -360,7 +360,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         } else {
           // Traditional: P2 has break point opportunity
           if ((currentP2 === 3 && currentP1 < 3) || // P2 has 40, P1 has less than 40
-              (currentP2 >= 3 && currentP1 >= 3 && currentP2 >= currentP1)) { // P2 has 40 or advantage
+              (currentP2 >= 3 && currentP1 >= 3 && currentP2 > currentP1)) { // P2 has advantage (NOT deuce)
             isThisPointBreakPoint = true
           }
         }
@@ -372,7 +372,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         } else {
           // Traditional: P1 has break point opportunity
           if ((currentP1 === 3 && currentP2 < 3) || // P1 has 40, P2 has less than 40
-              (currentP1 >= 3 && currentP2 >= 3 && currentP1 >= currentP2)) { // P1 has 40 or advantage
+              (currentP1 >= 3 && currentP2 >= 3 && currentP1 > currentP2)) { // P1 has advantage (NOT deuce)
             isThisPointBreakPoint = true
           }
         }
