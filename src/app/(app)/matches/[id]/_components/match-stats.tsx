@@ -128,6 +128,11 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
             value1={stats.player1.unforcedErrors} 
             value2={stats.player2.unforcedErrors} 
           />
+          <StatRow 
+            label="Forced Errors" 
+            value1={stats.player1.forcedErrors} 
+            value2={stats.player2.forcedErrors} 
+          />
         </CardContent>
       </Card>
 
@@ -296,6 +301,11 @@ export function MatchStatsComponentSimple({
                 label="Unforced Errors" 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]} 
+              />
+              <StatRow 
+                label="Forced Errors" 
+                value1={stats.forcedErrorsByPlayer[0]} 
+                value2={stats.forcedErrorsByPlayer[1]} 
               />
               <StatRow 
                 label="Aces" 

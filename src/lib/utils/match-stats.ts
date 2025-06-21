@@ -11,6 +11,7 @@ export interface EnhancedMatchStats {
   receivingPointsWonPercentageByPlayer: [number, number]
   winnersByPlayer: [number, number]
   unforcedErrorsByPlayer: [number, number]
+  forcedErrorsByPlayer: [number, number]
   acesByPlayer: [number, number]
   doubleFaultsByPlayer: [number, number]
   firstServePercentageByPlayer: [number, number]
@@ -36,6 +37,7 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
     receivingPointsWonPercentageByPlayer: [0, 0],
     winnersByPlayer: [0, 0],
     unforcedErrorsByPlayer: [0, 0],
+    forcedErrorsByPlayer: [0, 0],
     acesByPlayer: [0, 0],
     doubleFaultsByPlayer: [0, 0],
     firstServePercentageByPlayer: [0, 0],
@@ -93,6 +95,8 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       stats.winnersByPlayer[isP1 ? 0 : 1]++
     } else if (point.pointOutcome === 'unforced_error') {
       stats.unforcedErrorsByPlayer[isP1 ? 1 : 0]++
+    } else if (point.pointOutcome === 'forced_error') {
+      stats.forcedErrorsByPlayer[isP1 ? 1 : 0]++
     }
 
     // Count aces and double faults

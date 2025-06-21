@@ -92,14 +92,7 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
         // Include ALL points in the progression - don't filter out game-winning points
         // since they often contain important indicators like BP, SP, MP
         gamePoints.forEach((point) => {
-            // Award the point
-            if (point.winner === 'p1') {
-                p1Points++;
-            } else {
-                p2Points++;
-            }
-            
-            // Calculate the tennis score after this point
+            // Calculate the tennis score BEFORE this point
             let scoreDisplay: string;
             if (isTiebreak) {
                 scoreDisplay = `${p1Points}-${p2Points}`;
@@ -127,7 +120,18 @@ function processPointLogBySets(pointLog: PointDetail[]): SetData[] {
             if (point.isSetPoint) indicators.push("SP");
             if (point.isMatchPoint) indicators.push("MP");
             
-            pointProgression.push({ score: scoreDisplay, indicators });
+            // Only add to progression if this isn't the game-winning point
+            // Game-winning points will be shown in the final game score
+            if (!point.isGameWinning) {
+                pointProgression.push({ score: scoreDisplay, indicators });
+            }
+            
+            // Award the point AFTER displaying the score
+            if (point.winner === 'p1') {
+                p1Points++;
+            } else {
+                p2Points++;
+            }
         });
 
         let gameWinner: 'p1' | 'p2' | undefined;
