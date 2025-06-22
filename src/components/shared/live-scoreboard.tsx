@@ -59,9 +59,19 @@ export function LiveScoreboard({
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
   
-  // Format team names for doubles
-  const teamOneName = isDoubles ? `${playerOneName} / ${playerThreeName}` : playerOneName
-  const teamTwoName = isDoubles ? `${playerTwoName} / ${playerFourName}` : playerTwoName
+  // Format team names for doubles - use initial + last name for doubles
+  const formatPlayerName = (fullName: string) => {
+    const parts = fullName.split(' ')
+    if (parts.length < 2) return fullName
+    return `${parts[0][0]}. ${parts[parts.length - 1]}`
+  }
+  
+  const teamOneName = isDoubles 
+    ? `${formatPlayerName(playerOneName)} / ${formatPlayerName(playerThreeName!)}`
+    : playerOneName
+  const teamTwoName = isDoubles 
+    ? `${formatPlayerName(playerTwoName)} / ${formatPlayerName(playerFourName!)}`
+    : playerTwoName
   
   // Format year and rating display for teams
   const formatPlayerInfo = (year?: number, rating?: string) => {
@@ -156,12 +166,14 @@ export function LiveScoreboard({
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Set scores - show on larger screens */}
               {score.sets.length > 0 && (
-                <div className="hidden sm:flex gap-1">
+                <div className="hidden sm:flex items-center gap-1">
                   {score.sets.map((set, idx) => (
                     <div key={idx} className="text-xs font-mono w-4 text-center">
                       {set[0]}
                     </div>
                   ))}
+                  {/* Divider after played sets */}
+                  <div className="w-px h-4 bg-border mx-1"></div>
                 </div>
               )}
               
@@ -169,6 +181,9 @@ export function LiveScoreboard({
               <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
                 {score.games[0]}
               </div>
+              
+              {/* Divider before current point */}
+              <div className="w-px h-4 bg-border"></div>
               
               {/* Current point */}
               <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
@@ -222,12 +237,14 @@ export function LiveScoreboard({
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Set scores - show on larger screens */}
               {score.sets.length > 0 && (
-                <div className="hidden sm:flex gap-1">
+                <div className="hidden sm:flex items-center gap-1">
                   {score.sets.map((set, idx) => (
                     <div key={idx} className="text-xs font-mono w-4 text-center">
                       {set[1]}
                     </div>
                   ))}
+                  {/* Divider after played sets */}
+                  <div className="w-px h-4 bg-border mx-1"></div>
                 </div>
               )}
               
@@ -235,6 +252,9 @@ export function LiveScoreboard({
               <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
                 {score.games[1]}
               </div>
+              
+              {/* Divider before current point */}
+              <div className="w-px h-4 bg-border"></div>
               
               {/* Current point */}
               <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
