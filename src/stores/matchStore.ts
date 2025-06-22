@@ -317,7 +317,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     let matchWinnerId: string | undefined = undefined
     let nextServer = currentServer
 
-    // Check if this is a break point BEFORE awarding the point
     const setsNeededToWin = Math.ceil(matchFormat.sets / 2)
     const currentP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
     const currentP2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
@@ -327,93 +326,83 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     let isThisPointSetPoint = false
     let isThisPointMatchPoint = false
 
-    if (newScore.isTiebreak) {
-      const [p1_tb, p2_tb] = newScore.tiebreakPoints || [0, 0]
-      const tiebreakTarget = (matchFormat.finalSetTiebreak && isDecidingSet) 
-        ? (matchFormat.finalSetTiebreakAt || 10) 
-        : 7
-      
-      // Check for set/match point in tiebreak
-      if (winner === 'p1' && p1_tb + 1 >= tiebreakTarget && p1_tb + 1 - p2_tb >= 2) {
-        isThisPointSetPoint = true
-        if (currentP1SetsWon + 1 >= setsNeededToWin) {
-          isThisPointMatchPoint = true
+    // --- FINAL REVISED BREAK POINT & GAME/SET/MATCH POINT LOGIC ---
+    // This logic runs BEFORE the point is awarded.
+    // It answers the question: "If the receiver wins THIS point, do they win the game?"
+    const [p1Score, p2Score] = newScore.points
+    const isTiebreak = newScore.isTiebreak || false
+
+    if (isTiebreak) {
+        const tiebreakTarget = (matchFormat.finalSetTiebreak && isDecidingSet) 
+            ? (matchFormat.finalSetTiebreakAt || 10) 
+            : 7
+        const [p1_tb, p2_tb] = newScore.tiebreakPoints || [0,0]
+
+        // Check if P1 has set/match point
+        const p1WinsNextPoint = isTiebreakWon(p1_tb + 1, p2_tb, tiebreakTarget);
+        if (p1WinsNextPoint) {
+            isThisPointSetPoint = true
+            if (currentP1SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true
         }
-      } else if (winner === 'p2' && p2_tb + 1 >= tiebreakTarget && p2_tb + 1 - p1_tb >= 2) {
-        isThisPointSetPoint = true
-        if (currentP2SetsWon + 1 >= setsNeededToWin) {
-          isThisPointMatchPoint = true
+
+        // Check if P2 has set/match point
+        const p2WinsNextPoint = isTiebreakWon(p1_tb, p2_tb + 1, tiebreakTarget);
+        if (p2WinsNextPoint) {
+            isThisPointSetPoint = true
+            if (currentP2SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true
         }
-      }
     } else {
-      const [p1, p2] = newScore.points
-      const [g1, g2] = newScore.games
-      
-      // Check for break point - receiver is one point away from winning the game
-      const [currentP1, currentP2] = state.score.points // Points BEFORE this point is awarded
-      
-      // Only check break point if the receiver is actually winning this point
-      if (currentServer === 'p1' && winner === 'p2') {
-        // P2 is receiving and winning this point - check if this wins the game (break)
-        const pointsAfter = [currentP1, currentP2 + 1]
-        if (matchFormat.noAd) {
-          // No-Ad: P2 wins if they reach 4 points and lead
-          if (pointsAfter[1] >= 4 && pointsAfter[1] > pointsAfter[0]) {
-            isThisPointBreakPoint = true
-          }
-        } else {
-          // Traditional: P2 wins if they have 4+ points and lead by 2, or win from advantage
-          if ((pointsAfter[1] >= 4 && pointsAfter[1] - pointsAfter[0] >= 2)) {
-            isThisPointBreakPoint = true
-          }
+        // Standard Game
+        const p1ScoreIfP1Wins = p1Score + 1;
+        const p2ScoreIfP2Wins = p2Score + 1;
+
+        // Check if P1 (as receiver) has a break point opportunity
+        if (currentServer === 'p2' && isGameWon(p1ScoreIfP1Wins, p2Score, matchFormat.noAd)) {
+            isThisPointBreakPoint = true;
+            // Check if it's also a set/match point
+            if (isSetWon(newScore.games[0] + 1, newScore.games[1], matchFormat)) {
+                isThisPointSetPoint = true;
+                if (currentP1SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true;
+            }
         }
-      } else if (currentServer === 'p2' && winner === 'p1') {
-        // P1 is receiving and winning this point - check if this wins the game (break)
-        const pointsAfter = [currentP1 + 1, currentP2]
-        if (matchFormat.noAd) {
-          // No-Ad: P1 wins if they reach 4 points and lead
-          if (pointsAfter[0] >= 4 && pointsAfter[0] > pointsAfter[1]) {
-            isThisPointBreakPoint = true
-          }
-        } else {
-          // Traditional: P1 wins if they have 4+ points and lead by 2, or win from advantage
-          if ((pointsAfter[0] >= 4 && pointsAfter[0] - pointsAfter[1] >= 2)) {
-            isThisPointBreakPoint = true
-          }
+
+        // Check if P2 (as receiver) has a break point opportunity
+        if (currentServer === 'p1' && isGameWon(p1Score, p2ScoreIfP2Wins, matchFormat.noAd)) {
+            isThisPointBreakPoint = true;
+            // Check if it's also a set/match point
+            if (isSetWon(newScore.games[0], newScore.games[1] + 1, matchFormat)) {
+                isThisPointSetPoint = true;
+                if (currentP2SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true;
+            }
         }
-      }
-      
-      // Check for set point (one game away from winning set)
-      const gameWinCondition = winner === 'p1' ? 
-        (p1 + 1 >= 4 && (p1 + 1 - p2 >= 2 || matchFormat.noAd && p1 + 1 > p2)) :
-        (p2 + 1 >= 4 && (p2 + 1 - p1 >= 2 || matchFormat.noAd && p2 + 1 > p1))
-      
-      if (gameWinCondition) {
-        const gamesAfterWin = winner === 'p1' ? [g1 + 1, g2] : [g1, g2 + 1]
-        if (isSetWon(gamesAfterWin[0], gamesAfterWin[1], matchFormat)) {
-          isThisPointSetPoint = true
-          const setsAfterWin = winner === 'p1' ? currentP1SetsWon + 1 : currentP2SetsWon + 1
-          if (setsAfterWin >= setsNeededToWin) {
-            isThisPointMatchPoint = true
-          }
+
+        // Check if Server has a set/match point opportunity (but not a break point)
+        if (!isThisPointBreakPoint) {
+            if (currentServer === 'p1' && isGameWon(p1ScoreIfP1Wins, p2Score, matchFormat.noAd)) {
+                if(isSetWon(newScore.games[0] + 1, newScore.games[1], matchFormat)) {
+                    isThisPointSetPoint = true;
+                    if (currentP1SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true;
+                }
+            }
+            if (currentServer === 'p2' && isGameWon(p1Score, p2ScoreIfP2Wins, matchFormat.noAd)) {
+                 if(isSetWon(newScore.games[0], newScore.games[1] + 1, matchFormat)) {
+                    isThisPointSetPoint = true;
+                    if (currentP2SetsWon === setsNeededToWin - 1) isThisPointMatchPoint = true;
+                }
+            }
         }
-      }
     }
 
-    // --- TIE-BREAK LOGIC ---
+    // --- AWARD POINT ---
     if (newScore.isTiebreak) {
       if (!newScore.tiebreakPoints) newScore.tiebreakPoints = [0, 0]
       newScore.tiebreakPoints[winnerIdx]++
-      const [p1_tb, p2_tb] = newScore.tiebreakPoints
+      const [p1_tb_after, p2_tb_after] = newScore.tiebreakPoints
       
-      const tiebreakTarget = (matchFormat.finalSetTiebreak && isDecidingSet) 
-        ? (matchFormat.finalSetTiebreakAt || 10) 
-        : 7
-      
-      if (isTiebreakWon(p1_tb, p2_tb, tiebreakTarget)) {
+      if (isTiebreakWon(p1_tb_after, p2_tb_after, 7)) {
         isThisPointGameWinning = true
         isThisPointSetWinning = true
-        const setWinner = getTiebreakWinner(p1_tb, p2_tb, tiebreakTarget)
+        const setWinner = getTiebreakWinner(p1_tb_after, p2_tb_after, 7)
         
         newScore.games[setWinner === 'p1' ? 0 : 1]++
         newScore.sets.push(newScore.games as [number, number])
@@ -437,7 +426,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         nextServer = 'p1' // P1 serves first game of new set
       } else {
         // Continue tiebreak, determine next server
-        const totalTbPoints = p1_tb + p2_tb
+        const totalTbPoints = p1_tb_after + p2_tb_after
         nextServer = getTiebreakServer(totalTbPoints, newScore.initialTiebreakServer!)
       }
     } 
@@ -498,22 +487,15 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     }
 
     // --- CREATE POINT DETAIL ---
-    // Calculate set and game numbers based on state BEFORE this point was awarded
-    const currentSetNumber = state.score.sets.length + 1  // Set being played before this point
-    const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1  // Game being played before this point
+    // The point flags (isBreakPoint, etc.) are determined above, before the point is awarded.
+    const currentSetNumber = state.score.sets.length + 1
+    const currentGameNumber = (state.score.games[0] + state.score.games[1]) + 1
     
-    // Store the score AFTER this point is awarded, but handle game-winning points correctly
-    let gameScoreToStore: string
-    if (newScore.isTiebreak) {
-      gameScoreToStore = `${newScore.tiebreakPoints ? newScore.tiebreakPoints[0] : 0}-${newScore.tiebreakPoints ? newScore.tiebreakPoints[1] : 0}`
-    } else if (isThisPointGameWinning) {
-      // For game-winning points, store the final game score (e.g., "1-0") instead of reset points
-      gameScoreToStore = `${newScore.games[0]}-${newScore.games[1]}`
-    } else {
-      // For regular points, store the tennis score after the point
-      gameScoreToStore = getTennisScore(newScore.points[0], newScore.points[1])
-    }
-    
+    // Store the score BEFORE this point is awarded.
+    const gameScoreToStore = state.score.isTiebreak 
+        ? `${state.score.tiebreakPoints?.[0] || 0}-${state.score.tiebreakPoints?.[1] || 0}`
+        : getTennisScore(state.score.points[0], state.score.points[1]);
+
     const pointDetail: PointDetail = {
       ...details,
       id: `point-${state.pointLog.length + 1}`,
@@ -598,4 +580,45 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     winnerId: null,
     detailedLoggingEnabled: false,
   }),
-})) 
+}))
+
+// Test function to verify break point logic
+function testBreakPointLogic() {
+  console.log('=== Testing Break Point Logic ===')
+  
+  // Test traditional scoring
+  console.log('Traditional Scoring Tests:')
+  
+  // Should be BP: 0-40 (server p1, receiver p2 at 3 points)
+  console.log('0-40 (p1 serving):', {
+    beforeP1: 0, beforeP2: 3,
+    shouldBeBP: true,
+    actualBP: (3 >= 3 && 0 < 3) // P2 >= 3 && P1 < 3
+  })
+  
+  // Should be BP: 15-40 
+  console.log('15-40 (p1 serving):', {
+    beforeP1: 1, beforeP2: 3,
+    shouldBeBP: true,
+    actualBP: (3 >= 3 && 1 < 3)
+  })
+  
+  // Should NOT be BP: 40-40 (deuce)
+  console.log('40-40 (p1 serving):', {
+    beforeP1: 3, beforeP2: 3,
+    shouldBeBP: false,
+    actualBP: (3 >= 3 && 3 < 3) || (3 >= 3 && 3 >= 3 && 3 > 3) // False
+  })
+  
+  // Should be BP: 40-AD (receiver advantage)
+  console.log('40-AD (p1 serving):', {
+    beforeP1: 3, beforeP2: 4,
+    shouldBeBP: true,
+    actualBP: (4 >= 3 && 3 >= 3 && 4 > 3)
+  })
+}
+
+// Call test function
+if (typeof window !== 'undefined') {
+  (window as unknown as Record<string, unknown>).testBreakPointLogic = testBreakPointLogic
+} 

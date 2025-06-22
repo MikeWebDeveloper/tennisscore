@@ -574,6 +574,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerTwoName={playerNames.p2}
           playerThreeName={playerNames.p3}
           playerFourName={playerNames.p4}
+          playerOneYearOfBirth={match.playerOne.yearOfBirth}
+          playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
+          playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
+          playerFourYearOfBirth={match.playerFour?.yearOfBirth}
+          playerOneRating={match.playerOne.rating}
+          playerTwoRating={match.playerTwo.rating}
+          playerThreeRating={match.playerThree?.rating}
+          playerFourRating={match.playerFour?.rating}
           score={{ ...score, isTiebreak }}
           currentServer={currentServer}
           isInGame={isInGame}

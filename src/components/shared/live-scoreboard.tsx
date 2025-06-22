@@ -11,6 +11,14 @@ interface LiveScoreboardProps {
   playerTwoName: string
   playerThreeName?: string  // For doubles
   playerFourName?: string   // For doubles
+  playerOneYearOfBirth?: number
+  playerTwoYearOfBirth?: number
+  playerThreeYearOfBirth?: number
+  playerFourYearOfBirth?: number
+  playerOneRating?: string
+  playerTwoRating?: string
+  playerThreeRating?: string
+  playerFourRating?: string
   score: Score & { server?: "p1" | "p2", isTiebreak?: boolean, tiebreakPoints?: number[] }
   currentServer?: "p1" | "p2" | null
   status?: string
@@ -27,6 +35,14 @@ export function LiveScoreboard({
   playerTwoName,
   playerThreeName,
   playerFourName,
+  playerOneYearOfBirth,
+  playerTwoYearOfBirth,
+  playerThreeYearOfBirth,
+  playerFourYearOfBirth,
+  playerOneRating,
+  playerTwoRating,
+  playerThreeRating,
+  playerFourRating,
   score,
   currentServer,
   status = "In Progress",
@@ -46,6 +62,23 @@ export function LiveScoreboard({
   // Format team names for doubles
   const teamOneName = isDoubles ? `${playerOneName} / ${playerThreeName}` : playerOneName
   const teamTwoName = isDoubles ? `${playerTwoName} / ${playerFourName}` : playerTwoName
+  
+  // Format year and rating display for teams
+  const formatPlayerInfo = (year?: number, rating?: string) => {
+    if (!year && !rating) return undefined
+    if (year && rating) return `${year} (${rating})`
+    if (year) return year.toString()
+    if (rating) return `(${rating})`
+    return undefined
+  }
+  
+  const teamOneYear = isDoubles && (playerOneYearOfBirth || playerOneRating) && (playerThreeYearOfBirth || playerThreeRating)
+    ? `${formatPlayerInfo(playerOneYearOfBirth, playerOneRating)} / ${formatPlayerInfo(playerThreeYearOfBirth, playerThreeRating)}`
+    : formatPlayerInfo(playerOneYearOfBirth, playerOneRating)
+  
+  const teamTwoYear = isDoubles && (playerTwoYearOfBirth || playerTwoRating) && (playerFourYearOfBirth || playerFourRating)
+    ? `${formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)} / ${formatPlayerInfo(playerFourYearOfBirth, playerFourRating)}`
+    : formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)
   
   const getPointDisplay = (playerIndex: number) => {
     if (status !== "In Progress") return ""
@@ -105,6 +138,11 @@ export function LiveScoreboard({
                 />
               </motion.button>
               <div className="min-w-0 flex-1">
+                {teamOneYear && (
+                  <div className="text-xs text-muted-foreground">
+                    {teamOneYear}
+                  </div>
+                )}
                 <h3 className="font-medium text-sm sm:text-base truncate">
                   {teamOneName}
                 </h3>
@@ -166,6 +204,11 @@ export function LiveScoreboard({
                 />
               </motion.button>
               <div className="min-w-0 flex-1">
+                {teamTwoYear && (
+                  <div className="text-xs text-muted-foreground">
+                    {teamTwoYear}
+                  </div>
+                )}
                 <h3 className="font-medium text-sm sm:text-base truncate">
                   {teamTwoName}
                 </h3>

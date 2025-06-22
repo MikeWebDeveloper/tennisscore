@@ -225,12 +225,8 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 <div className="font-mono text-sm text-muted-foreground flex flex-wrap justify-end gap-x-2 gap-y-1">
                   {game.pointProgression.map((point, index) => (
                     <div key={index} className="inline-flex items-baseline gap-1 whitespace-nowrap">
-                      {/* Make the final point score bold if it's game-winning */}
-                      <span className={
-                        index === game.pointProgression.length - 1 && game.isCompleted 
-                          ? "text-foreground font-bold text-base" 
-                          : "text-foreground"
-                      }>
+                      {/* Show the score at the start of the point */}
+                      <span className="text-foreground">
                         {point.score}
                       </span>
                       {point.indicators.length > 0 && (
@@ -249,20 +245,18 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                           ))}
                         </span>
                       )}
-                      {index < game.pointProgression.length - 1 && (
-                        <span className="text-muted-foreground ml-1">→</span>
-                      )}
+                      <span className="text-muted-foreground ml-1">→</span>
                     </div>
                   ))}
-                  {game.isCompleted && game.gameScore && (
-                    <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
-                      <span className="text-muted-foreground">→</span>
-                      <span className="font-bold text-foreground text-base">
-                        {game.isTiebreak ? `Set ${game.gameScore}` : game.gameScore}
+                  {/* Show the final game score if the game is complete */}
+                  {game.isCompleted && (
+                     <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
+                        <span className="text-foreground font-bold text-base">
+                          {game.gameScore}
+                        </span>
                         {game.isBreak && !game.isTiebreak && (
                           <span className="text-xs text-red-500 ml-1">(BREAK)</span>
                         )}
-                      </span>
                     </div>
                   )}
                 </div>

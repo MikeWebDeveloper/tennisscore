@@ -158,6 +158,32 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="editClub" className="text-xs font-medium">Club</Label>
+              <Input 
+                id="editClub" 
+                name="club" 
+                placeholder="Tennis Club Name" 
+                defaultValue={player.club || ""}
+                className="text-sm h-8"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editPlayingHand" className="text-xs font-medium">Playing Hand</Label>
+              <select
+                id="editPlayingHand"
+                name="playingHand"
+                defaultValue={player.playingHand || ""}
+                className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select...</option>
+                <option value="right">Right</option>
+                <option value="left">Left</option>
+              </select>
+            </div>
+          </div>
+
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="editIsMainPlayer" 

@@ -12,6 +12,8 @@ export interface Player {
   lastName: string
   yearOfBirth?: number
   rating?: string
+  club?: string
+  playingHand?: 'right' | 'left'
   profilePictureId?: string
   isMainPlayer?: boolean
   isAnonymous?: boolean

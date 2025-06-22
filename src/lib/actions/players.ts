@@ -12,6 +12,8 @@ const playerSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   yearOfBirth: z.number().min(1900).max(2030).optional(),
   rating: z.string().max(50).optional(), // Allow flexible ratings like "H12", "4.5", "UTR 8.2"
+  club: z.string().max(100).optional(),
+  playingHand: z.enum(['right', 'left']).optional(),
   isMainPlayer: z.boolean().optional(),
 })
 
@@ -27,6 +29,8 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       lastName: formData.get("lastName") as string,
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
       rating: (formData.get("rating") as string) || undefined,
+      club: (formData.get("club") as string) || undefined,
+      playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
       isMainPlayer: formData.get("isMainPlayer") === "true",
     }
     
@@ -153,6 +157,8 @@ export async function updatePlayer(playerId: string, formData: FormData) {
     lastName: formData.get("lastName") as string,
     yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
     rating: (formData.get("rating") as string) || undefined,
+    club: (formData.get("club") as string) || undefined,
+    playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
     isMainPlayer: formData.get("isMainPlayer") === "true",
   }
   

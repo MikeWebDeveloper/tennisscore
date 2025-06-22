@@ -250,39 +250,74 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   Search by typing or scroll through options
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderPlayerSelect(
-                  playerOne, 
-                  setPlayerOne, 
-                  "Player 1", 
-                  [playerTwo, playerThree, playerFour].filter(Boolean)
-                )}
-                
-                {renderPlayerSelect(
-                  playerTwo, 
-                  setPlayerTwo, 
-                  "Player 2", 
-                  [playerOne, playerThree, playerFour].filter(Boolean)
-                )}
+              
+              {matchType === "singles" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {renderPlayerSelect(
+                    playerOne, 
+                    setPlayerOne, 
+                    "Player 1", 
+                    [playerTwo, playerThree, playerFour].filter(Boolean)
+                  )}
+                  
+                  {renderPlayerSelect(
+                    playerTwo, 
+                    setPlayerTwo, 
+                    "Player 2", 
+                    [playerOne, playerThree, playerFour].filter(Boolean)
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Team 1 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-sm font-medium text-muted-foreground px-2">Team 1</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-primary/20">
+                      {renderPlayerSelect(
+                        playerOne, 
+                        setPlayerOne, 
+                        "Player 1", 
+                        [playerTwo, playerThree, playerFour].filter(Boolean)
+                      )}
+                      
+                      {renderPlayerSelect(
+                        playerThree, 
+                        setPlayerThree, 
+                        "Player 3", 
+                        [playerOne, playerTwo, playerFour].filter(Boolean)
+                      )}
+                    </div>
+                  </div>
 
-                {matchType === "doubles" && (
-                  <>
-                    {renderPlayerSelect(
-                      playerThree, 
-                      setPlayerThree, 
-                      "Player 3", 
-                      [playerOne, playerTwo, playerFour].filter(Boolean)
-                    )}
-                    
-                    {renderPlayerSelect(
-                      playerFour, 
-                      setPlayerFour, 
-                      "Player 4", 
-                      [playerOne, playerTwo, playerThree].filter(Boolean)
-                    )}
-                  </>
-                )}
-              </div>
+                  {/* Team 2 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-sm font-medium text-muted-foreground px-2">Team 2</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-destructive/20">
+                      {renderPlayerSelect(
+                        playerTwo, 
+                        setPlayerTwo, 
+                        "Player 2", 
+                        [playerOne, playerThree, playerFour].filter(Boolean)
+                      )}
+                      
+                      {renderPlayerSelect(
+                        playerFour, 
+                        setPlayerFour, 
+                        "Player 4", 
+                        [playerOne, playerTwo, playerThree].filter(Boolean)
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

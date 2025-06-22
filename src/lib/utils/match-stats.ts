@@ -68,6 +68,8 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
     const isP1 = point.winner === 'p1'
     const isP1Serving = point.server === 'p1'
 
+
+
     // Count total points won
     stats.totalPointsWonByPlayer[isP1 ? 0 : 1]++
 
@@ -111,21 +113,23 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       if (isP1Serving) {
         // P1 is serving, so P1 faces break point
         stats.breakPointsByPlayer.faced[0]++
-        if (!isP1) {
-          // P2 won the break point
+        if (point.isGameWinning && !isP1) {
+          // P2 won the game on a break point (converted the break)
           stats.breakPointsByPlayer.converted[1]++
         } else {
-          // P1 saved the break point
+          // Either P1 won the break point (saved it) OR P2 won but game continues
+          // In both cases, count it as saved for the server
           stats.breakPointsByPlayer.saved[0]++
         }
       } else {
-        // P2 is serving, so P2 faces break point
+        // P2 is serving, so P2 faces break point  
         stats.breakPointsByPlayer.faced[1]++
-        if (isP1) {
-          // P1 won the break point
+        if (point.isGameWinning && isP1) {
+          // P1 won the game on a break point (converted the break)
           stats.breakPointsByPlayer.converted[0]++
         } else {
-          // P2 saved the break point
+          // Either P2 won the break point (saved it) OR P1 won but game continues
+          // In both cases, count it as saved for the server
           stats.breakPointsByPlayer.saved[1]++
         }
       }

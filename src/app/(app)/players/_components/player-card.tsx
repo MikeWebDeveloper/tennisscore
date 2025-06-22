@@ -67,6 +67,12 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                 {player.rating && (
                   <span>Rating: <span className="font-medium text-foreground">{player.rating}</span></span>
                 )}
+                {player.club && (
+                  <span>Club: <span className="font-medium text-foreground">{player.club}</span></span>
+                )}
+                {player.playingHand && (
+                  <span>Plays: <span className="font-medium text-foreground">{player.playingHand === 'left' ? 'Left-handed' : 'Right-handed'}</span></span>
+                )}
               </div>
             </div>
           </div>
