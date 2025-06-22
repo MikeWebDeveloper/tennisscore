@@ -16,7 +16,8 @@ import { toast } from "sonner"
 import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
 import { CreatePlayerDialog } from "../../../players/_components/create-player-dialog"
-import { MobileBottomNavSpacer } from "@/components/layout/mobile-bottom-nav"
+// Mobile spacer component to prevent content from being hidden behind bottom nav
+const MobileBottomNavSpacer = () => <div className="h-20 md:hidden" />
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
 interface CreateMatchFormProps {

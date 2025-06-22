@@ -21,6 +21,7 @@ import {
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
 import { User } from "@/lib/types"
+import { CollapsibleMobileNav } from "./collapsible-mobile-nav"
 
 interface AppShellProps {
   children: React.ReactNode
@@ -78,6 +79,8 @@ const overlayVariants = {
     transition: { duration: 0.2 }
   }
 }
+
+
 
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname()
@@ -370,38 +373,8 @@ export function AppShell({ children, user }: AppShellProps) {
           </div>
         </main>
 
-        {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border shadow-lg">
-          <div className="flex items-center justify-around py-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex flex-col items-center space-y-1 px-3 py-2 text-xs transition-all",
-                    isActive 
-                      ? "text-primary" 
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              )
-            })}
-            <Link
-              href="/matches/new"
-              className="flex flex-col items-center space-y-1 px-3 py-2 text-xs text-foreground font-medium"
-            >
-              <div className="h-8 w-8 rounded-full bg-foreground hover:bg-foreground/90 flex items-center justify-center shadow-sm">
-                <Plus className="h-4 w-4 text-background" />
-              </div>
-              <span>New</span>
-            </Link>
-          </div>
-        </nav>
+        {/* Enhanced Collapsible Mobile Bottom Navigation */}
+        <CollapsibleMobileNav navigation={navigation} />
       </div>
     </div>
   )
