@@ -161,7 +161,10 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
       rating: (formData.get("rating") as string) || undefined,
       club: (formData.get("club") as string) || undefined,
-      playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
+      playingHand: (() => {
+        const hand = formData.get("playingHand") as string
+        return hand && (hand === 'right' || hand === 'left') ? hand : undefined
+      })(),
       isMainPlayer: formData.get("isMainPlayer") === "true",
     }
     
