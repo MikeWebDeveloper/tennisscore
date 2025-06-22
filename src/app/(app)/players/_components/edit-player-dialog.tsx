@@ -25,11 +25,14 @@ interface EditPlayerDialogProps {
 export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDialogProps) {
   const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null)
   const [isMainPlayer, setIsMainPlayer] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (player && isOpen) {
       setEditPreviewImage(null)
       setIsMainPlayer(player.isMainPlayer || false)
+      setError(null)
     }
   }, [player, isOpen])
 
@@ -37,15 +40,27 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
     event.preventDefault()
     if (!player) return
     
-    const formData = new FormData(event.currentTarget)
-    // Explicitly set the isMainPlayer value
-    formData.set("isMainPlayer", isMainPlayer.toString())
+    setIsLoading(true)
+    setError(null)
     
-    const result = await updatePlayer(player.$id, formData)
-    if (result.success) {
-      onOpenChange(false)
-      setEditPreviewImage(null)
-      window.location.reload()
+    try {
+      const formData = new FormData(event.currentTarget)
+      // Explicitly set the isMainPlayer value
+      formData.set("isMainPlayer", isMainPlayer.toString())
+      
+      const result = await updatePlayer(player.$id, formData)
+      if (result.success) {
+        onOpenChange(false)
+        setEditPreviewImage(null)
+        window.location.reload()
+      } else if (result.error) {
+        setError(result.error)
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error("Error updating player:", err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -195,6 +210,12 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
             </Label>
           </div>
 
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-2">
+              {error}
+            </div>
+          )}
+
           <div className="flex gap-2 pt-2">
             <Button 
               type="button" 
@@ -202,11 +223,12 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
               onClick={() => onOpenChange(false)}
               className="flex-1 h-8 text-xs"
               size="sm"
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
-              Update Player
+            <Button type="submit" className="flex-1 h-8 text-xs" size="sm" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update Player"}
             </Button>
           </div>
         </form>

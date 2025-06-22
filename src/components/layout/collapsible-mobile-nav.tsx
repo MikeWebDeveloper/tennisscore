@@ -30,50 +30,29 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
     setIsCollapsed(true) // Auto-collapse after navigation
   }
 
-  // Find current active page for collapsed indicator
-  const currentItem = navigation.find(item => pathname === item.href) || 
-                     navigation.find(item => item.href !== "/dashboard" && pathname.startsWith(item.href))
-  const isNewMatchActive = pathname === "/matches/new"
-
   return (
     <motion.nav 
       initial={{ y: 0 }}
       className="fixed bottom-0 left-0 right-0 z-40"
     >
       <motion.div
-        animate={{ height: isCollapsed ? "4rem" : "auto" }}
+        animate={{ height: isCollapsed ? "2rem" : "auto" }}
         transition={{ type: "spring", stiffness: 400, damping: 40 }}
         className="bg-card border-t border-border shadow-lg relative overflow-hidden"
       >
-        {/* Collapse/Expand Handle */}
+        {/* Minimal Collapse/Expand Handle */}
         <motion.button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          whileTap={{ scale: 0.95 }}
-          className="w-full h-16 flex items-center justify-center bg-card/95 backdrop-blur-sm border-b border-border hover:bg-accent/50 transition-colors group relative"
+          whileTap={{ scale: 0.9 }}
+          className="w-full h-8 flex items-center justify-center bg-card/95 backdrop-blur-sm hover:bg-accent/50 transition-colors group"
           aria-label={isCollapsed ? "Expand navigation" : "Collapse navigation"}
         >
-          {/* Active page indicator when collapsed */}
-          {isCollapsed && (currentItem || isNewMatchActive) && (
-            <div className="absolute left-4 flex items-center space-x-2">
-              {isNewMatchActive ? (
-                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                  <Plus className="h-3 w-3 text-primary-foreground" />
-                </div>
-              ) : currentItem ? (
-                <currentItem.icon className="h-5 w-5 text-primary" />
-              ) : null}
-              <span className="text-sm font-medium text-foreground">
-                {isNewMatchActive ? "New Match" : currentItem?.label}
-              </span>
-            </div>
-          )}
-          
           <motion.div
             animate={{ rotate: isCollapsed ? 0 : 180 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="group-hover:scale-110 transition-transform"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            className="group-hover:scale-125 transition-transform"
           >
-            <ChevronUp className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+            <ChevronUp className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
           </motion.div>
         </motion.button>
 
@@ -85,7 +64,7 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0, transition: { delay: 0.1, duration: 0.3 } }}
               exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
-              className="px-4 py-4"
+              className="px-4 py-3"
             >
               <div className="flex items-center justify-around">
                 {navigation.map((item) => {

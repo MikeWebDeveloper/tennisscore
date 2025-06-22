@@ -149,20 +149,22 @@ export async function getMainPlayer(): Promise<Player | null> {
 }
 
 export async function updatePlayer(playerId: string, formData: FormData) {
-  const user = await getCurrentUser()
-  if (!user) throw new Error("Unauthorized")
-  
-  const data = {
-    firstName: formData.get("firstName") as string,
-    lastName: formData.get("lastName") as string,
-    yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
-    rating: (formData.get("rating") as string) || undefined,
-    club: (formData.get("club") as string) || undefined,
-    playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
-    isMainPlayer: formData.get("isMainPlayer") === "true",
-  }
-  
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { error: "Unauthorized" }
+    }
+    
+    const data = {
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
+      rating: (formData.get("rating") as string) || undefined,
+      club: (formData.get("club") as string) || undefined,
+      playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
+      isMainPlayer: formData.get("isMainPlayer") === "true",
+    }
+    
     const validatedData = playerSchema.parse(data)
     
     const { databases, storage } = await createAdminClient()
