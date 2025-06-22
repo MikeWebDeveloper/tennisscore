@@ -164,17 +164,19 @@ export function LiveScoreboard({
             
             {/* Scores */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Set scores - show on larger screens */}
+              {/* Set scores - show previous sets inline */}
               {score.sets.length > 0 && (
-                <div className="hidden sm:flex items-center gap-1">
-                  {score.sets.map((set, idx) => (
-                    <div key={idx} className="text-xs font-mono w-4 text-center">
-                      {set[0]}
-                    </div>
-                  ))}
+                <>
+                  <div className="flex items-center gap-1">
+                    {score.sets.map((set, idx) => (
+                      <div key={idx} className="text-xs font-mono w-4 text-center">
+                        {set[0]}
+                      </div>
+                    ))}
+                  </div>
                   {/* Divider after played sets */}
-                  <div className="w-px h-4 bg-border mx-1"></div>
-                </div>
+                  <div className="w-px h-4 bg-border"></div>
+                </>
               )}
               
               {/* Current game score */}
@@ -235,17 +237,19 @@ export function LiveScoreboard({
             
             {/* Scores */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Set scores - show on larger screens */}
+              {/* Set scores - show previous sets inline */}
               {score.sets.length > 0 && (
-                <div className="hidden sm:flex items-center gap-1">
-                  {score.sets.map((set, idx) => (
-                    <div key={idx} className="text-xs font-mono w-4 text-center">
-                      {set[1]}
-                    </div>
-                  ))}
+                <>
+                  <div className="flex items-center gap-1">
+                    {score.sets.map((set, idx) => (
+                      <div key={idx} className="text-xs font-mono w-4 text-center">
+                        {set[1]}
+                      </div>
+                    ))}
+                  </div>
                   {/* Divider after played sets */}
-                  <div className="w-px h-4 bg-border mx-1"></div>
-                </div>
+                  <div className="w-px h-4 bg-border"></div>
+                </>
               )}
               
               {/* Current game score */}
@@ -265,20 +269,7 @@ export function LiveScoreboard({
         </div>
       </div>
       
-      {/* Set scores for mobile when sets exist */}
-      {score.sets.length > 0 && (
-        <div className="border-t p-2 sm:hidden">
-          <div className="text-xs text-muted-foreground text-center mb-1">Sets</div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="text-center font-mono">
-              {teamOneName.split(' ')[0]}: {score.sets.map(s => s[0]).join(' ')}
-            </div>
-            <div className="text-center font-mono">
-              {teamTwoName.split(' ')[0]}: {score.sets.map(s => s[1]).join(' ')}
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 } 
