@@ -5,6 +5,7 @@ import React from "react"
 import { PointDetail } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { useTranslations } from "@/hooks/use-translations"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -42,71 +43,92 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
     return <div className="text-center text-muted-foreground p-8">No point data available.</div>
   }
 
-  const pointsBySetAndGame = pointLog.reduce((acc, point) => {
-    const setKey = `set-${point.setNumber}`
-    if (!acc[setKey]) acc[setKey] = {}
-    const gameKey = `game-${point.gameNumber}`
-    if (!acc[setKey][gameKey]) acc[setKey][gameKey] = []
-    acc[setKey][gameKey].push(point)
+  // Group points by set
+  const pointsBySets = pointLog.reduce((acc, point) => {
+    const setNumber = point.setNumber
+    if (!acc[setNumber]) acc[setNumber] = []
+    acc[setNumber].push(point)
     return acc
-  }, {} as Record<string, Record<string, PointDetail[]>>)
+  }, {} as Record<number, PointDetail[]>)
+
+  const setNumbers = Object.keys(pointsBySets).map(Number).sort((a, b) => a - b)
+  const defaultSet = setNumbers[setNumbers.length - 1]?.toString() || "1"
 
   return (
-    <div className="space-y-1">
-      {Object.entries(pointsBySetAndGame).map(([setKey, games]) => (
-        <div key={setKey} className="space-y-1">
-          <h3 className="text-sm font-semibold uppercase text-muted-foreground p-2 tracking-wider">{t('set')} {setKey.split('-')[1]}</h3>
-          {Object.entries(games).map(([gameKey, pointsInGame]) => {
-            const firstPoint = pointsInGame[0];
-            if (!firstPoint) return null;
+    <Tabs defaultValue={defaultSet} className="w-full">
+      <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${setNumbers.length}, 1fr)` }}>
+        {setNumbers.map(setNumber => (
+          <TabsTrigger key={setNumber} value={setNumber.toString()}>
+            {t('set')} {setNumber}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      
+      {setNumbers.map(setNumber => {
+        const setPoints = pointsBySets[setNumber]
+        
+        // Group points by game within this set
+        const pointsByGame = setPoints.reduce((acc, point) => {
+          const gameKey = `game-${point.gameNumber}`
+          if (!acc[gameKey]) acc[gameKey] = []
+          acc[gameKey].push(point)
+          return acc
+        }, {} as Record<string, PointDetail[]>)
+        
+        return (
+          <TabsContent key={setNumber} value={setNumber.toString()} className="space-y-1 mt-4">
+            {Object.entries(pointsByGame).map(([gameKey, pointsInGame]) => {
+              const firstPoint = pointsInGame[0];
+              if (!firstPoint) return null;
 
-            const lastPoint = pointsInGame[pointsInGame.length - 1];
-            const isBreak = lastPoint.isGameWinning && lastPoint.server !== lastPoint.winner;
-            const finalGameScore = getGameScoreAfterGame(pointsInGame, pointLog);
+              const lastPoint = pointsInGame[pointsInGame.length - 1];
+              const isBreak = lastPoint.isGameWinning && lastPoint.server !== lastPoint.winner;
+              const finalGameScore = getGameScoreAfterGame(pointsInGame, pointLog);
 
-            return (
-              <div key={gameKey} className="py-4 px-2 border-b border-border/50 text-center">
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex-1 text-right">
-                    {firstPoint.server === 'p2' && (
-                      <div className="inline-flex items-center gap-2 justify-end">
-                        {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}
-                        <TennisBallIcon isServing={true} className="w-5 h-5" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-center gap-2 font-mono text-3xl font-bold px-4">
-                    <span>{finalGameScore.p1}</span>
-                    <span className="text-muted-foreground">-</span>
-                    <span>{finalGameScore.p2}</span>
-                  </div>
-                  <div className="flex-1 text-left">
-                    {firstPoint.server === 'p1' && (
-                      <div className="inline-flex items-center gap-2 justify-start">
-                        <TennisBallIcon isServing={true} className="w-5 h-5" />
-                        {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
-                  {pointsInGame.map((point) => (
-                    <div key={point.id} className="inline-flex items-center gap-1">
-                      <span className="text-xs">
-                        {point.gameScore.replace(/-/g, ':')}
-                      </span>
-                      {point.isBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">BP</Badge>}
-                      {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">SP</Badge>}
-                      {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">MP</Badge>}
+              return (
+                <div key={gameKey} className="py-4 px-2 border-b border-border/50 text-center">
+                  <div className="flex items-center justify-center w-full">
+                    <div className="flex-1 text-right">
+                      {firstPoint.server === 'p2' && (
+                        <div className="inline-flex items-center gap-2 justify-end">
+                          {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}
+                          <TennisBallIcon isServing={true} className="w-5 h-5" />
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    <div className="flex items-center justify-center gap-2 font-mono text-3xl font-bold px-4">
+                      <span>{finalGameScore.p1}</span>
+                      <span className="text-muted-foreground">-</span>
+                      <span>{finalGameScore.p2}</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      {firstPoint.server === 'p1' && (
+                        <div className="inline-flex items-center gap-2 justify-start">
+                          <TennisBallIcon isServing={true} className="w-5 h-5" />
+                          {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
+                    {pointsInGame.map((point) => (
+                      <div key={point.id} className="inline-flex items-center gap-1">
+                        <span className="text-xs">
+                          {point.gameScore.replace(/-/g, ':')}
+                        </span>
+                        {point.isBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">BP</Badge>}
+                        {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">SP</Badge>}
+                        {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">MP</Badge>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
-      ))}
-    </div>
+              )
+            })}
+          </TabsContent>
+        )
+      })}
+    </Tabs>
   )
 } 

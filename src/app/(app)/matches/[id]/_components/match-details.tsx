@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
-import { MatchStatsComponentSimple as MatchStatsComponentSimpleFixed } from "./match-stats"
+import { MatchStatsComponentSimpleFixed } from "./match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/hooks/use-translations"
@@ -631,7 +631,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               p1: getTeamName("team1"),
               p2: getTeamName("team2")
             }}
-            detailLevel="simple"
+            detailLevel={(() => {
+              try {
+                const format = JSON.parse(match.matchFormat)
+                return format.detailLevel || "simple"
+              } catch {
+                return "simple"
+              }
+            })()}
+            pointLog={match.pointLog.map(pointStr => {
+              try {
+                return JSON.parse(pointStr) as PointDetail
+              } catch {
+                return null
+              }
+            }).filter((point): point is PointDetail => point !== null)}
           />
         </TabsContent>
 

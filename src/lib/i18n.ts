@@ -163,8 +163,9 @@ export interface Translations {
   statsTab: string
   pointsTab: string
   commentaryTab: string
-  undo: string
-  firstServe: string
+      undo: string
+    firstServe: string
+    match: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -216,7 +217,7 @@ const translations: Record<Locale, Translations> = {
     right: "Right",
     
     // Match details
-    matchDetails: "Match Details",
+    matchDetails: "Match details",
     overview: "Overview",
     pointLog: "Point Log",
     statistics: "Statistics",
@@ -332,6 +333,7 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Commentary",
     undo: "Undo",
     firstServe: "1st Serve",
+    match: "Match",
   },
   cs: {
     // Common
@@ -497,6 +499,7 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Komentář",
     undo: "Zpět",
     firstServe: "1. podání",
+    match: "Zápas",
   }
 }
 

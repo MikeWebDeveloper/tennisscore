@@ -33,7 +33,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useTranslations } from "@/hooks/use-translations"
 
-import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
+import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
 
@@ -692,20 +692,20 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </TabsList>
           
           <TabsContent value="stats" className="mt-4">
-            <MatchStatsComponentSimple 
+            <MatchStatsComponentSimpleFixed 
               stats={calculateMatchStats(convertedPointLog)}
               playerNames={{
                 p1: playerNames.p1,
                 p2: playerNames.p2
               }}
               detailLevel={detailLevel}
+              pointLog={convertedPointLog}
             />
           </TabsContent>
           
           <TabsContent value="points" className="mt-4">
             <PointByPointView 
               pointLog={convertedPointLog} 
-              playerNames={playerNames}
             />
           </TabsContent>
           
