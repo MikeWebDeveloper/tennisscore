@@ -36,24 +36,21 @@ export function LanguageToggle({ className }: { className?: string }) {
     )
   }
 
+  const toggleLanguage = () => {
+    setLocale(locale === 'en' ? 'cs' : 'en')
+  }
+
   return (
-    <div className={cn("flex items-center space-x-1 bg-muted rounded-md p-1", className)}>
-      <Button
-        variant={locale === 'en' ? "default" : "ghost"}
-        size="sm"
-        onClick={() => setLocale('en')}
-        className="h-8 w-8 p-0"
-      >
-        <span className="text-base">🇬🇧</span>
-      </Button>
-      <Button
-        variant={locale === 'cs' ? "default" : "ghost"}
-        size="sm"
-        onClick={() => setLocale('cs')}
-        className="h-8 w-8 p-0"
-      >
-        <span className="text-base">🇨🇿</span>
-      </Button>
-    </div>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={toggleLanguage}
+      className={cn("h-8 w-8 p-0", className)}
+      title={`Switch to ${locale === 'en' ? 'Czech' : 'English'}`}
+    >
+      <span className="text-base">
+        {locale === 'en' ? '🇬🇧' : '🇨🇿'}
+      </span>
+    </Button>
   )
 } 

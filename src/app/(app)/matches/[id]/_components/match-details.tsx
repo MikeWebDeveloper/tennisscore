@@ -148,21 +148,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       <div className="block md:hidden">
         <div className="w-full bg-background border-b">
           {/* Top row: Back button and Share button */}
-          <div className="flex items-center justify-between p-3">
-            <Button variant="outline" size="sm" asChild className="flex items-center gap-2">
+          <div className="flex items-center justify-between p-2">
+            <Button variant="outline" size="sm" asChild className="flex items-center gap-1 text-xs px-2 py-1 h-8">
               <Link href="/matches">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm">{t('backToMatches')}</span>
+                <ArrowLeft className="h-3 w-3" />
+                <span>{t('backToMatches')}</span>
               </Link>
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleShareMatch}
-              className={`flex items-center gap-2 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
+              className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
             >
-              <Share2 className="h-4 w-4" />
-              <span className="text-sm">{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
+              <Share2 className="h-3 w-3" />
+              <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
             </Button>
           </div>
 
