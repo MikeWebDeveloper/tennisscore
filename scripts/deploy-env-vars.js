@@ -1,66 +1,48 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+/**
+ * Script to help with Vercel environment variable deployment
+ */
 
-console.log('🚀 Deploying environment variables to Vercel...');
-
-// Read environment variables from .env.local
-const envPath = path.join(__dirname, '..', '.env.local');
-const envContent = fs.readFileSync(envPath, 'utf8');
-
-const envVars = {};
-envContent.split('\n').forEach(line => {
-  if (line.trim() && !line.startsWith('#')) {
-    const [key, ...valueParts] = line.split('=');
-    if (key && valueParts.length > 0) {
-      envVars[key.trim()] = valueParts.join('=').trim();
-    }
-  }
-});
-
-// Environment variables to deploy
-const varsToSet = [
+const requiredEnvVars = [
   'NEXT_PUBLIC_APPWRITE_ENDPOINT',
-  'NEXT_PUBLIC_APPWRITE_PROJECT',
-  'NEXT_PUBLIC_APPWRITE_DATABASE_ID',
-  'NEXT_PUBLIC_APPWRITE_PLAYERS_COLLECTION_ID',
-  'NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID',
+  'NEXT_PUBLIC_APPWRITE_PROJECT', 
   'APPWRITE_API_KEY',
   'APPWRITE_DATABASE_ID',
   'APPWRITE_PLAYERS_COLLECTION_ID',
   'APPWRITE_MATCHES_COLLECTION_ID',
-  'APPWRITE_PROFILE_PICTURES_BUCKET_ID',
-  'SESSION_SECRET'
-];
+  'NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID',
+  'APPWRITE_PROFILE_PICTURES_BUCKET_ID'
+]
 
-// Set each environment variable
-for (const varName of varsToSet) {
-  if (envVars[varName]) {
-    try {
-      console.log(`Setting ${varName}...`);
-      
-      // Use echo to pipe the value to vercel env add
-      const command = `echo "${envVars[varName]}" | vercel env add ${varName} production`;
-      execSync(command, { stdio: 'inherit' });
-      
-      console.log(`✅ ${varName} set successfully`);
-    } catch (error) {
-      console.error(`❌ Failed to set ${varName}:`, error.message);
+console.log('🚀 TennisScore Vercel Environment Variables Setup')
+console.log('=' .repeat(50))
+
+console.log('\n📋 Required Environment Variables:')
+requiredEnvVars.forEach(envVar => {
+  const value = process.env[envVar]
+  const status = value ? '✅' : '❌'
+  console.log(`${status} ${envVar}${value ? ` = ${value.substring(0, 20)}...` : ' (missing)'}`)
+})
+
+console.log('\n🔧 To set these in Vercel:')
+console.log('1. Go to your Vercel project dashboard')
+console.log('2. Navigate to Settings > Environment Variables')
+console.log('3. Add each required variable with their values')
+
+console.log('\n💡 Tips:')
+console.log('- NEXT_PUBLIC_ variables are exposed to the browser')
+console.log('- Non-NEXT_PUBLIC_ variables are server-side only')
+console.log('- Make sure bucket ID matches your Appwrite setup')
+
+if (process.argv.includes('--vercel-commands')) {
+  console.log('\n📝 Vercel CLI Commands:')
+  requiredEnvVars.forEach(envVar => {
+    const value = process.env[envVar]
+    if (value) {
+      console.log(`vercel env add ${envVar} production`)
     }
-  } else {
-    console.warn(`⚠️  ${varName} not found in .env.local`);
-  }
+  })
 }
 
-console.log('\n🎉 Environment variables deployment complete!');
-console.log('🔄 Triggering new deployment...');
-
-// Trigger a new deployment
-try {
-  execSync('vercel --prod', { stdio: 'inherit' });
-  console.log('✅ Deployment triggered successfully!');
-} catch (error) {
-  console.error('❌ Failed to trigger deployment:', error.message);
-} 
+console.log('\n✨ After setting variables, redeploy your application') 

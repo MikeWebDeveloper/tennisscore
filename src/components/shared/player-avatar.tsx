@@ -15,9 +15,22 @@ export function PlayerAvatar({ player, className }: PlayerAvatarProps) {
   const initials = `${player.firstName.charAt(0)}${player.lastName.charAt(0)}`
   
   // Build full profile picture URL if profilePictureId exists
-  const profilePictureUrl = player.profilePictureId 
-    ? `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
-    : player.profilePictureUrl
+  let profilePictureUrl = player.profilePictureUrl
+  
+  if (player.profilePictureId) {
+    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
+    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID || 'profile-pictures-bucket-id'
+    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
+    
+    // Debug log for production issues
+    if (typeof window !== 'undefined' && (!endpoint || !projectId || bucketId === 'profile-pictures-bucket-id')) {
+      console.warn('Missing environment variables:', { endpoint, bucketId, projectId })
+    }
+    
+    if (endpoint && projectId) {
+      profilePictureUrl = `${endpoint}/storage/buckets/${bucketId}/files/${player.profilePictureId}/view?project=${projectId}`
+    }
+  }
 
   return (
     <Avatar className={className}>

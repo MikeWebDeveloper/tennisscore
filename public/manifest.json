@@ -105,14 +105,5 @@
     }
   ],
   "related_applications": [],
-  "prefer_related_applications": false,
-  "share_target": {
-    "action": "/matches/new",
-    "method": "GET",
-    "params": {
-      "title": "name",
-      "text": "description",
-      "url": "url"
-    }
-  }
+  "prefer_related_applications": false
 } 
