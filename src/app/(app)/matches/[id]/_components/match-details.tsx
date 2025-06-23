@@ -601,14 +601,6 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               )
             }
 
-            // Prepare player names for PointByPointView
-            const playerNames = {
-              p1: getTeamName("team1"),
-              p2: getTeamName("team2"),
-              p3: isDoubles ? match.playerThree?.firstName : undefined,
-              p4: isDoubles ? match.playerFour?.firstName : undefined
-            }
-
             return (
               <Card>
                 <CardHeader>
@@ -618,7 +610,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PointByPointView pointLog={pointDetails} playerNames={playerNames} />
+                  <PointByPointView pointLog={pointDetails} />
                 </CardContent>
               </Card>
             )

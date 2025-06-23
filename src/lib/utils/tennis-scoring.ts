@@ -1,3 +1,5 @@
+import { MatchFormat, PointDetail, Score } from "@/stores/matchStore"
+
 // Tennis Scoring Utilities
 
 export interface TennisScore {
@@ -9,15 +11,6 @@ export interface TennisScore {
   setNumber?: number
   isTiebreak?: boolean // Is current game a tiebreak?
   tiebreakPoints?: number[] // [p1Points, p2Points] in tiebreak
-}
-
-export interface MatchFormat {
-  sets: 1 | 3 | 5 // Best of 1, 3, or 5 sets
-  noAd: boolean // No-advantage scoring
-  tiebreak: boolean // Tiebreak at 6-6
-  finalSetTiebreak: boolean // Tiebreak in final set
-  finalSetTiebreakAt?: number // Points for final set tiebreak (e.g., 10)
-  shortSets?: boolean // First to 4 games (for practice)
 }
 
 export interface GameScoreDisplay {
@@ -292,4 +285,65 @@ export function getTennisScore(p1Points: number, p2Points: number): string {
   const p1Score = TENNIS_SCORES[Math.min(p1Points, 3)] || "40"
   const p2Score = TENNIS_SCORES[Math.min(p2Points, 3)] || "40"
   return `${p1Score}-${p2Score}`
-} 
+}
+
+/**
+ * Calculates the entire match score based on a log of points.
+ * This serves as the single source of truth for the score state.
+ * @param log The array of PointDetail objects.
+ * @param format The format of the match.
+ * @returns The calculated Score object.
+ */
+export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Score => {
+  const newScore: Score = {
+    sets: [],
+    games: [0, 0],
+    points: [0, 0],
+    isTiebreak: false,
+    tiebreakPoints: [0, 0],
+  };
+
+  const setsToWin = Math.ceil(format.sets / 2);
+
+  for (const point of log) {
+    const p1SetsWon = newScore.sets.filter(s => s[0] > s[1]).length;
+    const p2SetsWon = newScore.sets.filter(s => s[1] > s[0]).length;
+
+    if (p1SetsWon >= setsToWin || p2SetsWon >= setsToWin) {
+      break; 
+    }
+    
+    const winnerIdx = point.winner === 'p1' ? 0 : 1;
+
+    if (newScore.isTiebreak) {
+      newScore.tiebreakPoints![winnerIdx]++;
+      const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
+      const tiebreakTarget = (isDecidingSet && format.finalSetTiebreak) ? (format.finalSetTiebreakAt || 10) : 7;
+
+      if (isTiebreakWon(newScore.tiebreakPoints![0], newScore.tiebreakPoints![1], tiebreakTarget)) {
+        newScore.games[winnerIdx]++;
+        newScore.sets.push([...newScore.games]);
+        newScore.games = [0, 0];
+        newScore.isTiebreak = false;
+        newScore.tiebreakPoints = [0, 0];
+      }
+    } else {
+      newScore.points[winnerIdx]++;
+      if (isGameWon(newScore.points[0], newScore.points[1], format.noAd)) {
+        newScore.games[winnerIdx]++;
+        newScore.points = [0, 0];
+
+        const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
+        
+        if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || !format.finalSetTiebreak)) {
+            newScore.isTiebreak = true;
+            newScore.initialTiebreakServer = point.server === 'p1' ? (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p1' : 'p2' : (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p2' : 'p1';
+        } else if (isSetWon(newScore.games[0], newScore.games[1], format)) {
+            newScore.sets.push([...newScore.games]);
+            newScore.games = [0, 0];
+        }
+      }
+    }
+  }
+  return newScore;
+}; 

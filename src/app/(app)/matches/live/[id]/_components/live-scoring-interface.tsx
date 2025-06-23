@@ -31,6 +31,7 @@ import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useTranslations } from "@/hooks/use-translations"
 
 import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
@@ -204,6 +205,7 @@ function PointEntry({
 
 export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
+  const t = useTranslations()
   
   // Use match store
   const { 
@@ -423,49 +425,25 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Reset serve type back to first serve for next point
       setServeType('first')
 
-      // Prepare update data with match completion if necessary
-      const updateData: {
-        score: Score
-        pointLog: StorePointDetail[]
-        status?: "In Progress" | "Completed"
-        winnerId?: string
-        startTime?: string
-        endTime?: string
-        duration?: number
+      // The server action will now handle updating start/end times
+      const updatePayload: {
+        score: Score;
+        pointLog: object[];
+        status?: 'Completed';
+        winnerId?: string;
       } = {
         score: result.newScore,
-        pointLog: [...pointLog, result.pointDetail]
+        pointLog: [...pointLog, result.pointDetail],
       }
-      
-      if (result.isMatchComplete && result.winnerId) {
-        updateData.status = "Completed"
-        updateData.winnerId = result.winnerId
-      }
-
-      // Add timing data if available
-      if (result.startTime) {
-        updateData.startTime = result.startTime
-      }
-      if (result.endTime) {
-        updateData.endTime = result.endTime
-      }
-      if (result.duration !== undefined) {
-        updateData.duration = result.duration
-      }
-
-      console.log("About to save to database:", {
-        matchId: match.$id,
-        updateData,
-        pointLogLength: updateData.pointLog.length,
-        isMatchComplete: result.isMatchComplete,
-        newScore: result.newScore
-      })
-
-      await updateMatchScore(match.$id, updateData)
-
-      console.log("Successfully saved to database")
 
       if (result.isMatchComplete) {
+        updatePayload.status = 'Completed'
+        updatePayload.winnerId = result.winnerId
+      }
+
+      await updateMatchScore(match.$id, updatePayload)
+
+      if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
         toast.success(`Match completed! ${winnerName} wins!`)
         
@@ -690,7 +668,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             className="flex items-center gap-2"
           >
             <Undo className="h-4 w-4" />
-            Undo
+            {t('undo')}
           </Button>
 
           <div className="flex items-center gap-2">
@@ -700,7 +678,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               onCheckedChange={handleServeTypeChange}
             />
             <Label htmlFor="serve-type" className="text-sm">
-              {serveType === 'first' ? '1st' : '2nd'} Serve
+              {t('firstServe')}
             </Label>
           </div>
         </div>
@@ -708,9 +686,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         {/* Tabs */}
         <Tabs defaultValue="stats" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="stats">Stats</TabsTrigger>
-            <TabsTrigger value="points">Points</TabsTrigger>
-            <TabsTrigger value="commentary">Commentary</TabsTrigger>
+            <TabsTrigger value="stats">{t('statsTab')}</TabsTrigger>
+            <TabsTrigger value="points">{t('pointsTab')}</TabsTrigger>
+            <TabsTrigger value="commentary">{t('commentaryTab')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="stats" className="mt-4">

@@ -155,6 +155,16 @@ export interface Translations {
   cannotChangeServer: string
   switchServer: string
   liveScoreboard: string
+  // New keys for point-by-point view
+  server: string
+  game: string
+  lostServe: string
+  // New keys for live scoring tabs
+  statsTab: string
+  pointsTab: string
+  commentaryTab: string
+  undo: string
+  firstServe: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -312,7 +322,16 @@ const translations: Record<Locale, Translations> = {
     changeServer: "Change Server",
     cannotChangeServer: "Cannot change server after match has started.",
     switchServer: "Switch server",
-    liveScoreboard: "Live Scoreboard"
+    liveScoreboard: "Live Scoreboard",
+    // New keys
+    server: "Server",
+    game: "Game",
+    lostServe: "LOST SERVE",
+    statsTab: "Stats",
+    pointsTab: "Points",
+    commentaryTab: "Commentary",
+    undo: "Undo",
+    firstServe: "1st Serve",
   },
   cs: {
     // Common
@@ -468,7 +487,16 @@ const translations: Record<Locale, Translations> = {
     changeServer: "Změnit podávajícího",
     cannotChangeServer: "Nelze změnit podávajícího po začátku zápasu.",
     switchServer: "Přepnout podávajícího",
-    liveScoreboard: "Živé skóre"
+    liveScoreboard: "Živé skóre",
+    // New keys
+    server: "Podání",
+    game: "Hra",
+    lostServe: "ZTRACENÉ PODÁNÍ",
+    statsTab: "Statistiky",
+    pointsTab: "Body",
+    commentaryTab: "Komentář",
+    undo: "Zpět",
+    firstServe: "1. podání",
   }
 }
 
