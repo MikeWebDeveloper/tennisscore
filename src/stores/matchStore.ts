@@ -276,14 +276,48 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         const temp_p1_score = p1Score + (winner === 'p1' ? 1 : 0)
         const temp_p2_score = p2Score + (winner === 'p2' ? 1 : 0)
         
+        // FIXED: Check if this IS a break point (receiver can win the game)
+        // This should be checked BEFORE awarding the point, based on current score
+        if (winner !== currentServer) {
+            // Receiver is winning this point, check if this will win the game
+            if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
+                isThisPointBreakPoint = true
+                isThisPointGameWinning = true
+            } else {
+                // Not a game-winning point, but check if receiver is one point away from winning
+                // This is when we should show "BP" - when receiver can break on the next point
+                const receiverScore = currentServer === 'p1' ? p2Score : p1Score
+                const serverScore = currentServer === 'p1' ? p1Score : p2Score
+                
+                // Current score after this point
+                const newReceiverScore = receiverScore + 1
+                const newServerScore = serverScore
+                
+                // Check if receiver would be in position to win the game
+                if (newReceiverScore >= 3 && (newReceiverScore >= newServerScore || newReceiverScore > newServerScore)) {
+                    // Check various break point scenarios
+                    if (newReceiverScore >= 4 && newReceiverScore >= newServerScore + 2) {
+                        // Already winning
+                        isThisPointBreakPoint = true
+                    } else if (newReceiverScore >= 3 && newServerScore < 3) {
+                        // Leading with 40-love, 40-15, or 40-30
+                        isThisPointBreakPoint = true
+                    } else if (newReceiverScore >= 4 && newServerScore >= 3 && newReceiverScore > newServerScore) {
+                        // Advantage situation
+                        isThisPointBreakPoint = true
+                    }
+                }
+            }
+        } else {
+            // Server is winning this point, check if this will win the game
+            if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
+                isThisPointGameWinning = true
+            }
+        }
+        
         // Check if this wins the game
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
             isThisPointGameWinning = true
-            
-            // Check if it's a break point (receiver wins)
-            if (winner !== currentServer) {
-                isThisPointBreakPoint = true
-            }
             
             // Check if this wins the set
             const tempGames = [...previousScore.games] as [number, number];
@@ -300,21 +334,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
                 }
-            }
-        } else {
-            // Not a game-winning point, but could still be a break/set/match point
-            // Check for break point - receiver is one point away from winning
-            const receiverScore = currentServer === 'p1' ? p2Score : p1Score
-            const serverScore = currentServer === 'p1' ? p1Score : p2Score
-            
-            // Simulate receiver winning next point
-            const tempReceiverScore = receiverScore + 1
-            if (isGameWon(
-                currentServer === 'p1' ? serverScore : tempReceiverScore,
-                currentServer === 'p1' ? tempReceiverScore : serverScore,
-                matchFormat.noAd
-            )) {
-                isThisPointBreakPoint = true
             }
         }
     }

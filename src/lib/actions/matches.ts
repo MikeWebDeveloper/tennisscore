@@ -229,10 +229,12 @@ export async function getMatch(matchId: string) {
   const { databases } = await createAdminClient()
   
   try {
-    const match = await databases.getDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      matchId
+    const match = await withRetry(() =>
+      databases.getDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        matchId
+      )
     )
     
     return match
@@ -247,7 +249,7 @@ export async function getMatch(matchId: string) {
         throw new Error("Match not found")
       } else if (err.code === 401 || err.type === 'general_unauthorized_scope') {
         throw new Error("Unauthorized access to match")
-      } else if (err.message?.includes('fetch failed') || err.message?.includes('network')) {
+      } else if (err.message?.includes('fetch failed') || err.message?.includes('network') || err.message?.includes('ECONNRESET')) {
         throw new Error("Network error - please check your connection")
       }
     }
