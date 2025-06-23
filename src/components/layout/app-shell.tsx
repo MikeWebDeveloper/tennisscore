@@ -17,7 +17,8 @@ import {
   Plus,
   Sun,
   Moon,
-  LogOut
+  LogOut,
+  Settings
 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
@@ -220,7 +221,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
             {/* User Profile */}
             <div className="p-4 border-t border-border">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 mb-2">
                 <Avatar className="h-10 w-10 border border-border">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-muted text-muted-foreground font-medium">
@@ -233,11 +234,18 @@ export function AppShell({ children, user }: AppShellProps) {
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
-                <form action={signOut}>
-                  <Button variant="ghost" size="sm" type="submit" className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
-                    <LogOut className="h-4 w-4" />
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" asChild className="hover:bg-accent text-muted-foreground">
+                    <Link href="/settings">
+                      <Settings className="h-4 w-4" />
+                    </Link>
                   </Button>
-                </form>
+                  <form action={signOut}>
+                    <Button variant="ghost" size="sm" type="submit" className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -382,12 +390,20 @@ export function AppShell({ children, user }: AppShellProps) {
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                       </div>
                     </div>
-                    <form action={signOut}>
-                      <Button variant="ghost" size="sm" type="submit" className="w-full hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-border">
-                        <LogOut className="h-4 w-4 mr-2" />
-                        {t('signOut')}
+                    <div className="space-y-2">
+                      <Button variant="ghost" size="sm" asChild className="w-full hover:bg-accent text-muted-foreground border border-border" onClick={() => setSidebarOpen(false)}>
+                        <Link href="/settings">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Settings
+                        </Link>
                       </Button>
-                    </form>
+                      <form action={signOut}>
+                        <Button variant="ghost" size="sm" type="submit" className="w-full hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-border">
+                          <LogOut className="h-4 w-4 mr-2" />
+                          {t('signOut')}
+                        </Button>
+                      </form>
+                    </div>
                   </div>
                 </div>
               </motion.aside>

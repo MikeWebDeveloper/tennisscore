@@ -25,6 +25,15 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL("https://tenscr.app"),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TennisScore",
+    startupImage: [
+      "/icons/icon-512x512.png"
+    ]
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
