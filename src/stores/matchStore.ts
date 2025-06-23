@@ -284,11 +284,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         // GAME WINNING: This point wins the game
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
             isThisPointGameWinning = true
-        }
-        
-        // Check if this wins the game
-        if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
-            isThisPointGameWinning = true
             
             // Check if this wins the set
             const tempGames = [...previousScore.games] as [number, number];
@@ -307,6 +302,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 }
             }
         }
+
     }
 
     // --- Create a temporary score object to find the score *after* this point ---
