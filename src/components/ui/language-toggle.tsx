@@ -42,19 +42,17 @@ export function LanguageToggle({ className }: { className?: string }) {
         variant={locale === 'en' ? "default" : "ghost"}
         size="sm"
         onClick={() => setLocale('en')}
-        className="h-8 px-2"
+        className="h-8 w-8 p-0"
       >
-        <span className="text-base mr-1">🇬🇧</span>
-        <span className="text-xs">EN</span>
+        <span className="text-base">🇬🇧</span>
       </Button>
       <Button
         variant={locale === 'cs' ? "default" : "ghost"}
         size="sm"
         onClick={() => setLocale('cs')}
-        className="h-8 px-2"
+        className="h-8 w-8 p-0"
       >
-        <span className="text-base mr-1">🇨🇿</span>
-        <span className="text-xs">CS</span>
+        <span className="text-base">🇨🇿</span>
       </Button>
     </div>
   )

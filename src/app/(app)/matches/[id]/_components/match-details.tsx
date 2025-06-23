@@ -143,43 +143,108 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/matches">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-{t('backToMatches')}
-            </Link>
-          </Button>
-          <div>
-            {getMatchTitle()}
-            <p className="text-muted-foreground">
-  {t('matchDetails')} • {formatDateTime(match.matchDate)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleShareMatch}
-            className={copiedLink ? "bg-green-50 border-green-200" : ""}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}
-          </Button>
-          {match.status === "In Progress" && (
-            <Button size="sm" asChild>
-              <Link href={`/matches/live/${match.$id}`}>
-                <Play className="h-4 w-4 mr-2" />
-{t('continuScoring')}
+    <div className="w-full">
+      {/* Mobile Header */}
+      <div className="block md:hidden">
+        <div className="w-full bg-background border-b">
+          {/* Top row: Back button and Share button */}
+          <div className="flex items-center justify-between p-3">
+            <Button variant="outline" size="sm" asChild className="flex items-center gap-2">
+              <Link href="/matches">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm">{t('backToMatches')}</span>
               </Link>
             </Button>
-          )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleShareMatch}
+              className={`flex items-center gap-2 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="text-sm">{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
+            </Button>
+          </div>
+
+          {/* Player names section */}
+          <div className="px-4 pb-4">
+            <div className="text-center space-y-3">
+              <div className="space-y-2">
+                <h1 className="text-xl font-bold text-foreground leading-tight">
+                  {match.playerOne?.firstName} {match.playerOne?.lastName}
+                </h1>
+                <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
+                <h2 className="text-xl font-bold text-foreground leading-tight">
+                  {match.playerTwo?.firstName} {match.playerTwo?.lastName}
+                </h2>
+              </div>
+              
+              {/* Match details */}
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{formatDateTime(match.matchDate)}</span>
+                </div>
+                <div>{t('matchDetails')}</div>
+              </div>
+
+              {/* Continue match button for in-progress matches */}
+              {match.status === "In Progress" && (
+                <Button size="sm" asChild className="mt-3">
+                  <Link href={`/matches/live/${match.$id}`}>
+                    <Play className="h-4 w-4 mr-2" />
+                    {t('continuScoring')}
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Desktop Header */}
+      <div className="hidden md:block">
+        <div className="container mx-auto p-4 max-w-6xl">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/matches">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t('backToMatches')}
+                </Link>
+              </Button>
+              <div>
+                {getMatchTitle()}
+                <p className="text-muted-foreground">
+                  {t('matchDetails')} • {formatDateTime(match.matchDate)}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShareMatch}
+                className={copiedLink ? "bg-green-50 border-green-200" : ""}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                {copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}
+              </Button>
+              {match.status === "In Progress" && (
+                <Button size="sm" asChild>
+                  <Link href={`/matches/live/${match.$id}`}>
+                    <Play className="h-4 w-4 mr-2" />
+                    {t('continuScoring')}
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Container */}
+      <div className="container mx-auto px-4 md:px-4 max-w-6xl">
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 h-12 md:h-10">
@@ -811,6 +876,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
           })()}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   )
 } 
