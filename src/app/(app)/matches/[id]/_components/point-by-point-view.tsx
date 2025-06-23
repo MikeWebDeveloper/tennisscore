@@ -9,6 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
+  playerNames?: {
+    p1: string
+    p2: string
+    p3?: string
+    p4?: string
+  }
 }
 
 const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail[]) => {
@@ -36,8 +42,12 @@ const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail
     return { p1: p1Games, p2: p2Games };
 }
 
-export function PointByPointView({ pointLog }: PointByPointViewProps) {
+export function PointByPointView({ pointLog, playerNames }: PointByPointViewProps) {
   const t = useTranslations()
+  
+  // playerNames is available for future enhancements but not currently used
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ = playerNames
 
   if (!pointLog || pointLog.length === 0) {
     return <div className="text-center text-muted-foreground p-8">No point data available.</div>
