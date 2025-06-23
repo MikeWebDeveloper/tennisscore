@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Edit, Trash2, Star } from "lucide-react"
 import { Player } from "@/lib/types"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface PlayerCardProps {
   player: Player
@@ -13,6 +14,8 @@ interface PlayerCardProps {
 }
 
 export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
+  const t = useTranslations()
+  
   return (
     <Card className="relative group hover:shadow-md transition-all duration-200">
       {/* Action buttons in corner */}
@@ -56,22 +59,22 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
             <div className="space-y-1">
               {player.isMainPlayer && (
                 <div className="flex items-center space-x-1">
-                  <span className="text-xs font-medium text-primary">Main Player</span>
+                  <span className="text-xs font-medium text-primary">{t("mainPlayer")}</span>
                 </div>
               )}
               
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
                 {player.yearOfBirth && (
-                  <span>Born: {player.yearOfBirth}</span>
+                  <span>{t("born")}: {player.yearOfBirth}</span>
                 )}
                 {player.rating && (
-                  <span>Rating: <span className="font-medium text-foreground">{player.rating}</span></span>
+                  <span>{t("rating")}: <span className="font-medium text-foreground">{player.rating}</span></span>
                 )}
                 {player.club && (
-                  <span>Club: <span className="font-medium text-foreground">{player.club}</span></span>
+                  <span>{t("club")}: <span className="font-medium text-foreground">{player.club}</span></span>
                 )}
                 {player.playingHand && (
-                  <span>Plays: <span className="font-medium text-foreground">{player.playingHand === 'left' ? 'Left-handed' : 'Right-handed'}</span></span>
+                  <span>{t("plays")}: <span className="font-medium text-foreground">{player.playingHand === 'left' ? t("leftHanded") : t("rightHanded")}</span></span>
                 )}
               </div>
             </div>

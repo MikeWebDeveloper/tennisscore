@@ -43,7 +43,7 @@ export function MatchesList({ matches }: MatchesListProps) {
   
   if (!matches || matches.length === 0) {
     return (
-      <p className="text-muted-foreground">No matches found. Start a new match to see it here!</p>
+      <p className="text-muted-foreground">{t("noMatchesFound")}</p>
     )
   }
 
@@ -94,12 +94,12 @@ export function MatchesList({ matches }: MatchesListProps) {
         <div className="space-y-1">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Doubles</span>
+            <span className="text-xs text-muted-foreground">{t("doublesMatch")}</span>
           </div>
           <div className="text-sm font-medium leading-tight">
             {match.playerOneName} / {match.playerThreeName}
           </div>
-          <div className="text-xs text-muted-foreground">vs</div>
+          <div className="text-xs text-muted-foreground">{t("vs")}</div>
           <div className="text-sm font-medium leading-tight">
             {match.playerTwoName} / {match.playerFourName}
           </div>
@@ -107,7 +107,7 @@ export function MatchesList({ matches }: MatchesListProps) {
       )
     }
     
-    return `${match.playerOneName} vs ${match.playerTwoName}`
+    return `${match.playerOneName} ${t("vs")} ${match.playerTwoName}`
   }
 
   const getCardHeight = (match: MatchesListProps['matches'][0]) => {
@@ -117,8 +117,8 @@ export function MatchesList({ matches }: MatchesListProps) {
 
   const handleShareMatch = async (matchId: string, playerOneName: string, playerTwoName: string) => {
     const shareUrl = `${window.location.origin}/live/${matchId}`
-    const title = `${playerOneName} vs ${playerTwoName} - Tennis Match Results`
-    const text = `Check out the match results and statistics for ${playerOneName} vs ${playerTwoName}!`
+    const title = `${playerOneName} ${t("vs")} ${playerTwoName} - ${t("tennisMatchResults")}`
+    const text = `${t("checkMatchResults")} ${playerOneName} ${t("vs")} ${playerTwoName}!`
     
     // Try native share first (works best on mobile)
     if (typeof navigator !== 'undefined' && navigator.share && /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -128,7 +128,7 @@ export function MatchesList({ matches }: MatchesListProps) {
           text,
           url: shareUrl
         })
-        toast.success("Match shared successfully!")
+        toast.success(t("matchSharedSuccessfully"))
         return
       } catch (err) {
         // User canceled or share failed, fall through to clipboard
@@ -139,10 +139,10 @@ export function MatchesList({ matches }: MatchesListProps) {
     // Fallback to clipboard copy
     try {
       await navigator.clipboard.writeText(shareUrl)
-      toast.success("Match link copied to clipboard! Share it to let others view the results.")
+      toast.success(t("matchLinkCopied"))
     } catch {
       // If clipboard fails, show manual copy
-      toast.error(`Copy this link manually: ${shareUrl}`)
+      toast.error(`${t("copyLinkManually")}: ${shareUrl}`)
     }
   }
 
@@ -159,7 +159,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                 variant={match.status === "Completed" ? "default" : "secondary"}
                 className="text-xs shrink-0"
               >
-                {match.status}
+                {match.status === "Completed" ? t("completed") : t("inProgress")}
               </Badge>
             </div>
           </CardHeader>
@@ -167,7 +167,7 @@ export function MatchesList({ matches }: MatchesListProps) {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
-                  {match.status === "Completed" ? "Final:" : "Score:"}
+                  {match.status === "Completed" ? `${t("final")}:` : `${t("score")}:`}
                 </span>
                 <span className={`font-mono text-sm ${match.status === "Completed" ? "font-bold" : ""}`}>
                   {formatScore(match)}
@@ -175,13 +175,13 @@ export function MatchesList({ matches }: MatchesListProps) {
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Date:</span>
+                <span className="text-sm font-medium">{t("date")}:</span>
                 <span className="text-sm">{new Date(match.matchDate).toLocaleDateString()}</span>
               </div>
               
               {match.winnerName && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Winner:</span>
+                  <span className="text-sm font-medium">{t("winner")}:</span>
                   <span className="flex items-center gap-1 text-sm font-medium text-green-600">
                     <Trophy className="h-3 w-3" />
                     {match.winnerName}
@@ -193,7 +193,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                 <Button variant="outline" size="sm" asChild className="flex-1 h-8 text-xs">
                   <Link href={`/matches/${match.$id}`}>
                     <Eye className="h-3 w-3 mr-1" />
-{t('view')}
+                    {t('view')}
                   </Link>
                 </Button>
                 
@@ -203,7 +203,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                   size="sm" 
                   onClick={() => handleShareMatch(match.$id, match.playerOneName, match.playerTwoName)}
                   className="h-8 px-2"
-                  title="Share match results"
+                  title={t("shareMatchResults")}
                 >
                   <Share2 className="h-3 w-3" />
                 </Button>
@@ -211,8 +211,8 @@ export function MatchesList({ matches }: MatchesListProps) {
                 <DeleteMatchButton 
                   matchId={match.$id}
                   playerNames={{
-                    p1: `${match.playerOne?.firstName || 'Player'} ${match.playerOne?.lastName || '1'}`,
-                    p2: `${match.playerTwo?.firstName || 'Player'} ${match.playerTwo?.lastName || '2'}`,
+                    p1: `${match.playerOne?.firstName || t("player")} ${match.playerOne?.lastName || '1'}`,
+                    p2: `${match.playerTwo?.firstName || t("player")} ${match.playerTwo?.lastName || '2'}`,
                   }}
                 />
               </div>

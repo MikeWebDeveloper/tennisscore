@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { 
   Trophy, 
@@ -9,6 +9,7 @@ import {
   Users, 
   TrendingUp
 } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface StatsCardsProps {
   stats: {
@@ -20,125 +21,114 @@ interface StatsCardsProps {
   }
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  show: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 25
-    }
-  }
-}
-
-const numberVariants = {
-  hidden: { opacity: 0 },
-  show: { 
-    opacity: 1,
-    transition: { delay: 0.2, duration: 0.5 }
-  }
-}
-
-const statsCards = [
-  {
-    key: "matches",
-    title: "Total Matches",
-    icon: Calendar,
-    getValue: (stats: StatsCardsProps["stats"]) => stats.totalMatches,
-    getSubtext: (stats: StatsCardsProps["stats"]) => `${stats.inProgressMatches} in progress`,
-    className: "md:col-span-1",
-    color: "text-blue-400"
-  },
-  {
-    key: "winrate",
-    title: "Win Rate",
-    icon: Trophy,
-    getValue: (stats: StatsCardsProps["stats"]) => 
-      stats.completedMatches > 0 ? `${stats.winRate}%` : "-",
-    getSubtext: (stats: StatsCardsProps["stats"]) => `${stats.completedMatches} completed`,
-    className: "md:col-span-1",
-    color: "text-primary"
-  },
-  {
-    key: "players",
-    title: "Players",
-    icon: Users,
-    getValue: (stats: StatsCardsProps["stats"]) => stats.totalPlayers,
-    getSubtext: () => "Players created",
-    className: "md:col-span-1",
-    color: "text-green-400"
-  },
-  {
-    key: "performance",
-    title: "Performance",
-    icon: TrendingUp,
-    getValue: (stats: StatsCardsProps["stats"]) => {
-      if (stats.completedMatches === 0) return "-"
-      if (stats.winRate >= 70) return "Excellent"
-      if (stats.winRate >= 60) return "Good"
-      if (stats.winRate >= 40) return "Fair"
-      return "Needs Work"
-    },
-    getSubtext: (stats: StatsCardsProps["stats"]) => 
-      stats.completedMatches > 0 ? "Overall rating" : "No matches yet",
-    className: "md:col-span-1",
-    color: "text-purple-400"
-  }
-]
-
 export function StatsCards({ stats }: StatsCardsProps) {
+  const t = useTranslations();
+
+  const statsCards = [
+    {
+      key: "matches",
+      title: t("totalMatches"),
+      icon: Calendar,
+      getValue: (stats: StatsCardsProps["stats"]) => stats.totalMatches,
+      getSubtext: (stats: StatsCardsProps["stats"]) => 
+        `${stats.inProgressMatches} ${t("inProgress")}, ${stats.completedMatches} ${t("completed")}`,
+      className: "md:col-span-1",
+      color: "text-blue-400"
+    },
+    {
+      key: "winrate",
+      title: t("winRate"),
+      icon: Trophy,
+      getValue: (stats: StatsCardsProps["stats"]) => `${stats.winRate}%`,
+      getSubtext: () => {
+        if (stats.winRate >= 80) return t("excellent")
+        if (stats.winRate >= 65) return t("good")
+        if (stats.winRate >= 50) return t("fair")
+        return t("needsWork")
+      },
+      className: "md:col-span-1", 
+      color: "text-yellow-400"
+    },
+    {
+      key: "players",
+      title: t("players"),
+      icon: Users,
+      getValue: (stats: StatsCardsProps["stats"]) => stats.totalPlayers,
+      getSubtext: () => `${stats.totalPlayers} ${t("playersCreated")}`,
+      className: "md:col-span-1",
+      color: "text-green-400"
+    },
+    {
+      key: "performance",
+      title: t("performance"), 
+      icon: TrendingUp,
+      getValue: () => {
+        const rating = getPerformanceRating(stats.winRate)
+        return rating
+      },
+      getSubtext: () => t("overallRating"),
+      className: "md:col-span-1 relative",
+      color: "text-purple-400",
+      badge: stats.winRate > 75 ? t("hot") : undefined
+    }
+  ]
+
+  function getPerformanceRating(winRate: number): string {
+    if (winRate >= 80) return t("excellent")
+    if (winRate >= 65) return t("good") 
+    if (winRate >= 50) return t("fair")
+    return t("needsWork")
+  }
+
+  if (stats.totalMatches === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center text-muted-foreground p-8"
+      >
+        <p>{t("noMatchesYet")}</p>
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div 
-      className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-      variants={{
-        show: {
-          transition: {
-            staggerChildren: 0.1
-          }
-        }
-      }}
-      initial="hidden"
-      animate="show"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ staggerChildren: 0.1 }}
     >
-      {statsCards.map((card) => (
+      {statsCards.map((card, index) => (
         <motion.div
           key={card.key}
-          variants={cardVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
           className={card.className}
-          whileHover={{ 
-            scale: 1.02,
-            transition: { type: "spring", stiffness: 400, damping: 10 }
-          }}
-          whileTap={{ scale: 0.98 }}
         >
-          <Card className="h-full bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <card.icon className={`h-5 w-5 ${card.color}`} />
-                {card.key === "winrate" && stats.winRate >= 60 && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                    Hot
-                  </Badge>
-                )}
-              </div>
-              
-              <motion.div
-                variants={numberVariants}
-                className="space-y-1"
+          <Card className="relative overflow-hidden">
+            {card.badge && (
+              <Badge 
+                variant="secondary" 
+                className="absolute top-2 right-2 text-xs font-bold bg-red-600 text-white"
               >
-                <p className="text-2xl font-bold text-slate-200 font-mono">
-                  {card.getValue(stats)}
-                </p>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                  {card.title}
-                </p>
-                <p className="text-xs text-slate-400">
-                  {card.getSubtext(stats)}
-                </p>
-              </motion.div>
+                {card.badge}
+              </Badge>
+            )}
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+              <card.icon className={`h-4 w-4 ${card.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {card.getValue(stats)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {card.getSubtext(stats)}
+              </p>
             </CardContent>
           </Card>
         </motion.div>

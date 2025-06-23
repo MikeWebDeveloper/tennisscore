@@ -300,7 +300,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-px flex-1 bg-border" />
-                      <span className="text-sm font-medium text-muted-foreground px-2">{t("newMatch.team2")}</span>
+                      <span className="text-sm font-medium text-muted-foreground px-2">{t("team2")}</span>
                       <div className="h-px flex-1 bg-border" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-destructive/20">
@@ -329,12 +329,12 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">{t("newMatch.matchFormat")}</h3>
+              <h3 className="font-medium mb-4">{t("matchFormat")}</h3>
               
               {/* Sets */}
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <Label>{t("newMatch.numberOfSets")}: {getSetsLabel(sets[0])}</Label>
+                  <Label>{t("numberOfSets")}: {getSetsLabel(sets[0])}</Label>
                   <Slider
                     value={sets}
                     onValueChange={setSets}
@@ -352,16 +352,16 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
                 {/* Scoring */}
                 <div className="space-y-3">
-                  <Label>{t("newMatch.scoringSystem")}</Label>
+                  <Label>{t("scoringSystem")}</Label>
                   <RadioGroup value={scoring} onValueChange={(value: "ad" | "no-ad") => setScoring(value)}>
                     <div className="grid grid-cols-2 gap-3">
                       <Label htmlFor="ad" className="radio-option">
                         <RadioGroupItem value="ad" id="ad" />
-                        <span className="font-medium">{t("newMatch.advantage")}</span>
+                        <span className="font-medium">{t("advantage")}</span>
                       </Label>
                       <Label htmlFor="no-ad" className="radio-option">
                         <RadioGroupItem value="no-ad" id="no-ad" />
-                        <span className="font-medium">{t("newMatch.noAdvantage")}</span>
+                        <span className="font-medium">{t("noAdvantage")}</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -369,16 +369,16 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
                 {/* Final Set */}
                 <div className="space-y-3">
-                  <Label>{t("newMatch.finalSet")}</Label>
+                  <Label>{t("finalSet")}</Label>
                   <RadioGroup value={finalSet} onValueChange={(value: "full" | "super-tb") => setFinalSet(value)}>
                     <div className="grid grid-cols-2 gap-3">
                       <Label htmlFor="full" className="radio-option">
                         <RadioGroupItem value="full" id="full" />
-                        <span className="font-medium">{t("newMatch.fullSet")}</span>
+                        <span className="font-medium">{t("fullSet")}</span>
                       </Label>
                       <Label htmlFor="super-tb" className="radio-option">
                         <RadioGroupItem value="super-tb" id="super-tb" />
-                        <span className="font-medium">{t("newMatch.superTiebreak")}</span>
+                        <span className="font-medium">{t("superTiebreak")}</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -392,28 +392,28 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">{t("newMatch.scoringDetailLevel")}</h3>
+              <h3 className="font-medium mb-4">{t("scoringDetailLevel")}</h3>
               <RadioGroup value={detailLevel} onValueChange={(value: "points" | "simple" | "complex") => setDetailLevel(value)}>
                 <div className="space-y-3">
                   <Label htmlFor="points" className="radio-option">
                     <RadioGroupItem value="points" id="points" />
                     <div>
-                      <div className="font-medium">{t("newMatch.pointsOnly")}</div>
-                      <div className="text-sm text-muted-foreground">{t("newMatch.trackJustScore")}</div>
+                      <div className="font-medium">{t("pointsOnly")}</div>
+                      <div className="text-sm text-muted-foreground">{t("trackJustScore")}</div>
                     </div>
                   </Label>
                   <Label htmlFor="simple" className="radio-option">
                     <RadioGroupItem value="simple" id="simple" />
                     <div>
-                      <div className="font-medium">{t("newMatch.simpleStats")}</div>
-                      <div className="text-sm text-muted-foreground">{t("newMatch.acesDoubleFaultsWinnersErrors")}</div>
+                      <div className="font-medium">{t("simpleStats")}</div>
+                      <div className="text-sm text-muted-foreground">{t("acesDoubleFaultsWinnersErrors")}</div>
                     </div>
                   </Label>
                   <Label htmlFor="complex" className="radio-option-disabled">
                     <RadioGroupItem value="complex" id="complex" disabled />
                     <div>
-                      <div className="font-medium">{t("newMatch.detailedStats")}</div>
-                      <div className="text-sm text-muted-foreground">{t("newMatch.shotPlacementRallyLength")}</div>
+                      <div className="font-medium">{t("detailedStats")}</div>
+                      <div className="text-sm text-muted-foreground">{t("shotPlacementRallyLength")}</div>
                     </div>
                   </Label>
                 </div>
@@ -429,7 +429,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
             className="w-full h-12 text-base font-medium"
             disabled={loading || !playerOne || !playerTwo || (matchType === "doubles" && (!playerThree || !playerFour))}
           >
-            {loading ? t("newMatch.creatingMatch") : t("newMatch.startMatch")}
+            {loading ? t("creatingMatch") : t("startMatch")}
           </Button>
         </motion.div>
       </form>

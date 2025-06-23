@@ -100,19 +100,19 @@ export function AppShell({ children, user }: AppShellProps) {
       href: "/dashboard",
       icon: Home,
       label: t('dashboard'),
-      description: "Overview & stats"
+      description: t('overviewStats')
     },
     {
       href: "/matches",
       icon: Trophy,
       label: t('matches'),
-      description: "Match history"
+      description: t('matchHistory')
     },
     {
       href: "/players",
       icon: Users,
       label: t('players'),
-      description: "Manage players"
+      description: t('managePlayers')
     }
   ]
 
@@ -398,7 +398,7 @@ export function AppShell({ children, user }: AppShellProps) {
                         <Button variant="ghost" size="sm" asChild className="w-full hover:bg-accent text-muted-foreground border border-border" onClick={() => setSidebarOpen(false)}>
                           <Link href="/settings">
                             <Settings className="h-4 w-4 mr-2" />
-                            Settings
+                            {t('settings')}
                           </Link>
                         </Button>
                         <form action={signOut}>

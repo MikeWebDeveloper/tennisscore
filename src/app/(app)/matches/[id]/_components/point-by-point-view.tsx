@@ -43,6 +43,9 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
     return <div className="text-center text-muted-foreground p-8">No point data available.</div>
   }
 
+  // Determine who started serving the match from the first point
+  const matchStartingServer = pointLog[0]?.server || 'p1'
+  
   // Group points by set
   const pointsBySets = pointLog.reduce((acc, point) => {
     const setNumber = point.setNumber
@@ -84,12 +87,23 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
               const lastPoint = pointsInGame[pointsInGame.length - 1];
               const isBreak = lastPoint.isGameWinning && lastPoint.server !== lastPoint.winner;
               const finalGameScore = getGameScoreAfterGame(pointsInGame, pointLog);
+              
+              // Determine the correct server for this game based on tennis rules
+              // Server alternates every game, starting with whoever served first in the match
+              const currentGameNumber = firstPoint.gameNumber;
+              
+              // Use the same logic as getServerWithStartingChoice function in match store
+              const totalGamesPlayed = currentGameNumber - 1
+              
+              const correctServer = matchStartingServer === 'p1' 
+                ? (totalGamesPlayed % 2 === 0 ? 'p1' : 'p2')  // P1 started: P1 serves games 1,3,5... P2 serves games 2,4,6...
+                : (totalGamesPlayed % 2 === 0 ? 'p2' : 'p1')  // P2 started: P2 serves games 1,3,5... P1 serves games 2,4,6...
 
               return (
                 <div key={gameKey} className="py-4 px-2 border-b border-border/50 text-center">
                   <div className="flex items-center justify-center w-full">
                     <div className="flex-1 text-right">
-                      {firstPoint.server === 'p2' && (
+                      {correctServer === 'p1' && (
                         <div className="inline-flex items-center gap-2 justify-end">
                           {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}
                           <TennisBallIcon isServing={true} className="w-5 h-5" />
@@ -102,7 +116,7 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
                       <span>{finalGameScore.p2}</span>
                     </div>
                     <div className="flex-1 text-left">
-                      {firstPoint.server === 'p1' && (
+                      {correctServer === 'p2' && (
                         <div className="inline-flex items-center gap-2 justify-start">
                           <TennisBallIcon isServing={true} className="w-5 h-5" />
                           {isBreak && <Badge variant="destructive" className="text-xs font-bold bg-red-600">{t('lostServe')}</Badge>}

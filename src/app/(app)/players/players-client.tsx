@@ -7,6 +7,7 @@ import { deletePlayer } from "@/lib/actions/players"
 import { PlayerList } from "./_components/player-list"
 import { CreatePlayerDialog, CreatePlayerTrigger } from "./_components/create-player-dialog"
 import { EditPlayerDialog } from "./_components/edit-player-dialog"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface PlayersClientProps {
   user: UserType
@@ -20,11 +21,12 @@ const pageVariants = {
 }
 
 export function PlayersClient({ players }: PlayersClientProps) {
+  const t = useTranslations()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
 
   const handleDeletePlayer = async (playerId: string) => {
-    if (confirm("Are you sure you want to delete this player?")) {
+    if (confirm(t("confirmDeletePlayer"))) {
       const result = await deletePlayer(playerId)
       if (result.success) {
         window.location.reload()
@@ -44,9 +46,9 @@ export function PlayersClient({ players }: PlayersClientProps) {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold text-foreground">Players</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground">{t("players")}</h1>
             <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-              Manage your tennis players and opponents
+              {t("managePlayersDescription")}
             </p>
           </div>
           
@@ -55,7 +57,7 @@ export function PlayersClient({ players }: PlayersClientProps) {
 
         {players.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No players yet</p>
+            <p className="text-muted-foreground mb-4">{t("noPlayersYet")}</p>
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
           </div>
         ) : (

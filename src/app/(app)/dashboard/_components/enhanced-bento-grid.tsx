@@ -25,6 +25,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { PerformanceCharts } from "./performance-charts"
 import { Match, Player } from "@/lib/types"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -80,6 +81,8 @@ function ChartsSkeleton() {
 }
 
 export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProps) {
+  const t = useTranslations()
+  
   // Calculate stats
   const totalMatches = matches.length
   const completedMatches = matches.filter(match => match.status === "Completed")
@@ -141,7 +144,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           <Button asChild className="w-full h-11 font-medium shadow-sm">
             <Link href="/matches/new">
               <Plus className="h-4 w-4 mr-2" />
-              New Match
+              {t("newMatch")}
             </Link>
           </Button>
         </motion.div>
@@ -149,7 +152,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           <Button variant="outline" asChild className="w-full h-11">
             <Link href="/players/new">
               <UserPlus className="h-4 w-4 mr-2" />
-              Add Player
+              {t("addPlayer")}
             </Link>
           </Button>
         </motion.div>
@@ -160,18 +163,18 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         variants={containerVariants}
         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3"
       >
-        <StatCard icon={Trophy} label="Matches Won" value={wonMatches} />
-        <StatCard icon={TrendingUp} label="Win Rate" value={`${winRate}%`} />
-        <StatCard icon={Users} label="Total Matches" value={totalMatches} />
-        <StatCard icon={Clock} label="Avg Duration" value={avgMatchDuration} />
-        <StatCard icon={Flame} label="Win Streak" value={longestWinStreak} />
-        <StatCard icon={Award} label="Sets Won" value={totalSetsWon} />
-        <StatCard icon={Target} label="Aces" value={aces} />
-        <StatCard icon={Zap} label="Winners" value={winners} />
-        <StatCard icon={Activity} label="Double Faults" value={doubleFaults} />
-        <StatCard icon={BarChart3} label="Unforced Errors" value={unforced} />
-        <StatCard icon={Timer} label="Active Matches" value={matches.filter(m => m.status === "In Progress").length} />
-        <StatCard icon={Calendar} label="This Month" value={matches.filter(m => new Date(m.matchDate).getMonth() === new Date().getMonth()).length} />
+        <StatCard icon={Trophy} label={t("matchesWon")} value={wonMatches} />
+        <StatCard icon={TrendingUp} label={t("winRate")} value={`${winRate}%`} />
+        <StatCard icon={Users} label={t("totalMatches")} value={totalMatches} />
+        <StatCard icon={Clock} label={t("avgDuration")} value={avgMatchDuration} />
+        <StatCard icon={Flame} label={t("winStreak")} value={longestWinStreak} />
+        <StatCard icon={Award} label={t("setsWon")} value={totalSetsWon} />
+        <StatCard icon={Target} label={t("aces")} value={aces} />
+        <StatCard icon={Zap} label={t("winners")} value={winners} />
+        <StatCard icon={Activity} label={t("doubleFaults")} value={doubleFaults} />
+        <StatCard icon={BarChart3} label={t("unforcedErrors")} value={unforced} />
+        <StatCard icon={Timer} label={t("activeMatches")} value={matches.filter(m => m.status === "In Progress").length} />
+        <StatCard icon={Calendar} label={t("thisMonth")} value={matches.filter(m => new Date(m.matchDate).getMonth() === new Date().getMonth()).length} />
       </motion.div>
 
       {/* Performance Charts */}
@@ -179,9 +182,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         <Card className="hover:shadow-md transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Performance Overview</h3>
+              <h3 className="text-lg font-medium">{t("performanceOverview")}</h3>
               <Badge variant="outline" className="text-xs">
-                Last 30 days
+                {t("last30Days")}
               </Badge>
             </div>
             <Suspense fallback={<ChartsSkeleton />}>
@@ -197,9 +200,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           <Card className="hover:shadow-md transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Recent Matches</h3>
+                <h3 className="text-lg font-medium">{t("recentMatches")}</h3>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/matches">View All</Link>
+                  <Link href="/matches">{t("viewAll")}</Link>
                 </Button>
               </div>
               <div className="space-y-3">
@@ -215,13 +218,13 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                       <div className={`w-2 h-2 rounded-full ${
                         match.status === "Completed" 
                           ? match.winnerId === mainPlayer?.$id 
-                                                          ? "bg-muted-foreground" 
-                              : "bg-muted-foreground"
-                          : "bg-muted-foreground"
+                            ? "bg-green-500" 
+                            : "bg-red-500"
+                          : "bg-yellow-500"
                       }`} />
                       <div>
                         <p className="text-sm font-medium">
-                          vs {match.playerTwoId === mainPlayer?.$id ? "Player 1" : "Player 2"}
+                          {t("vs")} {match.playerTwoId === mainPlayer?.$id ? t("player1") : t("player2")}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(match.matchDate).toLocaleDateString()}
@@ -229,7 +232,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                       </div>
                     </div>
                     <Badge variant={match.status === "Completed" ? "secondary" : "default"} className="text-xs">
-                      {match.status}
+                      {match.status === "Completed" ? t("completed") : t("inProgress")}
                     </Badge>
                   </motion.div>
                 ))}

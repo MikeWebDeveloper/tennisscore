@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Plus, User, Upload } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createPlayer } from "@/lib/actions/players"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface CreatePlayerDialogProps {
   isOpen: boolean
@@ -16,6 +17,7 @@ interface CreatePlayerDialogProps {
 }
 
 export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogProps) {
+  const t = useTranslations()
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   const handleCreatePlayer = async (formData: FormData) => {
@@ -43,9 +45,9 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl">
         <DialogHeader className="space-y-2">
-          <DialogTitle className="text-lg">Create New Player</DialogTitle>
+          <DialogTitle className="text-lg">{t("createNewPlayer")}</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Add a new player to track matches and statistics.
+            {t("addNewPlayerDescription")}
           </DialogDescription>
         </DialogHeader>
         <form action={handleCreatePlayer} className="space-y-3">
@@ -77,24 +79,24 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
               onChange={handleImageChange}
             />
             <p className="text-xs text-muted-foreground text-center">
-              Upload picture (optional)
+              {t("uploadPictureOptional")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="firstName" className="text-xs font-medium">First Name *</Label>
+              <Label htmlFor="firstName" className="text-xs font-medium">{t("firstName")} *</Label>
               <Input id="firstName" name="firstName" required className="text-sm h-8" />
             </div>
             <div>
-              <Label htmlFor="lastName" className="text-xs font-medium">Last Name *</Label>
+              <Label htmlFor="lastName" className="text-xs font-medium">{t("lastName")} *</Label>
               <Input id="lastName" name="lastName" required className="text-sm h-8" />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="yearOfBirth" className="text-xs font-medium">Birth Year</Label>
+              <Label htmlFor="yearOfBirth" className="text-xs font-medium">{t("birthYear")}</Label>
               <Input 
                 id="yearOfBirth" 
                 name="yearOfBirth" 
@@ -105,11 +107,11 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
               />
             </div>
             <div>
-              <Label htmlFor="rating" className="text-xs font-medium">Rating</Label>
+              <Label htmlFor="rating" className="text-xs font-medium">{t("rating")}</Label>
               <Input 
                 id="rating" 
                 name="rating" 
-                placeholder="4.0, UTR 8" 
+                placeholder={t("ratingPlaceholder")}
                 className="text-sm h-8"
               />
             </div>
@@ -117,24 +119,24 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="club" className="text-xs font-medium">Club</Label>
+              <Label htmlFor="club" className="text-xs font-medium">{t("club")}</Label>
               <Input 
                 id="club" 
                 name="club" 
-                placeholder="Tennis Club Name" 
+                placeholder={t("clubPlaceholder")}
                 className="text-sm h-8"
               />
             </div>
             <div>
-              <Label htmlFor="playingHand" className="text-xs font-medium">Playing Hand</Label>
+              <Label htmlFor="playingHand" className="text-xs font-medium">{t("playingHand")}</Label>
               <select
                 id="playingHand"
                 name="playingHand"
                 className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="">Select...</option>
-                <option value="right">Right</option>
-                <option value="left">Left</option>
+                <option value="">{t("selectOption")}</option>
+                <option value="right">{t("right")}</option>
+                <option value="left">{t("left")}</option>
               </select>
             </div>
           </div>
@@ -142,7 +144,7 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
           <div className="flex items-center space-x-2">
             <Checkbox id="isMainPlayer" name="isMainPlayer" />
             <Label htmlFor="isMainPlayer" className="text-xs">
-              Set as main player
+              {t("setAsMainPlayer")}
             </Label>
           </div>
 
@@ -154,10 +156,10 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
               className="flex-1 h-8 text-xs"
               size="sm"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
-              Create Player
+              {t("createPlayer")}
             </Button>
           </div>
         </form>
@@ -167,10 +169,12 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
 }
 
 export function CreatePlayerTrigger({ onOpenDialog }: { onOpenDialog: () => void }) {
+  const t = useTranslations()
+  
   return (
     <Button className="w-full sm:w-auto" onClick={onOpenDialog}>
       <Plus className="h-4 w-4 mr-2" />
-      Add Player
+      {t("addPlayer")}
     </Button>
   )
 } 

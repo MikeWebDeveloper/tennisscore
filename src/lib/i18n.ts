@@ -19,6 +19,10 @@ export interface Translations {
   matches: string
   players: string
   profile: string
+  settings: string
+  overviewStats: string
+  matchHistory: string
+  managePlayers: string
   
   // Dashboard specific
   welcomeBack: string
@@ -221,9 +225,104 @@ export interface Translations {
   statsTab: string
   pointsTab: string
   commentaryTab: string
-      undo: string
-    firstServe: string
-    match: string
+  undo: string
+  firstServe: string
+  match: string
+  
+  // Dashboard Stats Cards
+  performance: string
+  inProgressWithCount: string
+  completedWithCount: string
+  playersCreated: string
+  excellent: string
+  good: string
+  fair: string
+  needsWork: string
+  overallRating: string
+  hot: string
+  
+  // Match creation and forms  
+  singlesMatch: string
+  trackBasicStats: string
+  trackDetailedStats: string
+  
+  // Tennis stats
+  servicePoints: string
+  receivingPoints: string
+  
+  // Common actions
+  add: string
+  close: string
+  confirm: string
+  
+  // Status and states
+  upcoming: string
+  
+  // Time and dates
+  today: string
+  yesterday: string
+  thisWeek: string
+  thisMonth: string
+  
+  // Player management
+  createPlayer: string
+  editPlayer: string
+  profilePicture: string
+  
+  // Error messages
+  errorOccurred: string
+  tryAgain: string
+  connectionError: string
+  loadingError: string
+  
+  // Success messages
+  playerCreated: string
+  playerUpdated: string
+  matchCreated: string
+  
+  // Empty states
+  noPlayersYet: string
+  noDataAvailable: string
+  
+  // Dashboard bento grid specific
+  matchesWon: string
+  avgDuration: string
+  winStreak: string
+  setsWon: string
+  activeMatches: string
+  performanceOverview: string
+  last30Days: string
+  
+  // Matches page specific
+  yourMatches: string
+  unableToLoadMatches: string
+  matchesConnectivityIssue: string
+  unknownPlayer: string
+  noMatchesFound: string
+  tennisMatchResults: string
+  checkMatchResults: string
+  matchSharedSuccessfully: string
+  matchLinkCopied: string
+  copyLinkManually: string
+  final: string
+  shareMatchResults: string
+  player: string
+  
+  // Players page specific
+  confirmDeletePlayer: string
+  managePlayersDescription: string
+  mainPlayer: string
+  born: string
+  plays: string
+  leftHanded: string
+  rightHanded: string
+  addNewPlayerDescription: string
+  uploadPictureOptional: string
+  birthYear: string
+  ratingPlaceholder: string
+  clubPlaceholder: string
+  selectOption: string
+  setAsMainPlayer: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -246,6 +345,10 @@ const translations: Record<Locale, Translations> = {
     matches: "Matches",
     players: "Players",
     profile: "Profile",
+    settings: "Settings",
+    overviewStats: "Overview Stats",
+    matchHistory: "Match History",
+    managePlayers: "Manage Players",
     
     // Dashboard specific
     welcomeBack: "Welcome back",
@@ -450,6 +553,101 @@ const translations: Record<Locale, Translations> = {
     undo: "Undo",
     firstServe: "1st Serve",
     match: "Match",
+    
+    // Dashboard Stats Cards
+    performance: "Performance",
+    inProgressWithCount: "{count} in progress",
+    completedWithCount: "{count} completed",
+    playersCreated: "Players created",
+    excellent: "Excellent",
+    good: "Good",
+    fair: "Fair",
+    needsWork: "Needs Work",
+    overallRating: "Overall rating",
+    hot: "Hot",
+    
+    // Match creation and forms
+    singlesMatch: "Singles Match",
+    trackBasicStats: "Track basic stats",
+    trackDetailedStats: "Track detailed stats",
+    
+    // Tennis stats
+    servicePoints: "Service Points %",
+    receivingPoints: "Receiving Points %",
+    
+    // Common actions
+    add: "Add",
+    close: "Close",
+    confirm: "Confirm",
+    
+    // Status and states
+    upcoming: "Upcoming",
+    
+    // Time and dates
+    today: "Today",
+    yesterday: "Yesterday",
+    thisWeek: "This Week",
+    thisMonth: "This Month",
+    
+    // Player management
+    createPlayer: "Create Player",
+    editPlayer: "Edit Player",
+    profilePicture: "Profile Picture",
+    
+    // Error messages
+    errorOccurred: "An error occurred",
+    tryAgain: "Try again",
+    connectionError: "Connection Error",
+    loadingError: "Loading Error",
+    
+    // Success messages
+    playerCreated: "Player created successfully",
+    playerUpdated: "Player updated successfully",
+    matchCreated: "Match created successfully",
+    
+    // Empty states
+    noPlayersYet: "No players yet",
+    noDataAvailable: "No data available",
+    
+    // Dashboard bento grid specific
+    matchesWon: "Matches won",
+    avgDuration: "Avg Duration",
+    winStreak: "Win Streak",
+    setsWon: "Sets won",
+    activeMatches: "Active matches",
+    performanceOverview: "Performance Overview",
+    last30Days: "Last 30 Days",
+    
+    // Matches page specific
+    yourMatches: "Your Matches",
+    unableToLoadMatches: "Unable to load matches",
+    matchesConnectivityIssue: "Matches connectivity issue",
+    unknownPlayer: "Unknown player",
+    noMatchesFound: "No matches found",
+    tennisMatchResults: "Tennis match results",
+    checkMatchResults: "Check match results",
+    matchSharedSuccessfully: "Match shared successfully",
+    matchLinkCopied: "Match link copied",
+    copyLinkManually: "Copy link manually",
+    final: "Final",
+    shareMatchResults: "Share match results",
+    player: "Player",
+    
+    // Players page specific
+    confirmDeletePlayer: "Confirm Delete Player",
+    managePlayersDescription: "Manage players description",
+    mainPlayer: "Main Player",
+    born: "Born",
+    plays: "Plays",
+    leftHanded: "Left-Handed",
+    rightHanded: "Right-Handed",
+    addNewPlayerDescription: "Add a new player to track matches and statistics",
+    uploadPictureOptional: "Upload picture (optional)",
+    birthYear: "Birth Year",
+    ratingPlaceholder: "4.0, UTR 8",
+    clubPlaceholder: "Tennis Club Name",
+    selectOption: "Select...",
+    setAsMainPlayer: "Set as main player",
   },
   cs: {
     // Common
@@ -470,6 +668,10 @@ const translations: Record<Locale, Translations> = {
     matches: "Zápasy",
     players: "Hráči",
     profile: "Profil",
+    settings: "Nastavení",
+    overviewStats: "Přehled statistik",
+    matchHistory: "Historie zápasů",
+    managePlayers: "Spravovat hráče",
     
     // Dashboard specific
     welcomeBack: "Vítejte zpět",
@@ -529,7 +731,7 @@ const translations: Record<Locale, Translations> = {
     searchByTyping: "Hledat při psaní",
     
     // Dashboard
-    winRate: "Výhoda",
+    winRate: "Úspěšnost",
     completedMatches: "Dokončené zápasy",
     totalMatches: "Celkový počet zápasů",
     inProgressMatches: "Probíhající zápasy",
@@ -667,13 +869,108 @@ const translations: Record<Locale, Translations> = {
     // New keys
     server: "Podání",
     game: "Hra",
-    lostServe: "ZTRACENÉ PODÁNÍ",
+    lostServe: "ZTRÁTA PODÁNÍ",
     statsTab: "Statistiky",
     pointsTab: "Body",
     commentaryTab: "Komentář",
     undo: "Zpět",
     firstServe: "1. podání",
     match: "Zápas",
+    
+    // Dashboard Stats Cards
+    performance: "Výkonnost",
+    inProgressWithCount: "{count} probíhá",
+    completedWithCount: "{count} dokončeno",
+    playersCreated: "Hráči vytvořeni",
+    excellent: "Výborné",
+    good: "Dobré",
+    fair: "Průměrné",
+    needsWork: "Potřebuje zlepšení",
+    overallRating: "Celkové hodnocení",
+    hot: "Horké",
+    
+    // Match creation and forms
+    singlesMatch: "Dvouhra",
+    trackBasicStats: "Sledovat základní statistiky",
+    trackDetailedStats: "Sledovat detailní statistiky",
+    
+    // Tennis stats
+    servicePoints: "Body na podání %",
+    receivingPoints: "Body na příjmu %",
+    
+    // Common actions
+    add: "Přidat",
+    close: "Zavřít",
+    confirm: "Potvrdit",
+    
+    // Status and states
+    upcoming: "Nadcházející",
+    
+    // Time and dates
+    today: "Dnes",
+    yesterday: "Včera",
+    thisWeek: "Tento týden",
+    thisMonth: "Tento měsíc",
+    
+    // Player management
+    createPlayer: "Vytvořit hráče",
+    editPlayer: "Upravit hráče",
+    profilePicture: "Profilový obrázek",
+    
+    // Error messages
+    errorOccurred: "Došlo k chybě",
+    tryAgain: "Zkusit znovu",
+    connectionError: "Chyba připojení",
+    loadingError: "Chyba načítání",
+    
+    // Success messages
+    playerCreated: "Hráč byl úspěšně vytvořen",
+    playerUpdated: "Hráč byl úspěšně upraven",
+    matchCreated: "Zápas byl úspěšně vytvořen",
+    
+    // Empty states
+    noPlayersYet: "Zatím žádní hráči",
+    noDataAvailable: "Nejsou k dispozici žádná data",
+    
+    // Dashboard bento grid specific
+    matchesWon: "Vyhráno zápasů",
+    avgDuration: "Průměrná doba",
+    winStreak: "Vítězná série",
+    setsWon: "Vyhráno setů",
+    activeMatches: "Aktivní zápasy",
+    performanceOverview: "Přehled výkonu",
+    last30Days: "Posledních 30 dní",
+    
+    // Matches page specific
+    yourMatches: "Vaše zápasy",
+    unableToLoadMatches: "Nepodařilo se načíst zápasy",
+    matchesConnectivityIssue: "Problém s připojením k zápasům",
+    unknownPlayer: "Neznámý hráč",
+    noMatchesFound: "Žádné zápasy nenalezeny",
+    tennisMatchResults: "Výsledky tenisového zápasu",
+    checkMatchResults: "Podívejte se na výsledky zápasu",
+    matchSharedSuccessfully: "Zápas byl úspěšně sdílen",
+    matchLinkCopied: "Odkaz na zápas byl zkopírován",
+    copyLinkManually: "Zkopírujte odkaz ručně",
+    final: "Finální",
+    shareMatchResults: "Sdílet výsledky zápasu",
+    player: "Hráč",
+    
+    // Players page specific
+    confirmDeletePlayer: "Opravdu chcete smazat tohoto hráče?",
+    managePlayersDescription: "Spravujte své tenisové hráče a jejich profily",
+    mainPlayer: "Hlavní hráč",
+    born: "Narozen",
+    plays: "Hrál",
+    leftHanded: "Levoruký",
+    rightHanded: "Pravoruký",
+    addNewPlayerDescription: "Přidejte nového hráče pro sledování zápasů a statistik",
+    uploadPictureOptional: "Nahrát obrázek (volitelné)",
+    birthYear: "Rok narození",
+    ratingPlaceholder: "4.0, UTR 8",
+    clubPlaceholder: "Název tenisového klubu",
+    selectOption: "Vybrat...",
+    setAsMainPlayer: "Nastavit jako hlavního hráče",
   }
 }
 
