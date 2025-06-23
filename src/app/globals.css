@@ -72,9 +72,21 @@
     @apply border-border;
   }
   
+  html {
+    /* Clay court background for overscroll areas */
+    background-image: url('/claycourt.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #B85441;
+    background-attachment: fixed;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Keep the app background clean and readable */
+    background-color: hsl(var(--background));
   }
 }
 
