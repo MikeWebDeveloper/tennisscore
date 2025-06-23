@@ -212,7 +212,9 @@ export function EditPlayerDialog({ player, isOpen, onOpenChange }: EditPlayerDia
 
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-2">
-              {error}
+              {error.includes('Unknown attribute') ? 
+                'Database fields are being updated. Please try again in a moment.' : 
+                error}
             </div>
           )}
 

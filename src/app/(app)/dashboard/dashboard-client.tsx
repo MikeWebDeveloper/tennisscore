@@ -5,6 +5,7 @@ import { Star } from "lucide-react"
 import { EnhancedBentoGrid } from "./_components/enhanced-bento-grid"
 import { MainPlayerSetupPrompt } from "./_components/main-player-setup-prompt"
 import { Match, Player, User, DashboardStats } from "@/lib/types"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface DashboardClientProps {
   user: User | null
@@ -23,6 +24,7 @@ export default function DashboardClient({
   mainPlayer,
   matches,
 }: DashboardClientProps) {
+  const t = useTranslations()
   const stats: DashboardStats = {
     totalMatches: matches.length,
     winRate: 0,
@@ -60,10 +62,10 @@ export default function DashboardClient({
           className="space-y-2 text-center"
         >
           <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
-            Welcome to TennisScore
+            {t('welcomeToTennisScore')}
           </h1>
           <p className="text-lg text-slate-400">
-            Your tennis performance tracking starts here
+            {t('performanceTrackingStarts')}
           </p>
         </motion.div>
 
@@ -92,12 +94,12 @@ export default function DashboardClient({
           <div className="flex items-center gap-2">
             <Star className="h-8 w-8 text-primary" />
             <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
-              Welcome back, {firstName}
+              {t('welcomeBack')}, {firstName}
             </h1>
           </div>
         </div>
         <p className="text-lg text-slate-400">
-          Track your tennis performance and improve your game
+          {t('dashboardSubtitle')}
         </p>
       </motion.div>
 
@@ -115,7 +117,7 @@ export default function DashboardClient({
         className="text-center py-4 md:py-8"
       >
         <p className="text-xs md:text-sm text-slate-500">
-          Ready to elevate your game? Start tracking matches and analyzing your performance.
+          {t('readyToElevate')}
         </p>
       </motion.div>
     </motion.div>

@@ -18,10 +18,15 @@ import {
   TrendingUp,
   BarChart3,
   Activity,
-  Users
+  Users,
+  Target
 } from "lucide-react"
-import { Player } from "@/lib/types"
+import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
+import { MatchStatsComponentSimple as MatchStatsComponentSimpleFixed } from "./match-stats"
+import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { PointByPointView } from "./point-by-point-view"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface MatchDetailsProps {
   match: {
@@ -46,6 +51,10 @@ interface MatchDetailsProps {
     pointLog: string[]
     matchFormat: string
     winnerId?: string
+    startTime?: string
+    endTime?: string
+    duration?: number
+    retirementReason?: string
     userId: string
     $collectionId: string
     $databaseId: string
@@ -55,48 +64,40 @@ interface MatchDetailsProps {
   }
 }
 
-interface PointAnalysis {
-  totalPoints: number
-  winners: { p1: number; p2: number }
-  unforcedErrors: { p1: number; p2: number }
-  aces: { p1: number; p2: number }
-  doubleFaults: { p1: number; p2: number }
-  firstServePercentage: { p1: number; p2: number }
-  firstServePointsWon: { p1: number; p2: number }
-  secondServePointsWon: { p1: number; p2: number }
-  breakPointsConverted: { p1: number; p2: number }
-  breakPointsTotal: { p1: number; p2: number }
-}
-
 export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
+  const t = useTranslations()
 
   const handleShareMatch = () => {
     const shareUrl = `${window.location.origin}/live/${match.$id}`
     navigator.clipboard.writeText(shareUrl)
     setCopiedLink(true)
-    toast.success("Live match link copied to clipboard!")
+    
+    const shareText = match.status === "Completed" 
+      ? "Match results link copied to clipboard!"
+      : "Live match link copied to clipboard!"
+    toast.success(shareText)
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
-  const formatScore = (scoreParsed: { sets: { p1: number; p2: number }[] }) => {
-    if (!scoreParsed?.sets || scoreParsed.sets.length === 0) {
-      return "0-0"
+  const formatDuration = (durationMinutes?: number) => {
+    if (!durationMinutes) return "Unknown"
+    
+    const hours = Math.floor(durationMinutes / 60)
+    const minutes = durationMinutes % 60
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
     }
-    return scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
+    return `${minutes}m`
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
-    })
-  }
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     })
@@ -141,84 +142,6 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       : `${match.playerTwo?.firstName} / ${match.playerFour?.firstName}`
   }
 
-  // Analyze point log for detailed statistics
-  const analyzePoints = (): PointAnalysis => {
-    const analysis: PointAnalysis = {
-      totalPoints: match.pointLog.length,
-      winners: { p1: 0, p2: 0 },
-      unforcedErrors: { p1: 0, p2: 0 },
-      aces: { p1: 0, p2: 0 },
-      doubleFaults: { p1: 0, p2: 0 },
-      firstServePercentage: { p1: 0, p2: 0 },
-      firstServePointsWon: { p1: 0, p2: 0 },
-      secondServePointsWon: { p1: 0, p2: 0 },
-      breakPointsConverted: { p1: 0, p2: 0 },
-      breakPointsTotal: { p1: 0, p2: 0 }
-    }
-
-    const serves = { p1: { first: 0, firstIn: 0, second: 0, secondIn: 0 }, p2: { first: 0, firstIn: 0, second: 0, secondIn: 0 } }
-
-    match.pointLog.forEach((pointStr) => {
-      try {
-        const point = JSON.parse(pointStr)
-        const player = point.winner === "p1" ? "p1" : "p2"
-        const opponent = player === "p1" ? "p2" : "p1"
-
-        // Count winners and errors
-        if (point.outcome === "Winner") {
-          analysis.winners[player]++
-        } else if (point.outcome === "Unforced Error") {
-          analysis.unforcedErrors[opponent]++
-        } else if (point.outcome === "Ace") {
-          analysis.aces[player]++
-        } else if (point.outcome === "Double Fault") {
-          analysis.doubleFaults[opponent]++
-        }
-
-        // Track serve statistics
-        if (point.serve) {
-          const server = point.server === "p1" ? "p1" : "p2"
-          if (point.serve === "First") {
-            serves[server].first++
-            if (point.serveIn) serves[server].firstIn++
-          } else if (point.serve === "Second") {
-            serves[server].second++
-            if (point.serveIn) serves[server].secondIn++
-          }
-
-          // Track serve points won
-          if (point.serveIn && point.winner === server) {
-            if (point.serve === "First") {
-              analysis.firstServePointsWon[server]++
-            } else {
-              analysis.secondServePointsWon[server]++
-            }
-          }
-        }
-
-        // Track break points (simplified - would need game context for accuracy)
-        if (point.breakPoint) {
-          const returner = point.server === "p1" ? "p2" : "p1"
-          analysis.breakPointsTotal[returner]++
-          if (point.winner === returner) {
-            analysis.breakPointsConverted[returner]++
-          }
-        }
-      } catch {
-        // Skip invalid point log entries
-        console.warn('Invalid point log entry:', pointStr)
-      }
-    })
-
-    // Calculate percentages
-    analysis.firstServePercentage.p1 = serves.p1.first > 0 ? (serves.p1.firstIn / serves.p1.first) * 100 : 0
-    analysis.firstServePercentage.p2 = serves.p2.first > 0 ? (serves.p2.firstIn / serves.p2.first) * 100 : 0
-
-    return analysis
-  }
-
-  const pointAnalysis = analyzePoints()
-
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       {/* Header */}
@@ -233,7 +156,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
           <div>
             {getMatchTitle()}
             <p className="text-muted-foreground">
-              Match Details • {formatDate(match.matchDate)} at {formatTime(match.matchDate)}
+              Match Details • {formatDateTime(match.matchDate)}
             </p>
           </div>
         </div>
@@ -245,7 +168,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             className={copiedLink ? "bg-green-50 border-green-200" : ""}
           >
             <Share2 className="h-4 w-4 mr-2" />
-            {copiedLink ? "Copied!" : "Share Live"}
+            {copiedLink ? "Copied!" : match.status === "Completed" ? "Share Results" : "Share Live"}
           </Button>
           {match.status === "In Progress" && (
             <Button size="sm" asChild>
@@ -262,455 +185,630 @@ export function MatchDetails({ match }: MatchDetailsProps) {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
-            Overview
+            {t('overview')}
           </TabsTrigger>
           <TabsTrigger value="points" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            Point Log
+            {t('pointLog')}
           </TabsTrigger>
           <TabsTrigger value="statistics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Statistics
+            {t('statistics')}
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Analysis
+            {t('analysis')}
           </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Match Score */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  Match Score
-                  <Badge variant={match.status === "Completed" ? "default" : "secondary"}>
-                    {match.status}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="text-3xl font-mono font-bold">
-                    {match.scoreParsed ? formatScore(match.scoreParsed) : "0-0"}
-                  </div>
-                  {match.winner && (
-                    <div className="flex items-center justify-center gap-2 text-lg">
-                      <Trophy className="h-5 w-5 text-muted-foreground" />
-                      Winner: {match.winner.firstName} {match.winner.lastName}
-                    </div>
-                  )}
+          {(() => {
+            // Parse score data and calculate match insights
+            const pointDetails = match.pointLog.map(pointStr => {
+              try {
+                return JSON.parse(pointStr) as PointDetail
+              } catch {
+                return null
+              }
+            }).filter((point): point is PointDetail => point !== null)
 
-                  {match.scoreParsed?.sets && match.scoreParsed.sets.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                        Set by Set
-                      </h4>
-                      {match.scoreParsed.sets.map((set, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <span>Set {index + 1}</span>
-                          <div className="flex items-center gap-4">
-                            <span className="font-mono">
-                              {getTeamName("team1")}: {set.p1}
-                            </span>
-                            <span className="font-mono">
-                              {getTeamName("team2")}: {set.p2}
-                            </span>
+            const stats = calculateMatchStats(pointDetails)
+            let score: { sets?: Array<number[] | { p1?: number; p2?: number; [key: number]: number }> } = {}
+            try {
+              score = JSON.parse(match.score || "{}")
+            } catch {}
+
+            const formatSetsScore = () => {
+              if (!score.sets || score.sets.length === 0) return "0-0"
+              
+              return score.sets.map((set: number[] | { p1?: number; p2?: number; [key: number]: number }) => {
+                const p1Score = Array.isArray(set) ? set[0] : set.p1 || set[0] || 0
+                const p2Score = Array.isArray(set) ? set[1] : set.p2 || set[1] || 0
+                return `${p1Score}-${p2Score}`
+              }).join(", ")
+            }
+
+            const getSetsWon = () => {
+              if (!score.sets || score.sets.length === 0) return { p1: 0, p2: 0 }
+              
+              let p1Sets = 0, p2Sets = 0
+              score.sets.forEach((set: number[] | { p1?: number; p2?: number; [key: number]: number }) => {
+                const p1Score = Array.isArray(set) ? set[0] : set.p1 || set[0] || 0
+                const p2Score = Array.isArray(set) ? set[1] : set.p2 || set[1] || 0
+                if (p1Score > p2Score) p1Sets++
+                else if (p2Score > p1Score) p2Sets++
+              })
+              return { p1: p1Sets, p2: p2Sets }
+            }
+
+            const setsWon = getSetsWon()
+            const totalPoints = stats.totalPoints
+            const matchDurationText = match.duration 
+              ? formatDuration(match.duration)
+              : pointDetails.length > 0 
+                ? `${pointDetails.length} points`
+                : "No data"
+
+            return (
+              <>
+                {/* Hero Match Score */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
+                  <div className="absolute inset-0 bg-[url('/api/placeholder/800/400')] opacity-5"></div>
+                  <div className="relative z-10">
+                    <div className="text-center space-y-6">
+                      <div className="flex items-center justify-center gap-3">
+                        <Badge variant="secondary" className="text-white bg-white/20">
+                          {match.status}
+                        </Badge>
+                        {match.status === "Completed" && (
+                          <Badge className="bg-green-500 text-white">
+                            <Trophy className="w-3 h-3 mr-1" />
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="text-6xl font-mono font-bold tracking-tight">
+                          {setsWon.p1} - {setsWon.p2}
+                        </div>
+                        <div className="text-lg text-slate-300">
+                          Sets: {formatSetsScore()}
+                        </div>
+                      </div>
+
+                      {match.winner && (
+                        <div className="flex items-center justify-center gap-2 text-yellow-400">
+                          <Trophy className="h-6 w-6" />
+                          <span className="text-xl font-semibold">
+                            {match.winner.firstName} {match.winner.lastName} Wins!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Match Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-6 text-center">
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+                          <Activity className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                                                  <div className="text-3xl font-bold text-blue-900">{totalPoints}</div>
+                        <div className="text-sm text-blue-600">{t('totalPoints')}</div>
+                        </div>
+                        <div className="text-xs text-blue-500">
+                          {stats.totalPointsWonByPlayer[0]} - {stats.totalPointsWonByPlayer[1]}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-6 text-center">
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                          <Clock className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div>
+                                                  <div className="text-xl font-bold text-green-900">{matchDurationText}</div>
+                        <div className="text-sm text-green-600">{t('duration')}</div>
+                        </div>
+                        {match.startTime && (
+                          <div className="text-xs text-green-500">
+                            {t('started')}: {formatDateTime(match.startTime).split(',')[1]?.trim()}
                           </div>
+                        )}
+                        {match.endTime && match.status === "Completed" && (
+                          <div className="text-xs text-green-500">
+                            Ended: {formatDateTime(match.endTime).split(',')[1]?.trim()}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+                    <CardContent className="p-6 text-center">
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
+                          <Target className="h-6 w-6 text-purple-600" />
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Match Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Match Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Date: {formatDate(match.matchDate)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Time: {formatTime(match.matchDate)}</span>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Format</h4>
-                  {(() => {
-                    try {
-                      const format = JSON.parse(match.matchFormat)
-                      return (
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>Best of {format.sets} sets</div>
-                          <div>{format.noAd ? "No-Ad scoring" : "Traditional scoring"}</div>
-                          <div>{isDoubles ? "Doubles" : "Singles"} Match</div>
+                        <div>
+                          <div className="text-3xl font-bold text-purple-900">{stats.acesByPlayer[0] + stats.acesByPlayer[1]}</div>
+                          <div className="text-sm text-purple-600">Total Aces</div>
                         </div>
-                      )
-                    } catch {
-                      return <div className="text-sm text-muted-foreground">Standard format</div>
-                    }
-                  })()}
+                        <div className="text-xs text-purple-500">
+                          {stats.acesByPlayer[0]} - {stats.acesByPlayer[1]}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Players */}
-          {!isDoubles ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-blue-200 bg-blue-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    Player 1
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">
-                      {match.playerOne?.firstName} {match.playerOne?.lastName}
-                    </h3>
-                    {match.playerOne?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerOne.rating}</p>
-                    )}
-                    {match.playerOne?.yearOfBirth && (
-                      <p className="text-sm text-muted-foreground">
-                        Born: {match.playerOne.yearOfBirth}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Match Information & Players */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Match Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5" />
+                        {t('matchDetails')}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">{t('date')}</span>
+                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[0]}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">Time</span>
+                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[1]?.trim()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">Duration</span>
+                          <span className="text-sm font-medium">{matchDurationText}</span>
+                        </div>
+                        {match.startTime && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Started</span>
+                            <span className="text-sm font-medium">{formatDateTime(match.startTime).split(',')[1]?.trim()}</span>
+                          </div>
+                        )}
+                        {match.endTime && match.status === "Completed" && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Finished</span>
+                            <span className="text-sm font-medium">{formatDateTime(match.endTime).split(',')[1]?.trim()}</span>
+                          </div>
+                        )}
+                        {match.retirementReason && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Reason</span>
+                            <span className="text-sm font-medium text-orange-600 capitalize">{match.retirementReason}</span>
+                          </div>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">Format</span>
+                          <span className="text-sm font-medium">
+                            {(() => {
+                              try {
+                                const format = JSON.parse(match.matchFormat)
+                                return `Best of ${format.sets} ${format.noAd ? '(No-Ad)' : ''}`
+                              } catch {
+                                return "Standard"
+                              }
+                            })()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">Type</span>
+                          <span className="text-sm font-medium">{isDoubles ? "Doubles" : "Singles"}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-              <Card className="border-red-200 bg-red-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    Player 2
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">
-                      {match.playerTwo?.firstName} {match.playerTwo?.lastName}
-                    </h3>
-                    {match.playerTwo?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerTwo.rating}</p>
-                    )}
-                    {match.playerTwo?.yearOfBirth && (
-                      <p className="text-sm text-muted-foreground">
-                        Born: {match.playerTwo.yearOfBirth}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-blue-200 bg-blue-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    Team 1
-                    <Users className="h-4 w-4 text-muted-foreground ml-auto" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">
-                      {match.playerOne?.firstName} {match.playerOne?.lastName}
-                    </h3>
-                    {match.playerOne?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerOne.rating}</p>
-                    )}
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">
-                      {match.playerThree?.firstName} {match.playerThree?.lastName}
-                    </h3>
-                    {match.playerThree?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerThree.rating}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                  {/* Players/Teams */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        {isDoubles ? "Teams" : "Players"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border-l-4 border-blue-500">
+                          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-blue-900">
+                              {isDoubles ? (
+                                <div className="space-y-1">
+                                  <div>{match.playerOne?.firstName} {match.playerOne?.lastName}</div>
+                                  <div className="text-sm text-blue-600">{match.playerThree?.firstName} {match.playerThree?.lastName}</div>
+                                </div>
+                              ) : (
+                                <div>{match.playerOne?.firstName} {match.playerOne?.lastName}</div>
+                              )}
+                            </div>
+                            {match.playerOne?.rating && (
+                              <div className="text-xs text-blue-600">Rating: {match.playerOne.rating}</div>
+                            )}
+                          </div>
+                          {match.winnerId === match.playerOneId && (
+                            <Trophy className="h-5 w-5 text-yellow-500" />
+                          )}
+                        </div>
 
-              <Card className="border-red-200 bg-red-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    Team 2
-                    <Users className="h-4 w-4 text-muted-foreground ml-auto" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">
-                      {match.playerTwo?.firstName} {match.playerTwo?.lastName}
-                    </h3>
-                    {match.playerTwo?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerTwo.rating}</p>
-                    )}
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">
-                      {match.playerFour?.firstName} {match.playerFour?.lastName}
-                    </h3>
-                    {match.playerFour?.rating && (
-                      <p className="text-sm text-muted-foreground">Rating: {match.playerFour.rating}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border-l-4 border-red-500">
+                          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-red-900">
+                              {isDoubles ? (
+                                <div className="space-y-1">
+                                  <div>{match.playerTwo?.firstName} {match.playerTwo?.lastName}</div>
+                                  <div className="text-sm text-red-600">{match.playerFour?.firstName} {match.playerFour?.lastName}</div>
+                                </div>
+                              ) : (
+                                <div>{match.playerTwo?.firstName} {match.playerTwo?.lastName}</div>
+                              )}
+                            </div>
+                            {match.playerTwo?.rating && (
+                              <div className="text-xs text-red-600">Rating: {match.playerTwo.rating}</div>
+                            )}
+                          </div>
+                          {match.winnerId === match.playerTwoId && (
+                            <Trophy className="h-5 w-5 text-yellow-500" />
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Set by Set Breakdown */}
+                {score.sets && score.sets.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Set by Set Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {score.sets.map((set: number[] | { p1?: number; p2?: number; [key: number]: number }, index: number) => {
+                          const p1Score = Array.isArray(set) ? set[0] : set.p1 || set[0] || 0
+                          const p2Score = Array.isArray(set) ? set[1] : set.p2 || set[1] || 0
+                          const setWinner = p1Score > p2Score ? "p1" : p2Score > p1Score ? "p2" : null
+                          
+                          return (
+                            <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-medium">Set {index + 1}</span>
+                                {setWinner && (
+                                  <div className={`w-2 h-2 rounded-full ${setWinner === 'p1' ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                                )}
+                              </div>
+                              <div className="font-mono font-bold text-lg">
+                                {p1Score} - {p2Score}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )
+          })()}
         </TabsContent>
 
         {/* Point Log Tab */}
         <TabsContent value="points" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Point-by-Point Log ({match.pointLog.length} points)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {match.pointLog.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No detailed point log available for this match.
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {match.pointLog.map((pointStr, index) => {
-                    try {
-                      const point = JSON.parse(pointStr)
-                      const winnerName = point.winner === "p1" 
-                        ? getTeamName("team1")
-                        : getTeamName("team2")
-                      
-                      return (
-                        <div 
-                          key={index} 
-                          className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                Point won by {winnerName}
-                              </div>
-                              {point.pointOutcome && (
-                                <div className="text-sm text-muted-foreground">
-                                  {point.pointOutcome}
-                                  {point.lastShotType && ` • ${point.lastShotType}`}
-                                  {point.serveType && ` • ${point.serveType} Serve`}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {point.gameScore && (
-                            <div className="text-sm font-mono text-muted-foreground">
-                              {point.gameScore}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    } catch {
-                      return (
-                        <div key={index} className="p-3 rounded-lg border bg-muted/30 text-muted-foreground">
-                          Point #{index + 1} (Invalid data)
-                        </div>
-                      )
-                    }
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {(() => {
+            // Parse point log for PointByPointView component
+            const pointDetails = match.pointLog.map(pointStr => {
+              try {
+                return JSON.parse(pointStr) as PointDetail
+              } catch {
+                return null
+              }
+            }).filter((point): point is PointDetail => point !== null)
+
+            if (pointDetails.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-2">No detailed point log available for this match.</p>
+                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see point-by-point analysis.</p>
+                  </CardContent>
+                </Card>
+              )
+            }
+
+            // Prepare player names for PointByPointView
+            const playerNames = {
+              p1: getTeamName("team1"),
+              p2: getTeamName("team2"),
+              p3: isDoubles ? match.playerThree?.firstName : undefined,
+              p4: isDoubles ? match.playerFour?.firstName : undefined
+            }
+
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Point-by-Point Analysis ({pointDetails.length} points)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PointByPointView pointLog={pointDetails} playerNames={playerNames} />
+                </CardContent>
+              </Card>
+            )
+          })()}
         </TabsContent>
 
         {/* Statistics Tab */}
         <TabsContent value="statistics" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Total Points</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{pointAnalysis.totalPoints}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Winners</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">{pointAnalysis.winners.p1}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">{pointAnalysis.winners.p2}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Unforced Errors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">{pointAnalysis.unforcedErrors.p1}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">{pointAnalysis.unforcedErrors.p2}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Aces</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">{pointAnalysis.aces.p1}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">{pointAnalysis.aces.p2}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Double Faults</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">{pointAnalysis.doubleFaults.p1}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">{pointAnalysis.doubleFaults.p2}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">First Serve %</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">{pointAnalysis.firstServePercentage.p1.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">{pointAnalysis.firstServePercentage.p2.toFixed(1)}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Break Points</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team1")}</span>
-                    <span className="font-bold">
-                      {pointAnalysis.breakPointsConverted.p1}/{pointAnalysis.breakPointsTotal.p1}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">{getTeamName("team2")}</span>
-                    <span className="font-bold">
-                      {pointAnalysis.breakPointsConverted.p2}/{pointAnalysis.breakPointsTotal.p2}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <MatchStatsComponentSimpleFixed 
+            stats={calculateMatchStats(match.pointLog.map(pointStr => {
+              try {
+                return JSON.parse(pointStr) as PointDetail
+              } catch {
+                return null
+              }
+            }).filter((point): point is PointDetail => point !== null))}
+            playerNames={{
+              p1: getTeamName("team1"),
+              p2: getTeamName("team2")
+            }}
+            detailLevel="simple"
+          />
         </TabsContent>
 
         {/* Analysis Tab */}
         <TabsContent value="analysis" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Match Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Performance Summary</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {pointAnalysis.totalPoints > 0 ? (
-                      <>
-                        The match consisted of {pointAnalysis.totalPoints} points. 
-                        {pointAnalysis.winners.p1 > pointAnalysis.winners.p2 
-                          ? ` ${getTeamName("team1")} hit more winners (${pointAnalysis.winners.p1}) compared to ${getTeamName("team2")} (${pointAnalysis.winners.p2}).`
-                          : ` ${getTeamName("team2")} hit more winners (${pointAnalysis.winners.p2}) compared to ${getTeamName("team1")} (${pointAnalysis.winners.p1}).`
-                        }
-                      </>
-                    ) : (
-                      "No detailed statistics available for this match."
-                    )}
-                  </p>
-                </div>
-                
-                {pointAnalysis.totalPoints > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h3 className="font-semibold mb-2">Serving Performance</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {getTeamName("team1")} served at {pointAnalysis.firstServePercentage.p1.toFixed(1)}% first serves, 
-                        while {getTeamName("team2")} achieved {pointAnalysis.firstServePercentage.p2.toFixed(1)}%.
-                        {pointAnalysis.aces.p1 + pointAnalysis.aces.p2 > 0 && 
-                          ` The match featured ${pointAnalysis.aces.p1 + pointAnalysis.aces.p2} total aces.`
-                        }
-                      </p>
+          {(() => {
+            // Parse point details for deep analysis
+            const pointDetails = match.pointLog.map(pointStr => {
+              try {
+                return JSON.parse(pointStr) as PointDetail
+              } catch {
+                return null
+              }
+            }).filter((point): point is PointDetail => point !== null)
+
+            if (pointDetails.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-2">No detailed analysis available for this match.</p>
+                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see AI-powered match insights.</p>
+                  </CardContent>
+                </Card>
+              )
+            }
+
+            const stats = calculateMatchStats(pointDetails)
+            const totalPoints = pointDetails.length
+
+            // Key momentum analysis
+            const lastTenPoints = pointDetails.slice(-10)
+            const momentumP1 = lastTenPoints.filter(p => p.winner === 'p1').length
+            const momentumP2 = lastTenPoints.filter(p => p.winner === 'p2').length
+
+            // Break point analysis
+            const breakPointsCreated = pointDetails.filter(p => p.isBreakPoint).length
+            const breakPointsConverted = pointDetails.filter(p => p.isBreakPoint && p.isGameWinning).length
+            const breakPointConversion = breakPointsCreated > 0 ? (breakPointsConverted / breakPointsCreated * 100) : 0
+
+            // Service game analysis
+            const serviceGames = pointDetails.filter(p => p.isGameWinning).length
+            const breaksOfServe = pointDetails.filter(p => p.isGameWinning && p.server !== p.winner).length
+
+            // Set analysis
+            let score: { sets?: Array<number[] | { p1?: number; p2?: number; [key: number]: number }> } = {}
+            try {
+              score = JSON.parse(match.score || "{}")
+            } catch {}
+
+            const setsPlayed = score.sets?.length || 0
+
+            return (
+              <div className="space-y-6">
+                {/* Performance Summary */}
+                <Card className="border-gradient-to-r from-blue-200 to-purple-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Match Analysis & Insights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2 text-blue-900">MATCH SUMMARY</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Total Points Played</span>
+                              <span className="font-semibold">{totalPoints}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Sets Completed</span>
+                              <span className="font-semibold">{setsPlayed}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Service Games</span>
+                              <span className="font-semibold">{serviceGames}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Breaks of Serve</span>
+                              <span className="font-semibold text-red-600">{breaksOfServe}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2 text-purple-900">MOMENTUM TRACKER</h4>
+                          <div className="space-y-2">
+                            <div className="text-xs text-muted-foreground mb-1">Last 10 Points</div>
+                            <div className="flex gap-1 mb-2">
+                              {lastTenPoints.map((point, index) => (
+                                <div
+                                  key={index}
+                                  className={`w-3 h-3 rounded-full ${
+                                    point.winner === 'p1' ? 'bg-blue-500' : 'bg-red-500'
+                                  }`}
+                                  title={`Point ${pointDetails.length - 9 + index}: ${point.winner === 'p1' ? getTeamName("team1") : getTeamName("team2")}`}
+                                />
+                              ))}
+                            </div>
+                            <div className="text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-blue-600">{getTeamName("team1")}</span>
+                                <span className="font-bold text-blue-600">{momentumP1}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-red-600">{getTeamName("team2")}</span>
+                                <span className="font-bold text-red-600">{momentumP2}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </>
-                )}
+                  </CardContent>
+                </Card>
+
+                {/* Break Point Analysis */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+                    <CardHeader>
+                      <CardTitle className="text-orange-900 text-lg">Break Point Pressure</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-orange-900">{breakPointConversion.toFixed(0)}%</div>
+                          <div className="text-sm text-orange-600">Conversion Rate</div>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Break Points Created</span>
+                            <span className="font-semibold">{breakPointsCreated}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Break Points Converted</span>
+                            <span className="font-semibold text-orange-600">{breakPointsConverted}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {breakPointConversion > 40 
+                            ? "Excellent conversion rate - efficient in big moments"
+                            : breakPointConversion > 25
+                            ? "Good conversion rate - capitalizing on opportunities"
+                            : "Room for improvement on big points"}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+                    <CardHeader>
+                      <CardTitle className="text-green-900 text-lg">Service Dominance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-green-900">
+                            {serviceGames > 0 ? ((serviceGames - breaksOfServe) / serviceGames * 100).toFixed(0) : 0}%
+                          </div>
+                          <div className="text-sm text-green-600">Service Games Held</div>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Total Service Games</span>
+                            <span className="font-semibold">{serviceGames}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Games Lost on Serve</span>
+                            <span className="font-semibold text-red-600">{breaksOfServe}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {breaksOfServe === 0
+                            ? "Perfect service record - no breaks of serve"
+                            : breaksOfServe < serviceGames * 0.2
+                            ? "Strong service games - rarely broken"
+                            : "Service games under pressure"}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Point Distribution Analysis */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Point Distribution Analysis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 rounded-lg bg-blue-50">
+                        <div className="text-2xl font-bold text-blue-900">{stats.acesByPlayer[0]}</div>
+                        <div className="text-xs text-blue-600">Aces - {getTeamName("team1")}</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg bg-red-50">
+                        <div className="text-2xl font-bold text-red-900">{stats.acesByPlayer[1]}</div>
+                        <div className="text-xs text-red-600">Aces - {getTeamName("team2")}</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg bg-yellow-50">
+                        <div className="text-2xl font-bold text-yellow-900">{stats.doubleFaultsByPlayer[0]}</div>
+                        <div className="text-xs text-yellow-600">DFs - {getTeamName("team1")}</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg bg-orange-50">
+                        <div className="text-2xl font-bold text-orange-900">{stats.doubleFaultsByPlayer[1]}</div>
+                        <div className="text-xs text-orange-600">DFs - {getTeamName("team2")}</div>
+                      </div>
+                    </div>
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="text-sm text-muted-foreground">
+                      <p className="mb-2"><strong>Performance Insights:</strong></p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Service power: {stats.acesByPlayer[0] + stats.acesByPlayer[1]} aces served total</li>
+                        <li>• Pressure points: {breakPointsCreated} break point opportunities created</li>
+                        <li>• Match rhythm: {totalPoints} points over {setsPlayed} sets ({(totalPoints / Math.max(setsPlayed, 1)).toFixed(1)} points per set)</li>
+                        {match.duration && (
+                          <li>• Playing pace: {(totalPoints / (match.duration / 60)).toFixed(1)} points per minute</li>
+                        )}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+            )
+          })()}
         </TabsContent>
       </Tabs>
     </div>

@@ -4,9 +4,10 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Eye, Users } from "lucide-react"
+import { Trophy, Eye, Users, Share2 } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
+import { toast } from "sonner"
 
 interface MatchesListProps {
   matches: Array<{
@@ -111,6 +112,37 @@ export function MatchesList({ matches }: MatchesListProps) {
     return isDoubles ? "h-auto min-h-[200px]" : ""
   }
 
+  const handleShareMatch = async (matchId: string, playerOneName: string, playerTwoName: string) => {
+    const shareUrl = `${window.location.origin}/live/${matchId}`
+    const title = `${playerOneName} vs ${playerTwoName} - Tennis Match Results`
+    const text = `Check out the match results and statistics for ${playerOneName} vs ${playerTwoName}!`
+    
+    // Try native share first (works best on mobile)
+    if (typeof navigator !== 'undefined' && navigator.share && /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({
+          title,
+          text,
+          url: shareUrl
+        })
+        toast.success("Match shared successfully!")
+        return
+      } catch (err) {
+        // User canceled or share failed, fall through to clipboard
+        console.log("Native share failed:", err)
+      }
+    }
+    
+    // Fallback to clipboard copy
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success("Match link copied to clipboard! Share it to let others view the results.")
+    } catch {
+      // If clipboard fails, show manual copy
+      toast.error(`Copy this link manually: ${shareUrl}`)
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {matches.map((match) => (
@@ -161,6 +193,18 @@ export function MatchesList({ matches }: MatchesListProps) {
                     View
                   </Link>
                 </Button>
+                
+                {/* Share button for all matches (both completed and in progress) */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleShareMatch(match.$id, match.playerOneName, match.playerTwoName)}
+                  className="h-8 px-2"
+                  title="Share match results"
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
+                
                 <DeleteMatchButton 
                   matchId={match.$id}
                   playerNames={{

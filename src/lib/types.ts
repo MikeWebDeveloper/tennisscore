@@ -32,6 +32,10 @@ export interface Match {
   winnerId?: string
   score: string
   pointLog?: string[]
+  startTime?: string       // When first point was played
+  endTime?: string         // When match ended
+  duration?: number        // Match duration in minutes
+  retirementReason?: string // Reason if match was retired
   userId: string
   $createdAt: string
   $updatedAt: string

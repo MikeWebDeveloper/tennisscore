@@ -68,6 +68,10 @@ export interface Match {
   winnerId?: string
   score: Score
   pointLog: PointDetail[]
+  startTime?: string       // When first point was played
+  endTime?: string         // When match ended
+  duration?: number        // Match duration in minutes
+  retirementReason?: string // Reason if match was retired
   events: Array<{
     type: 'comment' | 'photo'
     content: string
@@ -93,6 +97,11 @@ interface MatchState {
   isMatchComplete: boolean
   winnerId: string | null
   
+  // Timing
+  startTime: string | null
+  endTime: string | null
+  duration: number | null  // Duration in minutes
+  
   // Detailed logging mode
   detailedLoggingEnabled: boolean
   setDetailedLoggingEnabled: (enabled: boolean) => void
@@ -108,6 +117,9 @@ interface MatchState {
     pointDetail: PointDetail
     isMatchComplete: boolean
     winnerId?: string
+    startTime?: string
+    endTime?: string
+    duration?: number
   }
   undoLastPoint: () => { newScore: Score; newPointLog: PointDetail[] }
   setServer: (server: 'p1' | 'p2') => void
@@ -238,6 +250,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   isMatchComplete: false,
   winnerId: null,
   
+  startTime: null,
+  endTime: null,
+  duration: null,
+  
   detailedLoggingEnabled: false,
   setDetailedLoggingEnabled: (enabled) => set({ detailedLoggingEnabled: enabled }),
   
@@ -310,12 +326,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const { matchFormat, currentServer } = state
     const winnerIdx = winner === 'p1' ? 0 : 1
     
+    // Set start time on first point
+    const isFirstPoint = state.pointLog.length === 0
+    let startTime = state.currentMatch.startTime
+    if (isFirstPoint && !startTime) {
+      startTime = new Date().toISOString()
+    }
+    
     let isThisPointGameWinning = false
     let isThisPointSetWinning = false
     let isThisPointMatchWinning = false
     let matchStatus: "In Progress" | "Completed" = "In Progress"
     let matchWinnerId: string | undefined = undefined
     let nextServer = currentServer
+    let endTime: string | undefined
+    let duration: number | undefined
 
     const setsNeededToWin = Math.ceil(matchFormat.sets / 2)
     const currentP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
@@ -415,6 +440,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
           isThisPointMatchWinning = true
           matchStatus = "Completed"
           matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+          endTime = new Date().toISOString()
+          if (startTime) {
+            duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
+          }
         }
         
         // Reset for next set - Player 1 always serves first game of new set
@@ -461,6 +490,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             isThisPointMatchWinning = true
             matchStatus = "Completed"
             matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+            endTime = new Date().toISOString()
+            if (startTime) {
+              duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
+            }
           } else {
             // FIXED: Check if next set should start as super tie-break
             const newP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
@@ -526,10 +559,13 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       currentServer: nextServer,
       initialTiebreakServer: newScore.initialTiebreakServer || null,
       isMatchComplete: matchStatus === "Completed",
-      winnerId: matchWinnerId || null
+      winnerId: matchWinnerId || null,
+      startTime,
+      endTime,
+      duration
     })
     
-    return { newScore, pointDetail, isMatchComplete: matchStatus === "Completed", winnerId: matchWinnerId }
+    return { newScore, pointDetail, isMatchComplete: matchStatus === "Completed", winnerId: matchWinnerId, startTime, endTime, duration }
   },
   
   undoLastPoint: () => {

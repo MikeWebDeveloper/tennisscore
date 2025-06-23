@@ -7,6 +7,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { LanguageToggle } from "@/components/ui/language-toggle"
 import { 
   Home, 
   Trophy, 
@@ -22,6 +23,7 @@ import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
 import { User } from "@/lib/types"
 import { CollapsibleMobileNav } from "./collapsible-mobile-nav"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface AppShellProps {
   children: React.ReactNode
@@ -87,6 +89,29 @@ export function AppShell({ children, user }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const t = useTranslations()
+
+  // Localized navigation
+  const localizedNavigation = [
+    {
+      href: "/dashboard",
+      icon: Home,
+      label: t('dashboard'),
+      description: "Overview & stats"
+    },
+    {
+      href: "/matches",
+      icon: Trophy,
+      label: t('matches'),
+      description: "Match history"
+    },
+    {
+      href: "/players",
+      icon: Users,
+      label: t('players'),
+      description: "Manage players"
+    }
+  ]
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -135,7 +160,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
             {/* Navigation */}
             <nav className="flex-1 space-y-2 p-4">
-              {navigation.map((item) => {
+              {localizedNavigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
@@ -163,13 +188,13 @@ export function AppShell({ children, user }: AppShellProps) {
               <Button asChild className="w-full minimal-button font-medium shadow-sm">
                 <Link href="/matches/new">
                   <Plus className="h-4 w-4 mr-2" />
-                  New Match
+                  {t('newMatch')}
                 </Link>
               </Button>
             </div>
 
-            {/* Theme Toggle */}
-            <div className="px-4 pb-2">
+            {/* Theme Toggle & Language */}
+            <div className="px-4 pb-2 space-y-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -179,15 +204,18 @@ export function AppShell({ children, user }: AppShellProps) {
                 {theme === "dark" ? (
                   <>
                     <Sun className="h-4 w-4 mr-2" />
-                    Light Mode
+                    {t('lightMode')}
                   </>
                 ) : (
                   <>
                     <Moon className="h-4 w-4 mr-2" />
-                    Dark Mode
+                    {t('darkMode')}
                   </>
                 )}
               </Button>
+              <div className="flex justify-center">
+                <LanguageToggle />
+              </div>
             </div>
 
             {/* User Profile */}
@@ -244,6 +272,7 @@ export function AppShell({ children, user }: AppShellProps) {
           </div>
 
           <div className="flex items-center space-x-2">
+            <LanguageToggle className="mr-1" />
             <Button
               variant="ghost"
               size="sm"
@@ -303,7 +332,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
                   {/* Mobile Navigation */}
                   <nav className="flex-1 space-y-2 p-4">
-                    {navigation.map((item) => {
+                    {localizedNavigation.map((item) => {
                       const isActive = pathname === item.href
                       return (
                         <Link
@@ -332,7 +361,7 @@ export function AppShell({ children, user }: AppShellProps) {
                     <Button asChild className="w-full minimal-button font-medium shadow-sm" onClick={() => setSidebarOpen(false)}>
                       <Link href="/matches/new">
                         <Plus className="h-4 w-4 mr-2" />
-                        New Match
+                        {t('newMatch')}
                       </Link>
                     </Button>
                   </div>
@@ -356,7 +385,7 @@ export function AppShell({ children, user }: AppShellProps) {
                     <form action={signOut}>
                       <Button variant="ghost" size="sm" type="submit" className="w-full hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-border">
                         <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
+                        {t('signOut')}
                       </Button>
                     </form>
                   </div>

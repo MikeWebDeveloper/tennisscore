@@ -222,6 +222,9 @@ export function MatchStatsComponentSimple({
 }) {
 
   const hasPoints = stats.totalPoints > 0
+  
+  // Debug log to check what's happening
+  console.log('MatchStatsComponentSimple - detailLevel:', detailLevel, 'hasPoints:', hasPoints, 'totalPoints:', stats.totalPoints)
 
   if (!hasPoints) {
     return (
@@ -357,8 +360,8 @@ export function MatchStatsComponentSimple({
         </Card>
       )}
 
-      {/* Service Section (Simple Stats Only) */}
-      {detailLevel === 'simple' && (
+      {/* Service Section (Simple and Complex Stats) - ALWAYS SHOW FOR SIMPLE/COMPLEX */}
+      {(detailLevel === 'simple' || detailLevel === 'complex') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">

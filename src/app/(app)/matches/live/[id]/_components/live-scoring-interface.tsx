@@ -32,7 +32,7 @@ import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
-import { MatchStatsComponentSimple } from "../../../[id]/_components/match-stats"
+import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
 
@@ -49,6 +49,7 @@ interface LiveScoringInterfaceProps {
     status: string
     scoreParsed: Score
     matchFormatParsed?: MatchFormat
+    startTime?: string
   }
 }
 
@@ -220,10 +221,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
   const [showSimpleStats, setShowSimpleStats] = useState(false)
+  const [showRetireDialog, setShowRetireDialog] = useState(false)
+  const [retireReason, setRetireReason] = useState<'completed' | 'retired' | 'weather' | 'injury' | ''>('')
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [serveType, setServeType] = useState<'first' | 'second'>('first')
   const [isInGame, setIsInGame] = useState(false)
   const [isMatchInitialized, setIsMatchInitialized] = useState(false)
+  const [startTime, setStartTime] = useState<string | null>(null)
   
   const playerNames = {
     p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
@@ -237,8 +241,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     ...point,
     lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType'])
   }))
-  
-  const matchStats = calculateMatchStats(convertedPointLog)
   
   // Parse match format properly
   const parsedMatchFormat = useMemo(() => {
@@ -316,6 +318,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       initializeMatch(matchData)
       setIsInGame(existingPointLog.length > 0)
       setIsMatchInitialized(true)
+      setStartTime(match.startTime || null)
     } catch (error) {
       console.error("Failed to initialize match:", error)
     }
@@ -426,6 +429,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         pointLog: StorePointDetail[]
         status?: "In Progress" | "Completed"
         winnerId?: string
+        startTime?: string
+        endTime?: string
+        duration?: number
       } = {
         score: result.newScore,
         pointLog: [...pointLog, result.pointDetail]
@@ -434,6 +440,17 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       if (result.isMatchComplete && result.winnerId) {
         updateData.status = "Completed"
         updateData.winnerId = result.winnerId
+      }
+
+      // Add timing data if available
+      if (result.startTime) {
+        updateData.startTime = result.startTime
+      }
+      if (result.endTime) {
+        updateData.endTime = result.endTime
+      }
+      if (result.duration !== undefined) {
+        updateData.duration = result.duration
       }
 
       await updateMatchScore(match.$id, updateData)
@@ -506,8 +523,67 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const handleEndMatch = () => {
-    router.push(`/matches/${match.$id}`)
+  const handleRetireMatch = async (reason: 'retired' | 'weather' | 'injury') => {
+    try {
+      // Update match as completed with retirement reason
+      const updateData: {
+        status: "Completed"
+        winnerId?: string
+        retirementReason?: string
+        endTime?: string
+        duration?: number
+      } = {
+        status: "Completed",
+        retirementReason: reason,
+        endTime: new Date().toISOString()
+      }
+      
+      // If match has started, determine winner based on current score
+      if (pointLog.length > 0) {
+        // Simple logic: player with more sets/games wins, or player 1 if tied
+        const p1SetsWon = score.sets.filter(set => set[0] > set[1]).length
+        const p2SetsWon = score.sets.filter(set => set[1] > set[0]).length
+        
+        if (p1SetsWon > p2SetsWon) {
+          updateData.winnerId = match.playerOne.$id
+        } else if (p2SetsWon > p1SetsWon) {
+          updateData.winnerId = match.playerTwo.$id
+        } else {
+          // If tied on sets, check games in the current set
+          const p1Games = score.games[0]
+          const p2Games = score.games[1]
+          updateData.winnerId = p1Games >= p2Games ? match.playerOne.$id : match.playerTwo.$id
+        }
+      } else {
+        // No points played, default to player 1 as winner
+        updateData.winnerId = match.playerOne.$id
+      }
+
+      // Calculate duration if we have a start time
+      if (startTime) {
+        updateData.duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
+      }
+
+      await updateMatchScore(match.$id, {
+        score,
+        pointLog,
+        ...updateData
+      })
+      
+      const reasonText = reason === 'retired' ? 'retirement' : 
+                        reason === 'weather' ? 'weather conditions' : 'injury'
+      
+      toast.success(`Match ended due to ${reasonText}`)
+      setShowRetireDialog(false)
+      
+      // Navigate to match details after a short delay
+      setTimeout(() => {
+        router.push(`/matches/${match.$id}`)
+      }, 2000)
+    } catch (error) {
+      console.error("Failed to retire match:", error)
+      toast.error("Failed to end match")
+    }
   }
 
   const handleShare = async () => {
@@ -629,8 +705,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           
           <TabsContent value="stats" className="mt-4">
             <MatchStatsComponentSimple 
-              stats={matchStats} 
-              playerNames={playerNames}
+              stats={calculateMatchStats(convertedPointLog)}
+              playerNames={{
+                p1: playerNames.p1,
+                p2: playerNames.p2
+              }}
               detailLevel={detailLevel}
             />
           </TabsContent>
@@ -655,7 +734,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <Button 
             variant="outline" 
             className="w-full h-12"
-            onClick={handleEndMatch}
+            onClick={() => setShowRetireDialog(true)}
           >
             <Trophy className="h-4 w-4 mr-2" />
             End Match
@@ -729,6 +808,92 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerNames
         }}
       />
+
+      <Dialog open={showRetireDialog} onOpenChange={setShowRetireDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>End Match</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Why are you ending the match?
+            </p>
+            
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="retireReason"
+                  value="completed"
+                  checked={retireReason === 'completed'}
+                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                  className="text-primary"
+                />
+                <span>Match completed normally</span>
+              </label>
+              
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="retireReason"
+                  value="retired"
+                  checked={retireReason === 'retired'}
+                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                  className="text-primary"
+                />
+                <span>Player retired</span>
+              </label>
+              
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="retireReason"
+                  value="weather"
+                  checked={retireReason === 'weather'}
+                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                  className="text-primary"
+                />
+                <span>Weather conditions</span>
+              </label>
+              
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="retireReason"
+                  value="injury"
+                  checked={retireReason === 'injury'}
+                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                  className="text-primary"
+                />
+                <span>Injury</span>
+              </label>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => {
+              setShowRetireDialog(false)
+              setRetireReason('')
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (retireReason === 'completed') {
+                  router.push(`/matches/${match.$id}`)
+                } else if (retireReason) {
+                  handleRetireMatch(retireReason as 'retired' | 'weather' | 'injury')
+                }
+                setShowRetireDialog(false)
+                setRetireReason('')
+              }}
+              disabled={!retireReason}
+            >
+              End Match
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

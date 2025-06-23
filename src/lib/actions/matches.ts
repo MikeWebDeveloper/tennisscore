@@ -98,6 +98,10 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
   pointLog: object[]
   status?: "In Progress" | "Completed"
   winnerId?: string
+  startTime?: string
+  endTime?: string
+  duration?: number
+  retirementReason?: string
 }): Promise<{ success?: boolean; match?: Match; error?: string }> {
   try {
     const user = await getCurrentUser()
@@ -123,6 +127,22 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
     
     if (scoreUpdate.winnerId) {
       updateData.winnerId = scoreUpdate.winnerId
+    }
+
+    if (scoreUpdate.startTime) {
+      updateData.startTime = scoreUpdate.startTime
+    }
+
+    if (scoreUpdate.endTime) {
+      updateData.endTime = scoreUpdate.endTime
+    }
+
+    if (scoreUpdate.duration !== undefined) {
+      updateData.duration = scoreUpdate.duration
+    }
+
+    if (scoreUpdate.retirementReason) {
+      updateData.retirementReason = scoreUpdate.retirementReason
     }
 
     const match = await withRetry(() =>
