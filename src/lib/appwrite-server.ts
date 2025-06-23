@@ -37,17 +37,23 @@ export async function withRetry<T>(
     } catch (error: unknown) {
       lastError = error as Error
       
-      // Don't retry on certain types of errors
+      // Enhanced error handling for different types
       if (error && typeof error === 'object') {
-        const err = error as { code?: number; type?: string; message?: string }
+        const err = error as { code?: number | string; type?: string; message?: string; cause?: { code?: string } }
         
-        // Don't retry on auth/permission errors
-        if (err.code === 401 || err.code === 403 || err.type === 'general_unauthorized_scope') {
+        // Handle network errors specifically
+        if (err.cause?.code === 'ECONNRESET' || 
+            err.cause?.code === 'ETIMEDOUT' || 
+            err.cause?.code === 'ENOTFOUND' ||
+            err.message?.includes('fetch failed') ||
+            err.message?.includes('network')) {
+          console.log(`🔄 Network error detected (${err.cause?.code || 'fetch failed'}), will retry...`)
+          // Continue to retry logic
+        } else if (err.code === 401 || err.code === 403 || err.type === 'general_unauthorized_scope') {
+          // Don't retry on auth/permission errors
           throw error
-        }
-        
-        // Don't retry on validation errors (except rate limits)
-        if (err.code === 400 && err.type !== 'general_rate_limit_exceeded') {
+        } else if (err.code === 400 && err.type !== 'general_rate_limit_exceeded') {
+          // Don't retry on validation errors (except rate limits)
           throw error
         }
       }

@@ -571,6 +571,11 @@ export function MatchStatsComponentSimpleFixed({
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
+              label="Break Points Faced" 
+              value1={stats.breakPointsByPlayer.faced[0]} 
+              value2={stats.breakPointsByPlayer.faced[1]} 
+            />
+            <StatRow 
               label="Break Points Converted" 
               value1={stats.breakPointsByPlayer.converted[0]} 
               value2={stats.breakPointsByPlayer.converted[1]} 

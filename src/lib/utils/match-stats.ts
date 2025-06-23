@@ -113,24 +113,36 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       if (isP1Serving) {
         // P1 is serving, so P1 faces break point
         stats.breakPointsByPlayer.faced[0]++
-        if (point.isGameWinning && !isP1) {
-          // P2 won the game on a break point (converted the break)
-          stats.breakPointsByPlayer.converted[1]++
-        } else {
-          // Either P1 won the break point (saved it) OR P2 won but game continues
-          // In both cases, count it as saved for the server
+        if (isP1) {
+          // P1 (server) won the point - break point saved
           stats.breakPointsByPlayer.saved[0]++
         }
+        // Note: We don't count conversions here because we need to check 
+        // if the receiver eventually won the game (not just this point)
       } else {
         // P2 is serving, so P2 faces break point  
         stats.breakPointsByPlayer.faced[1]++
-        if (point.isGameWinning && isP1) {
-          // P1 won the game on a break point (converted the break)
-          stats.breakPointsByPlayer.converted[0]++
-        } else {
-          // Either P2 won the break point (saved it) OR P1 won but game continues
-          // In both cases, count it as saved for the server
+        if (!isP1) {
+          // P2 (server) won the point - break point saved
           stats.breakPointsByPlayer.saved[1]++
+        }
+        // Note: We don't count conversions here because we need to check 
+        // if the receiver eventually won the game (not just this point)
+      }
+    }
+    
+    // Count break point conversions separately by checking game winners
+    if (point.isGameWinning) {
+      // Check if this was a break of serve
+      const isBreakOfServe = (isP1Serving && !isP1) || (!isP1Serving && isP1)
+      if (isBreakOfServe) {
+        // The receiver broke serve
+        if (isP1Serving) {
+          // P2 broke P1's serve
+          stats.breakPointsByPlayer.converted[1]++
+        } else {
+          // P1 broke P2's serve
+          stats.breakPointsByPlayer.converted[0]++
         }
       }
     }
@@ -187,11 +199,17 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
   ]
 
   // Calculate break point conversion rates
+  // Note: faced[0] means P1 faced break points, converted[0] means P1 converted break points
+  // So P1's conversion rate = converted[0] / (total break points P1 had against P2)
+  // We need to count how many break points each player had
+  const p1BreakPointOpportunities = pointLog.filter(p => p.isBreakPoint && p.server === 'p2').length
+  const p2BreakPointOpportunities = pointLog.filter(p => p.isBreakPoint && p.server === 'p1').length
+  
   stats.breakPointsByPlayer.conversionRate = [
-    stats.breakPointsByPlayer.faced[1] > 0 ? 
-      Math.round((stats.breakPointsByPlayer.converted[0] / stats.breakPointsByPlayer.faced[1]) * 100) : 0,
-    stats.breakPointsByPlayer.faced[0] > 0 ? 
-      Math.round((stats.breakPointsByPlayer.converted[1] / stats.breakPointsByPlayer.faced[0]) * 100) : 0
+    p1BreakPointOpportunities > 0 ? 
+      Math.round((stats.breakPointsByPlayer.converted[0] / p1BreakPointOpportunities) * 100) : 0,
+    p2BreakPointOpportunities > 0 ? 
+      Math.round((stats.breakPointsByPlayer.converted[1] / p2BreakPointOpportunities) * 100) : 0
   ]
 
   return stats

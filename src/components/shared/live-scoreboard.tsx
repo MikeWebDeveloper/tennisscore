@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
 import { Score } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { isBreakPoint } from "@/lib/utils/tennis-scoring"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface LiveScoreboardProps {
   playerOneName: string
@@ -28,6 +30,7 @@ interface LiveScoreboardProps {
   isInGame?: boolean
   onServerClick?: () => void
   className?: string
+  matchFormat?: { noAd?: boolean }
 }
 
 export function LiveScoreboard({
@@ -51,8 +54,10 @@ export function LiveScoreboard({
   playerTwoId,
   isInGame = false,
   onServerClick,
-  className
+  className,
+  matchFormat
 }: LiveScoreboardProps) {
+  const t = useTranslations()
   const isTiebreak = score.isTiebreak || false
   const server = currentServer || score.server
   
@@ -90,6 +95,26 @@ export function LiveScoreboard({
     ? `${formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)} / ${formatPlayerInfo(playerFourYearOfBirth, playerFourRating)}`
     : formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)
   
+  // Calculate current breakpoint status
+  const getBreakPointStatus = () => {
+    if (status !== "In Progress" || isTiebreak || !server) return { isBreakPoint: false, facingBreakPoint: null }
+    
+    const serverPoints = server === 'p1' ? score.points[0] : score.points[1]
+    const returnerPoints = server === 'p1' ? score.points[1] : score.points[0]
+    
+    const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, matchFormat?.noAd || false)
+    
+    // The RETURNER has the breakpoint opportunity (should get the BP badge)
+    const returner = server === 'p1' ? 'p2' : 'p1'
+    
+    return {
+      isBreakPoint: isCurrentlyBreakPoint,
+      facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
+    }
+  }
+  
+  const breakPointStatus = getBreakPointStatus()
+  
   const getPointDisplay = (playerIndex: number) => {
     if (status !== "In Progress") return ""
     
@@ -125,7 +150,8 @@ export function LiveScoreboard({
         {/* Player 1 */}
         <div className={cn(
           "p-2 sm:p-3 transition-colors",
-          isWinner(playerOneId) && "bg-primary/5"
+          isWinner(playerOneId) && "bg-primary/5",
+          breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20"
         )}>
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
@@ -153,9 +179,23 @@ export function LiveScoreboard({
                     {teamOneYear}
                   </div>
                 )}
-                <h3 className="font-medium text-sm sm:text-base truncate">
-                  {teamOneName}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium text-sm sm:text-base truncate">
+                    {teamOneName}
+                  </h3>
+                  {/* Breakpoint indicator */}
+                  {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600 px-1.5 py-0.5">
+                        {t('breakPoint')}
+                      </Badge>
+                    </motion.div>
+                  )}
+                </div>
               </div>
               <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
                 {setsWon[0]}
@@ -188,7 +228,12 @@ export function LiveScoreboard({
               <div className="w-px h-4 bg-border"></div>
               
               {/* Current point */}
-              <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
+              <div className={cn(
+                "text-base sm:text-lg font-mono font-bold w-8 text-center",
+                breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
+                  ? "text-orange-600 dark:text-orange-400"
+                  : "text-primary"
+              )}>
                 {getPointDisplay(0)}
               </div>
             </div>
@@ -198,7 +243,8 @@ export function LiveScoreboard({
         {/* Player 2 */}
         <div className={cn(
           "p-2 sm:p-3 transition-colors",
-          isWinner(playerTwoId) && "bg-primary/5"
+          isWinner(playerTwoId) && "bg-primary/5",
+          breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20"
         )}>
           <div className="flex items-center justify-between gap-2">
             {/* Name and server indicator */}
@@ -226,9 +272,23 @@ export function LiveScoreboard({
                     {teamTwoYear}
                   </div>
                 )}
-                <h3 className="font-medium text-sm sm:text-base truncate">
-                  {teamTwoName}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium text-sm sm:text-base truncate">
+                    {teamTwoName}
+                  </h3>
+                  {/* Breakpoint indicator */}
+                  {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600 px-1.5 py-0.5">
+                        {t('breakPoint')}
+                      </Badge>
+                    </motion.div>
+                  )}
+                </div>
               </div>
               <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
                 {setsWon[1]}
@@ -261,7 +321,12 @@ export function LiveScoreboard({
               <div className="w-px h-4 bg-border"></div>
               
               {/* Current point */}
-              <div className="text-base sm:text-lg font-mono font-bold text-primary w-8 text-center">
+              <div className={cn(
+                "text-base sm:text-lg font-mono font-bold w-8 text-center",
+                breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
+                  ? "text-orange-600 dark:text-orange-400"
+                  : "text-primary"
+              )}>
                 {getPointDisplay(1)}
               </div>
             </div>

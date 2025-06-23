@@ -6,6 +6,7 @@ import { PointDetail } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { useTranslations } from "@/hooks/use-translations"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -135,19 +136,60 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                     </div>
                   </div>
                   
-                  <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
-                    {pointsInGame
-                      .filter(point => !point.isGameWinning)
-                      .map((point) => (
-                      <div key={point.id} className="inline-flex items-center gap-1">
-                        <span className="text-xs">
-                          {point.gameScore.replace(/-/g, ':')}
-                        </span>
-                        {point.isBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>}
-                        {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>}
-                        {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>}
-                      </div>
-                    ))}
+                                    <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
+                    {(() => {
+                      // Helper function to convert tennis score strings to numeric values
+                      const convertTennisScore = (score: string): number => {
+                        if (score === '0') return 0
+                        if (score === '15') return 1
+                        if (score === '30') return 2
+                        if (score === '40') return 3
+                        if (score === 'AD') return 4
+                        return parseInt(score) || 0
+                      }
+                      
+                                             return pointsInGame
+                         .filter(point => !point.isGameWinning)
+                         .map((point) => {
+                           // Parse the CURRENT score (after this point) to check if it's a breakpoint situation
+                           const currentScoreParts = point.gameScore.split('-')
+                           let isCurrentlyBreakPoint = false
+                           
+                           if (currentScoreParts.length === 2) {
+                             const p1Score = convertTennisScore(currentScoreParts[0])
+                             const p2Score = convertTennisScore(currentScoreParts[1])
+                             
+                             // Determine server and returner points for CURRENT score
+                             const serverPoints = point.server === 'p1' ? p1Score : p2Score
+                             const returnerPoints = point.server === 'p1' ? p2Score : p1Score
+                             
+                             // Check if the CURRENT score represents a breakpoint situation
+                             isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, false)
+                           }
+                           
+                           // Enhanced debug logging
+                           console.log(`🎾 Point ${point.id}:`, {
+                             gameScore: point.gameScore,
+                             server: point.server,
+                             serverPoints: point.server === 'p1' ? convertTennisScore(currentScoreParts[0]) : convertTennisScore(currentScoreParts[1]),
+                             returnerPoints: point.server === 'p1' ? convertTennisScore(currentScoreParts[1]) : convertTennisScore(currentScoreParts[0]),
+                             isCurrentlyBreakPoint,
+                             storedBP: point.isBreakPoint,
+                             gameNumber: point.gameNumber
+                           })
+                           
+                           return (
+                             <div key={point.id} className="inline-flex items-center gap-1">
+                               <span className="text-xs">
+                                 {point.gameScore.replace(/-/g, ':')}
+                               </span>
+                               {isCurrentlyBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>}
+                               {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>}
+                               {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>}
+                             </div>
+                           )
+                         })
+                    })()}
                   </div>
                 </div>
               )

@@ -326,6 +326,10 @@ export interface Translations {
   clubPlaceholder: string
   selectOption: string
   setAsMainPlayer: string
+  
+  // Score displays
+  tiebreak: string
+  deuce: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -654,6 +658,10 @@ const translations: Record<Locale, Translations> = {
     clubPlaceholder: "Tennis Club Name",
     selectOption: "Select...",
     setAsMainPlayer: "Set as main player",
+    
+    // Score displays
+    tiebreak: "Tiebreak",
+    deuce: "Deuce",
   },
   cs: {
     // Common
@@ -980,6 +988,10 @@ const translations: Record<Locale, Translations> = {
     clubPlaceholder: "Název tenisového klubu",
     selectOption: "Vybrat...",
     setAsMainPlayer: "Nastavit jako hlavního hráče",
+    
+    // Score displays
+    tiebreak: "Tie-break",
+    deuce: "Shoda",
   }
 }
 

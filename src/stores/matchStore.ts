@@ -5,7 +5,8 @@ import {
   isTiebreakWon,
   getTiebreakServer,
   getTennisScore,
-  calculateScoreFromPointLog
+  calculateScoreFromPointLog,
+  isBreakPoint
 } from '@/lib/utils/tennis-scoring'
 
 export interface MatchFormat {
@@ -276,10 +277,12 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         const temp_p1_score = p1Score + (winner === 'p1' ? 1 : 0)
         const temp_p2_score = p2Score + (winner === 'p2' ? 1 : 0)
         
-        // BREAK POINT: Receiver can win the game with this point  
-        if (winner !== currentServer && isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
-            isThisPointBreakPoint = true
-        }
+        // BREAK POINT: Use proper break point detection logic
+        const serverPoints = currentServer === 'p1' ? previousScore.points[0] : previousScore.points[1]
+        const returnerPoints = currentServer === 'p1' ? previousScore.points[1] : previousScore.points[0]
+        
+        // Check if this is a break point situation (receiver can win game with this point)
+        isThisPointBreakPoint = isBreakPoint(serverPoints, returnerPoints, matchFormat.noAd)
         
         // GAME WINNING: This point wins the game
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
@@ -319,6 +322,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const gameScoreToStore = tempScore.isTiebreak
       ? `${tempScore.tiebreakPoints[0]}-${tempScore.tiebreakPoints[1]}`
       : getTennisScore(tempScore.points[0], tempScore.points[1]);
+
+    // Debug log for breakpoint detection in point storage
+    console.log('💾 Storing Point - BP Detection:', {
+      currentServer,
+      scoreBEFORE: `${previousScore.points[0]}-${previousScore.points[1]}`,
+      scoreAFTER: gameScoreToStore,
+      serverPoints: currentServer === 'p1' ? previousScore.points[0] : previousScore.points[1],
+      returnerPoints: currentServer === 'p1' ? previousScore.points[1] : previousScore.points[0],
+      noAd: matchFormat.noAd,
+      isBreakPoint: isThisPointBreakPoint,
+      pointWinner: winner,
+      explanation: isThisPointBreakPoint ? 
+        `✅ BP: Returner ${currentServer === 'p1' ? 'p2' : 'p1'} could break serve by winning this point` : 
+        '❌ No BP: No break opportunity'
+    })
 
     const pointDetail: PointDetail = {
       ...details,

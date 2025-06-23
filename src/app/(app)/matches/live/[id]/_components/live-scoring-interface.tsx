@@ -32,10 +32,12 @@ import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useTranslations } from "@/hooks/use-translations"
+import { cn } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
+import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -155,12 +157,18 @@ const LiveScoreboard = SharedLiveScoreboard
 function PointEntry({ 
   onPointWin,
   score,
-  isTiebreak
+  isTiebreak,
+  breakPointStatus,
+  playerNames
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
-  isTiebreak: boolean
+  isTiebreak: boolean,
+  breakPointStatus: { isBreakPoint: boolean, facingBreakPoint: 'p1' | 'p2' | null },
+  playerNames: { p1: string, p2: string }
 }) {
+  const t = useTranslations()
+  
   const getPointDisplay = (playerIndex: number) => {
     if (isTiebreak) {
       return score.tiebreakPoints?.[playerIndex] || 0
@@ -179,26 +187,102 @@ function PointEntry({
     return pointMap[score.points[playerIndex]] || "40"
   }
 
+  const getPlayerDisplayName = (playerKey: 'p1' | 'p2') => {
+    const fullName = playerNames[playerKey]
+    return fullName.split(' ')[0] // First name only for buttons
+  }
+
   return (
-    <div className="grid grid-cols-2 gap-3 my-6">
-      <motion.div 
-        onClick={() => onPointWin("p1")}
-        className="h-32 sm:h-40 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
-        whileTap={{ scale: 0.98 }}
-      >
-        <span className="text-4xl sm:text-6xl font-black font-mono text-center text-card-foreground">
-          {getPointDisplay(0)}
-        </span>
-      </motion.div>
-      <motion.div 
-        onClick={() => onPointWin("p2")}
-        className="h-32 sm:h-40 bg-card border rounded-lg flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors"
-        whileTap={{ scale: 0.98 }}
-      >
-        <span className="text-4xl sm:text-6xl font-black font-mono text-center text-card-foreground">
-          {getPointDisplay(1)}
-        </span>
-      </motion.div>
+    <div className="space-y-4">
+      {/* Breakpoint context header */}
+      {breakPointStatus.isBreakPoint && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-950/20 px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-800">
+            <Badge variant="destructive" className="bg-orange-500 hover:bg-orange-600 text-white">
+              {t('breakPoint')}
+            </Badge>
+            <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+              {breakPointStatus.facingBreakPoint === 'p1' 
+                ? `${getPlayerDisplayName('p1')} has break point`
+                : `${getPlayerDisplayName('p2')} has break point`
+              }
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Player buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <motion.div 
+          onClick={() => onPointWin("p1")}
+          className={cn(
+            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+          )}
+          whileTap={{ scale: 0.98 }}
+        >
+          {/* Breakpoint indicator */}
+          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
+                BP
+              </Badge>
+            </div>
+          )}
+          
+          {/* Player name */}
+          <div className="text-xs font-medium text-muted-foreground mb-1 text-center px-2">
+            {getPlayerDisplayName('p1')}
+          </div>
+          
+          {/* Score display */}
+          <span className={cn(
+            "text-4xl sm:text-6xl font-black font-mono text-center",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
+              ? "text-orange-600 dark:text-orange-400"
+              : "text-card-foreground"
+          )}>
+            {getPointDisplay(0)}
+          </span>
+        </motion.div>
+        
+        <motion.div 
+          onClick={() => onPointWin("p2")}
+          className={cn(
+            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+          )}
+          whileTap={{ scale: 0.98 }}
+        >
+          {/* Breakpoint indicator */}
+          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
+                BP
+              </Badge>
+            </div>
+          )}
+          
+          {/* Player name */}
+          <div className="text-xs font-medium text-muted-foreground mb-1 text-center px-2">
+            {getPlayerDisplayName('p2')}
+          </div>
+          
+          {/* Score display */}
+          <span className={cn(
+            "text-4xl sm:text-6xl font-black font-mono text-center",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
+              ? "text-orange-600 dark:text-orange-400"
+              : "text-card-foreground"
+          )}>
+            {getPointDisplay(1)}
+          </span>
+        </motion.div>
+      </div>
     </div>
   )
 }
@@ -271,6 +355,39 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
   const detailLevel = parsedMatchFormat.detailLevel || "simple"
   const isTiebreak = score.isTiebreak || false
+  
+  // Calculate current breakpoint status
+  const getBreakPointStatus = () => {
+    if (!currentServer || isTiebreak) return { isBreakPoint: false, facingBreakPoint: null }
+    
+    const serverPoints = currentServer === 'p1' ? score.points[0] : score.points[1]
+    const returnerPoints = currentServer === 'p1' ? score.points[1] : score.points[0]
+    
+    const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, parsedMatchFormat.noAd)
+    
+    // The RETURNER has the breakpoint opportunity (should get the BP badge)
+    const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
+    
+    // Debug logging for breakpoint detection
+    console.log('🎾 Breakpoint Check:', {
+      currentServer,
+      returner,
+      serverPoints,
+      returnerPoints,
+      noAd: parsedMatchFormat.noAd,
+      isBreakPoint: isCurrentlyBreakPoint,
+      currentScore: `${score.points[0]}-${score.points[1]}`,
+      gameScore: `${score.games[0]}-${score.games[1]}`,
+      facingBreakPoint: isCurrentlyBreakPoint ? returner : null
+    })
+    
+    return {
+      isBreakPoint: isCurrentlyBreakPoint,
+      facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
+    }
+  }
+  
+  const breakPointStatus = getBreakPointStatus()
   
   // Memoized serve type handler
   const handleServeTypeChange = useCallback((checked: boolean) => {
@@ -574,6 +691,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleShare = async () => {
     const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/live/${match.$id}` : ''
     const shareTitle = `${playerNames.p1} vs ${playerNames.p2} - Live Tennis Match`
@@ -601,62 +719,76 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => router.back()}>
+      <div className="border-b bg-card/50 backdrop-blur sticky top-0 z-40">
+        <div className="flex items-center justify-between p-3 max-w-6xl mx-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="h-4 w-4" />
+            {t('back')}
           </Button>
-          <div>
-            <h1 className="font-semibold text-lg">Live Match</h1>
-            <p className="text-sm text-muted-foreground">
-              {playerNames.p3 && playerNames.p4 
-                ? `${playerNames.p1} / ${playerNames.p3} vs ${playerNames.p2} / ${playerNames.p4}`
-                : `${playerNames.p1} vs ${playerNames.p2}`
-              }
-            </p>
+          
+          <h1 className="font-semibold text-center flex-1 truncate mx-4">
+            {playerNames.p1} vs {playerNames.p2}
+          </h1>
+          
+          <div className="flex items-center gap-1">
+            {/* Breakpoint indicator in header */}
+            {breakPointStatus.isBreakPoint && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="mr-2"
+              >
+                <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
+                  {t('breakPoint')}
+                </Badge>
+              </motion.div>
+            )}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowShareDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              {t('share')}
+            </Button>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 className="h-4 w-4 mr-1" />
-            Share
-          </Button>
-          <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-            Live
-          </Badge>
         </div>
       </div>
 
-      {/* Main Content with Container */}
-      <div className="max-w-3xl mx-auto w-full px-4 py-6">
-        {/* Scoreboard */}
+      {/* Main Content */}
+      <div className="flex-1 max-w-6xl mx-auto w-full p-3 space-y-4">
+        {/* Live Scoreboard */}
         <LiveScoreboard
           playerOneName={playerNames.p1}
           playerTwoName={playerNames.p2}
           playerThreeName={playerNames.p3}
           playerFourName={playerNames.p4}
-          playerOneYearOfBirth={match.playerOne.yearOfBirth}
-          playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
-          playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
-          playerFourYearOfBirth={match.playerFour?.yearOfBirth}
-          playerOneRating={match.playerOne.rating}
-          playerTwoRating={match.playerTwo.rating}
-          playerThreeRating={match.playerThree?.rating}
-          playerFourRating={match.playerFour?.rating}
-          score={{ ...score, isTiebreak }}
+          score={score}
           currentServer={currentServer}
+          status={match.status}
           isInGame={isInGame}
           onServerClick={() => setShowServeSwapConfirm(true)}
+          matchFormat={parsedMatchFormat}
         />
 
-        {/* Point Entry */}
+
+
+        {/* Point Entry Interface */}
         <PointEntry 
-          onPointWin={handlePointWin}
+          onPointWin={handlePointWin} 
           score={score}
           isTiebreak={isTiebreak}
+          breakPointStatus={breakPointStatus}
+          playerNames={playerNames}
         />
 
         {/* Controls */}
@@ -790,9 +922,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           winner: pendingPointWinner || 'p1',
           server: currentServer || 'p1',
           serveType: serveType,
-          isBreakPoint: false,
-          isSetPoint: false,
-          isMatchPoint: false,
+          isBreakPoint: breakPointStatus.isBreakPoint,
+          isSetPoint: false, // TODO: Add set point detection
+          isMatchPoint: false, // TODO: Add match point detection
           playerNames
         }}
       />
