@@ -109,7 +109,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-muted-foreground" />
-            <span className="text-lg text-muted-foreground">Doubles Match</span>
+            <span className="text-lg text-muted-foreground">{t('doublesMatch')}</span>
           </div>
           <div className="text-2xl font-bold">
             {match.playerOne?.firstName} {match.playerOne?.lastName} / {match.playerThree?.firstName} {match.playerThree?.lastName}
@@ -150,13 +150,13 @@ export function MatchDetails({ match }: MatchDetailsProps) {
           <Button variant="outline" size="sm" asChild>
             <Link href="/matches">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Matches
+{t('backToMatches')}
             </Link>
           </Button>
           <div>
             {getMatchTitle()}
             <p className="text-muted-foreground">
-              Match Details • {formatDateTime(match.matchDate)}
+  {t('matchDetails')} • {formatDateTime(match.matchDate)}
             </p>
           </div>
         </div>
@@ -168,13 +168,13 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             className={copiedLink ? "bg-green-50 border-green-200" : ""}
           >
             <Share2 className="h-4 w-4 mr-2" />
-            {copiedLink ? "Copied!" : match.status === "Completed" ? "Share Results" : "Share Live"}
+{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}
           </Button>
           {match.status === "In Progress" && (
             <Button size="sm" asChild>
               <Link href={`/matches/live/${match.$id}`}>
                 <Play className="h-4 w-4 mr-2" />
-                Continue Scoring
+{t('continuScoring')}
               </Link>
             </Button>
           )}
@@ -182,22 +182,22 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-4 h-12 md:h-10">
+          <TabsTrigger value="overview" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
             <Trophy className="h-4 w-4" />
-            {t('overview')}
+            <span className="hidden sm:inline">{t('overview')}</span>
           </TabsTrigger>
-          <TabsTrigger value="points" className="flex items-center gap-2">
+          <TabsTrigger value="points" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
             <Activity className="h-4 w-4" />
-            {t('pointLog')}
+            <span className="hidden sm:inline">{t('pointLog')}</span>
           </TabsTrigger>
-          <TabsTrigger value="statistics" className="flex items-center gap-2">
+          <TabsTrigger value="statistics" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
             <BarChart3 className="h-4 w-4" />
-            {t('statistics')}
+            <span className="hidden sm:inline">{t('statistics')}</span>
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
+          <TabsTrigger value="analysis" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
             <TrendingUp className="h-4 w-4" />
-            {t('analysis')}
+            <span className="hidden sm:inline">{t('analysis')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -341,7 +341,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         <div>
                           <div className="text-3xl font-bold text-purple-900">{stats.acesByPlayer[0] + stats.acesByPlayer[1]}</div>
-                          <div className="text-sm text-purple-600">Total Aces</div>
+                          <div className="text-sm text-purple-600">{t('totalAces')}</div>
                         </div>
                         <div className="text-xs text-purple-500">
                           {stats.acesByPlayer[0]} - {stats.acesByPlayer[1]}
@@ -368,7 +368,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[0]}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Time</span>
+                          <span className="text-sm text-muted-foreground">{t('time')}</span>
                           <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[1]?.trim()}</span>
                         </div>
                         <div className="flex justify-between">

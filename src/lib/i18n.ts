@@ -128,6 +128,33 @@ export interface Translations {
   // Errors
   invalidDocumentStructure: string
   unknownAttribute: string
+  
+  // Additional translations for mobile & UI
+  backToMatches: string
+  shareResults: string
+  shareLive: string
+  continuScoring: string
+  copied: string
+  view: string
+  unknown: string
+  totalAces: string
+  doublesMatch: string
+  teams: string
+  standard: string
+  setBySetBreakdown: string
+  set: string
+  matchAnalysisInsights: string
+  matchSummary: string
+  ended: string
+  finish: string
+  refresh: string
+  liveMatch: string
+  vs: string
+  live: string
+  changeServer: string
+  cannotChangeServer: string
+  switchServer: string
+  liveScoreboard: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -258,7 +285,34 @@ const translations: Record<Locale, Translations> = {
     
     // Errors
     invalidDocumentStructure: "Invalid document structure",
-    unknownAttribute: "Unknown attribute"
+    unknownAttribute: "Unknown attribute",
+    
+    // Additional translations for mobile & UI
+    backToMatches: "Back to Matches",
+    shareResults: "Share Results",
+    shareLive: "Share Live",
+    continuScoring: "Continue Scoring",
+    copied: "Copied!",
+    view: "View",
+    unknown: "Unknown",
+    totalAces: "Total Aces",
+    doublesMatch: "Doubles Match",
+    teams: "Teams",
+    standard: "Standard",
+    setBySetBreakdown: "Set by Set Breakdown",
+    set: "Set",
+    matchAnalysisInsights: "Match Analysis & Insights",
+    matchSummary: "Match Summary",
+    ended: "Ended",
+    finish: "Finished",
+    refresh: "Refresh",
+    liveMatch: "Live Match",
+    vs: "vs",
+    live: "Live",
+    changeServer: "Change Server",
+    cannotChangeServer: "Cannot change server after match has started.",
+    switchServer: "Switch server",
+    liveScoreboard: "Live Scoreboard"
   },
   cs: {
     // Common
@@ -387,7 +441,34 @@ const translations: Record<Locale, Translations> = {
     
     // Errors
     invalidDocumentStructure: "Neplatná struktura dokumentu",
-    unknownAttribute: "Neznámý atribut"
+    unknownAttribute: "Neznámý atribut",
+    
+    // Additional translations for mobile & UI
+    backToMatches: "Zpět na zápasy",
+    shareResults: "Sdílet výsledky",
+    shareLive: "Sdílet živě",
+    continuScoring: "Pokračovat ve skórování",
+    copied: "Zkopírováno!",
+    view: "Zobrazit",
+    unknown: "Neznámý",
+    totalAces: "Celkem es",
+    doublesMatch: "Čtyřhra",
+    teams: "Týmy",
+    standard: "Standardní",
+    setBySetBreakdown: "Rozpis setů",
+    set: "Set",
+    matchAnalysisInsights: "Analýza a pozorování zápasu",
+    matchSummary: "Souhrn zápasu",
+    ended: "Ukončeno",
+    finish: "Dokončeno",
+    refresh: "Obnovit",
+    liveMatch: "Živý zápas",
+    vs: "vs",
+    live: "Živě",
+    changeServer: "Změnit podávajícího",
+    cannotChangeServer: "Nelze změnit podávajícího po začátku zápasu.",
+    switchServer: "Přepnout podávajícího",
+    liveScoreboard: "Živé skóre"
   }
 }
 

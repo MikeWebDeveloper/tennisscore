@@ -106,7 +106,7 @@ export default async function MatchesPage() {
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
           <Link href="/matches/new">
             <Plus className="h-4 w-4 mr-2" />
-            New Match
+Nový zápas
           </Link>
         </Button>
       </div>

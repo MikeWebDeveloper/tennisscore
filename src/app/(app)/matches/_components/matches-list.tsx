@@ -8,6 +8,7 @@ import { Trophy, Eye, Users, Share2 } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 import { toast } from "sonner"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface MatchesListProps {
   matches: Array<{
@@ -38,6 +39,8 @@ interface MatchesListProps {
 }
 
 export function MatchesList({ matches }: MatchesListProps) {
+  const t = useTranslations()
+  
   if (!matches || matches.length === 0) {
     return (
       <p className="text-muted-foreground">No matches found. Start a new match to see it here!</p>
@@ -190,7 +193,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                 <Button variant="outline" size="sm" asChild className="flex-1 h-8 text-xs">
                   <Link href={`/matches/${match.$id}`}>
                     <Eye className="h-3 w-3 mr-1" />
-                    View
+{t('view')}
                   </Link>
                 </Button>
                 
