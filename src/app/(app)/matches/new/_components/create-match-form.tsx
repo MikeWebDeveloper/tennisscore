@@ -19,6 +19,7 @@ import { CreatePlayerDialog } from "../../../players/_components/create-player-d
 // Mobile spacer component to prevent content from being hidden behind bottom nav
 const MobileBottomNavSpacer = () => <div className="h-16 md:hidden" />
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -56,6 +57,7 @@ const itemVariants = {
 
 export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const router = useRouter()
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
   
   // Form state with default anonymous players
@@ -213,10 +215,10 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold">New Match</h1>
-          <p className="text-muted-foreground">Set up your tennis match</p>
-        </div>
+                  <div>
+            <h1 className="text-2xl font-bold">{t("newMatch")}</h1>
+            <p className="text-muted-foreground">{t("setUpMatch")}</p>
+          </div>
       </motion.div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -224,7 +226,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">Match Type</h3>
+                              <h3 className="font-medium mb-4">{t("matchType")}</h3>
               <RadioGroup value={matchType} onValueChange={(value: "singles" | "doubles") => setMatchType(value)}>
                 <div className="grid grid-cols-2 gap-3">
                   <Label htmlFor="singles" className="radio-option">
@@ -245,12 +247,12 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-medium">Players</h3>
-                <div className="text-sm text-muted-foreground">
-                  Search by typing or scroll through options
+                              <div className="flex items-center gap-2 mb-4">
+                  <h3 className="font-medium">{t("players")}</h3>
+                  <div className="text-sm text-muted-foreground">
+                    {t("searchByTyping")}
+                  </div>
                 </div>
-              </div>
               
               {matchType === "singles" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -274,7 +276,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-px flex-1 bg-border" />
-                      <span className="text-sm font-medium text-muted-foreground px-2">Team 1</span>
+                                              <span className="text-sm font-medium text-muted-foreground px-2">{t("team1")}</span>
                       <div className="h-px flex-1 bg-border" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-primary/20">
@@ -298,7 +300,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-px flex-1 bg-border" />
-                      <span className="text-sm font-medium text-muted-foreground px-2">Team 2</span>
+                      <span className="text-sm font-medium text-muted-foreground px-2">{t("newMatch.team2")}</span>
                       <div className="h-px flex-1 bg-border" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-destructive/20">
@@ -327,12 +329,12 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">Match Format</h3>
+              <h3 className="font-medium mb-4">{t("newMatch.matchFormat")}</h3>
               
               {/* Sets */}
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <Label>Number of Sets: {getSetsLabel(sets[0])}</Label>
+                  <Label>{t("newMatch.numberOfSets")}: {getSetsLabel(sets[0])}</Label>
                   <Slider
                     value={sets}
                     onValueChange={setSets}
@@ -350,16 +352,16 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
                 {/* Scoring */}
                 <div className="space-y-3">
-                  <Label>Scoring System</Label>
+                  <Label>{t("newMatch.scoringSystem")}</Label>
                   <RadioGroup value={scoring} onValueChange={(value: "ad" | "no-ad") => setScoring(value)}>
                     <div className="grid grid-cols-2 gap-3">
                       <Label htmlFor="ad" className="radio-option">
                         <RadioGroupItem value="ad" id="ad" />
-                        <span className="font-medium">Advantage</span>
+                        <span className="font-medium">{t("newMatch.advantage")}</span>
                       </Label>
                       <Label htmlFor="no-ad" className="radio-option">
                         <RadioGroupItem value="no-ad" id="no-ad" />
-                        <span className="font-medium">No Advantage</span>
+                        <span className="font-medium">{t("newMatch.noAdvantage")}</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -367,16 +369,16 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
                 {/* Final Set */}
                 <div className="space-y-3">
-                  <Label>Final Set</Label>
+                  <Label>{t("newMatch.finalSet")}</Label>
                   <RadioGroup value={finalSet} onValueChange={(value: "full" | "super-tb") => setFinalSet(value)}>
                     <div className="grid grid-cols-2 gap-3">
                       <Label htmlFor="full" className="radio-option">
                         <RadioGroupItem value="full" id="full" />
-                        <span className="font-medium">Full Set</span>
+                        <span className="font-medium">{t("newMatch.fullSet")}</span>
                       </Label>
                       <Label htmlFor="super-tb" className="radio-option">
                         <RadioGroupItem value="super-tb" id="super-tb" />
-                        <span className="font-medium">Super Tiebreak</span>
+                        <span className="font-medium">{t("newMatch.superTiebreak")}</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -390,28 +392,28 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-medium mb-4">Scoring Detail Level</h3>
+              <h3 className="font-medium mb-4">{t("newMatch.scoringDetailLevel")}</h3>
               <RadioGroup value={detailLevel} onValueChange={(value: "points" | "simple" | "complex") => setDetailLevel(value)}>
                 <div className="space-y-3">
                   <Label htmlFor="points" className="radio-option">
                     <RadioGroupItem value="points" id="points" />
                     <div>
-                      <div className="font-medium">Points Only</div>
-                      <div className="text-sm text-muted-foreground">Track just the score</div>
+                      <div className="font-medium">{t("newMatch.pointsOnly")}</div>
+                      <div className="text-sm text-muted-foreground">{t("newMatch.trackJustScore")}</div>
                     </div>
                   </Label>
                   <Label htmlFor="simple" className="radio-option">
                     <RadioGroupItem value="simple" id="simple" />
                     <div>
-                      <div className="font-medium">Simple Stats</div>
-                      <div className="text-sm text-muted-foreground">Aces, double faults, winners, errors</div>
+                      <div className="font-medium">{t("newMatch.simpleStats")}</div>
+                      <div className="text-sm text-muted-foreground">{t("newMatch.acesDoubleFaultsWinnersErrors")}</div>
                     </div>
                   </Label>
                   <Label htmlFor="complex" className="radio-option-disabled">
                     <RadioGroupItem value="complex" id="complex" disabled />
                     <div>
-                      <div className="font-medium">Detailed Stats</div>
-                      <div className="text-sm text-muted-foreground">Shot placement, rally length, etc.</div>
+                      <div className="font-medium">{t("newMatch.detailedStats")}</div>
+                      <div className="text-sm text-muted-foreground">{t("newMatch.shotPlacementRallyLength")}</div>
                     </div>
                   </Label>
                 </div>
@@ -427,7 +429,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
             className="w-full h-12 text-base font-medium"
             disabled={loading || !playerOne || !playerTwo || (matchType === "doubles" && (!playerThree || !playerFour))}
           >
-            {loading ? "Creating Match..." : "Start Match"}
+            {loading ? t("newMatch.creatingMatch") : t("newMatch.startMatch")}
           </Button>
         </motion.div>
       </form>

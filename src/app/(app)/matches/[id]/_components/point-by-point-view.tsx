@@ -112,7 +112,9 @@ export function PointByPointView({ pointLog }: PointByPointViewProps) {
                   </div>
                   
                   <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
-                    {pointsInGame.map((point) => (
+                    {pointsInGame
+                      .filter(point => !point.isGameWinning)
+                      .map((point) => (
                       <div key={point.id} className="inline-flex items-center gap-1">
                         <span className="text-xs">
                           {point.gameScore.replace(/-/g, ':')}

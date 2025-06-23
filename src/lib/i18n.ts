@@ -37,6 +37,64 @@ export interface Translations {
   games: string
   points: string
   
+  // Create match form
+  setUpMatch: string
+  matchType: string
+  quickMatch: string
+  trackedPlayers: string
+  actions: string
+  createNewPlayer: string
+  searchOrSelectPlayer: string
+  noPlayersFound: string
+  player1: string
+  player2: string
+  player3: string
+  player4: string
+  team1: string
+  team2: string
+  noTracking: string
+  matchFormat: string
+  numberOfSets: string
+  bestOf1: string
+  bestOf3: string
+  bestOf5: string
+  scoringSystem: string
+  advantage: string
+  noAdvantage: string
+  finalSet: string
+  fullSet: string
+  superTiebreak: string
+  scoringDetailLevel: string
+  pointsOnly: string
+  trackJustScore: string
+  simpleStats: string
+  acesDoubleFaultsWinnersErrors: string
+  detailedStats: string
+  shotPlacementRallyLength: string
+  creatingMatch: string
+  startMatch: string
+  matchCreatedSuccessfully: string
+  failedToCreateMatch: string
+  searchByTyping: string
+  
+  // Dashboard
+  winRate: string
+  completedMatches: string
+  totalMatches: string
+  inProgressMatches: string
+  profilesCreated: string
+  startNewMatch: string
+  beginScoringLiveMatch: string
+  recentMatches: string
+  viewAll: string
+  noMatchesYet: string
+  startYourFirstMatch: string
+  matchVsOpponent: string
+  yourPlayers: string
+  addPlayer: string
+  noPlayersCreated: string
+  createYourFirstPlayer: string
+  
   // Players
   firstName: string
   lastName: string
@@ -206,6 +264,64 @@ const translations: Record<Locale, Translations> = {
     games: "Games",
     points: "Points",
     
+    // Create match form
+    setUpMatch: "Set Up Match",
+    matchType: "Match Type",
+    quickMatch: "Quick Match",
+    trackedPlayers: "Tracked Players",
+    actions: "Actions",
+    createNewPlayer: "Create New Player",
+    searchOrSelectPlayer: "Search or Select Player",
+    noPlayersFound: "No players found",
+    player1: "Player 1",
+    player2: "Player 2",
+    player3: "Player 3",
+    player4: "Player 4",
+    team1: "Team 1",
+    team2: "Team 2",
+    noTracking: "No Tracking",
+    matchFormat: "Match Format",
+    numberOfSets: "Number of Sets",
+    bestOf1: "Best of 1",
+    bestOf3: "Best of 3",
+    bestOf5: "Best of 5",
+    scoringSystem: "Scoring System",
+    advantage: "Advantage",
+    noAdvantage: "No Advantage",
+    finalSet: "Final Set",
+    fullSet: "Full Set",
+    superTiebreak: "Super Tiebreak",
+    scoringDetailLevel: "Scoring Detail Level",
+    pointsOnly: "Points Only",
+    trackJustScore: "Track Just Score",
+    simpleStats: "Simple Stats",
+    acesDoubleFaultsWinnersErrors: "Aces, Double Faults, Winners, Errors",
+    detailedStats: "Detailed Stats",
+    shotPlacementRallyLength: "Shot Placement, Rally Length",
+    creatingMatch: "Creating Match",
+    startMatch: "Start Match",
+    matchCreatedSuccessfully: "Match Created Successfully",
+    failedToCreateMatch: "Failed to Create Match",
+    searchByTyping: "Search by Typing",
+    
+    // Dashboard
+    winRate: "Win Rate",
+    completedMatches: "Completed Matches",
+    totalMatches: "Total Matches",
+    inProgressMatches: "In Progress Matches",
+    profilesCreated: "Profiles Created",
+    startNewMatch: "Start New Match",
+    beginScoringLiveMatch: "Begin Scoring Live Match",
+    recentMatches: "Recent Matches",
+    viewAll: "View All",
+    noMatchesYet: "No Matches Yet",
+    startYourFirstMatch: "Start Your First Match",
+    matchVsOpponent: "Match vs Opponent",
+    yourPlayers: "Your Players",
+    addPlayer: "Add Player",
+    noPlayersCreated: "No Players Created",
+    createYourFirstPlayer: "Create Your First Player",
+    
     // Players
     firstName: "First Name",
     lastName: "Last Name",
@@ -371,6 +487,64 @@ const translations: Record<Locale, Translations> = {
     sets: "Sety",
     games: "Hry",
     points: "Body",
+    
+    // Create match form
+    setUpMatch: "Nastavit zápas",
+    matchType: "Typ zápasu",
+    quickMatch: "Rychlý zápas",
+    trackedPlayers: "Sledovaní hráči",
+    actions: "Akce",
+    createNewPlayer: "Vytvořit nového hráče",
+    searchOrSelectPlayer: "Hledat nebo vybrat hráče",
+    noPlayersFound: "Žádní hráči nebyli nalezeni",
+    player1: "Hráč 1",
+    player2: "Hráč 2",
+    player3: "Hráč 3",
+    player4: "Hráč 4",
+    team1: "Tým 1",
+    team2: "Tým 2",
+    noTracking: "Žádné sledování",
+    matchFormat: "Formát zápasu",
+    numberOfSets: "Počet sad",
+    bestOf1: "Na 1",
+    bestOf3: "Na 3",
+    bestOf5: "Na 5",
+    scoringSystem: "Systém skórování",
+    advantage: "Výhoda",
+    noAdvantage: "Bez výhody",
+    finalSet: "Poslední sad",
+    fullSet: "Plná sad",
+    superTiebreak: "Super tiebreak",
+    scoringDetailLevel: "Detailní úroveň skórování",
+    pointsOnly: "Body jen",
+    trackJustScore: "Sledovat jen skóre",
+    simpleStats: "Jednoduché statistiky",
+    acesDoubleFaultsWinnersErrors: "Esa, dvojchyby, vítězové, chyby",
+    detailedStats: "Podrobné statistiky",
+    shotPlacementRallyLength: "Místo zásahu, délka rally",
+    creatingMatch: "Vytvoření zápasu",
+    startMatch: "Začít zápas",
+    matchCreatedSuccessfully: "Zápas vytvořen úspěšně",
+    failedToCreateMatch: "Nepodařilo se vytvořit zápas",
+    searchByTyping: "Hledat při psaní",
+    
+    // Dashboard
+    winRate: "Výhoda",
+    completedMatches: "Dokončené zápasy",
+    totalMatches: "Celkový počet zápasů",
+    inProgressMatches: "Probíhající zápasy",
+    profilesCreated: "Vytvořené profily",
+    startNewMatch: "Začít nový zápas",
+    beginScoringLiveMatch: "Začít skórovat živý zápas",
+    recentMatches: "Nedávné zápasy",
+    viewAll: "Zobrazit vše",
+    noMatchesYet: "Zatím žádné zápasy",
+    startYourFirstMatch: "Začněte svým prvním zápasem",
+    matchVsOpponent: "Zápas proti soupeři",
+    yourPlayers: "Tvé hráče",
+    addPlayer: "Přidat hráče",
+    noPlayersCreated: "Žádní hráči nebyli vytvořeni",
+    createYourFirstPlayer: "Vytvořte svého prvního hráče",
     
     // Players
     firstName: "Jméno",
