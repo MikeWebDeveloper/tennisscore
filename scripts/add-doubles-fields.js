@@ -67,6 +67,44 @@ async function addDoublesFields() {
       }
     }
     
+    // Add isDoubles field
+    try {
+      await databases.createBooleanAttribute(
+        databaseId,
+        matchesCollectionId,
+        'isDoubles',
+        false, // not required
+        false  // default value
+      );
+      console.log('✅ isDoubles field added successfully');
+    } catch (error) {
+      if (error.message && error.message.includes('already exists')) {
+        console.log('ℹ️  isDoubles field already exists');
+      } else {
+        console.error('❌ Error adding isDoubles:', error.message);
+      }
+    }
+    
+    // Add detailLevel field
+    try {
+      await databases.createStringAttribute(
+        databaseId,
+        matchesCollectionId,
+        'detailLevel',
+        20, // size
+        false, // not required
+        'simple',  // default value
+        false  // not array
+      );
+      console.log('✅ detailLevel field added successfully');
+    } catch (error) {
+      if (error.message && error.message.includes('already exists')) {
+        console.log('ℹ️  detailLevel field already exists');
+      } else {
+        console.error('❌ Error adding detailLevel:', error.message);
+      }
+    }
+    
     console.log('\n🎉 Doubles support fields added to matches collection!');
     console.log('🎾 You can now create doubles matches with 4 players.');
     

@@ -3,16 +3,17 @@
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
-import { Score } from "@/lib/types"
+import { Score } from "@/stores/matchStore"
 import { cn } from "@/lib/utils"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
-import { useTranslations } from "@/hooks/use-translations"
 
 interface LiveScoreboardProps {
   playerOneName: string
   playerTwoName: string
   playerThreeName?: string  // For doubles
   playerFourName?: string   // For doubles
+  playerOneAvatar?: React.ReactNode
+  playerTwoAvatar?: React.ReactNode
   playerOneYearOfBirth?: number
   playerTwoYearOfBirth?: number
   playerThreeYearOfBirth?: number
@@ -21,14 +22,14 @@ interface LiveScoreboardProps {
   playerTwoRating?: string
   playerThreeRating?: string
   playerFourRating?: string
-  score: Score & { server?: "p1" | "p2", isTiebreak?: boolean, tiebreakPoints?: number[] }
+  score: Score
   currentServer?: "p1" | "p2" | null
   status?: string
   winnerId?: string
   playerOneId?: string
   playerTwoId?: string
   isInGame?: boolean
-  onServerClick?: () => void
+  onSetServer?: (server: 'p1' | 'p2') => void
   className?: string
   matchFormat?: { noAd?: boolean }
 }
@@ -38,6 +39,8 @@ export function LiveScoreboard({
   playerTwoName,
   playerThreeName,
   playerFourName,
+  playerOneAvatar,
+  playerTwoAvatar,
   playerOneYearOfBirth,
   playerTwoYearOfBirth,
   playerThreeYearOfBirth,
@@ -53,13 +56,12 @@ export function LiveScoreboard({
   playerOneId,
   playerTwoId,
   isInGame = false,
-  onServerClick,
+  onSetServer,
   className,
   matchFormat
 }: LiveScoreboardProps) {
-  const t = useTranslations()
   const isTiebreak = score.isTiebreak || false
-  const server = currentServer || score.server
+  const server = currentServer
   
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
@@ -78,22 +80,11 @@ export function LiveScoreboard({
     ? `${formatPlayerName(playerTwoName)} / ${formatPlayerName(playerFourName!)}`
     : playerTwoName
   
-  // Format year and rating display for teams
-  const formatPlayerInfo = (year?: number, rating?: string) => {
-    if (!year && !rating) return undefined
-    if (year && rating) return `${year} (${rating})`
-    if (year) return year.toString()
-    if (rating) return `(${rating})`
-    return undefined
-  }
-  
-  const teamOneYear = isDoubles && (playerOneYearOfBirth || playerOneRating) && (playerThreeYearOfBirth || playerThreeRating)
-    ? `${formatPlayerInfo(playerOneYearOfBirth, playerOneRating)} / ${formatPlayerInfo(playerThreeYearOfBirth, playerThreeRating)}`
-    : formatPlayerInfo(playerOneYearOfBirth, playerOneRating)
-  
-  const teamTwoYear = isDoubles && (playerTwoYearOfBirth || playerTwoRating) && (playerFourYearOfBirth || playerFourRating)
-    ? `${formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)} / ${formatPlayerInfo(playerFourYearOfBirth, playerFourRating)}`
-    : formatPlayerInfo(playerTwoYearOfBirth, playerTwoRating)
+  // Calculate sets won
+  const setsWon = [
+    score.sets.filter(set => set[0] > set[1]).length,
+    score.sets.filter(set => set[1] > set[0]).length
+  ]
   
   // Calculate current breakpoint status
   const getBreakPointStatus = () => {
@@ -135,206 +126,289 @@ export function LiveScoreboard({
     return pointMap[score.points[playerIndex]] || "40"
   }
 
-  // Calculate sets won
-  const setsWon = [
-    score.sets.filter(set => set[0] > set[1]).length,
-    score.sets.filter(set => set[1] > set[0]).length
-  ]
-
   const isWinner = (playerId?: string) => winnerId && playerId && winnerId === playerId
 
   return (
     <div className={cn("bg-card rounded-lg border shadow-sm", className)}>
-      {/* Minimalist layout */}
       <div className="divide-y">
         {/* Player 1 */}
-        <div className={cn(
-          "p-2 sm:p-3 transition-colors",
-          isWinner(playerOneId) && "bg-primary/5",
-          breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20"
-        )}>
-          <div className="flex items-center justify-between gap-2">
-            {/* Name and server indicator */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              {/* Tennis ball icon - shows who is serving */}
-              <motion.button 
-                layoutId="tennis-ball-p1" 
-                onClick={onServerClick} 
-                className={cn(
-                  "flex-shrink-0 p-1 rounded-full transition-colors",
-                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
-                )}
-                disabled={!onServerClick || isInGame}
-                whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
-                title={server === "p1" ? "Currently serving" : "Click to change server"}
-              >
-                <TennisBallIcon 
-                  className="w-4 h-4"
-                  isServing={server === "p1"}
-                />
-              </motion.button>
-              <div className="min-w-0 flex-1">
-                {teamOneYear && (
-                  <div className="text-xs text-muted-foreground">
-                    {teamOneYear}
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-sm sm:text-base truncate">
+        <div 
+          className={cn(
+            "p-3 sm:p-4 transition-colors",
+            isWinner(playerOneId) && "bg-primary/5",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20",
+            onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
+          )}
+          onClick={!isInGame ? () => onSetServer?.('p1') : undefined}
+          role={!isInGame ? "button" : undefined}
+          aria-label={!isInGame ? `Set ${teamOneName} as server` : undefined}
+          tabIndex={!isInGame ? 0 : -1}
+        >
+          <div className="flex items-center justify-between">
+            {/* Left: Player info */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {playerOneAvatar || (
+                <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"></div>
+              )}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <h3 className="font-semibold text-sm sm:text-base truncate">
                     {teamOneName}
                   </h3>
-                  {/* Breakpoint indicator */}
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       className="flex-shrink-0"
                     >
-                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600 px-1.5 py-0.5">
-                        {t('breakPoint')}
+                      <Badge variant="destructive" className="text-[10px] font-bold bg-orange-500 hover:bg-orange-600 px-1 py-0.5">
+                        BP
                       </Badge>
                     </motion.div>
                   )}
                 </div>
+                {/* Tiny player details */}
+                <div className="flex items-center gap-1 mt-0.5">
+                  {playerOneYearOfBirth && (
+                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                      {playerOneYearOfBirth}
+                    </span>
+                  )}
+                  {playerOneRating && (
+                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                      ({playerOneRating})
+                    </span>
+                  )}
+                  {isDoubles && playerThreeYearOfBirth && (
+                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                      / {playerThreeYearOfBirth}
+                    </span>
+                  )}
+                  {isDoubles && playerThreeRating && (
+                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                      ({playerThreeRating})
+                    </span>
+                  )}
+                </div>
               </div>
-              <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
-                {setsWon[0]}
-              </Badge>
             </div>
             
-            {/* Scores */}
+            {/* Right: Score - Structured layout */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Set scores - show previous sets inline */}
-              {score.sets.length > 0 && (
-                <>
-                  <div className="flex items-center gap-1">
-                    {score.sets.map((set, idx) => (
-                      <div key={idx} className="text-xs font-mono w-4 text-center">
-                        {set[0]}
-                      </div>
-                    ))}
-                  </div>
-                  {/* Divider after played sets */}
-                  <div className="w-px h-4 bg-border"></div>
-                </>
-              )}
-              
-              {/* Current game score */}
-              <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
-                {score.games[0]}
+              {/* Serving Indicator */}
+              <div 
+                className={cn(
+                  "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7",
+                  onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
+                )}
+                onClick={onSetServer && !isInGame ? () => onSetServer('p1') : undefined}
+                role={onSetServer && !isInGame ? "button" : undefined}
+                aria-label={onSetServer && !isInGame ? `Set ${teamOneName} as server` : undefined}
+                tabIndex={onSetServer && !isInGame ? 0 : -1}
+              >
+                {(server === "p1" || (onSetServer && !isInGame)) && (
+                  <TennisBallIcon
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    isServing={server === "p1"}
+                  />
+                )}
+              </div>
+              {/* Sets Won Count */}
+              <div className="text-center min-w-[20px] sm:min-w-[24px]">
+                <div className="text-sm sm:text-base font-medium font-mono">
+                  {setsWon[0]}
+                </div>
               </div>
               
-              {/* Divider before current point */}
-              <div className="w-px h-4 bg-border"></div>
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
               
-              {/* Current point */}
-              <div className={cn(
-                "text-base sm:text-lg font-mono font-bold w-8 text-center",
-                breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
-                  ? "text-orange-600 dark:text-orange-400"
-                  : "text-primary"
-              )}>
-                {getPointDisplay(0)}
+              {/* Individual Set Scores */}
+              <div className="flex gap-0.5">
+                {score.sets.length > 0 ? (
+                  score.sets.map((set, idx) => (
+                    <div 
+                      key={idx} 
+                      className={cn(
+                        "text-xs font-medium min-w-[16px] sm:min-w-[18px] h-4 sm:h-5 flex items-center justify-center rounded border",
+                        set[0] > set[1] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {set[0]}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-muted-foreground">-</div>
+                )}
+              </div>
+              
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
+              
+              {/* Current Games */}
+              <div className="text-center min-w-[20px] sm:min-w-[24px]">
+                <div className="text-sm sm:text-lg font-medium font-mono">
+                  {score.games[0]}
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
+              
+              {/* Current Points */}
+              <div className="text-center min-w-[28px] sm:min-w-[36px]">
+                <div className={cn(
+                  "text-sm sm:text-lg font-medium font-mono",
+                  breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
+                    ? "text-orange-600 dark:text-orange-400"
+                    : ""
+                )}>
+                  {getPointDisplay(0)}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Player 2 */}
-        <div className={cn(
-          "p-2 sm:p-3 transition-colors",
-          isWinner(playerTwoId) && "bg-primary/5",
-          breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20"
-        )}>
-          <div className="flex items-center justify-between gap-2">
-            {/* Name and server indicator */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              {/* Tennis ball icon - shows who is serving */}
-              <motion.button 
-                layoutId="tennis-ball-p2" 
-                onClick={onServerClick} 
-                className={cn(
-                  "flex-shrink-0 p-1 rounded-full transition-colors",
-                  onServerClick && !isInGame && "hover:bg-muted cursor-pointer"
-                )}
-                disabled={!onServerClick || isInGame}
-                whileTap={onServerClick && !isInGame ? { scale: 0.95 } : {}}
-                title={server === "p2" ? "Currently serving" : "Click to change server"}
-              >
-                <TennisBallIcon 
-                  className="w-4 h-4"
-                  isServing={server === "p2"}
-                />
-              </motion.button>
-              <div className="min-w-0 flex-1">
-                {teamTwoYear && (
-                  <div className="text-xs text-muted-foreground">
-                    {teamTwoYear}
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-sm sm:text-base truncate">
+        <div 
+          className={cn(
+            "p-3 sm:p-4 transition-colors",
+            isWinner(playerTwoId) && "bg-primary/5",
+            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20",
+            onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
+          )}
+          onClick={!isInGame ? () => onSetServer?.('p2') : undefined}
+          role={!isInGame ? "button" : undefined}
+          aria-label={!isInGame ? `Set ${teamTwoName} as server` : undefined}
+          tabIndex={!isInGame ? 0 : -1}
+        >
+          <div className="flex items-center justify-between">
+            {/* Left: Player info */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {playerTwoAvatar || (
+                <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"></div>
+              )}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <h3 className="font-semibold text-sm sm:text-base truncate">
                     {teamTwoName}
                   </h3>
-                  {/* Breakpoint indicator */}
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       className="flex-shrink-0"
                     >
-                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600 px-1.5 py-0.5">
-                        {t('breakPoint')}
+                      <Badge variant="destructive" className="text-[10px] font-bold bg-orange-500 hover:bg-orange-600 px-1 py-0.5">
+                        BP
                       </Badge>
                     </motion.div>
                   )}
                 </div>
+                {/* Tiny player details */}
+                <div className="flex items-center gap-1 mt-0.5">
+                  {playerTwoYearOfBirth && (
+                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                      {playerTwoYearOfBirth}
+                    </span>
+                  )}
+                  {playerTwoRating && (
+                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                      ({playerTwoRating})
+                    </span>
+                  )}
+                  {isDoubles && playerFourYearOfBirth && (
+                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                      / {playerFourYearOfBirth}
+                    </span>
+                  )}
+                  {isDoubles && playerFourRating && (
+                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                      ({playerFourRating})
+                    </span>
+                  )}
+                </div>
               </div>
-              <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0.5">
-                {setsWon[1]}
-              </Badge>
             </div>
             
-            {/* Scores */}
+            {/* Right: Score - Structured layout */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Set scores - show previous sets inline */}
-              {score.sets.length > 0 && (
-                <>
-                  <div className="flex items-center gap-1">
-                    {score.sets.map((set, idx) => (
-                      <div key={idx} className="text-xs font-mono w-4 text-center">
-                        {set[1]}
-                      </div>
-                    ))}
-                  </div>
-                  {/* Divider after played sets */}
-                  <div className="w-px h-4 bg-border"></div>
-                </>
-              )}
-              
-              {/* Current game score */}
-              <div className="text-sm sm:text-base font-mono font-semibold w-4 text-center">
-                {score.games[1]}
+              {/* Serving Indicator */}
+              <div 
+                className={cn(
+                  "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7",
+                  onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
+                )}
+                onClick={onSetServer && !isInGame ? () => onSetServer('p2') : undefined}
+                role={onSetServer && !isInGame ? "button" : undefined}
+                aria-label={onSetServer && !isInGame ? `Set ${teamTwoName} as server` : undefined}
+                tabIndex={onSetServer && !isInGame ? 0 : -1}
+              >
+                {(server === "p2" || (onSetServer && !isInGame)) && (
+                  <TennisBallIcon
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    isServing={server === "p2"}
+                  />
+                )}
+              </div>
+              {/* Sets Won Count */}
+              <div className="text-center min-w-[20px] sm:min-w-[24px]">
+                <div className="text-sm sm:text-base font-medium font-mono">
+                  {setsWon[1]}
+                </div>
               </div>
               
-              {/* Divider before current point */}
-              <div className="w-px h-4 bg-border"></div>
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
               
-              {/* Current point */}
-              <div className={cn(
-                "text-base sm:text-lg font-mono font-bold w-8 text-center",
-                breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
-                  ? "text-orange-600 dark:text-orange-400"
-                  : "text-primary"
-              )}>
-                {getPointDisplay(1)}
+              {/* Individual Set Scores */}
+              <div className="flex gap-0.5">
+                {score.sets.length > 0 ? (
+                  score.sets.map((set, idx) => (
+                    <div 
+                      key={idx} 
+                      className={cn(
+                        "text-xs font-medium min-w-[16px] sm:min-w-[18px] h-4 sm:h-5 flex items-center justify-center rounded border",
+                        set[1] > set[0] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {set[1]}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-muted-foreground">-</div>
+                )}
+              </div>
+              
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
+              
+              {/* Current Games */}
+              <div className="text-center min-w-[20px] sm:min-w-[24px]">
+                <div className="text-sm sm:text-lg font-medium font-mono">
+                  {score.games[1]}
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div className="h-8 w-px bg-border"></div>
+              
+              {/* Current Points */}
+              <div className="text-center min-w-[28px] sm:min-w-[36px]">
+                <div className={cn(
+                  "text-sm sm:text-lg font-medium font-mono",
+                  breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
+                    ? "text-orange-600 dark:text-orange-400"
+                    : ""
+                )}>
+                  {getPointDisplay(1)}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-
     </div>
   )
 } 

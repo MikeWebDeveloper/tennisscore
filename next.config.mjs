@@ -4,8 +4,30 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
     serverActions: {
-      bodySizeLimit: '5mb', // Increase limit for profile picture uploads
+      bodySizeLimit: '12mb', // Increase limit for profile picture uploads (10MB + buffer)
     },
+  },
+  
+  // Image optimization configuration
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'fra.cloud.appwrite.io',
+        port: '',
+        pathname: '/v1/storage/buckets/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloud.appwrite.io',
+        port: '',
+        pathname: '/v1/storage/buckets/**',
+      },
+    ],
+    // This will help with CORS issues in some cases
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   // Generate static exports for better caching

@@ -257,6 +257,7 @@ export interface Translations {
   add: string
   close: string
   confirm: string
+  sort: string
   
   // Status and states
   upcoming: string
@@ -589,6 +590,7 @@ const translations: Record<Locale, Translations> = {
     add: "Add",
     close: "Close",
     confirm: "Confirm",
+    sort: "Sort",
     
     // Status and states
     upcoming: "Upcoming",
@@ -919,6 +921,7 @@ const translations: Record<Locale, Translations> = {
     add: "Přidat",
     close: "Zavřít",
     confirm: "Potvrdit",
+    sort: "Řadit",
     
     // Status and states
     upcoming: "Nadcházející",

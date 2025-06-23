@@ -3,11 +3,11 @@ import { z } from "zod"
 // Match format schema
 export const matchFormatSchema = z.object({
   sets: z.union([z.literal(1), z.literal(3), z.literal(5)]),
+  gamesPerSet: z.number().default(6),
+  tiebreakAt: z.number().default(6),
+  finalSetTiebreak: z.enum(["standard", "super", "none"]).default("standard"),
   noAd: z.boolean(),
-  tiebreak: z.boolean(),
-  finalSetTiebreak: z.boolean(),
-  finalSetTiebreakAt: z.number().min(1).max(15),
-  detailLevel: z.enum(["points", "simple", "complex"]).optional()
+  detailLevel: z.enum(["points", "simple", "complex"]).default("simple"),
 })
 
 // Match creation schema
@@ -17,7 +17,6 @@ export const createMatchSchema = z.object({
   playerThreeId: z.string().optional(),
   playerFourId: z.string().optional(),
   matchFormat: matchFormatSchema,
-  detailLevel: z.enum(["points", "simple", "complex"]).default("simple")
 }).refine(
   (data) => data.playerOneId !== data.playerTwoId,
   {

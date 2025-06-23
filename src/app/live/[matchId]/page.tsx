@@ -102,6 +102,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       playerTwo: playerTwo as unknown as Player,
       playerThree: playerThree as unknown as Player,
       playerFour: playerFour as unknown as Player,
+      score: match.score,
       scoreParsed: JSON.parse(match.score) as Score,
       matchFormatParsed: JSON.parse(match.matchFormat) as MatchFormat,
       status: match.status as "In Progress" | "Completed",

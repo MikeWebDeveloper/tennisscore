@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
-import { Player, PointDetail as LibPointDetail, Score, MatchFormat } from "@/lib/types"
+import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { PointDetailSheet } from "./point-detail-sheet"
@@ -36,8 +36,19 @@ import { cn } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
-import { useMatchStore, PointDetail as StorePointDetail } from "@/stores/matchStore"
+import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
+import { PlayerAvatar } from "@/components/shared/player-avatar"
+
+// This is the format of the score object as stored in the Appwrite database
+interface DbScore {
+  sets: Array<{ player1: number; player2: number }>
+  games: Array<{ player1: number; player2: number }>
+  points: { player1: string; player2: string }
+  isTiebreak: boolean
+  tiebreakPoints?: { player1: number; player2: number }
+  server: 'p1' | 'p2'
+}
 
 interface LiveScoringInterfaceProps {
   match: {
@@ -50,8 +61,6 @@ interface LiveScoringInterfaceProps {
     score: string
     pointLog?: string[]
     status: string
-    scoreParsed: Score
-    matchFormatParsed?: MatchFormat
     startTime?: string
   }
 }
@@ -159,13 +168,15 @@ function PointEntry({
   score,
   isTiebreak,
   breakPointStatus,
-  playerNames
+  playerNames,
+  players,
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
   isTiebreak: boolean,
   breakPointStatus: { isBreakPoint: boolean, facingBreakPoint: 'p1' | 'p2' | null },
-  playerNames: { p1: string, p2: string }
+  playerNames: { p1: string, p2: string },
+  players: { p1: Player; p2: Player }
 }) {
   const t = useTranslations()
   
@@ -234,9 +245,12 @@ function PointEntry({
             </div>
           )}
           
-          {/* Player name */}
-          <div className="text-xs font-medium text-muted-foreground mb-1 text-center px-2">
-            {getPlayerDisplayName('p1')}
+          {/* Player info */}
+          <div className="flex flex-col items-center gap-2">
+            <PlayerAvatar player={players.p1} className="h-12 w-12" />
+            <div className="text-xs font-medium text-muted-foreground text-center px-2">
+              {getPlayerDisplayName('p1')}
+            </div>
           </div>
           
           {/* Score display */}
@@ -267,9 +281,12 @@ function PointEntry({
             </div>
           )}
           
-          {/* Player name */}
-          <div className="text-xs font-medium text-muted-foreground mb-1 text-center px-2">
-            {getPlayerDisplayName('p2')}
+          {/* Player info */}
+          <div className="flex flex-col items-center gap-2">
+            <PlayerAvatar player={players.p2} className="h-12 w-12" />
+            <div className="text-xs font-medium text-muted-foreground text-center px-2">
+              {getPlayerDisplayName('p2')}
+            </div>
           </div>
           
           {/* Score display */}
@@ -303,7 +320,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   } = useMatchStore()
   
   // Local state for UI
-  const [showServeSwapConfirm, setShowServeSwapConfirm] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
   const [showSimpleStats, setShowSimpleStats] = useState(false)
@@ -320,6 +336,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
     p3: match.playerThree ? `${match.playerThree.firstName} ${match.playerThree.lastName}` : undefined,
     p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
+  }
+
+  const players = {
+    p1: match.playerOne,
+    p2: match.playerTwo,
   }
 
   // Convert store point details to lib point details for stats calculation
@@ -368,18 +389,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     // The RETURNER has the breakpoint opportunity (should get the BP badge)
     const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
     
-    // Debug logging for breakpoint detection
-    console.log('🎾 Breakpoint Check:', {
-      currentServer,
-      returner,
-      serverPoints,
-      returnerPoints,
-      noAd: parsedMatchFormat.noAd,
-      isBreakPoint: isCurrentlyBreakPoint,
-      currentScore: `${score.points[0]}-${score.points[1]}`,
-      gameScore: `${score.games[0]}-${score.games[1]}`,
-      facingBreakPoint: isCurrentlyBreakPoint ? returner : null
-    })
+    // Breakpoint detection logic completed
     
     return {
       isBreakPoint: isCurrentlyBreakPoint,
@@ -411,12 +421,27 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }).filter(Boolean)
       : []
     
-    let parsedScore: Score
+    let dbScore: DbScore
     try {
-      parsedScore = JSON.parse(match.score)
+      dbScore = JSON.parse(match.score)
     } catch (error) {
       console.error("Failed to parse match score:", error)
-      parsedScore = { sets: [], games: [0, 0], points: [0, 0] }
+      dbScore = { 
+        sets: [], 
+        games: [{player1: 0, player2: 0}], 
+        points: {player1: '0', player2: '0'}, 
+        isTiebreak: false,
+        server: 'p1'
+      }
+    }
+
+    // Convert the database score object to the format used by the store
+    const storeScore: Score = {
+      sets: (dbScore.sets || []).map(s => [s.player1, s.player2]),
+      games: dbScore.games && dbScore.games.length > 0 ? [dbScore.games[dbScore.games.length - 1].player1, dbScore.games[dbScore.games.length - 1].player2] : [0,0],
+      points: [parseInt(dbScore.points?.player1, 10) || 0, parseInt(dbScore.points?.player2, 10) || 0],
+      isTiebreak: dbScore.isTiebreak || false,
+      tiebreakPoints: dbScore.tiebreakPoints ? [dbScore.tiebreakPoints.player1, dbScore.tiebreakPoints.player2] : [0, 0]
     }
 
     const matchData = {
@@ -427,7 +452,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       matchFormat: parsedMatchFormat,
       status: match.status as 'In Progress' | 'Completed',
       winnerId: match.status === 'Completed' ? undefined : undefined,
-      score: parsedScore,
+      score: storeScore,
       pointLog: existingPointLog,
       events: [],
       userId: match.playerOne.userId || ''
@@ -435,6 +460,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     
     try {
       initializeMatch(matchData)
+      if (existingPointLog.length === 0) {
+        setServer(dbScore.server || 'p1')
+      }
       setIsInGame(existingPointLog.length > 0)
       setIsMatchInitialized(true)
       setStartTime(match.startTime || null)
@@ -453,22 +481,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </div>
       </div>
     )
-  }
-
-  const handleServeSwap = () => {
-    if (isInGame) {
-      toast.error("Cannot change server after the match has started.")
-      setShowServeSwapConfirm(false)
-      return
-    }
-    
-    if (currentServer) {
-      const newServer = currentServer === 'p1' ? 'p2' : 'p1'
-      setServer(newServer)
-      const newServerName = newServer === 'p1' ? playerNames.p1 : playerNames.p2
-      toast.success(`Server changed to ${newServerName}`)
-    }
-    setShowServeSwapConfirm(false)
   }
 
   const getGameScore = () => {
@@ -719,50 +731,51 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="border-b bg-card/50 backdrop-blur sticky top-0 z-40">
-        <div className="flex items-center justify-between p-3 max-w-6xl mx-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('back')}
-          </Button>
-          
-          <h1 className="font-semibold text-center flex-1 truncate mx-4">
-            {playerNames.p1} vs {playerNames.p2}
-          </h1>
-          
-          <div className="flex items-center gap-1">
-            {/* Breakpoint indicator in header */}
-            {breakPointStatus.isBreakPoint && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="mr-2"
-              >
-                <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
-                  {t('breakPoint')}
-                </Badge>
-              </motion.div>
-            )}
-            
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Enhanced Header with More Space */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
+        <div className="container mx-auto px-4">
+          {/* Top row: Back button, title, and action buttons */}
+          <div className="flex items-center justify-between h-12 border-b border-border/50">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowShareDialog(true)}
-              className="flex items-center gap-2"
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+              className="md:hidden"
             >
-              <Share2 className="h-4 w-4" />
-              {t('share')}
+              <ArrowLeft className="h-4 w-4" />
             </Button>
+
+            <h1 className="text-lg font-semibold">Live Match</h1>
+
+            <div className="flex items-center gap-2">
+              {/* Breakpoint indicator in header */}
+              {breakPointStatus.isBreakPoint && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
+                    {t('breakPoint')}
+                  </Badge>
+                </motion.div>
+              )}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowShareDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Share2 className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('share')}</span>
+              </Button>
+            </div>
           </div>
+
+
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
       <div className="flex-1 max-w-6xl mx-auto w-full p-3 space-y-4">
@@ -772,15 +785,25 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerTwoName={playerNames.p2}
           playerThreeName={playerNames.p3}
           playerFourName={playerNames.p4}
+          playerOneAvatar={<PlayerAvatar player={match.playerOne} className="h-5 w-5" />}
+          playerTwoAvatar={<PlayerAvatar player={match.playerTwo} className="h-5 w-5" />}
+          playerOneYearOfBirth={match.playerOne.yearOfBirth}
+          playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
+          playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
+          playerFourYearOfBirth={match.playerFour?.yearOfBirth}
+          playerOneRating={match.playerOne.rating}
+          playerTwoRating={match.playerTwo.rating}
+          playerThreeRating={match.playerThree?.rating}
+          playerFourRating={match.playerFour?.rating}
           score={score}
           currentServer={currentServer}
           status={match.status}
+          playerOneId={match.playerOne.$id}
+          playerTwoId={match.playerTwo.$id}
           isInGame={isInGame}
-          onServerClick={() => setShowServeSwapConfirm(true)}
+          onSetServer={setServer}
           matchFormat={parsedMatchFormat}
         />
-
-
 
         {/* Point Entry Interface */}
         <PointEntry 
@@ -789,6 +812,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           isTiebreak={isTiebreak}
           breakPointStatus={breakPointStatus}
           playerNames={playerNames}
+          players={players}
         />
 
         {/* Controls */}
@@ -863,30 +887,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       </div>
 
       {/* Dialogs */}
-      <Dialog open={showServeSwapConfirm} onOpenChange={setShowServeSwapConfirm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Server</DialogTitle>
-          </DialogHeader>
-          <p className="text-muted-foreground">
-            {isInGame 
-              ? "Cannot change server after match has started." 
-              : `Switch server from ${currentServer === 'p1' ? playerNames.p1 : playerNames.p2} to ${currentServer === 'p1' ? playerNames.p2 : playerNames.p1}?`
-            }
-          </p>
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowServeSwapConfirm(false)}>
-              Cancel
-            </Button>
-            {!isInGame && (
-              <Button onClick={handleServeSwap}>
-                Change Server
-              </Button>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <ShareDialog 
         open={showShareDialog}
         onOpenChange={setShowShareDialog}

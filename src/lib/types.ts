@@ -1,13 +1,12 @@
+import { Models } from "node-appwrite"
+
 export interface User {
   $id: string
   name?: string
   email: string
-  $createdAt: string
-  $updatedAt: string
 }
 
-export interface Player {
-  $id: string
+export interface Player extends Models.Document {
   firstName: string
   lastName: string
   yearOfBirth?: number
@@ -15,54 +14,59 @@ export interface Player {
   club?: string
   playingHand?: 'right' | 'left'
   profilePictureId?: string
+  profilePictureUrl?: string
   isMainPlayer?: boolean
   isAnonymous?: boolean
   userId: string
 }
 
-export interface Match {
-  $id: string
+export interface Match extends Models.Document {
   playerOneId: string
   playerTwoId: string
-  playerThreeId?: string   // For doubles
-  playerFourId?: string    // For doubles
+  playerOne?: Player // Populated relationship (optional because it might not always be populated)
+  playerTwo?: Player // Populated relationship (optional because it might not always be populated)
   matchDate: string
   matchFormat: string
-  status: "In Progress" | "Completed"
+  status: 'pending' | 'in-progress' | 'completed' | 'retired'
   winnerId?: string
   score: string
   pointLog?: string[]
-  startTime?: string       // When first point was played
-  endTime?: string         // When match ended
-  duration?: number        // Match duration in minutes
+  events?: string[]
+  isDoubles: boolean
+  playerThreeId?: string
+  playerFourId?: string
+  playerThree?: Player
+  playerFour?: Player
   retirementReason?: string // Reason if match was retired
+  detailLevel?: "points" | "simple" | "complex"
   userId: string
-  $createdAt: string
-  $updatedAt: string
 }
 
 export interface MatchFormat {
-  sets: 1 | 3 | 5 // Best of 1, 3, or 5 sets
-  noAd: boolean // No-advantage scoring
-  tiebreak: boolean // Tiebreak at 6-6
-  finalSetTiebreak: boolean // Tiebreak in final set
-  finalSetTiebreakAt?: number // Points for final set tiebreak (e.g., 10)
-  shortSets?: boolean // First to 4 games (for practice)
-  detailLevel?: "points" | "simple" | "complex" // Level of detail for point tracking
+  sets: number
+  gamesPerSet: number
+  tiebreakAt: number
+  finalSetTiebreak?: 'standard' | 'super' | 'none'
+  noAd: boolean
 }
 
 export interface Score {
-  sets: Array<[number, number]>;
-  games: [number, number];
-  points: [number, number];
-  isTiebreak?: boolean;
-  tiebreakPoints?: [number, number];
+  sets: Array<{ player1: number; player2: number }>
+  games: Array<{ player1: number; player2: number }>
+  points: { player1: string; player2: string }
+  currentSet: number
+  currentGame: number
+  isTiebreak: boolean
+  tiebreakPoints?: { player1: number; player2: number }
+  server: 1 | 2
 }
 
-export interface TennisScore extends Score {
-  server: "p1" | "p2"
-  gameNumber: number
-  setNumber: number
+export interface Point {
+  pointWinner: 1 | 2
+  serveResult: 'ace' | 'fault' | 'double-fault' | 'in-play'
+  pointEndedBy: 'winner' | 'error'
+  stroke?: 'forehand' | 'backhand' | 'volley' | 'overhead' | 'serve'
+  timestamp: string
 }
 
 export interface DashboardStats {

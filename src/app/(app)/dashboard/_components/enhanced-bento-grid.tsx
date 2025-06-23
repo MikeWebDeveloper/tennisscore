@@ -85,7 +85,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
   
   // Calculate stats
   const totalMatches = matches.length
-  const completedMatches = matches.filter(match => match.status === "Completed")
+  const completedMatches = matches.filter(match => match.status === "completed")
   const wonMatches = completedMatches.filter(match => 
     match.winnerId === mainPlayer?.$id
   ).length
@@ -173,7 +173,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         <StatCard icon={Zap} label={t("winners")} value={winners} />
         <StatCard icon={Activity} label={t("doubleFaults")} value={doubleFaults} />
         <StatCard icon={BarChart3} label={t("unforcedErrors")} value={unforced} />
-        <StatCard icon={Timer} label={t("activeMatches")} value={matches.filter(m => m.status === "In Progress").length} />
+        <StatCard icon={Timer} label={t("activeMatches")} value={matches.filter(m => m.status === "in-progress").length} />
         <StatCard icon={Calendar} label={t("thisMonth")} value={matches.filter(m => new Date(m.matchDate).getMonth() === new Date().getMonth()).length} />
       </motion.div>
 
@@ -216,7 +216,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        match.status === "Completed" 
+                        match.status === "completed" 
                           ? match.winnerId === mainPlayer?.$id 
                             ? "bg-green-500" 
                             : "bg-red-500"
@@ -231,8 +231,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                         </p>
                       </div>
                     </div>
-                    <Badge variant={match.status === "Completed" ? "secondary" : "default"} className="text-xs">
-                      {match.status === "Completed" ? t("completed") : t("inProgress")}
+                    <Badge variant={match.status === "completed" ? "secondary" : "default"} className="text-xs">
+                      {match.status === "completed" ? t("completed") : t("inProgress")}
                     </Badge>
                   </motion.div>
                 ))}

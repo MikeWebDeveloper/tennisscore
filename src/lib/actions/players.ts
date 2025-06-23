@@ -96,27 +96,30 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
 }
 
 export async function getPlayersByUser(): Promise<Player[]> {
+  const user = await getCurrentUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { databases } = await createAdminClient()
+
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      return []
-    }
-    
-    const { databases } = await createAdminClient()
-    
-    const response = await withRetry(() =>
-      databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        [Query.equal("userId", user.$id)]
-      )
+    const response = await databases.listDocuments<Player>(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      [Query.equal("userId", user.$id), Query.orderDesc("$createdAt")]
     )
-    
-    return response.documents as unknown as Player[]
-  } catch (error: unknown) {
-    console.error("Error fetching players:", error)
-    // Return empty array instead of throwing to prevent page crashes
-    return []
+
+    const playersWithPictures = response.documents.map(player => {
+      if (player.profilePictureId) {
+        const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+        return { ...player, profilePictureUrl: url }
+      }
+      return player
+    })
+
+    return playersWithPictures
+  } catch (error) {
+    console.error("Failed to fetch players:", error)
+    throw new Error("Failed to fetch players")
   }
 }
 
@@ -308,5 +311,96 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
   } catch (error: unknown) {
     console.error("Error deleting player:", error)
     return { error: error instanceof Error ? error.message : "Failed to delete player" }
+  }
+}
+
+export async function updatePlayerProfilePicture(
+  playerId: string,
+  fileId: string
+) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { databases } = await createAdminClient()
+
+  try {
+    const player = await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      playerId,
+      {
+        profilePictureId: fileId,
+      }
+    )
+    return { success: true, player }
+  } catch (error) {
+    console.error("Failed to update player profile picture:", error)
+    return { error: "Failed to update profile picture." }
+  }
+}
+
+export async function getPlayerById(playerId: string): Promise<Player | null> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return null
+    }
+    
+    const { databases } = await createAdminClient()
+    
+    const response = await withRetry(() =>
+      databases.getDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        playerId
+      )
+    )
+    
+    return response as unknown as Player
+  } catch (error: unknown) {
+    console.error("Error fetching player:", error)
+    return null
+  }
+}
+
+export async function removePlayerProfilePicture(playerId: string) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { databases, storage } = await createAdminClient()
+
+  try {
+    // First, find the document to get the fileId
+    const player = await databases.getDocument<Player>(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      playerId
+    )
+
+    const fileId = player.profilePictureId
+    let deleteResult = null
+
+    // If a fileId exists, delete the file from storage
+    if (fileId) {
+      deleteResult = await storage.deleteFile(
+        process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID!,
+        fileId
+      )
+    }
+
+    // Then, update the document to remove the reference
+    const updatedPlayer = await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      playerId,
+      {
+        profilePictureId: null,
+      }
+    )
+
+    return { success: true, player: updatedPlayer, deleteResult }
+  } catch (error) {
+    console.error("Failed to remove player profile picture:", error)
+    return { error: "Failed to remove profile picture." }
   }
 } 

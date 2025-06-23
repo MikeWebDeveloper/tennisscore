@@ -1,95 +1,124 @@
 "use server"
 
-import { ID, Query, Permission, Role } from "node-appwrite"
+import { ID, Query } from "node-appwrite"
 import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
-import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition } from "@/lib/types"
+import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition, Player } from "@/lib/types"
+import { getPlayerById } from "./players"
 
 export async function createMatch(matchData: {
   playerOneId: string
   playerTwoId: string
-  playerThreeId?: string  // For doubles
-  playerFourId?: string   // For doubles
-  matchFormat: MatchFormat
-}): Promise<{ success?: boolean; matchId?: string; error?: string }> {
+  playerThreeId?: string
+  playerFourId?: string
+  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" }
+}) {
+  const user = await getCurrentUser()
+  if (!user) {
+    return { error: "Unauthorized" }
+  }
+
+  const {
+    playerOneId,
+    playerTwoId,
+    playerThreeId,
+    playerFourId,
+    matchFormat,
+  } = matchData
+  const { detailLevel, ...restOfFormat } = matchFormat
+
+  const isDoubles = !!(playerThreeId && playerFourId)
+
+  const { databases } = await createAdminClient()
+
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      return { error: "Unauthorized" }
-    }
-
-    const { databases } = await createAdminClient()
-
-    const playerOneId = matchData.playerOneId;
-    const playerTwoId = matchData.playerTwoId;
-    const playerThreeId = matchData.playerThreeId;
-    const playerFourId = matchData.playerFourId;
-    
-    const docToCreate: Record<string, unknown> = {
-      matchFormat: JSON.stringify(matchData.matchFormat),
+    const newMatch = {
+      playerOneId,
+      playerTwoId,
+      playerThreeId: playerThreeId || null,
+      playerFourId: playerFourId || null,
+      isDoubles,
       matchDate: new Date().toISOString(),
       status: "In Progress",
-      score: JSON.stringify({
-        sets: [],
-        games: [0, 0],
-        points: [0, 0],
-      }),
+      score: "{}", // Will be initialized by the scoring engine
       pointLog: [],
       events: [],
+      matchFormat: JSON.stringify(restOfFormat),
+      detailLevel,
       userId: user.$id,
-    };
-
-    // For anonymous players, create temporary IDs that can be recognized later
-    // We'll use a special prefix that indicates these are not real player IDs
-    if (playerOneId.startsWith("anonymous-")) {
-      // Use the anonymous ID directly - it will be recognized by the UI
-      docToCreate.playerOneId = playerOneId;
-    } else {
-      docToCreate.playerOneId = playerOneId;
     }
 
-    if (playerTwoId.startsWith("anonymous-")) {
-      // Use the anonymous ID directly - it will be recognized by the UI
-      docToCreate.playerTwoId = playerTwoId;
-    } else {
-      docToCreate.playerTwoId = playerTwoId;
-    }
-
-    // Handle doubles players
-    if (playerThreeId) {
-      if (playerThreeId.startsWith("anonymous-")) {
-        docToCreate.playerThreeId = playerThreeId;
-      } else {
-        docToCreate.playerThreeId = playerThreeId;
-      }
-    }
-
-    if (playerFourId) {
-      if (playerFourId.startsWith("anonymous-")) {
-        docToCreate.playerFourId = playerFourId;
-      } else {
-        docToCreate.playerFourId = playerFourId;
-      }
-    }
-
-    // The handleAnonymousPlayer function should be REMOVED.
-    // Do NOT create documents for anonymous players.
+    console.log("Attempting to create match with data:", newMatch)
 
     const match = await databases.createDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       ID.unique(),
-      docToCreate, // Use the new document object
-      [Permission.read(Role.any())]
+      newMatch
     )
 
-    revalidatePath("/dashboard")
-    revalidatePath("/players") // Refresh players list if anonymous players were created
     return { success: true, matchId: match.$id }
   } catch (error) {
-    console.error("Error creating match:", error)
-    return { error: error instanceof Error ? error.message : "Failed to create match" }
+    console.error("Failed to create match:", JSON.stringify(error, null, 2))
+    const errorMessage = (error as { message?: string })?.message || "An unexpected error occurred while creating the match."
+    return { error: errorMessage }
+  }
+}
+
+async function getPopulatedPlayer(
+  playerId: string | null | undefined
+): Promise<Player | null> {
+  if (!playerId || playerId.startsWith("anonymous")) return null
+  try {
+    const player = await getPlayerById(playerId)
+    return player
+  } catch {
+    return null
+  }
+}
+
+export async function getMatchById(matchId: string): Promise<Match | null> {
+  const user = await getCurrentUser()
+  if (!user) {
+    console.error("Unauthorized attempt to fetch match")
+    return null
+  }
+
+  const { databases } = await createAdminClient()
+
+  try {
+    const match = await databases.getDocument<Match>(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId
+    )
+
+    // Ensure the user owns this match
+    if (match.userId !== user.$id) {
+      console.error("User does not have permission to view this match")
+      return null
+    }
+
+    // Populate player data
+    const [playerOne, playerTwo, playerThree, playerFour] = await Promise.all([
+      getPopulatedPlayer(match.playerOneId),
+      getPopulatedPlayer(match.playerTwoId),
+      getPopulatedPlayer(match.playerThreeId),
+      getPopulatedPlayer(match.playerFourId),
+    ])
+
+    return {
+      ...match,
+      playerOne: playerOne as Player,
+      playerTwo: playerTwo as Player,
+      playerThree: playerThree || undefined,
+      playerFour: playerFour || undefined,
+      pointLog: match.pointLog || [],
+    }
+  } catch (error) {
+    console.error(`Failed to fetch match ${matchId}:`, error)
+    return null
   }
 }
 

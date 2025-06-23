@@ -6,14 +6,117 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Share2, Trophy, RefreshCw, Wifi, WifiOff } from "lucide-react"
-import { Player, MatchFormat, Score, PointDetail } from "@/lib/types"
+import { Player, MatchFormat, PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { toast } from "sonner"
 import { useRealtimeMatch } from "@/hooks/use-realtime-match"
-import { MatchStatsComponentSimple } from "@/app/(app)/matches/[id]/_components/match-stats"
+import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { PointByPointView } from "@/app/(app)/matches/[id]/_components/point-by-point-view"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LiveScoreboard } from "@/components/shared/live-scoreboard"
+import { PlayerAvatar } from "@/components/shared/player-avatar"
+
+type Score = import("@/stores/matchStore").Score
+
+const defaultScore: Score = {
+  sets: [],
+  games: [0, 0],
+  points: [0, 0],
+  isTiebreak: false,
+  tiebreakPoints: [0, 0],
+}
+
+// Utility to parse and convert score from DB format to store format
+function parseAndConvertScore(scoreString: string | undefined): Score {
+  if (!scoreString) return defaultScore
+  try {
+    const dbScore = JSON.parse(scoreString)
+    console.log("📊 Parsing score from DB:", dbScore)
+    
+    // Handle both modern format (arrays) and legacy format (objects with player1/player2)
+    let sets: [number, number][] = []
+    let games: [number, number] = [0, 0]
+    let points: [number, number] = [0, 0]
+    let tiebreakPoints: [number, number] = [0, 0]
+    
+    // Parse sets - handle both formats
+    if (dbScore.sets && Array.isArray(dbScore.sets)) {
+      sets = dbScore.sets.map((s: unknown) => {
+        if (Array.isArray(s)) {
+          // Modern format: [6, 4]
+          return [s[0] || 0, s[1] || 0] as [number, number]
+        } else if (s && typeof s === 'object' && s !== null) {
+          // Legacy format: {player1: 6, player2: 4}
+          const legacySet = s as { player1?: number; player2?: number; [key: number]: number }
+          return [legacySet.player1 || legacySet[0] || 0, legacySet.player2 || legacySet[1] || 0] as [number, number]
+        }
+        return [0, 0] as [number, number]
+      })
+    }
+    
+    // Parse games - handle both formats
+    if (dbScore.games) {
+      if (Array.isArray(dbScore.games)) {
+        if (dbScore.games.length === 2 && typeof dbScore.games[0] === 'number') {
+          // Modern simple format: [2, 0]
+          games = [dbScore.games[0] || 0, dbScore.games[1] || 0]
+        } else if (dbScore.games.length > 0) {
+          // Complex format: array of game objects or arrays
+          const lastGame = dbScore.games[dbScore.games.length - 1]
+          if (Array.isArray(lastGame)) {
+            // Format: [[0,0], [1,1]] -> use last element
+            games = [lastGame[0] || 0, lastGame[1] || 0]
+          } else if (typeof lastGame === 'object') {
+            // Format: [{player1: 0, player2: 0}] -> use last element
+            games = [lastGame.player1 || 0, lastGame.player2 || 0]
+          }
+        }
+      } else if (typeof dbScore.games === 'object') {
+        // Legacy single object format: {player1: 0, player2: 0}
+        games = [dbScore.games.player1 || 0, dbScore.games.player2 || 0]
+      }
+    }
+    
+    // Parse points - handle both formats
+    if (dbScore.points) {
+      if (Array.isArray(dbScore.points)) {
+        // Modern format: [1, 1]
+        points = [dbScore.points[0] || 0, dbScore.points[1] || 0]
+      } else if (typeof dbScore.points === 'object') {
+        // Legacy format: {player1: "1", player2: "1"}
+        points = [
+          parseInt(dbScore.points.player1, 10) || 0,
+          parseInt(dbScore.points.player2, 10) || 0
+        ]
+      }
+    }
+    
+    // Parse tiebreak points - handle both formats
+    if (dbScore.tiebreakPoints) {
+      if (Array.isArray(dbScore.tiebreakPoints)) {
+        // Modern format: [0, 0]
+        tiebreakPoints = [dbScore.tiebreakPoints[0] || 0, dbScore.tiebreakPoints[1] || 0]
+      } else if (typeof dbScore.tiebreakPoints === 'object') {
+        // Legacy format: {player1: 0, player2: 0}
+        tiebreakPoints = [dbScore.tiebreakPoints.player1 || 0, dbScore.tiebreakPoints.player2 || 0]
+      }
+    }
+    
+    const convertedScore: Score = {
+      sets,
+      games,
+      points,
+      isTiebreak: dbScore.isTiebreak || false,
+      tiebreakPoints,
+    }
+    
+    console.log("✅ Converted score:", convertedScore)
+    return convertedScore
+  } catch (e) {
+    console.error("Failed to parse score:", e)
+    return defaultScore
+  }
+}
 
 interface PublicLiveMatchProps {
   match: {
@@ -22,7 +125,7 @@ interface PublicLiveMatchProps {
     playerTwo: Player
     playerThree?: Player
     playerFour?: Player
-    scoreParsed: Score
+    score: string
     matchFormatParsed: MatchFormat
     status: "In Progress" | "Completed"
     pointLog?: string[]
@@ -49,6 +152,7 @@ const itemVariants = {
 
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const [match, setMatch] = useState(initialMatch)
+  const [score, setScore] = useState<Score>(() => parseAndConvertScore(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [mounted, setMounted] = useState(false)
   
@@ -75,13 +179,15 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   // Update match when real-time data changes
   useEffect(() => {
     if (lastUpdate && mounted) {
-      console.log("🔄 Updating match with real-time data:", lastUpdate)
+      console.log("🔄 Real-time update received:", lastUpdate)
+      const newScore = parseAndConvertScore(lastUpdate.score)
+      setScore(newScore)
+
       setMatch(prev => ({
         ...prev,
-        scoreParsed: lastUpdate.score ? JSON.parse(lastUpdate.score) : prev.scoreParsed,
         status: lastUpdate.status || prev.status,
         pointLog: lastUpdate.pointLog || prev.pointLog,
-        winnerId: lastUpdate.winnerId || prev.winnerId
+        winnerId: lastUpdate.winnerId || prev.winnerId,
       }))
     }
   }, [lastUpdate, mounted])
@@ -139,16 +245,18 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   // Extract current server from the latest point or score
   let currentServer: "p1" | "p2" | undefined = undefined
-  if (pointLog.length > 0) {
+  if (pointLog.length > 0 && score) {
     // For simplicity, we'll calculate based on the game count and who served first
-    const totalGames = match.scoreParsed.sets.reduce((sum, set) => sum + set[0] + set[1], 0) + 
-                      match.scoreParsed.games[0] + match.scoreParsed.games[1]
-    const firstServer = pointLog[0]?.server || 'p1'
+    const totalGames =
+      score.sets.reduce((sum, set) => sum + (set[0] || 0) + (set[1] || 0), 0) +
+      (score.games[0] || 0) +
+      (score.games[1] || 0)
+    const firstServer = pointLog[0]?.server || "p1"
     
-    if (match.scoreParsed.isTiebreak) {
+    if (score.isTiebreak) {
       // In tiebreak, server alternates every 2 points
-      const totalTiebreakPoints = (match.scoreParsed.tiebreakPoints?.[0] || 0) + 
-                                  (match.scoreParsed.tiebreakPoints?.[1] || 0)
+      const totalTiebreakPoints = (score.tiebreakPoints?.[0] || 0) + 
+                                  (score.tiebreakPoints?.[1] || 0)
       // The player who would normally serve this game starts the tiebreak
       const tiebreakStartServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
       // Then alternate every 2 points
@@ -165,13 +273,13 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="relative z-10 p-4 max-w-4xl mx-auto space-y-4">
-          <div className="text-center pt-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Trophy className="h-6 w-6 text-primary" />
-              <h1 className="text-xl md:text-2xl font-bold">Live Tennis Match</h1>
+        <div className="relative z-10 p-3 sm:p-4 max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4">
+          <div className="text-center pt-6 sm:pt-8">
+            <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
+              <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Live Tennis Match</h1>
             </div>
-            <div className="animate-pulse text-muted-foreground">Loading...</div>
+            <div className="animate-pulse text-sm sm:text-base text-muted-foreground">Loading...</div>
           </div>
         </div>
       </div>
@@ -184,54 +292,56 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 p-4 max-w-4xl mx-auto space-y-4"
+        className="relative z-10 p-3 sm:p-4 max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center pt-4">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div variants={itemVariants} className="text-center pt-2 sm:pt-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-primary" />
-              <h1 className="text-xl md:text-2xl font-bold">Live Tennis</h1>
+              <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Live Tennis</h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={refreshMatch}
-                className="h-9 px-3"
+                className="h-8 sm:h-9 px-2 sm:px-3"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={shareMatch}
-                className="h-9 px-3"
+                className="h-8 sm:h-9 px-2 sm:px-3"
               >
-                <Share2 className="h-4 w-4 mr-2" />
+                <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Share</span>
               </Button>
             </div>
           </div>
           
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
               {match.status === "In Progress" ? "Live" : "Completed"}
             </Badge>
             
             {/* Connection Status - only show if match is in progress */}
             {match.status === "In Progress" && (
-              <Badge variant={connected ? "outline" : "destructive"} className={`border ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
+              <Badge variant={connected ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
                 {connected ? (
                   <>
                     <Wifi className="w-3 h-3 mr-1" />
-                    Connected
+                    <span className="hidden sm:inline">Connected</span>
+                    <span className="sm:hidden">●</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="w-3 h-3 mr-1" />
-                    {retryCount > 0 ? `Retry ${retryCount}/3` : 'Connecting'}
+                    <span className="hidden sm:inline">{retryCount > 0 ? `Retry ${retryCount}/3` : 'Connecting'}</span>
+                    <span className="sm:hidden">×</span>
                   </>
                 )}
               </Badge>
@@ -239,7 +349,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </div>
           
           {error && match.status === "In Progress" && (
-            <div className="text-sm text-red-500 mt-3 p-3 bg-red-50 rounded border max-w-md mx-auto">
+            <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 rounded border mx-auto">
               Connection error: {error}
             </div>
           )}
@@ -252,40 +362,56 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoName={playerNames.p2}
             playerThreeName={playerNames.p3}
             playerFourName={playerNames.p4}
-            score={match.scoreParsed}
+            playerOneAvatar={
+              <PlayerAvatar player={match.playerOne} className="h-4 w-4 sm:h-5 sm:w-5" />
+            }
+            playerTwoAvatar={
+              <PlayerAvatar player={match.playerTwo} className="h-4 w-4 sm:h-5 sm:w-5" />
+            }
+            playerOneYearOfBirth={match.playerOne.yearOfBirth}
+            playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
+            playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
+            playerFourYearOfBirth={match.playerFour?.yearOfBirth}
+            playerOneRating={match.playerOne.rating}
+            playerTwoRating={match.playerTwo.rating}
+            playerThreeRating={match.playerThree?.rating}
+            playerFourRating={match.playerFour?.rating}
+            score={score}
             status={match.status}
             winnerId={match.winnerId}
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
+            matchFormat={match.matchFormatParsed}
           />
         </motion.div>
 
-        {/* Match Details Tabs */}
+        {/* Match Details Tabs - Only Stats and Point-by-Point */}
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="stats" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-10 max-w-md mx-auto">
-              <TabsTrigger value="stats" className="text-sm">Stats</TabsTrigger>
-              <TabsTrigger value="points" disabled={!hasPointData} className="text-sm">
-                Points
+            <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10 max-w-xs sm:max-w-lg mx-auto">
+              <TabsTrigger value="stats" className="text-xs sm:text-sm">Stats</TabsTrigger>
+              <TabsTrigger value="commentary" disabled={!hasPointData} className="text-xs sm:text-sm">
+                Point-by-Point
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="stats" className="mt-4">
+            <TabsContent value="stats" className="mt-3 sm:mt-4">
               <Card>
-                <CardContent className="p-4 md:p-6">
-                  <MatchStatsComponentSimple 
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <MatchStatsComponentSimpleFixed 
                     stats={matchStats}
                     playerNames={playerNames}
                     detailLevel="simple"
+                    pointLog={pointLog}
                   />
                 </CardContent>
               </Card>
             </TabsContent>
             
-            <TabsContent value="points" className="mt-4">
+            <TabsContent value="commentary" className="mt-3 sm:mt-4">
               <Card>
-                <CardContent className="p-4 md:p-6">
+                <CardContent className="p-3 sm:p-4 md:p-6">
                   <PointByPointView
                     pointLog={pointLog}
                     playerNames={playerNames}
@@ -297,22 +423,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         </motion.div>
 
         {/* Match Info Footer */}
-        <motion.div variants={itemVariants} className="text-center py-4 border-t">
-          <div className="text-center space-y-2">
-            <h1 className="text-lg md:text-xl font-bold">
+        <motion.div variants={itemVariants} className="text-center py-3 sm:py-4 border-t">
+          <div className="text-center space-y-1 sm:space-y-2">
+            <h1 className="text-base sm:text-lg md:text-xl font-bold">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p1} / ${playerNames.p3}`
                 : playerNames.p1
               }
             </h1>
-            <div className="text-sm text-muted-foreground">vs</div>
-            <h2 className="text-lg md:text-xl font-bold">
+            <div className="text-xs sm:text-sm text-muted-foreground">vs</div>
+            <h2 className="text-base sm:text-lg md:text-xl font-bold">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p2} / ${playerNames.p4}`
                 : playerNames.p2
               }
             </h2>
-            <div className="text-sm text-muted-foreground mt-3">
+            <div className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
               {new Date(match.matchDate).toLocaleDateString()}
             </div>
           </div>

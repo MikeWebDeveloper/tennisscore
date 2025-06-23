@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { ArrowLeft, Users, User, Plus } from "lucide-react"
+import { ArrowLeft, User, Plus } from "lucide-react"
 import Link from "next/link"
 import { Player } from "@/lib/types"
 import { createMatch } from "@/lib/actions/matches"
@@ -20,6 +20,7 @@ import { CreatePlayerDialog } from "../../../players/_components/create-player-d
 const MobileBottomNavSpacer = () => <div className="h-16 md:hidden" />
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { useTranslations } from "@/hooks/use-translations"
+import { PlayerAvatar } from "@/components/shared/player-avatar"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -85,12 +86,12 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         playerFourId: matchType === "doubles" ? playerFour : undefined,
         matchFormat: {
           sets: sets[0] as 1 | 3 | 5,
+          gamesPerSet: 6,
+          tiebreakAt: 6,
           noAd: scoring === "no-ad",
-          tiebreak: true,
-          finalSetTiebreak: finalSet === "super-tb",
-          finalSetTiebreakAt: 10
+          finalSetTiebreak: finalSet === "super-tb" ? "super" : "standard",
+          detailLevel,
         },
-        detailLevel
       }
 
       // Validate with Zod
@@ -101,10 +102,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         playerTwoId: validatedData.playerTwoId,
         playerThreeId: validatedData.playerThreeId,
         playerFourId: validatedData.playerFourId,
-        matchFormat: {
-          ...validatedData.matchFormat,
-          detailLevel: validatedData.detailLevel
-        }
+        matchFormat: validatedData.matchFormat,
       })
 
       if (result.error) {
@@ -160,13 +158,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
     // Add real players if they exist
     if (players.length > 0) {
-      players.forEach((player) => {
+      players.forEach(player => {
         if (!excludeIds.includes(player.$id)) {
           options.push({
             value: player.$id,
             label: `${player.firstName} ${player.lastName}`,
             group: "Tracked Players",
-            icon: <Users className="h-4 w-4 text-muted-foreground" />,
+            icon: <PlayerAvatar player={player} className="h-5 w-5" />,
           })
         }
       })

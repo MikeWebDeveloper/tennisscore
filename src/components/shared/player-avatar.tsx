@@ -1,67 +1,31 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Player } from "@/lib/types"
 
-function getProfilePictureUrl(profilePictureId?: string) {
-  if (!profilePictureId) return undefined
-  
-  const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
-  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
-  const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID || 'profile-pictures'
-  
-  if (!endpoint || !projectId) {
-    console.warn('Missing Appwrite environment variables for profile pictures')
-    return undefined
-  }
-  
-  return `${endpoint}/storage/buckets/${bucketId}/files/${profilePictureId}/view?project=${projectId}`
-}
-
 interface PlayerAvatarProps {
-  player: Player
-  size?: "sm" | "md" | "lg"
+  player: Player | Partial<Player>
+  className?: string
 }
 
-export function PlayerAvatar({ player, size = "md" }: PlayerAvatarProps) {
-  const sizeClasses = {
-    sm: "h-8 w-8",
-    md: "h-12 w-12",
-    lg: "h-16 w-16"
+export function PlayerAvatar({ player, className }: PlayerAvatarProps) {
+  if (!player || !player.firstName || !player.lastName) {
+    // Return a default or empty avatar if player data is incomplete
+    return <Avatar className={className} />
   }
 
-  const textSizeClasses = {
-    sm: "text-xs",
-    md: "text-sm",
-    lg: "text-lg"
-  }
-
-  const profileImageUrl = getProfilePictureUrl(player.profilePictureId)
+  const initials = `${player.firstName.charAt(0)}${player.lastName.charAt(0)}`
   
-  // Debug logging for profile pictures
-  if (player.profilePictureId && typeof window !== 'undefined') {
-    console.log('Player Avatar Debug:', {
-      playerName: `${player.firstName} ${player.lastName}`,
-      profilePictureId: player.profilePictureId,
-      generatedUrl: profileImageUrl,
-      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-      project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT,
-      bucket: process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID
-    })
-  }
+  // Build full profile picture URL if profilePictureId exists
+  const profilePictureUrl = player.profilePictureId 
+    ? `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+    : player.profilePictureUrl
 
   return (
-    <Avatar className={sizeClasses[size]}>
-      <AvatarImage 
-        src={profileImageUrl} 
-        alt={`${player.firstName} ${player.lastName}`} 
-        onError={(e) => {
-          if (typeof window !== 'undefined') {
-            console.error('Profile picture failed to load:', profileImageUrl, e)
-          }
-        }}
+    <Avatar className={className}>
+      <AvatarImage
+        src={profilePictureUrl}
+        alt={`${player.firstName} ${player.lastName}`}
       />
-      <AvatarFallback className={textSizeClasses[size]}>
-        {player.firstName.charAt(0)}{player.lastName.charAt(0)}
-      </AvatarFallback>
+      <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>
   )
 }

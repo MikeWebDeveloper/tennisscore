@@ -27,6 +27,7 @@ import { MatchStatsComponentSimpleFixed } from "./match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/hooks/use-translations"
+import { PlayerAvatar } from "@/components/shared/player-avatar"
 
 interface MatchDetailsProps {
   match: {
@@ -319,7 +320,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               <>
                 {/* Hero Match Score */}
                 <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
-                  <div className="absolute inset-0 bg-[url('/api/placeholder/800/400')] opacity-5"></div>
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.05)_0%,_transparent_50%)]"></div>
                   <div className="relative z-10">
                     <div className="text-center space-y-6">
                       <div className="flex items-center justify-center gap-3">
@@ -490,48 +491,32 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border-l-4 border-blue-500">
-                          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-blue-900">
-                              {isDoubles ? (
-                                <div className="space-y-1">
-                                  <div>{match.playerOne?.firstName} {match.playerOne?.lastName}</div>
-                                  <div className="text-sm text-blue-600">{match.playerThree?.firstName} {match.playerThree?.lastName}</div>
-                                </div>
-                              ) : (
-                                <div>{match.playerOne?.firstName} {match.playerOne?.lastName}</div>
-                              )}
-                            </div>
-                            {match.playerOne?.rating && (
-                              <div className="text-xs text-blue-600">Rating: {match.playerOne.rating}</div>
-                            )}
-                          </div>
-                          {match.winnerId === match.playerOneId && (
-                            <Trophy className="h-5 w-5 text-yellow-500" />
+                        <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                          {match.playerOne && (
+                            <PlayerAvatar
+                              player={match.playerOne}
+                              className="h-10 w-10"
+                            />
                           )}
+                          <div className="flex-1">
+                            <div className="font-semibold">
+                              {getTeamName("team1")}
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border-l-4 border-red-500">
-                          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-red-900">
-                              {isDoubles ? (
-                                <div className="space-y-1">
-                                  <div>{match.playerTwo?.firstName} {match.playerTwo?.lastName}</div>
-                                  <div className="text-sm text-red-600">{match.playerFour?.firstName} {match.playerFour?.lastName}</div>
-                                </div>
-                              ) : (
-                                <div>{match.playerTwo?.firstName} {match.playerTwo?.lastName}</div>
-                              )}
-                            </div>
-                            {match.playerTwo?.rating && (
-                              <div className="text-xs text-red-600">Rating: {match.playerTwo.rating}</div>
-                            )}
-                          </div>
-                          {match.winnerId === match.playerTwoId && (
-                            <Trophy className="h-5 w-5 text-yellow-500" />
+                        <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                          {match.playerTwo && (
+                            <PlayerAvatar
+                              player={match.playerTwo}
+                              className="h-10 w-10"
+                            />
                           )}
+                          <div className="flex-1">
+                            <div className="font-semibold">
+                              {getTeamName("team2")}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>

@@ -15,20 +15,20 @@ const listVariants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: 0.05
     }
   }
 }
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0 }
 }
 
 export function PlayerList({ players, onEditPlayer, onDeletePlayer }: PlayerListProps) {
   return (
     <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
+      className="flex flex-col gap-2 w-full"
       variants={listVariants}
       initial="hidden"
       animate="show"
