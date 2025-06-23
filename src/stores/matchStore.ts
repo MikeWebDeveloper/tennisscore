@@ -165,15 +165,10 @@ const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Sc
   const setsToWin = Math.ceil(format.sets / 2)
 
   for (const point of log) {
-    // Check if match is already complete before processing this point
-    const p1SetsWon = sets.filter(set => set[0] > set[1]).length
-    const p2SetsWon = sets.filter(set => set[1] > set[0]).length
-    if (p1SetsWon >= setsToWin || p2SetsWon >= setsToWin) {
-      // Match is complete, stop processing points
-      break
-    }
 
     // Check if this should be a super tie-break (deciding set with tied sets)
+    const p1SetsWon = sets.filter(set => set[0] > set[1]).length
+    const p2SetsWon = sets.filter(set => set[1] > set[0]).length
     const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1
     const shouldBeSupetTiebreak = isDecidingSet && format.finalSetTiebreak && games[0] === 0 && games[1] === 0
 
@@ -225,6 +220,14 @@ const calculateScoreFromPointLog = (log: PointDetail[], format: MatchFormat): Sc
           games = [0, 0]
         }
       }
+    }
+    
+    // Check if match is complete after processing this point
+    const finalP1SetsWon = sets.filter(set => set[0] > set[1]).length
+    const finalP2SetsWon = sets.filter(set => set[1] > set[0]).length
+    if (finalP1SetsWon >= setsToWin || finalP2SetsWon >= setsToWin) {
+      // Match is now complete, stop processing any remaining points
+      break
     }
   }
   return {
