@@ -79,7 +79,21 @@
     background-position: center;
     background-repeat: no-repeat;
     background-color: #B85441;
-    background-attachment: fixed;
+    /* Use scroll instead of fixed for better mobile Safari support */
+    background-attachment: scroll;
+    /* Ensure it covers the entire viewport including overscroll areas */
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  /* Additional mobile Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      /* iOS Safari specific background handling */
+      background-attachment: scroll;
+      background-size: 120% 120%; /* Oversized to ensure coverage during overscroll */
+      background-position: center center;
+    }
   }
   
   body {

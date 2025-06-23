@@ -221,6 +221,9 @@ export interface Translations {
   server: string
   game: string
   lostServe: string
+  breakPoint: string
+  setPoint: string
+  matchPoint: string
   // New keys for live scoring tabs
   statsTab: string
   pointsTab: string
@@ -547,6 +550,9 @@ const translations: Record<Locale, Translations> = {
     server: "Server",
     game: "Game",
     lostServe: "LOST SERVE",
+    breakPoint: "BP",
+    setPoint: "SP",
+    matchPoint: "MP",
     statsTab: "Stats",
     pointsTab: "Points",
     commentaryTab: "Commentary",
@@ -870,6 +876,9 @@ const translations: Record<Locale, Translations> = {
     server: "Podání",
     game: "Hra",
     lostServe: "ZTRÁTA PODÁNÍ",
+    breakPoint: "BP",
+    setPoint: "SP",
+    matchPoint: "MP",
     statsTab: "Statistiky",
     pointsTab: "Body",
     commentaryTab: "Komentář",

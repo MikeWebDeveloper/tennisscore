@@ -143,9 +143,9 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                         <span className="text-xs">
                           {point.gameScore.replace(/-/g, ':')}
                         </span>
-                        {point.isBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">BP</Badge>}
-                        {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">SP</Badge>}
-                        {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">MP</Badge>}
+                        {point.isBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>}
+                        {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>}
+                        {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>}
                       </div>
                     ))}
                   </div>

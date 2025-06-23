@@ -3,6 +3,9 @@ const nextConfig = {
   // Enable experimental features for better performance
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
+    serverActions: {
+      bodySizeLimit: '5mb', // Increase limit for profile picture uploads
+    },
   },
   
   // Generate static exports for better caching
