@@ -116,6 +116,14 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       typeof point === 'string' ? point : JSON.stringify(point)
     )
 
+    console.log("updateMatchScore called with:", {
+      matchId,
+      pointLogLength: scoreUpdate.pointLog.length,
+      serializedPointLogLength: serializedPointLog.length,
+      status: scoreUpdate.status,
+      winnerId: scoreUpdate.winnerId
+    })
+
     const updateData: Record<string, unknown> = {
       score: JSON.stringify(scoreUpdate.score),
       pointLog: serializedPointLog,

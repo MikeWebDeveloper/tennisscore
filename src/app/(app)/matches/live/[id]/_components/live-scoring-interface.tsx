@@ -453,7 +453,17 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         updateData.duration = result.duration
       }
 
+      console.log("About to save to database:", {
+        matchId: match.$id,
+        updateData,
+        pointLogLength: updateData.pointLog.length,
+        isMatchComplete: result.isMatchComplete,
+        newScore: result.newScore
+      })
+
       await updateMatchScore(match.$id, updateData)
+
+      console.log("Successfully saved to database")
 
       if (result.isMatchComplete) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2

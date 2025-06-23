@@ -439,6 +439,14 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         const p1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
         const p2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
         
+        console.log("Checking for match completion:", {
+          p1SetsWon,
+          p2SetsWon,
+          setsNeededToWin,
+          sets: newScore.sets,
+          isMatchComplete: p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin
+        })
+
         if (p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin) {
           isThisPointMatchWinning = true
           matchStatus = "Completed"
@@ -447,6 +455,13 @@ export const useMatchStore = create<MatchState>((set, get) => ({
           if (startTime) {
             duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
           }
+          
+          console.log("Match completed!", {
+            matchWinnerId,
+            endTime,
+            duration,
+            finalScore: newScore
+          })
         }
         
         // Reset for next set - Player 1 always serves first game of new set
@@ -489,15 +504,30 @@ export const useMatchStore = create<MatchState>((set, get) => ({
           const p1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
           const p2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
 
-          if (p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin) {
-            isThisPointMatchWinning = true
-            matchStatus = "Completed"
-            matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
-            endTime = new Date().toISOString()
-            if (startTime) {
-              duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
-            }
-          } else {
+                  console.log("Checking for match completion (tiebreak):", {
+          p1SetsWon,
+          p2SetsWon,
+          setsNeededToWin,
+          sets: newScore.sets,
+          isMatchComplete: p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin
+        })
+
+        if (p1SetsWon >= setsNeededToWin || p2SetsWon >= setsNeededToWin) {
+          isThisPointMatchWinning = true
+          matchStatus = "Completed"
+          matchWinnerId = p1SetsWon >= setsNeededToWin ? state.currentMatch.playerOneId : state.currentMatch.playerTwoId
+          endTime = new Date().toISOString()
+          if (startTime) {
+            duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
+          }
+          
+          console.log("Match completed (tiebreak)!", {
+            matchWinnerId,
+            endTime,
+            duration,
+            finalScore: newScore
+          })
+        } else {
             // FIXED: Check if next set should start as super tie-break
             const newP1SetsWon = newScore.sets.filter((s: [number, number]) => s[0] > s[1]).length
             const newP2SetsWon = newScore.sets.filter((s: [number, number]) => s[1] > s[0]).length
