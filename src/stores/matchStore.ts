@@ -358,8 +358,13 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
             
             // Check if this player is at 40 (3 points) or in advantage position and opponent has fewer points
+            // UPDATED: Also consider deuce situations when player could win set
             const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
             const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
+            
+            // DEUCE SET POINT: At deuce (40-40), if either player could win the set, it's a set point
+            const isDeuceSetPoint = (p1Score === 3 && p2Score === 3) && 
+                ((winner === 'p1' && p1CouldWinSetNextGame) || (winner === 'p2' && p2CouldWinSetNextGame))
             
             console.log('🎾 Additional Set Point Check:', {
                 currentGames,
@@ -370,19 +375,23 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 p2CouldWinSetNextGame,
                 p1AtGamePoint,
                 p2AtGamePoint,
+                isDeuceSetPoint,
                 winner,
-                p1AtGamePointLogic: `p1Score >= 3: ${p1Score >= 3}, p1Score > p2Score: ${p1Score > p2Score}, p1Score === 3 && p2Score < 3: ${p1Score === 3 && p2Score < 3}`,
+                                    p1AtGamePointLogic: `p1Score >= 3: ${p1Score >= 3}, p1Score > p2Score: ${p1Score > p2Score}, p1Score === 3 && p2Score < 3: ${p1Score === 3 && p2Score < 3}`,
                 p2AtGamePointLogic: `p2Score >= 3: ${p2Score >= 3}, p2Score > p1Score: ${p2Score > p1Score}, p2Score === 3 && p1Score < 3: ${p2Score === 3 && p1Score < 3}`,
-                setPointCondition: `(winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame): ${winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame}, (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame): ${winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame}`
+                deuceLogic: `p1Score === 3 && p2Score === 3: ${p1Score === 3 && p2Score === 3}`,
+                setPointCondition: `Regular: ${(winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) || (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame)}, Deuce: ${isDeuceSetPoint}`
             })
             
             if ((winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) ||
-                (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame)) {
+                (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame) ||
+                isDeuceSetPoint) {
                 isThisPointSetPoint = true
                 console.log('✅ SET POINT DETECTED! (player at game point position)', { 
                     winner, 
                     currentGames,
                     points: previousScore.points,
+                    detectionType: isDeuceSetPoint ? 'DEUCE SET POINT' : 'REGULAR SET POINT',
                     gamePointPlayer: winner === 'p1' ? 'p1AtGamePoint' : 'p2AtGamePoint',
                     gamePointValue: winner === 'p1' ? p1AtGamePoint : p2AtGamePoint
                 })
@@ -399,11 +408,12 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                     winner,
                     p1AtGamePoint,
                     p2AtGamePoint, 
+                    isDeuceSetPoint,
                     p1CouldWinSetNextGame,
                     p2CouldWinSetNextGame,
                     reason: winner === 'p1' ? 
-                        `p1AtGamePoint: ${p1AtGamePoint}, p1CouldWinSetNextGame: ${p1CouldWinSetNextGame}` :
-                        `p2AtGamePoint: ${p2AtGamePoint}, p2CouldWinSetNextGame: ${p2CouldWinSetNextGame}`
+                        `p1AtGamePoint: ${p1AtGamePoint}, p1CouldWinSetNextGame: ${p1CouldWinSetNextGame}, isDeuceSetPoint: ${isDeuceSetPoint}` :
+                        `p2AtGamePoint: ${p2AtGamePoint}, p2CouldWinSetNextGame: ${p2CouldWinSetNextGame}, isDeuceSetPoint: ${isDeuceSetPoint}`
                 })
             }
         }
