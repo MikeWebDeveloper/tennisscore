@@ -134,7 +134,7 @@ export function LiveScoreboard({
         {/* Player 1 */}
         <div 
           className={cn(
-            "p-3 sm:p-4 transition-colors",
+            "p-4 transition-colors",
             isWinner(playerOneId) && "bg-primary/5",
             breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20",
             onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
@@ -144,48 +144,57 @@ export function LiveScoreboard({
           aria-label={!isInGame ? `Set ${teamOneName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
         >
-          <div className="flex items-center justify-between">
+          {/* Mobile-First Layout: Stacked on small screens, side-by-side on larger screens */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             {/* Left: Player info */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              {playerOneAvatar || (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"></div>
-              )}
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-sm sm:text-base truncate">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                {/* Serving Indicator */}
+                <div className="flex items-center justify-center w-7 h-7">
+                  {(server === "p1" || (onSetServer && !isInGame)) && (
+                    <TennisBallIcon
+                      className="w-5 h-5"
+                      isServing={server === "p1"}
+                    />
+                  )}
+                </div>
+                {playerOneAvatar}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-lg sm:text-xl truncate">
                     {teamOneName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="flex-shrink-0"
                     >
-                      <Badge variant="destructive" className="text-[10px] font-bold bg-orange-500 hover:bg-orange-600 px-1 py-0.5">
-                        BP
+                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
+                        BREAK POINT
                       </Badge>
                     </motion.div>
                   )}
                 </div>
-                {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5">
+                {/* Player details */}
+                <div className="flex items-center gap-2 mt-1">
                   {playerOneYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       {playerOneYearOfBirth}
                     </span>
                   )}
                   {playerOneRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                       ({playerOneRating})
                     </span>
                   )}
                   {isDoubles && playerThreeYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       / {playerThreeYearOfBirth}
                     </span>
                   )}
                   {isDoubles && playerThreeRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                       ({playerThreeRating})
                     </span>
                   )}
@@ -193,77 +202,56 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Structured layout */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Serving Indicator */}
-              <div 
-                className={cn(
-                  "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7",
-                  onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
-                )}
-                onClick={onSetServer && !isInGame ? () => onSetServer('p1') : undefined}
-                role={onSetServer && !isInGame ? "button" : undefined}
-                aria-label={onSetServer && !isInGame ? `Set ${teamOneName} as server` : undefined}
-                tabIndex={onSetServer && !isInGame ? 0 : -1}
-              >
-                {(server === "p1" || (onSetServer && !isInGame)) && (
-                  <TennisBallIcon
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    isServing={server === "p1"}
-                  />
-                )}
-              </div>
-              {/* Sets Won Count */}
-              <div className="text-center min-w-[20px] sm:min-w-[24px]">
-                <div className="text-sm sm:text-base font-medium font-mono">
+            {/* Right: Score Section - Clean horizontal layout */}
+            <div className="flex items-center justify-end gap-4 sm:gap-6">
+              {/* Sets Won */}
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">SETS</div>
+                <div className="text-2xl font-bold font-mono">
                   {setsWon[0]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
-              
               {/* Individual Set Scores */}
-              <div className="flex gap-0.5">
-                {score.sets.length > 0 ? (
-                  score.sets.map((set, idx) => (
-                    <div 
-                      key={idx} 
-                      className={cn(
-                        "text-xs font-medium min-w-[16px] sm:min-w-[18px] h-4 sm:h-5 flex items-center justify-center rounded border",
-                        set[0] > set[1] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {set[0]}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs text-muted-foreground">-</div>
-                )}
-              </div>
-              
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
+              {score.sets.length > 0 && (
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">SETS</div>
+                  <div className="flex gap-1">
+                    {score.sets.map((set, idx) => (
+                      <div 
+                        key={idx} 
+                        className={cn(
+                          "text-sm font-medium min-w-[24px] h-8 flex items-center justify-center rounded border",
+                          set[0] > set[1] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {set[0]}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Current Games */}
-              <div className="text-center min-w-[20px] sm:min-w-[24px]">
-                <div className="text-sm sm:text-lg font-medium font-mono">
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">GAMES</div>
+                <div className="text-2xl font-bold font-mono">
                   {score.games[0]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
-              
               {/* Current Points */}
-              <div className="text-center min-w-[28px] sm:min-w-[36px]">
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">
+                  {isTiebreak ? "POINTS" : "SCORE"}
+                </div>
                 <div className={cn(
-                  "text-sm sm:text-lg font-medium font-mono",
+                  "text-2xl font-bold font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
                 )}>
-                  {getPointDisplay(0)}
+                  {getPointDisplay(0) || "0"}
                 </div>
               </div>
             </div>
@@ -273,7 +261,7 @@ export function LiveScoreboard({
         {/* Player 2 */}
         <div 
           className={cn(
-            "p-3 sm:p-4 transition-colors",
+            "p-4 transition-colors",
             isWinner(playerTwoId) && "bg-primary/5",
             breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20",
             onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
@@ -283,48 +271,57 @@ export function LiveScoreboard({
           aria-label={!isInGame ? `Set ${teamTwoName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
         >
-          <div className="flex items-center justify-between">
+          {/* Mobile-First Layout: Stacked on small screens, side-by-side on larger screens */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             {/* Left: Player info */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              {playerTwoAvatar || (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"></div>
-              )}
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-sm sm:text-base truncate">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                {/* Serving Indicator */}
+                <div className="flex items-center justify-center w-7 h-7">
+                  {(server === "p2" || (onSetServer && !isInGame)) && (
+                    <TennisBallIcon
+                      className="w-5 h-5"
+                      isServing={server === "p2"}
+                    />
+                  )}
+                </div>
+                {playerTwoAvatar}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-lg sm:text-xl truncate">
                     {teamTwoName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="flex-shrink-0"
                     >
-                      <Badge variant="destructive" className="text-[10px] font-bold bg-orange-500 hover:bg-orange-600 px-1 py-0.5">
-                        BP
+                      <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
+                        BREAK POINT
                       </Badge>
                     </motion.div>
                   )}
                 </div>
-                {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5">
+                {/* Player details */}
+                <div className="flex items-center gap-2 mt-1">
                   {playerTwoYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       {playerTwoYearOfBirth}
                     </span>
                   )}
                   {playerTwoRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                       ({playerTwoRating})
                     </span>
                   )}
                   {isDoubles && playerFourYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       / {playerFourYearOfBirth}
                     </span>
                   )}
                   {isDoubles && playerFourRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                       ({playerFourRating})
                     </span>
                   )}
@@ -332,77 +329,56 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Structured layout */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Serving Indicator */}
-              <div 
-                className={cn(
-                  "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7",
-                  onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
-                )}
-                onClick={onSetServer && !isInGame ? () => onSetServer('p2') : undefined}
-                role={onSetServer && !isInGame ? "button" : undefined}
-                aria-label={onSetServer && !isInGame ? `Set ${teamTwoName} as server` : undefined}
-                tabIndex={onSetServer && !isInGame ? 0 : -1}
-              >
-                {(server === "p2" || (onSetServer && !isInGame)) && (
-                  <TennisBallIcon
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    isServing={server === "p2"}
-                  />
-                )}
-              </div>
-              {/* Sets Won Count */}
-              <div className="text-center min-w-[20px] sm:min-w-[24px]">
-                <div className="text-sm sm:text-base font-medium font-mono">
+            {/* Right: Score Section - Clean horizontal layout */}
+            <div className="flex items-center justify-end gap-4 sm:gap-6">
+              {/* Sets Won */}
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">SETS</div>
+                <div className="text-2xl font-bold font-mono">
                   {setsWon[1]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
-              
               {/* Individual Set Scores */}
-              <div className="flex gap-0.5">
-                {score.sets.length > 0 ? (
-                  score.sets.map((set, idx) => (
-                    <div 
-                      key={idx} 
-                      className={cn(
-                        "text-xs font-medium min-w-[16px] sm:min-w-[18px] h-4 sm:h-5 flex items-center justify-center rounded border",
-                        set[1] > set[0] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {set[1]}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs text-muted-foreground">-</div>
-                )}
-              </div>
-              
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
+              {score.sets.length > 0 && (
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">SETS</div>
+                  <div className="flex gap-1">
+                    {score.sets.map((set, idx) => (
+                      <div 
+                        key={idx} 
+                        className={cn(
+                          "text-sm font-medium min-w-[24px] h-8 flex items-center justify-center rounded border",
+                          set[1] > set[0] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {set[1]}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Current Games */}
-              <div className="text-center min-w-[20px] sm:min-w-[24px]">
-                <div className="text-sm sm:text-lg font-medium font-mono">
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">GAMES</div>
+                <div className="text-2xl font-bold font-mono">
                   {score.games[1]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-8 w-px bg-border"></div>
-              
               {/* Current Points */}
-              <div className="text-center min-w-[28px] sm:min-w-[36px]">
+              <div className="flex flex-col items-center">
+                <div className="text-xs text-muted-foreground mb-1">
+                  {isTiebreak ? "POINTS" : "SCORE"}
+                </div>
                 <div className={cn(
-                  "text-sm sm:text-lg font-medium font-mono",
+                  "text-2xl font-bold font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
                 )}>
-                  {getPointDisplay(1)}
+                  {getPointDisplay(1) || "0"}
                 </div>
               </div>
             </div>
