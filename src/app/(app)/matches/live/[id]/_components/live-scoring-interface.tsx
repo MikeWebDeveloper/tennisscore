@@ -163,19 +163,17 @@ function PointEntry({
   onPointWin,
   score,
   isTiebreak,
-  breakPointStatus,
+  pointSituation,
   playerNames,
   players,
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
   isTiebreak: boolean,
-  breakPointStatus: { isBreakPoint: boolean, facingBreakPoint: 'p1' | 'p2' | null },
+  pointSituation: { type: 'matchPoint' | 'setPoint' | 'breakPoint'; player: 'p1' | 'p2' | null; badge: string; color: string; textColor: string; borderColor: string; bgColor: string } | null,
   playerNames: { p1: string, p2: string },
   players: { p1: Player; p2: Player }
 }) {
-  const t = useTranslations()
-  
   const getPointDisplay = (playerIndex: number) => {
     if (isTiebreak) {
       return score.tiebreakPoints?.[playerIndex] || 0
@@ -199,24 +197,42 @@ function PointEntry({
     return fullName.split(' ')[0] // First name only for buttons
   }
 
+  const getSituationText = () => {
+    if (!pointSituation) return null
+    
+    const playerName = getPlayerDisplayName(pointSituation.player as 'p1' | 'p2')
+    
+    switch (pointSituation.type) {
+      case 'matchPoint':
+        return `${playerName} has match point`
+      case 'setPoint':
+        return `${playerName} has set point`
+      case 'breakPoint':
+        return `${playerName} has break point`
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {/* Breakpoint context header */}
-      {breakPointStatus.isBreakPoint && (
+      {/* Critical point context header */}
+      {pointSituation && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-950/20 px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-800">
-            <Badge variant="destructive" className="bg-orange-500 hover:bg-orange-600 text-white">
-              {t('breakPoint')}
+          <div className={cn(
+            "inline-flex items-center gap-2 px-4 py-2 rounded-lg border",
+            pointSituation.bgColor,
+            pointSituation.borderColor
+          )}>
+            <Badge variant="destructive" className={cn("text-white hover:opacity-90", pointSituation.color)}>
+              {pointSituation.badge}
             </Badge>
-            <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-              {breakPointStatus.facingBreakPoint === 'p1' 
-                ? `${getPlayerDisplayName('p1')} has break point`
-                : `${getPlayerDisplayName('p2')} has break point`
-              }
+            <span className={cn("text-sm font-medium", pointSituation.textColor)}>
+              {getSituationText()}
             </span>
           </div>
         </motion.div>
@@ -228,15 +244,16 @@ function PointEntry({
           onClick={() => onPointWin("p1")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+            pointSituation && pointSituation.player === 'p1' && pointSituation.borderColor,
+            pointSituation && pointSituation.player === 'p1' && pointSituation.bgColor
           )}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Breakpoint indicator */}
-          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
+          {/* Critical point indicator */}
+          {pointSituation && pointSituation.player === 'p1' && (
             <div className="absolute top-2 right-2">
-              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
-                BP
+              <Badge variant="destructive" className={cn("text-xs text-white", pointSituation.color)}>
+                {pointSituation.badge}
               </Badge>
             </div>
           )}
@@ -252,8 +269,8 @@ function PointEntry({
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
-              ? "text-orange-600 dark:text-orange-400"
+            pointSituation && pointSituation.player === 'p1' 
+              ? pointSituation.textColor
               : "text-card-foreground"
           )}>
             {getPointDisplay(0)}
@@ -264,15 +281,16 @@ function PointEntry({
           onClick={() => onPointWin("p2")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+            pointSituation && pointSituation.player === 'p2' && pointSituation.borderColor,
+            pointSituation && pointSituation.player === 'p2' && pointSituation.bgColor
           )}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Breakpoint indicator */}
-          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
+          {/* Critical point indicator */}
+          {pointSituation && pointSituation.player === 'p2' && (
             <div className="absolute top-2 right-2">
-              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
-                BP
+              <Badge variant="destructive" className={cn("text-xs text-white", pointSituation.color)}>
+                {pointSituation.badge}
               </Badge>
             </div>
           )}
@@ -288,8 +306,8 @@ function PointEntry({
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
-              ? "text-orange-600 dark:text-orange-400"
+            pointSituation && pointSituation.player === 'p2' 
+              ? pointSituation.textColor
               : "text-card-foreground"
           )}>
             {getPointDisplay(1)}
@@ -385,15 +403,124 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     // The RETURNER has the breakpoint opportunity (should get the BP badge)
     const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
     
-    // Breakpoint detection logic completed
-    
     return {
       isBreakPoint: isCurrentlyBreakPoint,
       facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
     }
   }
   
+  // Calculate current set point and match point status
+  const getSetAndMatchPointStatus = () => {
+    if (!score) return { isSetPoint: false, isMatchPoint: false, facingSetPoint: null, facingMatchPoint: null }
+    
+    const setsNeededToWin = Math.ceil(parsedMatchFormat.sets / 2)
+    const currentP1SetsWon = score.sets.filter((s: [number, number]) => s[0] > s[1]).length
+    const currentP2SetsWon = score.sets.filter((s: [number, number]) => s[1] > s[0]).length
+    
+    // Check if either player could win the set by winning the current game
+    const currentGames = score.games as [number, number]
+    const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
+    const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
+    
+    let isSetPoint = false
+    let facingSetPoint: 'p1' | 'p2' | null = null
+    
+    if (isTiebreak) {
+      // In tiebreak, check if either player is close to winning
+      const p1TbPoints = score.tiebreakPoints?.[0] || 0
+      const p2TbPoints = score.tiebreakPoints?.[1] || 0
+      const tiebreakTarget = 7 // Standard tiebreak
+      
+      if ((p1TbPoints >= tiebreakTarget - 1 && p1TbPoints >= p2TbPoints) && p1CouldWinSetNextGame) {
+        isSetPoint = true
+        facingSetPoint = 'p1'
+      } else if ((p2TbPoints >= tiebreakTarget - 1 && p2TbPoints >= p1TbPoints) && p2CouldWinSetNextGame) {
+        isSetPoint = true
+        facingSetPoint = 'p2'
+      }
+    } else {
+      // Regular game scoring
+      const [p1Score, p2Score] = score.points as [number, number]
+      
+      // Check if either player is at game point AND could win the set
+      const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
+      const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
+      
+      // Deuce set point: At deuce, if either player could win the set
+      const isDeuceSetPoint = (p1Score === 3 && p2Score === 3)
+      
+      if ((p1AtGamePoint && p1CouldWinSetNextGame) || (isDeuceSetPoint && p1CouldWinSetNextGame)) {
+        isSetPoint = true
+        facingSetPoint = 'p1'
+      } else if ((p2AtGamePoint && p2CouldWinSetNextGame) || (isDeuceSetPoint && p2CouldWinSetNextGame)) {
+        isSetPoint = true
+        facingSetPoint = 'p2'
+      }
+    }
+    
+    // Check for match point
+    let isMatchPoint = false
+    let facingMatchPoint: 'p1' | 'p2' | null = null
+    
+    if (isSetPoint && facingSetPoint) {
+      // If this is a set point, check if winning this set would win the match
+      const newP1Sets = currentP1SetsWon + (facingSetPoint === 'p1' ? 1 : 0)
+      const newP2Sets = currentP2SetsWon + (facingSetPoint === 'p2' ? 1 : 0)
+      
+      if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
+        isMatchPoint = true
+        facingMatchPoint = facingSetPoint
+      }
+    }
+    
+    return {
+      isSetPoint,
+      isMatchPoint,
+      facingSetPoint,
+      facingMatchPoint
+    }
+  }
+  
   const breakPointStatus = getBreakPointStatus()
+  const setMatchPointStatus = getSetAndMatchPointStatus()
+  
+  // Determine the highest priority situation for display
+  const getPointSituation = () => {
+    if (setMatchPointStatus.isMatchPoint) {
+      return {
+        type: 'matchPoint' as const,
+        player: setMatchPointStatus.facingMatchPoint,
+        badge: 'MP',
+        color: 'bg-red-600',
+        textColor: 'text-red-600 dark:text-red-400',
+        borderColor: 'border-red-300 dark:border-red-700',
+        bgColor: 'bg-red-50/50 dark:bg-red-950/10'
+      }
+    } else if (setMatchPointStatus.isSetPoint) {
+      return {
+        type: 'setPoint' as const,
+        player: setMatchPointStatus.facingSetPoint,
+        badge: 'SP',
+        color: 'bg-blue-500',
+        textColor: 'text-blue-600 dark:text-blue-400',
+        borderColor: 'border-blue-300 dark:border-blue-700',
+        bgColor: 'bg-blue-50/50 dark:bg-blue-950/10'
+      }
+    } else if (breakPointStatus.isBreakPoint) {
+      return {
+        type: 'breakPoint' as const,
+        player: breakPointStatus.facingBreakPoint,
+        badge: 'BP',
+        color: 'bg-orange-500',
+        textColor: 'text-orange-600 dark:text-orange-400',
+        borderColor: 'border-orange-300 dark:border-orange-700',
+        bgColor: 'bg-orange-50/50 dark:bg-orange-950/10'
+      }
+    }
+    return null
+  }
+  
+  const pointSituation = getPointSituation()
   
   // Memoized serve type handler
   const handleServeTypeChange = useCallback((checked: boolean) => {
@@ -771,13 +898,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
             <div className="flex items-center gap-2">
               {/* Breakpoint indicator in header */}
-              {breakPointStatus.isBreakPoint && (
+              {pointSituation && (
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                 >
                   <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
-                    {t('breakPoint')}
+                    {pointSituation.badge}
                   </Badge>
                 </motion.div>
               )}
@@ -834,7 +961,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           onPointWin={handlePointWin} 
           score={score}
           isTiebreak={isTiebreak}
-          breakPointStatus={breakPointStatus}
+          pointSituation={pointSituation}
           playerNames={playerNames}
           players={players}
         />
@@ -959,9 +1086,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           winner: pendingPointWinner || 'p1',
           server: currentServer || 'p1',
           serveType: serveType,
-          isBreakPoint: breakPointStatus.isBreakPoint,
-          isSetPoint: false, // TODO: Add set point detection
-          isMatchPoint: false, // TODO: Add match point detection
+                      isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
           playerNames
         }}
       />
