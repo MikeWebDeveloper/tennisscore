@@ -68,7 +68,7 @@ export interface Match {
   pointLog: PointDetail[]
   startTime?: string       // When first point was played
   endTime?: string         // When match ended
-  duration?: number        // Match duration in minutes
+  setDurations?: number[]  // Duration of each completed set in milliseconds
   retirementReason?: string // Reason if match was retired
   events: Array<{
     type: 'comment' | 'photo'
@@ -98,7 +98,8 @@ interface MatchState {
   // Timing
   startTime: string | null
   endTime: string | null
-  duration: number | null  // Duration in minutes
+  setDurations: number[]  // Duration of each completed set in milliseconds
+  currentSetStartTime: string | null  // When current set started
   
   // Detailed logging mode
   detailedLoggingEnabled: boolean
@@ -114,7 +115,10 @@ interface MatchState {
     newScore: Score
     pointDetail: PointDetail
     isMatchComplete: boolean
-    winnerId?: string
+    winnerId?: string | null
+    startTime?: string
+    endTime?: string
+    setDurations?: number[]
   }
   undoLastPoint: () => { newScore: Score; newPointLog: PointDetail[] }
   setServer: (server: 'p1' | 'p2') => void
@@ -166,7 +170,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   
   startTime: null,
   endTime: null,
-  duration: null,
+  setDurations: [],
+  currentSetStartTime: null,
   
   detailedLoggingEnabled: false,
   setDetailedLoggingEnabled: (enabled) => set({ detailedLoggingEnabled: enabled }),
@@ -206,7 +211,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
-        events: match.events || []
+        events: match.events || [],
+        startTime: match.startTime || null,
+        endTime: match.endTime || null,
+        setDurations: match.setDurations || [],
+        currentSetStartTime: match.startTime || null,
       })
     } else {
       // For new matches, keep existing server or default to player 1
@@ -234,6 +243,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     
     if (state.isMatchComplete) throw new Error('Match is already complete.')
     if (!state.currentServer || !state.matchFormat || !state.currentMatch) throw new Error('Match not properly initialized')
+    
+    // Handle timing for first point
+    const isFirstPoint = state.pointLog.length === 0
+    const currentTime = new Date().toISOString()
+    let newStartTime = state.startTime
+    let newCurrentSetStartTime = state.currentSetStartTime
+    
+    if (isFirstPoint) {
+      newStartTime = currentTime
+      newCurrentSetStartTime = currentTime
+    }
 
     const { matchFormat, currentServer, pointLog, score: previousScore } = state
     const winnerId_map = { p1: state.currentMatch.playerOneId, p2: state.currentMatch.playerTwoId }
@@ -369,7 +389,25 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const finalP2SetsWon = newScore.sets.length > 0 ? newScore.sets.filter((set: [number, number]) => set[1] > set[0]).length : 0
     
     const isMatchComplete = finalP1SetsWon >= setsNeededToWin || finalP2SetsWon >= setsNeededToWin
-    const matchWinnerId = isMatchComplete ? (finalP1SetsWon >= setsNeededToWin ? winnerId_map.p1 : winnerId_map.p2) : undefined
+    const matchWinnerId = isMatchComplete ? (finalP1SetsWon >= setsNeededToWin ? winnerId_map.p1 : winnerId_map.p2) : null
+    
+    // Handle set completion timing
+    let newSetDurations = [...state.setDurations]
+    const previousSetCount = previousScore.sets.length
+    const newSetCount = newScore.sets.length
+    
+    if (newSetCount > previousSetCount && newCurrentSetStartTime) {
+      // A new set has been completed
+      const setDuration = Date.parse(currentTime) - Date.parse(newCurrentSetStartTime)
+      newSetDurations.push(setDuration)
+      newCurrentSetStartTime = isMatchComplete ? null : currentTime // Start timing next set unless match is over
+    }
+    
+    // Handle match completion timing
+    let newEndTime = state.endTime
+    if (isMatchComplete && !newEndTime) {
+      newEndTime = currentTime
+    }
 
     let nextServer = currentServer
     if (newScore.isTiebreak) {
@@ -390,9 +428,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       initialTiebreakServer: newScore.initialTiebreakServer || null,
       isMatchComplete: isMatchComplete,
       winnerId: matchWinnerId || null,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      setDurations: newSetDurations,
+      currentSetStartTime: newCurrentSetStartTime,
     })
 
-    return { newScore, pointDetail, isMatchComplete, winnerId: matchWinnerId }
+    return { 
+      newScore, 
+      pointDetail, 
+      isMatchComplete, 
+      winnerId: matchWinnerId,
+      startTime: newStartTime || undefined,
+      endTime: newEndTime || undefined,
+      setDurations: newSetDurations
+    }
   },
   
   undoLastPoint: () => {
