@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
   Trophy, 
-  TrendingUp, 
-  Users, 
   Calendar,
   Target,
   Activity,
@@ -20,7 +18,6 @@ import {
   LucideIcon,
   RotateCcw,
   Shield,
-  CircleArrowUp,
   CircleArrowDown,
   Percent,
   ArrowUpRight,
@@ -37,6 +34,46 @@ import { calculatePlayerStats } from "@/lib/utils/match-stats"
 interface EnhancedBentoGridProps {
   matches: Match[]
   mainPlayer: Player | null
+}
+
+interface EnhancedStats {
+  // Basic Performance
+  totalMatchesWon: number
+  winRate: number
+  totalMatches: number
+  currentWinStreak: number
+  
+  // Serve Performance
+  totalAces: number
+  firstServePercentage: number
+  servicePointsWon: number
+  totalDoubleFaults: number
+  
+  // Return Performance
+  breakPointsConverted: number
+  returnPointsWon: number
+  breakPointsSaved: number
+  firstReturnWinPercentage: number
+  breakPointsFaced: number
+  breakPointConversionRate: number
+  
+  // Shot Making
+  totalWinners: number
+  totalUnforcedErrors: number
+  netPointsWon: number
+  forehandBackhandRatio: number
+  winnersPerMatch: number
+  winnerToErrorRatio: number
+  netPointsWonPercentage: number
+  
+  // Return Game Stats
+  firstReturnPercentage: number
+  
+  // Additional contextual stats
+  completedMatches: number
+  averageMatchDuration: string
+  longestWinStreak: number
+  thisMonthMatches: number
 }
 
 // Animation variants
@@ -88,7 +125,7 @@ function ChartsSkeleton() {
 }
 
 // Enhanced statistics calculation from real match data
-function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefined) {
+function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefined): EnhancedStats {
   if (!mainPlayerId || matches.length === 0) {
     return {
       // Basic Performance
@@ -108,12 +145,20 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
       returnPointsWon: 0,
       breakPointsSaved: 0,
       firstReturnWinPercentage: 0,
+      breakPointsFaced: 0,
+      breakPointConversionRate: 0,
       
       // Shot Making
       totalWinners: 0,
       totalUnforcedErrors: 0,
       netPointsWon: 0,
       forehandBackhandRatio: 0,
+      winnersPerMatch: 0,
+      winnerToErrorRatio: 0,
+      netPointsWonPercentage: 0,
+      
+      // Return Game Stats
+      firstReturnPercentage: 0,
       
       // Additional contextual stats
       completedMatches: 0,
@@ -215,10 +260,18 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
     }
   })
 
-  // Calculate percentages
+  // Calculate percentages and derived stats
   const firstServePercentage = totalFirstServes > 0 ? Math.round((totalFirstServesIn / totalFirstServes) * 100) : 0
   const firstReturnWinPercentage = firstReturnPointsPlayed > 0 ? Math.round((firstReturnPointsWon / firstReturnPointsPlayed) * 100) : 0
-  const forehandBackhandRatio = backhandWinners > 0 ? Number((forehandWinners / backhandWinners).toFixed(1)) : forehandWinners
+  const forehandBackhandRatio = backhandWinners > 0 ? Number((forehandWinners / backhandWinners).toFixed(1)) : forehandWinners > 0 ? forehandWinners : 0
+  
+  // Calculate missing derived stats
+  const winnersPerMatch = completedMatches.length > 0 ? totalWinners / completedMatches.length : 0
+  const breakPointsFaced = breakPointsConverted + breakPointsSaved
+  const breakPointConversionRate = breakPointsFaced > 0 ? Math.round((breakPointsConverted / breakPointsFaced) * 100) : 0
+  const firstReturnPercentage = firstReturnPointsPlayed > 0 ? Math.round((firstReturnPointsWon / firstReturnPointsPlayed) * 100) : 0
+  const winnerToErrorRatio = totalUnforcedErrors > 0 ? totalWinners / totalUnforcedErrors : totalWinners > 0 ? totalWinners : 0
+  const netPointsWonPercentage = netPointsWon > 0 ? Math.round((netPointsWon / Math.max(netPointsWon + 10, 1)) * 100) : 0 // Approximation
 
   // Calculate this month's matches
   const currentMonth = new Date().getMonth()
@@ -249,12 +302,20 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
     returnPointsWon: totalReturnPointsWon,
     breakPointsSaved,
     firstReturnWinPercentage,
+    breakPointsFaced,
+    breakPointConversionRate,
     
     // Shot Making
     totalWinners,
     totalUnforcedErrors,
     netPointsWon,
     forehandBackhandRatio,
+    winnersPerMatch,
+    winnerToErrorRatio,
+    netPointsWonPercentage,
+    
+    // Return Game Stats
+    firstReturnPercentage,
     
     // Additional contextual stats
     completedMatches: completedMatches.length,
