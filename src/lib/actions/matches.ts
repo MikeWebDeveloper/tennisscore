@@ -125,11 +125,11 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
 export async function updateMatchScore(matchId: string, scoreUpdate: {
   score: object
   pointLog: object[]
-  status?: "In Progress" | "Completed"
+  status?: "In Progress" | "Completed" | "retired"
   winnerId?: string
   startTime?: string
   endTime?: string
-  duration?: number
+  setDurations?: number[]
   retirementReason?: string
 }): Promise<{ success?: boolean; match?: Match; error?: string }> {
   try {
@@ -174,8 +174,8 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       updateData.endTime = scoreUpdate.endTime
     }
 
-    if (scoreUpdate.duration !== undefined) {
-      updateData.duration = scoreUpdate.duration
+    if (scoreUpdate.setDurations) {
+      updateData.setDurations = scoreUpdate.setDurations
     }
 
     if (scoreUpdate.retirementReason) {
