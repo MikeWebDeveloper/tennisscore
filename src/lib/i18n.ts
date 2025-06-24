@@ -230,6 +230,7 @@ export interface Translations {
   commentaryTab: string
   undo: string
   firstServe: string
+  secondServe: string
   match: string
   
   // Dashboard Stats Cards
@@ -683,6 +684,7 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Commentary",
     undo: "Undo",
     firstServe: "1st Serve",
+    secondServe: "2nd Serve",
     match: "Match",
     
     // Dashboard Stats Cards
@@ -1134,6 +1136,7 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Komentář",
     undo: "Zpět",
     firstServe: "1. podání",
+    secondServe: "2. podání",
     match: "Zápas",
     
     // Dashboard Stats Cards

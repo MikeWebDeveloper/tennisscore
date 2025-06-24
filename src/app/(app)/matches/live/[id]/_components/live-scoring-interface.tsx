@@ -871,7 +871,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 ? 'bg-orange-500 text-white shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-              2nd Serve
+{t('secondServe')}
             </span>
           </div>
         </div>
