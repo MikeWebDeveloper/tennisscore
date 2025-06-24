@@ -57,6 +57,15 @@ export default async function MatchPage({
   // Parse score for display
   const score = JSON.parse(match.score || "{}")
 
+  // Normalize status for component compatibility
+  const normalizeStatus = (status: string): "In Progress" | "Completed" => {
+    const lowercaseStatus = status.toLowerCase()
+    if (lowercaseStatus === 'completed' || lowercaseStatus === 'retired') {
+      return "Completed"
+    }
+    return "In Progress"
+  }
+
   // Determine winner
   let winner = null
   if (match.winnerId) {
@@ -79,9 +88,9 @@ export default async function MatchPage({
     playerThreeId: match.playerThreeId,
     playerFourId: match.playerFourId,
     matchDate: match.matchDate,
-    status: match.status,
+    status: normalizeStatus(match.status),
     score: match.score,
-    pointLog: match.pointLog,
+    pointLog: match.pointLog || [],
     matchFormat: match.matchFormat,
     winnerId: match.winnerId,
     startTime: match.startTime,
