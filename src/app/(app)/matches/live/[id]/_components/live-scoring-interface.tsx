@@ -592,7 +592,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     } catch (error) {
       console.error("Failed to initialize match:", error)
     }
-  }, [match, parsedMatchFormat, initializeMatch])
+  }, [match, parsedMatchFormat, initializeMatch, setServer])
 
   // Show loading state until match is initialized
   if (!isMatchInitialized || !currentServer) {
