@@ -331,6 +331,111 @@ export interface Translations {
   // Score displays
   tiebreak: string
   deuce: string
+
+  // Missing translations found in components
+  noPointDataAvailable: string
+  statsWillAppear: string
+  statsWillAppearDescription: string
+  pointsAndOutcomes: string
+  serviceStatistics: string
+  firstServeWin: string
+  secondServeWin: string
+  breakPointsFaced: string
+  breakPointsSaved: string
+  conversionRatePercent: string
+  forcedErrors: string
+  firstServeWinPercentage: string
+  secondServePointsWon: string
+  secondServePointsWonPercentage: string
+  firstServePointsWon: string
+  firstServePointsWonPercentage: string
+  totalPointsWon: string
+  
+  // Additional stat labels for match stats
+  breakPointsWon: string
+  breakPointConversion: string
+  
+  wins: string
+  ongoing: string
+  noData: string
+  switchToCzech: string
+  switchToEnglish: string
+  unableToConnect: string
+  checkInternetConnection: string
+  connectionIssue: string
+  failedToClearCache: string
+  failedToGetCacheInfo: string
+  clearingCache: string
+  cacheCleared: string
+  refreshing: string
+  checking: string
+  clearing: string
+  clearCache: string
+  hardRefresh: string
+  checkCacheInfo: string
+  cacheFound: string
+  cachesWithEntries: string
+  profilePreview: string
+  clickUploadButton: string
+  clickCropButton: string
+  uploadImageDescription: string
+  cropMe: string
+  replaceWithNewImage: string
+  editCrop: string
+  removeImage: string
+  recommendedActions: string
+  cleanup: string
+  dismiss: string
+  extensionConflictDetected: string
+  expandNavigation: string
+  collapseNavigation: string
+  newMatchButton: string
+  pleaseSelectImage: string
+  failedToReadFile: string
+  failedToProcessCroppedImage: string
+  pleaseSelectImageFile: string
+  copyLink: string
+  failed: string
+  unable: string
+  cannot: string
+  setNumber: string
+  selectAll: string
+  getLink: string
+  copy: string
+  failedTo: string
+  click: string
+  upload: string
+  select: string
+  choose: string
+  start: string
+  end: string
+  continue: string
+  appUpdated: string
+  refreshToGetLatest: string
+  somethingWentWrong: string
+  pleaseRefresh: string
+  managementDescription: string
+  forDoubles: string
+  returnDefaultAvatar: string
+  buildFullUrl: string
+  missingEnvironmentVariables: string
+  setUpPeriodicCleanup: string
+  dontRenderOnServer: string
+  couldNotGetCanvasContext: string
+  fallbackDataURLFailed: string
+  canvasToBlob: string
+  totalEntriesFound: string
+  cacheNames: string
+  cacheInfoCheck: string
+  cacheClearFailed: string
+  foundCaches: string
+  clearCacheAndReload: string
+  justifyStart: string
+  flexItemsCenter: string
+  pointsPlayed: string
+  matchLinkCopiedToClipboard: string
+  liveMatchLinkCopied: string
+  matchResultsLinkCopied: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -664,6 +769,111 @@ const translations: Record<Locale, Translations> = {
     // Score displays
     tiebreak: "Tiebreak",
     deuce: "Deuce",
+
+    // Missing translations found in components
+    noPointDataAvailable: "No point data available",
+    statsWillAppear: "Stats will appear here",
+    statsWillAppearDescription: "Stats will appear here once the first point is played",
+    pointsAndOutcomes: "Points & Outcomes",
+    serviceStatistics: "Service Statistics",
+    firstServeWin: "1st Serve Win %",
+    secondServeWin: "2nd Serve Win %", 
+    breakPointsFaced: "Break Points Faced",
+    breakPointsSaved: "Break Points Saved",
+    conversionRatePercent: "Conversion Rate %",
+    forcedErrors: "Forced Errors",
+    firstServeWinPercentage: "1st Serve Win %",
+    secondServePointsWon: "2nd Serve Points Won",
+    secondServePointsWonPercentage: "2nd Serve Points Won %",
+    firstServePointsWon: "1st Serve Points Won",
+    firstServePointsWonPercentage: "1st Serve Points Won %",
+    totalPointsWon: "Total Points Won",
+    
+    // Additional stat labels for match stats
+    breakPointsWon: "Break Points Won",
+    breakPointConversion: "Break Point Conversion",
+    
+    wins: "Wins",
+    ongoing: "ongoing",
+    noData: "No data",
+    switchToCzech: "Přepnout na češtinu",
+    switchToEnglish: "Přepnout na angličtinu",
+    unableToConnect: "Nelze se připojit k serveru",
+    checkInternetConnection: "Zkontrolujte připojení k internetu",
+    connectionIssue: "Problém s připojením",
+    failedToClearCache: "Nepodařilo se vymazat cache",
+    failedToGetCacheInfo: "Nepodařilo se získat informace o cache",
+    clearingCache: "Mazání cache a obnovování...",
+    cacheCleared: "Cache byla úspěšně vymazána!",
+    refreshing: "Obnovování",
+    checking: "Kontrola",
+    clearing: "Mazání",
+    clearCache: "Vymazat cache",
+    hardRefresh: "Tvrdé obnovení",
+    checkCacheInfo: "Zkontrolovat informace o cache",
+    cacheFound: "Nalezeno cache",
+    cachesWithEntries: "cache s položkami",
+    profilePreview: "Náhled profilu",
+    clickUploadButton: "Klikněte na tlačítko nahrát pro výměnu tohoto obrázku, nebo na X pro odstranění",
+    clickCropButton: "Klikněte na tlačítko oříznout pro úpravu, nahrát pro výměnu, nebo X pro odstranění",
+    uploadImageDescription: "Nahrajte obrázek do 10MB. Po výběru ho budete moci oříznout a umístit",
+    cropMe: "Oříznout",
+    replaceWithNewImage: "Nahradit novým obrázkem",
+    editCrop: "Upravit oříznutí",
+    removeImage: "Odstranit obrázek",
+    recommendedActions: "Doporučené akce:",
+    cleanup: "Vyčistit",
+    dismiss: "Zavřít",
+    extensionConflictDetected: "Byl zjištěn konflikt s rozšířením",
+    expandNavigation: "Rozbalit navigaci",
+    collapseNavigation: "Sbalit navigaci",
+    newMatchButton: "Nový zápas",
+    pleaseSelectImage: "Prosím vyberte obrázek",
+    failedToReadFile: "Nepodařilo se přečíst vybraný soubor",
+    failedToProcessCroppedImage: "Nepodařilo se zpracovat oříznutý obrázek. Zkuste to znovu",
+    pleaseSelectImageFile: "Prosím vyberte obrázkový soubor",
+    copyLink: "Kopírovat odkaz",
+    failed: "Nepodařilo se",
+    unable: "Nelze",
+    cannot: "Nelze",
+    setNumber: "Číslo setu",
+    selectAll: "Vybrat vše",
+    getLink: "Získat odkaz",
+    copy: "Kopírovat",
+    failedTo: "Nepodařilo se",
+    click: "Klikněte",
+    upload: "Nahrát",
+    select: "Vybrat",
+    choose: "Vyberte",
+    start: "Začátek",
+    end: "Konec",
+    continue: "Pokračovat",
+    appUpdated: "Aplikace byla aktualizována",
+    refreshToGetLatest: "Obnovte stránku pro získání nejnovější verze",
+    somethingWentWrong: "Něco se pokazilo",
+    pleaseRefresh: "Zkuste to znovu",
+    managementDescription: "Popis správy",
+    forDoubles: "Pro čtyřhru",
+    returnDefaultAvatar: "Vrátit výchozí avatar",
+    buildFullUrl: "Sestavit plnou URL",
+    missingEnvironmentVariables: "Chybějící proměnné prostředí",
+    setUpPeriodicCleanup: "Nastavit pravidelné čištění",
+    dontRenderOnServer: "Nevykreslovat na serveru",
+    couldNotGetCanvasContext: "Nepodařilo se získat kontext plátna",
+    fallbackDataURLFailed: "Záložní metoda data URL selhala",
+    canvasToBlob: "Canvas na blob",
+    totalEntriesFound: "celkem nalezených položek",
+    cacheNames: "názvy cache",
+    cacheInfoCheck: "kontrola informací o cache",
+    cacheClearFailed: "vymazání cache selhalo",
+    foundCaches: "Nalezeno",
+    clearCacheAndReload: "Vymazat cache a obnovit",
+    justifyStart: "Zarovnat na začátek",
+    flexItemsCenter: "Flex položky na střed",
+    pointsPlayed: "bodů odehráno",
+    matchLinkCopiedToClipboard: "Odkaz na zápas zkopírován do schránky",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován",
   },
   cs: {
     // Common
@@ -995,6 +1205,111 @@ const translations: Record<Locale, Translations> = {
     // Score displays
     tiebreak: "Tie-break",
     deuce: "Shoda",
+
+    // Missing translations found in components
+    noPointDataAvailable: "Nejsou k dispozici žádná data bodů.",
+    statsWillAppear: "Statistiky se zobrazí zde po odehrání prvního bodu.",
+    statsWillAppearDescription: "Statistiky se zobrazí zde po odehrání prvního bodu.",
+    pointsAndOutcomes: "Body a výsledky",
+    serviceStatistics: "Statistiky podání",
+    firstServeWin: "Body vyhrané na 1. podání %",
+    secondServeWin: "Body vyhrané na 2. podání %",
+    breakPointsFaced: "Čelené brejkboly",
+    breakPointsSaved: "Zachráněné brejkboly",
+    conversionRatePercent: "Úspěšnost proměňování",
+    forcedErrors: "Vynucené chyby",
+    firstServeWinPercentage: "Úspěšnost 1. podání %",
+    secondServePointsWon: "Body vyhrané na 2. podání",
+    secondServePointsWonPercentage: "Body vyhrané na 2. podání %",
+    firstServePointsWon: "Body vyhrané na 1. podání",
+    firstServePointsWonPercentage: "Body vyhrané na 1. podání %",
+    totalPointsWon: "Celkem vyhraných bodů",
+    
+    // Additional stat labels for match stats
+    breakPointsWon: "Brejkboly vyhrané",
+    breakPointConversion: "Úspěšnost brejkbolů",
+    
+    wins: "Výhry!",
+    ongoing: "(probíhá)",
+    noData: "Neznámý",
+    switchToCzech: "Čeština",
+    switchToEnglish: "Angličtina",
+    unableToConnect: "Nelze se připojit k serveru. Zkontrolujte připojení k internetu a zkuste to znovu.",
+    checkInternetConnection: "Zkontrolujte připojení k internetu.",
+    connectionIssue: "Problém s připojením",
+    failedToClearCache: "Nepodařilo se vymazat cache",
+    failedToGetCacheInfo: "Nepodařilo se získat informace o cache",
+    clearingCache: "Mazání cache a obnovování...",
+    cacheCleared: "Cache byla úspěšně vymazána!",
+    refreshing: "Obnovování",
+    checking: "Kontrola",
+    clearing: "Mazání",
+    clearCache: "Vymazat cache",
+    hardRefresh: "Tvrdé obnovení",
+    checkCacheInfo: "Zkontrolovat informace o cache",
+    cacheFound: "Nalezeno",
+    cachesWithEntries: "cache s",
+    profilePreview: "Náhled profilu",
+    clickUploadButton: "Klikněte na tlačítko nahrát pro výměnu tohoto obrázku, nebo na X pro odstranění.",
+    clickCropButton: "Klikněte na tlačítko oříznout pro úpravu, nahrát pro výměnu, nebo X pro odstranění.",
+    uploadImageDescription: "Nahrajte obrázek do 10MB. Po výběru ho budete moci oříznout a umístit.",
+    cropMe: "Oříznout",
+    replaceWithNewImage: "Nahradit novým obrázkem",
+    editCrop: "Upravit oříznutí",
+    removeImage: "Odstranit obrázek",
+    recommendedActions: "Doporučené akce:",
+    cleanup: "Vyčistit",
+    dismiss: "Zavřít",
+    extensionConflictDetected: "Byl zjištěn konflikt s rozšířením",
+    expandNavigation: "Rozbalit navigaci",
+    collapseNavigation: "Sbalit navigaci",
+    newMatchButton: "Nový zápas",
+    pleaseSelectImage: "Prosím vyberte obrázek",
+    failedToReadFile: "Nepodařilo se přečíst vybraný soubor",
+    failedToProcessCroppedImage: "Nepodařilo se zpracovat oříznutý obrázek. Zkuste to znovu.",
+    pleaseSelectImageFile: "Prosím vyberte obrázkový soubor",
+    copyLink: "Kopírovat odkaz",
+    failed: "Nepodařilo se",
+    unable: "Nelze",
+    cannot: "Nelze",
+    setNumber: "Set",
+    selectAll: "Vybrat vše",
+    getLink: "Získat odkaz",
+    copy: "Kopírovat",
+    failedTo: "Nepodařilo se",
+    click: "Kliknout",
+    upload: "Nahrát",
+    select: "Vybrat",
+    choose: "Vyberte",
+    start: "Začátek",
+    end: "Konec",
+    continue: "Pokračovat",
+    appUpdated: "Aplikace byla aktualizována. Obnovte stránku pro získání nejnovější verze.",
+    refreshToGetLatest: "Obnovte stránku pro získání nejnovější verze.",
+    somethingWentWrong: "Něco se pokazilo. Zkuste to znovu.",
+    pleaseRefresh: "Zkuste to znovu.",
+    managementDescription: "Spravujte své tenisové hráče a jejich profily",
+    forDoubles: "Pro čtyřhru",
+    returnDefaultAvatar: "Vrátit výchozí avatar pokud jsou data hráče neúplná",
+    buildFullUrl: "Sestavit plnou URL obrázku profilu pokud existuje profilePictureId",
+    missingEnvironmentVariables: "Chybějící proměnné prostředí:",
+    setUpPeriodicCleanup: "Nastavit pravidelné čištění pokud jsou zjištěna rozšíření",
+    dontRenderOnServer: "Nevykreslovat na serveru nebo pokud je zavřeno či nejsou problémy",
+    couldNotGetCanvasContext: "Nepodařilo se získat kontext plátna",
+    fallbackDataURLFailed: "Záložní metoda dataURL selhala:",
+    canvasToBlob: "Canvas.toBlob vyhodila chybu:",
+    totalEntriesFound: "celkem položek",
+    cacheNames: "názvy cache",
+    cacheInfoCheck: "Kontrola informací o cache selhala:",
+    cacheClearFailed: "Vymazání cache selhalo:",
+    foundCaches: "Nalezeno",
+    clearCacheAndReload: "Mazání cache a obnovování...",
+    justifyStart: "zarovnat-začátek",
+    flexItemsCenter: "flex položky-střed",
+    pointsPlayed: "bodů",
+    matchLinkCopiedToClipboard: "Odkaz na výsledky zápasu zkopírován do schránky!",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován do schránky!",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován do schránky!",
   }
 }
 

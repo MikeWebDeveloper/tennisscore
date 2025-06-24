@@ -51,7 +51,7 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
   const _ = playerNames
 
   if (!pointLog || pointLog.length === 0) {
-    return <div className="text-center text-muted-foreground p-8">No point data available.</div>
+    return <div className="text-center text-muted-foreground p-8">{t('noPointDataAvailable')}</div>
   }
 
   // Determine who started serving the match from the first point

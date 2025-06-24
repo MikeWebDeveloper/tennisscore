@@ -382,7 +382,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         {match.status === "Completed" && (
                           <Badge className="bg-green-500 text-white">
                             <Trophy className="w-3 h-3 mr-1" />
-                            Completed
+{t('completed')}
                           </Badge>
                         )}
                       </div>
@@ -444,7 +444,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="text-xs text-green-500">
-                            Ended: {formatTime(match.endTime)}
+{t('ended')}: {formatTime(match.endTime)}
                           </div>
                         )}
                       </div>
@@ -486,18 +486,18 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <span className="text-sm font-medium">{formatFullDate(match.matchDate)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Duration</span>
+                          <span className="text-sm text-muted-foreground">{t('duration')}</span>
                           <span className="text-sm font-medium">{matchDurationText}</span>
                         </div>
                         {match.startTime && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Started</span>
+                            <span className="text-sm text-muted-foreground">{t('started')}</span>
                             <span className="text-sm font-medium">{formatTime(match.startTime)}</span>
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Finished</span>
+                            <span className="text-sm text-muted-foreground">{t('finished')}</span>
                             <span className="text-sm font-medium">{formatTime(match.endTime)}</span>
                           </div>
                         )}
