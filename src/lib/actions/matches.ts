@@ -115,6 +115,7 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
       playerThree: playerThree || undefined,
       playerFour: playerFour || undefined,
       pointLog: match.pointLog || [],
+      setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
     }
   } catch (error) {
     console.error(`Failed to fetch match ${matchId}:`, error)
@@ -266,7 +267,11 @@ export async function getMatch(matchId: string) {
       )
     )
     
-    return match
+    // Convert setDurations from string array to number array
+    return {
+      ...match,
+      setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
+    }
   } catch (error: unknown) {
     console.error("Error fetching match:", error)
     
