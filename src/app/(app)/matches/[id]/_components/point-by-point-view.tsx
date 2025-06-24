@@ -190,9 +190,14 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                                <span className="text-xs">
                                  {point.gameScore.replace(/-/g, ':')}
                                </span>
-                               {isCurrentlyBreakPoint && <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>}
-                               {point.isSetPoint && <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>}
-                               {point.isMatchPoint && <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>}
+                               {/* Priority system: MP > SP > BP (only show highest priority badge) */}
+                               {point.isMatchPoint ? (
+                                 <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>
+                               ) : point.isSetPoint ? (
+                                 <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>
+                               ) : isCurrentlyBreakPoint ? (
+                                 <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>
+                               ) : null}
                              </div>
                            )
                          })
