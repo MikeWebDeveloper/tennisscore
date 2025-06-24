@@ -364,11 +364,16 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             console.log('🎾 Additional Set Point Check:', {
                 currentGames,
                 currentPoints: previousScore.points,
+                p1Score,
+                p2Score,
                 p1CouldWinSetNextGame,
                 p2CouldWinSetNextGame,
                 p1AtGamePoint,
                 p2AtGamePoint,
-                winner
+                winner,
+                p1AtGamePointLogic: `p1Score >= 3: ${p1Score >= 3}, p1Score > p2Score: ${p1Score > p2Score}, p1Score === 3 && p2Score < 3: ${p1Score === 3 && p2Score < 3}`,
+                p2AtGamePointLogic: `p2Score >= 3: ${p2Score >= 3}, p2Score > p1Score: ${p2Score > p1Score}, p2Score === 3 && p1Score < 3: ${p2Score === 3 && p1Score < 3}`,
+                setPointCondition: `(winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame): ${winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame}, (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame): ${winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame}`
             })
             
             if ((winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) ||
@@ -377,7 +382,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 console.log('✅ SET POINT DETECTED! (player at game point position)', { 
                     winner, 
                     currentGames,
-                    points: previousScore.points
+                    points: previousScore.points,
+                    gamePointPlayer: winner === 'p1' ? 'p1AtGamePoint' : 'p2AtGamePoint',
+                    gamePointValue: winner === 'p1' ? p1AtGamePoint : p2AtGamePoint
                 })
                 
                 // Check if this would also be match point
@@ -387,6 +394,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                     isThisPointMatchPoint = true
                     console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
                 }
+            } else {
+                console.log('❌ SET POINT NOT DETECTED:', {
+                    winner,
+                    p1AtGamePoint,
+                    p2AtGamePoint, 
+                    p1CouldWinSetNextGame,
+                    p2CouldWinSetNextGame,
+                    reason: winner === 'p1' ? 
+                        `p1AtGamePoint: ${p1AtGamePoint}, p1CouldWinSetNextGame: ${p1CouldWinSetNextGame}` :
+                        `p2AtGamePoint: ${p2AtGamePoint}, p2CouldWinSetNextGame: ${p2CouldWinSetNextGame}`
+                })
             }
         }
     }

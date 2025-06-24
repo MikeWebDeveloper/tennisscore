@@ -748,7 +748,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <h4 className="font-semibold text-sm mb-2 text-blue-900">MATCH SUMMARY</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Total Points Played</span>
+                              <span className="text-muted-foreground">{t('totalPointsPlayed')}</span>
                               <span className="font-semibold">{totalPoints}</span>
                             </div>
                             <div className="flex justify-between">
@@ -814,11 +814,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Break Points Created</span>
+                            <span className="text-muted-foreground">{t('breakPointsCreated')}</span>
                             <span className="font-semibold">{breakPointsCreated}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Break Points Converted</span>
+                            <span className="text-muted-foreground">{t('breakPointsConverted')}</span>
                             <span className="font-semibold text-orange-600">{breakPointsConverted}</span>
                           </div>
                         </div>
@@ -879,11 +879,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 rounded-lg bg-blue-50">
                         <div className="text-2xl font-bold text-blue-900">{stats.acesByPlayer[0]}</div>
-                        <div className="text-xs text-blue-600">Aces - {getTeamName("team1")}</div>
+                                                    <div className="text-xs text-blue-600">{t('aces')} - {getTeamName("team1")}</div>
                       </div>
                       <div className="text-center p-4 rounded-lg bg-red-50">
                         <div className="text-2xl font-bold text-red-900">{stats.acesByPlayer[1]}</div>
-                        <div className="text-xs text-red-600">Aces - {getTeamName("team2")}</div>
+                                                    <div className="text-xs text-red-600">{t('aces')} - {getTeamName("team2")}</div>
                       </div>
                       <div className="text-center p-4 rounded-lg bg-yellow-50">
                         <div className="text-2xl font-bold text-yellow-900">{stats.doubleFaultsByPlayer[0]}</div>

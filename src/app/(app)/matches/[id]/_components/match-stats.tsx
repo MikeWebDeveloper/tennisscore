@@ -303,27 +303,27 @@ export function MatchStatsComponentSimple({
               
               {/* Detailed stats */}
               <StatRow 
-                label="Winners" 
+                label={t('winners')} 
                 value1={stats.winnersByPlayer[0]} 
                 value2={stats.winnersByPlayer[1]} 
               />
               <StatRow 
-                label="Unforced Errors" 
+                label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Forced Errors" 
+                label={t('forcedErrors')} 
                 value1={stats.forcedErrorsByPlayer[0]} 
                 value2={stats.forcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Aces" 
+                label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]} 
               />
               <StatRow 
-                label="Double Faults" 
+                label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
                 value2={stats.doubleFaultsByPlayer[1]} 
               />
@@ -343,22 +343,22 @@ export function MatchStatsComponentSimple({
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Break Points Faced" 
+              label={t('breakPointsFaced')} 
               value1={stats.breakPointsByPlayer.faced[0]} 
               value2={stats.breakPointsByPlayer.faced[1]} 
             />
             <StatRow 
-              label="Break Points Converted" 
+              label={t('breakPointsConverted')} 
               value1={stats.breakPointsByPlayer.converted[0]} 
               value2={stats.breakPointsByPlayer.converted[1]} 
             />
             <StatRow 
-              label="Break Points Saved" 
+              label={t('breakPointsSaved')} 
               value1={stats.breakPointsByPlayer.saved[0]} 
               value2={stats.breakPointsByPlayer.saved[1]} 
             />
             <StatRow 
-              label="Conversion Rate" 
+              label={t('conversionRatePercent')} 
               value1={stats.breakPointsByPlayer.conversionRate[0]} 
               value2={stats.breakPointsByPlayer.conversionRate[1]}
               format="percentage"

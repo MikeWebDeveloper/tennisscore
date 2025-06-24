@@ -858,7 +858,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 ? 'bg-primary text-primary-foreground shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-              1st Serve
+              {t('firstServe')}
             </span>
             <Switch
               id="serve-type"
