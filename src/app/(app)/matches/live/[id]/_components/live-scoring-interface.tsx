@@ -4,12 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft,
@@ -30,7 +24,7 @@ import { PointDetailSheet } from "./point-detail-sheet"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTranslations } from "@/hooks/use-translations"
 import { cn } from "@/lib/utils"
 
@@ -518,8 +512,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
+    // Debug logging to understand detailLevel issues
+    console.log('Detail level check:', { 
+      detailLevel, 
+      parsedMatchFormat, 
+      matchFormatString: match.matchFormat 
+    })
+
     // For "Points Only", create a minimal point object and save it immediately
     if (detailLevel === 'points') {
+      console.log('Points only mode - awarding point directly')
       const minimalPointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
         pointOutcome: 'winner',
@@ -533,12 +535,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     // For 'simple' mode, open the simple stats popup
     if (detailLevel === 'simple') {
+      console.log('Simple mode - opening stats popup')
       setPendingPointWinner(winner)
       setShowSimpleStats(true)
       return
     }
 
     // For complex mode, use the detailed sheet
+    console.log('Complex mode - opening detailed sheet')
     setPendingPointWinner(winner)
     setShowPointDetail(true)
   }
@@ -827,15 +831,28 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             {t('undo')}
           </Button>
 
-          <div className="flex items-center gap-2">
+          {/* Enhanced Serve Type Switcher */}
+          <div className="flex items-center gap-3 bg-muted/50 rounded-lg p-1">
+            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+              serveType === 'first' 
+                ? 'bg-primary text-primary-foreground shadow-sm' 
+                : 'text-muted-foreground'
+            }`}>
+              1st Serve
+            </span>
             <Switch
               id="serve-type"
               checked={serveType === 'second'}
               onCheckedChange={handleServeTypeChange}
+              className="data-[state=checked]:bg-orange-500"
             />
-            <Label htmlFor="serve-type" className="text-sm">
-              {t('firstServe')}
-            </Label>
+            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+              serveType === 'second' 
+                ? 'bg-orange-500 text-white shadow-sm' 
+                : 'text-muted-foreground'
+            }`}>
+              2nd Serve
+            </span>
           </div>
         </div>
 
