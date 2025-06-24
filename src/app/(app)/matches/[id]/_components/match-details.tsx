@@ -465,14 +465,6 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <CardContent className="space-y-4">
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">{t('date')}</span>
-                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[0]}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">{t('time')}</span>
-                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[1]?.trim()}</span>
-                        </div>
-                        <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Duration</span>
                           <span className="text-sm font-medium">{matchDurationText}</span>
                         </div>
