@@ -392,7 +392,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const matchWinnerId = isMatchComplete ? (finalP1SetsWon >= setsNeededToWin ? winnerId_map.p1 : winnerId_map.p2) : null
     
     // Handle set completion timing
-    let newSetDurations = [...state.setDurations]
+    const newSetDurations = [...state.setDurations]
     const previousSetCount = previousScore.sets.length
     const newSetCount = newScore.sets.length
     

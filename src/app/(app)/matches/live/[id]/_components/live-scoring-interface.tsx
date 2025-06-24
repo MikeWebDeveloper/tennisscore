@@ -560,20 +560,36 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Reset serve type back to first serve for next point
       setServeType('first')
 
-      // The server action will now handle updating start/end times
+      // Include timing data in the update payload
       const updatePayload: {
         score: Score;
         pointLog: object[];
         status?: 'Completed';
         winnerId?: string;
+        startTime?: string;
+        endTime?: string;
+        setDurations?: number[];
       } = {
         score: result.newScore,
         pointLog: [...pointLog, result.pointDetail],
       }
 
+      // Include timing data from the store result
+      if (result.startTime) {
+        updatePayload.startTime = result.startTime
+      }
+      if (result.endTime) {
+        updatePayload.endTime = result.endTime
+      }
+      if (result.setDurations) {
+        updatePayload.setDurations = result.setDurations
+      }
+
       if (result.isMatchComplete) {
         updatePayload.status = 'Completed'
-        updatePayload.winnerId = result.winnerId
+        if (result.winnerId) {
+          updatePayload.winnerId = result.winnerId
+        }
       }
 
       await updateMatchScore(match.$id, updatePayload)
