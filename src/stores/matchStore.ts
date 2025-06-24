@@ -304,33 +304,31 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         // Check if this is a break point situation (receiver can win game with this point)
         isThisPointBreakPoint = isBreakPoint(serverPoints, returnerPoints, matchFormat.noAd)
         
-        // GAME WINNING: This point wins the game
+        // SET POINT & MATCH POINT: Check if winning this point could win the set
+        // First check if this point would win the game
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
             isThisPointGameWinning = true
             
-            // SET POINT: Check if winning this game would win the set
+            // Check if winning this game would win the set
             const tempGames = [...previousScore.games] as [number, number];
             tempGames[winner === 'p1' ? 0 : 1]++
             
             // Debug logging for Set Point detection
-            console.log('🎾 SET POINT Detection:', {
+            console.log('🎾 SET POINT Detection (Game Winning):', {
                 currentGames: previousScore.games,
                 tempGames,
                 winner,
                 wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat),
-                matchFormat: {
-                    shortSets: matchFormat.shortSets,
-                    tiebreak: matchFormat.tiebreak
-                },
-                currentSets: previousScore.sets,
-                explanation: `If ${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
+                currentPoints: previousScore.points,
+                tempPoints: [temp_p1_score, temp_p2_score],
+                explanation: `${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
             })
             
             if (isSetWon(tempGames[0], tempGames[1], matchFormat)) {
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                console.log('✅ SET POINT DETECTED!', { winner, games: tempGames })
+                console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
                 
                 // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
@@ -340,12 +338,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                     isThisPointMatchPoint = true
                     console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
-            } else {
-                console.log('❌ NOT Set Point:', { 
-                    tempGames, 
-                    isSetWonResult: isSetWon(tempGames[0], tempGames[1], matchFormat),
-                    reason: 'Winning this game would not win the set'
-                })
             }
         } else {
             console.log('❌ NOT Game Point:', {
@@ -355,6 +347,47 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 isGameWonResult: isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd),
                 reason: 'This point would not win the game'
             })
+            
+            // ADDITIONAL SET POINT CHECK: Even if this point doesn't win the game,
+            // check if the player would be in a winning position next point
+            // This handles cases where player is at 40 and could win set with next point
+            const currentGames = [...previousScore.games] as [number, number]
+            
+            // Check if player would be close to winning set if they get to a winning position
+            const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
+            const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
+            
+            // Check if this player is at 40 (3 points) or in advantage position and opponent has fewer points
+            const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
+            const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
+            
+            console.log('🎾 Additional Set Point Check:', {
+                currentGames,
+                currentPoints: previousScore.points,
+                p1CouldWinSetNextGame,
+                p2CouldWinSetNextGame,
+                p1AtGamePoint,
+                p2AtGamePoint,
+                winner
+            })
+            
+            if ((winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) ||
+                (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame)) {
+                isThisPointSetPoint = true
+                console.log('✅ SET POINT DETECTED! (player at game point position)', { 
+                    winner, 
+                    currentGames,
+                    points: previousScore.points
+                })
+                
+                // Check if this would also be match point
+                const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
+                const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
+                if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
+                    isThisPointMatchPoint = true
+                    console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
+                }
+            }
         }
     }
 
