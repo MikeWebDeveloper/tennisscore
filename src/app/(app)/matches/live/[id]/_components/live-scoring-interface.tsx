@@ -918,7 +918,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             onClick={() => setShowRetireDialog(true)}
           >
             <Trophy className="h-4 w-4 mr-2" />
-            End Match
+            {t('endMatch')}
           </Button>
         </div>
       </div>
@@ -969,12 +969,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       <Dialog open={showRetireDialog} onOpenChange={setShowRetireDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>End Match</DialogTitle>
+            <DialogTitle>{t('endMatch')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div>
               <p className="text-muted-foreground mb-4">
-                Why are you ending the match?
+                {t('whyEndingMatch')}
               </p>
               
               <div className="space-y-2">
@@ -987,7 +987,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
                     className="text-primary"
                   />
-                  <span>Match completed normally</span>
+                  <span>{t('matchCompletedNormally')}</span>
                 </label>
                 
                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -999,7 +999,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
                     className="text-primary"
                   />
-                  <span>Player retired</span>
+                  <span>{t('playerRetired')}</span>
                 </label>
                 
                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -1011,7 +1011,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
                     className="text-primary"
                   />
-                  <span>Weather conditions</span>
+                  <span>{t('weatherConditions')}</span>
                 </label>
                 
                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -1023,7 +1023,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
                     className="text-primary"
                   />
-                  <span>Injury</span>
+                  <span>{t('injury')}</span>
                 </label>
               </div>
             </div>
@@ -1076,7 +1076,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               setRetireReason('')
               setSelectedWinner('')
             }}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button 
               onClick={() => {
@@ -1096,7 +1096,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               }}
               disabled={!retireReason || (retireReason !== 'completed' && !selectedWinner)}
             >
-              End Match
+              {t('endMatch')}
             </Button>
           </div>
         </DialogContent>

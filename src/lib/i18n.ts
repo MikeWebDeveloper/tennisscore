@@ -258,6 +258,8 @@ export interface Translations {
   close: string
   confirm: string
   sort: string
+  saving: string
+  saveChanges: string
   
   // Status and states
   upcoming: string
@@ -354,6 +356,19 @@ export interface Translations {
   // Additional stat labels for match stats
   breakPointsWon: string
   breakPointConversion: string
+  
+  // End Match Dialog 
+  whyEndingMatch: string
+  matchCompletedNormally: string
+  playerRetired: string
+  weatherConditions: string
+  
+  // Simple Stats Popup
+  point: string
+  details: string
+  winsPoint: string
+  serving: string
+  selectHowPointEnded: string
   
   wins: string
   ongoing: string
@@ -693,9 +708,11 @@ const translations: Record<Locale, Translations> = {
     
     // Common actions
     add: "Add",
-    close: "Close",
+    close: "Close", 
     confirm: "Confirm",
     sort: "Sort",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
     
     // Status and states
     upcoming: "Upcoming",
@@ -792,6 +809,19 @@ const translations: Record<Locale, Translations> = {
     // Additional stat labels for match stats
     breakPointsWon: "Break Points Won",
     breakPointConversion: "Break Point Conversion",
+    
+    // End Match Dialog
+    whyEndingMatch: "Why are you ending the match?",
+    matchCompletedNormally: "Match completed normally",
+    playerRetired: "Player retired",
+    weatherConditions: "Weather conditions",
+    
+    // Simple Stats Popup
+    point: "Point",
+    details: "Details",
+    winsPoint: "wins point",
+    serving: "serving",
+    selectHowPointEnded: "Select how the point ended:",
     
     wins: "Wins",
     ongoing: "ongoing",
@@ -1130,8 +1160,10 @@ const translations: Record<Locale, Translations> = {
     // Common actions
     add: "Přidat",
     close: "Zavřít",
-    confirm: "Potvrdit",
+    confirm: "Potvrdit", 
     sort: "Řadit",
+    saving: "Ukládání...",
+    saveChanges: "Uložit změny",
     
     // Status and states
     upcoming: "Nadcházející",
@@ -1228,6 +1260,19 @@ const translations: Record<Locale, Translations> = {
     // Additional stat labels for match stats
     breakPointsWon: "Brejkboly vyhrané",
     breakPointConversion: "Úspěšnost brejkbolů",
+    
+    // End Match Dialog
+    whyEndingMatch: "Proč ukončujete zápas?",
+    matchCompletedNormally: "Zápas skončil normálně",
+    playerRetired: "Hráč skrečoval",
+    weatherConditions: "Povětrnostní podmínky",
+    
+    // Simple Stats Popup
+    point: "Bod",
+    details: "Detaily",
+    winsPoint: "vítězí bod",
+    serving: "podává",
+    selectHowPointEnded: "Vyberte, jak bod skončil:",
     
     wins: "Výhry!",
     ongoing: "(probíhá)",
