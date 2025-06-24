@@ -255,7 +255,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
   }
 }
 
-export async function getMatch(matchId: string) {
+export async function getMatch(matchId: string): Promise<Match> {
   const { databases } = await createAdminClient()
   
   try {
@@ -271,7 +271,7 @@ export async function getMatch(matchId: string) {
     return {
       ...match,
       setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
-    }
+    } as Match
   } catch (error: unknown) {
     console.error("Error fetching match:", error)
     

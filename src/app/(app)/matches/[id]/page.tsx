@@ -86,7 +86,7 @@ export default async function MatchPage({
     winnerId: match.winnerId,
     startTime: match.startTime,
     endTime: match.endTime,
-    duration: match.duration,
+    setDurations: match.setDurations,
     retirementReason: match.retirementReason,
     userId: match.userId,
     $collectionId: match.$collectionId,
