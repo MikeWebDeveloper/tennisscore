@@ -292,21 +292,21 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 p-3 sm:p-4 max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
+        className="relative z-10 p-2 sm:p-4 max-w-sm sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center pt-2 sm:pt-4">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Live Tennis</h1>
+              <Trophy className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-sm sm:text-xl md:text-2xl font-bold">Live Tennis</h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={refreshMatch}
-                className="h-8 sm:h-9 px-2 sm:px-3"
+                className="h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
               >
                 <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Refresh</span>
@@ -315,7 +315,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                 variant="outline" 
                 size="sm" 
                 onClick={shareMatch}
-                className="h-8 sm:h-9 px-2 sm:px-3"
+                className="h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
               >
                 <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Share</span>
@@ -349,14 +349,14 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </div>
           
           {error && match.status === "In Progress" && (
-            <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 rounded border mx-auto">
+            <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 dark:bg-red-950/20 rounded border mx-auto">
               Connection error: {error}
             </div>
           )}
         </motion.div>
 
-        {/* Live Scoreboard */}
-        <motion.div variants={itemVariants}>
+        {/* Live Scoreboard with better mobile optimization */}
+        <motion.div variants={itemVariants} className="px-1 sm:px-0">
           <LiveScoreboard
             playerOneName={playerNames.p1}
             playerTwoName={playerNames.p2}
@@ -383,6 +383,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
             matchFormat={match.matchFormatParsed}
+            className="text-xs sm:text-sm"
           />
         </motion.div>
 
