@@ -168,6 +168,31 @@ export function EditPlayerDialog({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="club">{t('club')}</Label>
+              <Input
+                id="club"
+                name="club"
+                placeholder={t('clubPlaceholder')}
+                defaultValue={player.club || ""}
+              />
+            </div>
+            <div>
+              <Label htmlFor="playingHand">{t('playingHand')}</Label>
+              <select
+                id="playingHand"
+                name="playingHand"
+                defaultValue={player.playingHand || ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">{t('selectOption')}</option>
+                <option value="right">{t('right')}</option>
+                <option value="left">{t('left')}</option>
+              </select>
+            </div>
+          </div>
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="isMainPlayer"
