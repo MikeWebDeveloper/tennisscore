@@ -320,6 +320,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showSimpleStats, setShowSimpleStats] = useState(false)
   const [showRetireDialog, setShowRetireDialog] = useState(false)
   const [retireReason, setRetireReason] = useState<'completed' | 'retired' | 'weather' | 'injury' | ''>('')
+  const [selectedWinner, setSelectedWinner] = useState<'p1' | 'p2' | ''>('')
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [serveType, setServeType] = useState<'first' | 'second'>('first')
   const [isInGame, setIsInGame] = useState(false)
@@ -646,38 +647,34 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleRetireMatch = async (reason: 'retired' | 'weather' | 'injury') => {
     try {
-      // Update match as completed with retirement reason
+      if (!selectedWinner) {
+        toast.error("Please select which player won")
+        return
+      }
+
+      // Determine winner ID based on selection
+      const winnerId = selectedWinner === 'p1' ? match.playerOne.$id : match.playerTwo.$id
+
+      // Create a new score showing 1-0 sets for the winner
+      const retiredScore: Score = {
+        sets: selectedWinner === 'p1' ? [[1, 0]] : [[0, 1]],
+        games: [0, 0],
+        points: [0, 0],
+        isTiebreak: false,
+        tiebreakPoints: [0, 0],
+      }
+
       const updateData: {
         status: "Completed"
-        winnerId?: string
-        retirementReason?: string
-        endTime?: string
+        winnerId: string
+        retirementReason: string
+        endTime: string
         duration?: number
       } = {
         status: "Completed",
+        winnerId,
         retirementReason: reason,
         endTime: new Date().toISOString()
-      }
-      
-      // If match has started, determine winner based on current score
-      if (pointLog.length > 0) {
-        // Simple logic: player with more sets/games wins, or player 1 if tied
-        const p1SetsWon = score.sets.filter(set => set[0] > set[1]).length
-        const p2SetsWon = score.sets.filter(set => set[1] > set[0]).length
-        
-        if (p1SetsWon > p2SetsWon) {
-          updateData.winnerId = match.playerOne.$id
-        } else if (p2SetsWon > p1SetsWon) {
-          updateData.winnerId = match.playerTwo.$id
-        } else {
-          // If tied on sets, check games in the current set
-          const p1Games = score.games[0]
-          const p2Games = score.games[1]
-          updateData.winnerId = p1Games >= p2Games ? match.playerOne.$id : match.playerTwo.$id
-        }
-      } else {
-        // No points played, default to player 1 as winner
-        updateData.winnerId = match.playerOne.$id
       }
 
       // Calculate duration if we have a start time
@@ -686,16 +683,19 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }
 
       await updateMatchScore(match.$id, {
-        score,
+        score: retiredScore,
         pointLog,
         ...updateData
       })
       
       const reasonText = reason === 'retired' ? 'retirement' : 
                         reason === 'weather' ? 'weather conditions' : 'injury'
+      const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
       
-      toast.success(`Match ended due to ${reasonText}`)
+      toast.success(`Match ended due to ${reasonText}. ${winnerName} wins 1-0.`)
       setShowRetireDialog(false)
+      setRetireReason('')
+      setSelectedWinner('')
       
       // Navigate to match details after a short delay
       setTimeout(() => {
@@ -951,66 +951,110 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <DialogHeader>
             <DialogTitle>End Match</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Why are you ending the match?
-            </p>
-            
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="completed"
-                  checked={retireReason === 'completed'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Match completed normally</span>
-              </label>
+          <div className="space-y-6">
+            <div>
+              <p className="text-muted-foreground mb-4">
+                Why are you ending the match?
+              </p>
               
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="retired"
-                  checked={retireReason === 'retired'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Player retired</span>
-              </label>
-              
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="weather"
-                  checked={retireReason === 'weather'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Weather conditions</span>
-              </label>
-              
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="injury"
-                  checked={retireReason === 'injury'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Injury</span>
-              </label>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="completed"
+                    checked={retireReason === 'completed'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>Match completed normally</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="retired"
+                    checked={retireReason === 'retired'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>Player retired</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="weather"
+                    checked={retireReason === 'weather'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>Weather conditions</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="injury"
+                    checked={retireReason === 'injury'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>Injury</span>
+                </label>
+              </div>
             </div>
+
+            {/* Winner Selection - only show for early endings */}
+            {retireReason && retireReason !== 'completed' && (
+              <div>
+                <p className="text-muted-foreground mb-4">
+                  Which player should be declared the winner?
+                </p>
+                
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="selectedWinner"
+                      value="p1"
+                      checked={selectedWinner === 'p1'}
+                      onChange={(e) => setSelectedWinner(e.target.value as 'p1' | 'p2')}
+                      className="text-primary"
+                    />
+                    <PlayerAvatar player={match.playerOne} className="h-6 w-6" />
+                    <span className="font-medium">{playerNames.p1}</span>
+                  </label>
+                  
+                  <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="selectedWinner"
+                      value="p2"
+                      checked={selectedWinner === 'p2'}
+                      onChange={(e) => setSelectedWinner(e.target.value as 'p1' | 'p2')}
+                      className="text-primary"
+                    />
+                    <PlayerAvatar player={match.playerTwo} className="h-6 w-6" />
+                    <span className="font-medium">{playerNames.p2}</span>
+                  </label>
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-2">
+                  The final score will be recorded as 1-0 sets for the selected winner.
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => {
               setShowRetireDialog(false)
               setRetireReason('')
+              setSelectedWinner('')
             }}>
               Cancel
             </Button>
@@ -1018,13 +1062,19 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               onClick={() => {
                 if (retireReason === 'completed') {
                   router.push(`/matches/${match.$id}`)
-                } else if (retireReason) {
+                } else if (retireReason && selectedWinner) {
                   handleRetireMatch(retireReason as 'retired' | 'weather' | 'injury')
+                } else if (retireReason && !selectedWinner) {
+                  toast.error("Please select which player won")
                 }
-                setShowRetireDialog(false)
-                setRetireReason('')
+                
+                if (retireReason === 'completed') {
+                  setShowRetireDialog(false)
+                  setRetireReason('')
+                  setSelectedWinner('')
+                }
               }}
-              disabled={!retireReason}
+              disabled={!retireReason || (retireReason !== 'completed' && !selectedWinner)}
             >
               End Match
             </Button>

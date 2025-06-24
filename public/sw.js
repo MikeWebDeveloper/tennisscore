@@ -1,8 +1,8 @@
 // TennisScore Service Worker
-// Version: 1.0.0
-const CACHE_NAME = 'tennisscore-v1'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1'
-const APP_VERSION = '1.0.0'
+// Version: 1.2.0
+const CACHE_NAME = 'tennisscore-v1.2'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.2'
+const APP_VERSION = '1.2.0'
 
 // Define what to cache
 const STATIC_ASSETS = [
@@ -37,9 +37,31 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[SW] Caching static assets')
-        return cache.addAll(STATIC_ASSETS)
+        
+        // Cache static assets individually to handle any that might redirect
+        const cachePromises = STATIC_ASSETS.map(async (url) => {
+          try {
+            const response = await fetch(url, {
+              redirect: 'follow'
+            })
+            
+            // Only cache successful responses
+            if (response.ok) {
+              await cache.put(url, response)
+              console.log('[SW] Cached:', url)
+            } else {
+              console.log('[SW] Skipped caching (not ok):', url, response.status)
+            }
+          } catch (error) {
+            console.log('[SW] Failed to cache:', url, error.message)
+            // Don't let individual failures break the entire installation
+          }
+        })
+        
+        await Promise.allSettled(cachePromises)
+        console.log('[SW] Static assets caching completed')
       })
       .then(() => {
         console.log('[SW] Static assets cached successfully')
@@ -100,10 +122,27 @@ self.addEventListener('fetch', (event) => {
     return
   }
   
+  // Skip if this is not our domain (avoid handling external requests)
+  if (url.origin !== self.location.origin) {
+    return
+  }
+  
+  // Skip service worker script itself
+  if (url.pathname === '/sw.js') {
+    return
+  }
+  
+  // Bypass service worker if requested (for debugging)
+  if (url.searchParams.has('sw-bypass')) {
+    console.log('[SW] Bypassing service worker for:', url.pathname)
+    return
+  }
+  
   event.respondWith(handleRequest(request))
 })
 
 async function handleRequest(request) {
+  const url = new URL(request.url)
   
   try {
     // Strategy 1: App Shell (CSS, JS, fonts) - Cache First
@@ -126,20 +165,66 @@ async function handleRequest(request) {
       return await navigationHandler(request)
     }
     
-    // Default: Network First
-    return await networkFirst(request, DYNAMIC_CACHE)
+    // Default: Let non-matching requests pass through to network
+    console.log('[SW] Passing through unmatched request:', url.pathname)
+    return await fetch(request, { redirect: 'follow' })
     
   } catch (error) {
-    console.error('[SW] Request failed:', error)
+    console.log('[SW] Request handler error for', url.pathname, ':', error.message)
     
-    // Return offline page for navigation requests
+    // For navigation requests, try to return a cached page
     if (request.mode === 'navigate') {
-      const cache = await caches.open(CACHE_NAME)
-      return await cache.match('/') || new Response('Offline')
+      try {
+        const cache = await caches.open(CACHE_NAME)
+        const fallbackResponse = await cache.match('/') || 
+                                 await cache.match('/dashboard')
+        
+        if (fallbackResponse) {
+          console.log('[SW] Returning cached fallback for navigation')
+          return fallbackResponse
+        }
+      } catch (cacheError) {
+        console.log('[SW] Cache fallback failed:', cacheError.message)
+      }
+      
+      // Return a basic offline page as last resort
+      return new Response(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>TennisScore - Offline</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              body { font-family: system-ui, sans-serif; text-align: center; padding: 50px; color: #333; }
+              .offline { color: #666; margin: 20px 0; }
+              button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+              button:hover { background: #0056b3; }
+            </style>
+          </head>
+          <body>
+            <h1>🎾 TennisScore</h1>
+            <p class="offline">You're offline. Please check your connection and try again.</p>
+            <button onclick="window.location.reload()">Retry</button>
+          </body>
+        </html>
+      `, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
     }
     
-    // Return empty response for other requests
-    return new Response('Network error', { status: 503 })
+    // For non-navigation requests, try to pass through to network as fallback
+    try {
+      console.log('[SW] Falling back to network for:', url.pathname)
+      return await fetch(request, { redirect: 'follow' })
+    } catch (networkError) {
+      console.log('[SW] Network fallback also failed:', networkError.message)
+      // Return a simple error response as last resort
+      return new Response('Service temporarily unavailable', { 
+        status: 503,
+        statusText: 'Service Worker Error'
+      })
+    }
   }
 }
 
@@ -154,14 +239,24 @@ async function cacheFirst(request, cacheName) {
     return cachedResponse
   }
   
-  // Not in cache, fetch from network
-  const networkResponse = await fetch(request)
-  
-  if (networkResponse.ok) {
-    cache.put(request, networkResponse.clone())
+  // Not in cache, fetch from network with simplified config
+  try {
+    const networkResponse = await fetch(request, {
+      redirect: 'follow'
+    })
+    
+    // Only cache successful, non-redirect responses
+    if (networkResponse.ok && !networkResponse.redirected) {
+      cache.put(request, networkResponse.clone()).catch(e => 
+        console.log('[SW] Cache put failed:', e.message)
+      )
+    }
+    
+    return networkResponse
+  } catch (error) {
+    console.log('[SW] Cache first fetch failed:', error.message)
+    throw error
   }
-  
-  return networkResponse
 }
 
 // Network First strategy
@@ -169,14 +264,20 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName)
   
   try {
-    const networkResponse = await fetch(request)
+    const networkResponse = await fetch(request, {
+      redirect: 'follow'
+    })
     
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone())
+    // Only cache successful, non-redirect responses
+    if (networkResponse.ok && !networkResponse.redirected) {
+      cache.put(request, networkResponse.clone()).catch(e => 
+        console.log('[SW] Cache put failed:', e.message)
+      )
     }
     
     return networkResponse
   } catch (error) {
+    console.log('[SW] Network first fetch failed, trying cache:', error.message)
     // Network failed, try cache
     const cachedResponse = await cache.match(request)
     
@@ -190,29 +291,88 @@ async function networkFirst(request, cacheName) {
 
 // Navigation handler for SPA routing
 async function navigationHandler(request) {
+  const url = new URL(request.url)
+  
+  // For root path requests that might redirect, try cache first
+  if (url.pathname === '/') {
+    try {
+      const cache = await caches.open(CACHE_NAME)
+      const cachedResponse = await cache.match('/')
+      
+      if (cachedResponse) {
+        console.log('[SW] Returning cached root page')
+        return cachedResponse
+      }
+    } catch (cacheError) {
+      console.log('[SW] Cache check failed for root:', cacheError.message)
+    }
+  }
+  
   try {
-    // Try network first
-    const networkResponse = await fetch(request)
+    // For navigation requests, make a simple fetch without intercepting redirects
+    const networkResponse = await fetch(request.url, {
+      method: request.method,
+      headers: request.headers,
+      redirect: 'follow',
+      credentials: 'same-origin'
+    })
     
-    if (networkResponse.ok) {
+    // Let redirects pass through naturally - don't try to cache redirected responses
+    if (networkResponse.ok && !networkResponse.redirected) {
       const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, networkResponse.clone())
-      return networkResponse
+      // Only cache if it's a final, non-redirected response
+      cache.put(request, networkResponse.clone()).catch(e => 
+        console.log('[SW] Failed to cache navigation response:', e.message)
+      )
     }
     
-    throw new Error('Network response not ok')
+    return networkResponse
+    
   } catch (error) {
-    // Network failed, return cached page or app shell
+    console.log('[SW] Navigation network request failed:', error.message)
+    
+    // Network failed, try to return appropriate cached page
     const cache = await caches.open(CACHE_NAME)
-    const cachedResponse = await cache.match(request) || 
-                          await cache.match('/dashboard') || 
-                          await cache.match('/')
+    
+    // Try to match the exact request first
+    let cachedResponse = await cache.match(request)
+    
+    // If not found, try common fallbacks
+    if (!cachedResponse) {
+      cachedResponse = await cache.match('/dashboard') || 
+                      await cache.match('/') ||
+                      await cache.match('/login')
+    }
     
     if (cachedResponse) {
+      console.log('[SW] Returning cached fallback for navigation')
       return cachedResponse
     }
     
-    throw error
+    // Last resort: return basic offline page
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>TennisScore - Offline</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body { font-family: system-ui, sans-serif; text-align: center; padding: 50px; color: #333; }
+            .offline { color: #666; margin: 20px 0; }
+            button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            button:hover { background: #0056b3; }
+          </style>
+        </head>
+        <body>
+          <h1>🎾 TennisScore</h1>
+          <p class="offline">You're offline. Please check your connection and try again.</p>
+          <button onclick="window.location.reload()">Retry</button>
+        </body>
+      </html>
+    `, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   }
 }
 
@@ -220,9 +380,12 @@ async function navigationHandler(request) {
 async function updateCache(request, cacheName) {
   try {
     const cache = await caches.open(cacheName)
-    const networkResponse = await fetch(request)
+    const networkResponse = await fetch(request, {
+      redirect: 'follow'
+    })
     
-    if (networkResponse.ok) {
+    // Only cache successful, non-redirect responses
+    if (networkResponse.ok && !networkResponse.redirected) {
       await cache.put(request, networkResponse)
     }
   } catch (error) {
