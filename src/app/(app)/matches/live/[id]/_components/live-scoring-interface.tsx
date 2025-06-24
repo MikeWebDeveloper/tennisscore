@@ -33,6 +33,7 @@ import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { MatchTimerDisplay } from "./MatchTimerDisplay"
 
 // This is the format of the score object as stored in the Appwrite database
 interface DbScore {
@@ -808,6 +809,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           onSetServer={setServer}
           matchFormat={parsedMatchFormat}
         />
+
+        {/* Match Timer */}
+        <MatchTimerDisplay className="justify-center" />
 
         {/* Point Entry Interface */}
         <PointEntry 

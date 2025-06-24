@@ -54,7 +54,7 @@ interface MatchDetailsProps {
     winnerId?: string
     startTime?: string
     endTime?: string
-    duration?: number
+    setDurations?: number[]
     retirementReason?: string
     userId: string
     $collectionId: string
@@ -310,11 +310,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
             const setsWon = getSetsWon()
             const totalPoints = stats.totalPoints
-            const matchDurationText = match.duration 
-              ? formatDuration(match.duration)
-              : pointDetails.length > 0 
-                ? `${pointDetails.length} points`
-                : "No data"
+            // Calculate match duration from start/end time
+            const getMatchDuration = () => {
+              if (match.startTime && match.endTime) {
+                const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
+                const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                return formatDuration(totalMinutes)
+              } else if (match.startTime && match.status === "In Progress") {
+                const durationMs = Date.now() - Date.parse(match.startTime)
+                const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                return formatDuration(totalMinutes) + " (ongoing)"
+              }
+              return pointDetails.length > 0 ? `${pointDetails.length} points` : "No data"
+            }
+
+            const matchDurationText = getMatchDuration()
 
             return (
               <>
@@ -855,8 +865,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         <li>• Service power: {stats.acesByPlayer[0] + stats.acesByPlayer[1]} aces served total</li>
                         <li>• Pressure points: {breakPointsCreated} break point opportunities created</li>
                         <li>• Match rhythm: {totalPoints} points over {setsPlayed} sets ({(totalPoints / Math.max(setsPlayed, 1)).toFixed(1)} points per set)</li>
-                        {match.duration && (
-                          <li>• Playing pace: {(totalPoints / (match.duration / 60)).toFixed(1)} points per minute</li>
+                        {match.startTime && match.endTime && (
+                          <li>• Playing pace: {(() => {
+                            const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
+                            const durationMinutes = durationMs / (1000 * 60)
+                            return (totalPoints / durationMinutes).toFixed(1)
+                          })()} points per minute</li>
                         )}
                       </ul>
                     </div>
