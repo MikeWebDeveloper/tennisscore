@@ -314,26 +314,52 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       return null
     }
 
+    const getIconColor = () => {
+      switch (variant) {
+        case "primary":
+          return "text-primary"
+        case "success":
+          return "text-green-500"
+        case "warning":
+          return "text-yellow-500"
+        case "danger":
+          return "text-red-500"
+        default:
+          return "text-muted-foreground"
+      }
+    }
+
     return (
       <motion.div variants={itemVariants} className={className}>
-        <Card className={`h-24 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group ${getVariantClasses()}`}>
-          <CardContent className="p-4 h-full">
-            <div className="flex items-center justify-between h-full">
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-1">
-                  <p className="text-xs text-muted-foreground font-medium truncate">{label}</p>
+        <Card className={`h-24 md:h-32 lg:h-36 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group ${getVariantClasses()}`}>
+          <CardContent className="p-3 md:p-4 lg:p-6 h-full">
+            <div className="flex flex-col h-full justify-between">
+              {/* Header with icon and trend */}
+              <div className="flex items-center justify-between mb-1 md:mb-2">
+                <div className="flex items-center gap-1 flex-1 min-w-0">
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{label}</p>
                   {getTrendIcon()}
                 </div>
-                <p className="text-xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200 font-mono">
+                <div className="p-1.5 md:p-2 lg:p-2.5 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2 flex-shrink-0">
+                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} />
+                </div>
+              </div>
+              
+              {/* Value */}
+              <div className="flex-1 flex items-center">
+                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
                   {value}
                 </p>
-                {subtitle && (
-                  <p className="text-xs text-muted-foreground/80 truncate">{subtitle}</p>
-                )}
               </div>
-              <div className="p-2 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </div>
+              
+              {/* Subtitle */}
+              {subtitle && (
+                <div className="mt-1">
+                  <p className="text-xs md:text-xs lg:text-sm text-muted-foreground/80 truncate leading-tight">
+                    {subtitle}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -369,142 +395,183 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       </motion.div>
 
       {/* 16 Comprehensive Stats Cards */}
-      <motion.div
-        variants={containerVariants}
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3"
-      >
-        {/* Row 1: Basic Performance (4 cards) */}
-        <StatCard 
-          icon={Trophy} 
-          label={t("matchesWon")} 
-          value={stats.totalMatchesWon}
-          subtitle={`of ${stats.totalMatches} played`}
-          variant="primary"
-          trend={stats.totalMatchesWon > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={Percent} 
-          label={t("winRate")} 
-          value={`${stats.winRate}%`}
-          subtitle={stats.winRate >= 60 ? "Excellent" : stats.winRate >= 40 ? "Good" : "Improving"}
-          variant={stats.winRate >= 60 ? "success" : stats.winRate >= 40 ? "primary" : "warning"}
-          trend={stats.winRate >= 50 ? "up" : "down"}
-        />
-        <StatCard 
-          icon={Calendar} 
-          label={t("totalMatches")} 
-          value={stats.totalMatches}
-          subtitle={`${stats.completedMatches} completed`}
-          variant="default"
-        />
-        <StatCard 
-          icon={Flame} 
-          label="Win Streak" 
-          value={stats.currentWinStreak}
-          subtitle={`Best: ${stats.longestWinStreak}`}
-          variant={stats.currentWinStreak >= 3 ? "success" : "default"}
-          trend={stats.currentWinStreak > 0 ? "up" : "neutral"}
-        />
+      <div className="space-y-6 md:space-y-8">
+        {/* Basic Performance */}
+        <motion.div variants={itemVariants}>
+          <div className="mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">📊 Performance Overview</h3>
+            <p className="text-sm text-muted-foreground">Core statistics and match results</p>
+          </div>
+          <motion.div
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
+          >
+            <StatCard 
+              icon={Trophy} 
+              label={t("matchesWon")} 
+              value={stats.totalMatchesWon}
+              subtitle={`of ${stats.totalMatches} played`}
+              variant="primary"
+              trend={stats.totalMatchesWon > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={Percent} 
+              label={t("winRate")} 
+              value={`${stats.winRate}%`}
+              subtitle={stats.winRate >= 60 ? "Excellent" : stats.winRate >= 40 ? "Good" : "Improving"}
+              variant={stats.winRate >= 60 ? "success" : stats.winRate >= 40 ? "primary" : "warning"}
+              trend={stats.winRate >= 50 ? "up" : "down"}
+            />
+            <StatCard 
+              icon={Calendar} 
+              label={t("totalMatches")} 
+              value={stats.totalMatches}
+              subtitle={`${stats.completedMatches} completed`}
+              variant="default"
+            />
+            <StatCard 
+              icon={Flame} 
+              label="Win Streak" 
+              value={stats.currentWinStreak}
+              subtitle={`Best: ${stats.longestWinStreak}`}
+              variant={stats.currentWinStreak >= 3 ? "success" : "default"}
+              trend={stats.currentWinStreak > 0 ? "up" : "neutral"}
+            />
+          </motion.div>
+        </motion.div>
 
-        {/* Row 2: Serve Performance (4 cards) */}
-        <StatCard 
-          icon={Target} 
-          label="Aces" 
-          value={stats.totalAces}
-          subtitle={`${(stats.totalAces / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
-          variant="success"
-          trend={stats.totalAces > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={CircleArrowUp} 
-          label="1st Serve %" 
-          value={`${stats.firstServePercentage}%`}
-          subtitle={stats.firstServePercentage >= 65 ? "Excellent" : stats.firstServePercentage >= 55 ? "Good" : "Work needed"}
-          variant={stats.firstServePercentage >= 65 ? "success" : stats.firstServePercentage >= 55 ? "primary" : "warning"}
-          trend={stats.firstServePercentage >= 60 ? "up" : "down"}
-        />
-        <StatCard 
-          icon={Zap} 
-          label="Service Pts" 
-          value={stats.servicePointsWon}
-          subtitle="Points won serving"
-          variant="primary"
-        />
-        <StatCard 
-          icon={CircleArrowDown} 
-          label="Double Faults" 
-          value={stats.totalDoubleFaults}
-          subtitle={`${(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
-          variant={stats.totalDoubleFaults <= stats.totalMatches ? "success" : "warning"}
-          trend={stats.totalDoubleFaults <= stats.totalMatches ? "up" : "down"}
-        />
+        {/* Serve Performance */}
+        <motion.div variants={itemVariants}>
+          <div className="mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">🎾 Serve Statistics</h3>
+            <p className="text-sm text-muted-foreground">Power and precision on serve</p>
+          </div>
+          <motion.div
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
+          >
+            <StatCard 
+              icon={Target} 
+              label="Aces" 
+              value={stats.totalAces}
+              subtitle={`${(stats.totalAces / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
+              variant="success"
+              trend={stats.totalAces > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={CircleArrowUp} 
+              label="1st Serve %" 
+              value={`${stats.firstServePercentage}%`}
+              subtitle={stats.firstServePercentage >= 65 ? "Excellent" : stats.firstServePercentage >= 55 ? "Good" : "Work needed"}
+              variant={stats.firstServePercentage >= 65 ? "success" : stats.firstServePercentage >= 55 ? "primary" : "warning"}
+              trend={stats.firstServePercentage >= 60 ? "up" : "down"}
+            />
+            <StatCard 
+              icon={Zap} 
+              label="Service Pts" 
+              value={stats.servicePointsWon}
+              subtitle="Points won serving"
+              variant="primary"
+            />
+            <StatCard 
+              icon={CircleArrowDown} 
+              label="Double Faults" 
+              value={stats.totalDoubleFaults}
+              subtitle={`${(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
+              variant={stats.totalDoubleFaults <= stats.totalMatches ? "success" : "warning"}
+              trend={stats.totalDoubleFaults <= stats.totalMatches ? "up" : "down"}
+            />
+          </motion.div>
+        </motion.div>
 
-        {/* Row 3: Return Performance (4 cards) */}
-        <StatCard 
-          icon={RotateCcw} 
-          label="Break Pts Won" 
-          value={stats.breakPointsConverted}
-          subtitle="Opportunities converted"
-          variant="success"
-          trend={stats.breakPointsConverted > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={Activity} 
-          label="Return Pts" 
-          value={stats.returnPointsWon}
-          subtitle="Points won returning"
-          variant="primary"
-        />
-        <StatCard 
-          icon={Shield} 
-          label="Break Pts Saved" 
-          value={stats.breakPointsSaved}
-          subtitle="Defensive holds"
-          variant="success"
-          trend={stats.breakPointsSaved > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={TrendingUp} 
-          label="1st Return %" 
-          value={`${stats.firstReturnWinPercentage}%`}
-          subtitle={stats.firstReturnWinPercentage >= 35 ? "Excellent" : stats.firstReturnWinPercentage >= 25 ? "Good" : "Improving"}
-          variant={stats.firstReturnWinPercentage >= 35 ? "success" : stats.firstReturnWinPercentage >= 25 ? "primary" : "warning"}
-          trend={stats.firstReturnWinPercentage >= 30 ? "up" : "down"}
-        />
+        {/* Return Performance */}
+        <motion.div variants={itemVariants}>
+          <div className="mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">⚡ Return Game</h3>
+            <p className="text-sm text-muted-foreground">Breaking serve and defensive skills</p>
+          </div>
+          <motion.div
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
+          >
+            <StatCard 
+              icon={RotateCcw} 
+              label="Break Pts Won" 
+              value={stats.breakPointsConverted}
+              subtitle="Opportunities converted"
+              variant="success"
+              trend={stats.breakPointsConverted > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={Activity} 
+              label="Return Pts" 
+              value={stats.returnPointsWon}
+              subtitle="Points won returning"
+              variant="primary"
+            />
+            <StatCard 
+              icon={Shield} 
+              label="Break Pts Saved" 
+              value={stats.breakPointsSaved}
+              subtitle="Defensive holds"
+              variant="success"
+              trend={stats.breakPointsSaved > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={TrendingUp} 
+              label="1st Return %" 
+              value={`${stats.firstReturnWinPercentage}%`}
+              subtitle={stats.firstReturnWinPercentage >= 35 ? "Excellent" : stats.firstReturnWinPercentage >= 25 ? "Good" : "Improving"}
+              variant={stats.firstReturnWinPercentage >= 35 ? "success" : stats.firstReturnWinPercentage >= 25 ? "primary" : "warning"}
+              trend={stats.firstReturnWinPercentage >= 30 ? "up" : "down"}
+            />
+          </motion.div>
+        </motion.div>
 
-        {/* Row 4: Shot Making (4 cards) */}
-        <StatCard 
-          icon={Award} 
-          label="Winners" 
-          value={stats.totalWinners}
-          subtitle={`${(stats.totalWinners / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
-          variant="success"
-          trend={stats.totalWinners > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={BarChart3} 
-          label="UE's" 
-          value={stats.totalUnforcedErrors}
-          subtitle="Unforced errors"
-          variant={stats.totalWinners > stats.totalUnforcedErrors ? "success" : "warning"}
-          trend={stats.totalWinners > stats.totalUnforcedErrors ? "up" : "down"}
-        />
-        <StatCard 
-          icon={Network} 
-          label="Net Points" 
-          value={stats.netPointsWon}
-          subtitle="Forward play"
-          variant="primary"
-          trend={stats.netPointsWon > 0 ? "up" : "neutral"}
-        />
-        <StatCard 
-          icon={Users} 
-          label="FH/BH Ratio" 
-          value={stats.forehandBackhandRatio}
-          subtitle="Winner balance"
-          variant="default"
-        />
-      </motion.div>
+        {/* Shot Making */}
+        <motion.div variants={itemVariants}>
+          <div className="mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">🎯 Shot Making</h3>
+            <p className="text-sm text-muted-foreground">Aggressive play and court positioning</p>
+          </div>
+          <motion.div
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
+          >
+            <StatCard 
+              icon={Award} 
+              label="Winners" 
+              value={stats.totalWinners}
+              subtitle={`${(stats.totalWinners / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
+              variant="success"
+              trend={stats.totalWinners > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={BarChart3} 
+              label="UE's" 
+              value={stats.totalUnforcedErrors}
+              subtitle="Unforced errors"
+              variant={stats.totalWinners > stats.totalUnforcedErrors ? "success" : "warning"}
+              trend={stats.totalWinners > stats.totalUnforcedErrors ? "up" : "down"}
+            />
+            <StatCard 
+              icon={Network} 
+              label="Net Points" 
+              value={stats.netPointsWon}
+              subtitle="Forward play"
+              variant="primary"
+              trend={stats.netPointsWon > 0 ? "up" : "neutral"}
+            />
+            <StatCard 
+              icon={Users} 
+              label="FH/BH Ratio" 
+              value={stats.forehandBackhandRatio}
+              subtitle="Winner balance"
+              variant="default"
+            />
+          </motion.div>
+        </motion.div>
+      </div>
 
       {/* Performance Charts */}
       <motion.div variants={itemVariants}>
