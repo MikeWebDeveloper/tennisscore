@@ -119,6 +119,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     })
   }
 
+  const formatFullDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  }
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+  }
+
   const getMatchTitle = () => {
     if (isDoubles) {
       return (
@@ -422,12 +439,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         {match.startTime && (
                           <div className="text-xs text-green-500">
-                            {t('started')}: {formatDateTime(match.startTime).split(',')[1]?.trim()}
+                            {t('started')}: {formatTime(match.startTime)}
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="text-xs text-green-500">
-                            Ended: {formatDateTime(match.endTime).split(',')[1]?.trim()}
+                            Ended: {formatTime(match.endTime)}
                           </div>
                         )}
                       </div>
@@ -465,19 +482,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <CardContent className="space-y-4">
                       <div className="space-y-3">
                         <div className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">{t('date')}</span>
+                          <span className="text-sm font-medium">{formatFullDate(match.matchDate)}</span>
+                        </div>
+                        <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Duration</span>
                           <span className="text-sm font-medium">{matchDurationText}</span>
                         </div>
                         {match.startTime && (
                           <div className="flex justify-between">
                             <span className="text-sm text-muted-foreground">Started</span>
-                            <span className="text-sm font-medium">{formatDateTime(match.startTime).split(',')[1]?.trim()}</span>
+                            <span className="text-sm font-medium">{formatTime(match.startTime)}</span>
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="flex justify-between">
                             <span className="text-sm text-muted-foreground">Finished</span>
-                            <span className="text-sm font-medium">{formatDateTime(match.endTime).split(',')[1]?.trim()}</span>
+                            <span className="text-sm font-medium">{formatTime(match.endTime)}</span>
                           </div>
                         )}
                         {match.retirementReason && (
