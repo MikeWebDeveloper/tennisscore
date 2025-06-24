@@ -273,7 +273,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="relative z-10 p-3 sm:p-4 max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4">
+        <div className="relative z-10 p-3 sm:p-4 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4">
           <div className="text-center pt-6 sm:pt-8">
             <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -292,7 +292,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 p-2 sm:p-4 max-w-sm sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
+        className="relative z-10 p-3 sm:p-4 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center pt-2 sm:pt-4">
@@ -355,18 +355,18 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           )}
         </motion.div>
 
-        {/* Live Scoreboard with better mobile optimization */}
-        <motion.div variants={itemVariants} className="px-1 sm:px-0">
+        {/* Live Scoreboard with enhanced responsive design */}
+        <motion.div variants={itemVariants} className="w-full">
           <LiveScoreboard
             playerOneName={playerNames.p1}
             playerTwoName={playerNames.p2}
             playerThreeName={playerNames.p3}
             playerFourName={playerNames.p4}
             playerOneAvatar={
-              <PlayerAvatar player={match.playerOne} className="h-4 w-4 sm:h-5 sm:w-5" />
+              <PlayerAvatar player={match.playerOne} className="h-4 w-4 sm:h-6 sm:w-6" />
             }
             playerTwoAvatar={
-              <PlayerAvatar player={match.playerTwo} className="h-4 w-4 sm:h-5 sm:w-5" />
+              <PlayerAvatar player={match.playerTwo} className="h-4 w-4 sm:h-6 sm:w-6" />
             }
             playerOneYearOfBirth={match.playerOne.yearOfBirth}
             playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
@@ -383,7 +383,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
             matchFormat={match.matchFormatParsed}
-            className="text-xs sm:text-sm"
+            className="min-w-0 w-full"
           />
         </motion.div>
 
@@ -425,15 +425,15 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
         {/* Match Info Footer */}
         <motion.div variants={itemVariants} className="text-center py-3 sm:py-4 border-t">
-          <div className="text-center space-y-1 sm:space-y-2">
-            <h1 className="text-base sm:text-lg md:text-xl font-bold">
+          <div className="text-center space-y-1 sm:space-y-2 px-2">
+            <h1 className="text-sm sm:text-base md:text-lg font-bold break-words">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p1} / ${playerNames.p3}`
                 : playerNames.p1
               }
             </h1>
             <div className="text-xs sm:text-sm text-muted-foreground">vs</div>
-            <h2 className="text-base sm:text-lg md:text-xl font-bold">
+            <h2 className="text-sm sm:text-base md:text-lg font-bold break-words">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p2} / ${playerNames.p4}`
                 : playerNames.p2

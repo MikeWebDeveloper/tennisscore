@@ -67,18 +67,29 @@ export function LiveScoreboard({
   const isDoubles = !!(playerThreeName && playerFourName)
   
   // Format team names for doubles - use initial + last name for doubles
-  const formatPlayerName = (fullName: string) => {
+  const formatPlayerName = (fullName: string, isDoubles = false) => {
     const parts = fullName.split(' ')
     if (parts.length < 2) return fullName
-    return `${parts[0][0]}. ${parts[parts.length - 1]}`
+    
+    // For doubles or very long names on mobile, abbreviate more aggressively
+    if (isDoubles || (typeof window !== 'undefined' && window.innerWidth < 640 && fullName.length > 20)) {
+      return `${parts[0][0]}. ${parts[parts.length - 1]}`
+    }
+    
+    // For long single names on mobile, use first name + initial
+    if (typeof window !== 'undefined' && window.innerWidth < 640 && fullName.length > 15) {
+      return `${parts[0]} ${parts[parts.length - 1][0]}.`
+    }
+    
+    return fullName
   }
   
   const teamOneName = isDoubles 
-    ? `${formatPlayerName(playerOneName)} / ${formatPlayerName(playerThreeName!)}`
-    : playerOneName
+    ? `${formatPlayerName(playerOneName, true)} / ${formatPlayerName(playerThreeName!, true)}`
+    : formatPlayerName(playerOneName)
   const teamTwoName = isDoubles 
-    ? `${formatPlayerName(playerTwoName)} / ${formatPlayerName(playerFourName!)}`
-    : playerTwoName
+    ? `${formatPlayerName(playerTwoName, true)} / ${formatPlayerName(playerFourName!, true)}`
+    : formatPlayerName(playerTwoName)
   
   // Calculate sets won
   const setsWon = [
@@ -150,9 +161,9 @@ export function LiveScoreboard({
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-base truncate">
+                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate">
                     {teamOneName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
@@ -215,7 +226,7 @@ export function LiveScoreboard({
               </div>
               {/* Sets Won Count */}
               <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-base font-medium font-mono">
+                <div className="text-xs sm:text-sm lg:text-base font-medium font-mono">
                   {setsWon[0]}
                 </div>
               </div>
@@ -247,7 +258,7 @@ export function LiveScoreboard({
               
               {/* Current Games */}
               <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-lg font-medium font-mono">
+                <div className="text-xs sm:text-base lg:text-lg font-medium font-mono">
                   {score.games[0]}
                 </div>
               </div>
@@ -258,7 +269,7 @@ export function LiveScoreboard({
               {/* Current Points */}
               <div className="text-center min-w-[24px] sm:min-w-[36px]">
                 <div className={cn(
-                  "text-xs sm:text-lg font-medium font-mono",
+                  "text-xs sm:text-base lg:text-lg font-medium font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
@@ -289,9 +300,9 @@ export function LiveScoreboard({
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-base truncate">
+                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate">
                     {teamTwoName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
@@ -354,7 +365,7 @@ export function LiveScoreboard({
               </div>
               {/* Sets Won Count */}
               <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-base font-medium font-mono">
+                <div className="text-xs sm:text-sm lg:text-base font-medium font-mono">
                   {setsWon[1]}
                 </div>
               </div>
@@ -386,7 +397,7 @@ export function LiveScoreboard({
               
               {/* Current Games */}
               <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-lg font-medium font-mono">
+                <div className="text-xs sm:text-base lg:text-lg font-medium font-mono">
                   {score.games[1]}
                 </div>
               </div>
@@ -397,7 +408,7 @@ export function LiveScoreboard({
               {/* Current Points */}
               <div className="text-center min-w-[24px] sm:min-w-[36px]">
                 <div className={cn(
-                  "text-xs sm:text-lg font-medium font-mono",
+                  "text-xs sm:text-base lg:text-lg font-medium font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
