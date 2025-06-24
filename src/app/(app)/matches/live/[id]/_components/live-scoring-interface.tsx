@@ -52,6 +52,7 @@ interface LiveScoringInterfaceProps {
     playerThree?: Player
     playerFour?: Player
     matchFormat: string
+    detailLevel?: "points" | "simple" | "complex"
     score: string
     pointLog?: string[]
     status: string
@@ -353,7 +354,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         tiebreak: parsed.tiebreak !== false,
         finalSetTiebreak: parsed.finalSetTiebreak || false,
         finalSetTiebreakAt: parsed.finalSetTiebreakAt || 10,
-        detailLevel: parsed.detailLevel || "simple"
       }
     } catch (error) {
       console.error("Failed to parse match format:", error)
@@ -363,12 +363,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         tiebreak: true,
         finalSetTiebreak: false,
         finalSetTiebreakAt: 10,
-        detailLevel: "simple"
       }
     }
   }, [match.matchFormat])
   
-  const detailLevel = parsedMatchFormat.detailLevel || "simple"
+  // Get detailLevel directly from match object (not from parsed format)
+  const detailLevel = match.detailLevel || "simple"
   const isTiebreak = score.isTiebreak || false
   
   // Calculate current breakpoint status

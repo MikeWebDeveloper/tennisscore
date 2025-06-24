@@ -1,6 +1,7 @@
 {
   "name": "TennisScore - Professional Tennis Scoring & Analytics",
   "short_name": "TennisScore",
+  "version": "1.0.1",
   "description": "Professional tennis scoring and statistics tracking for players and coaches",
   "start_url": "/dashboard",
   "display": "standalone",
