@@ -70,6 +70,14 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations()
 
+  // Debug timing data
+  console.log('Match timing data received:', {
+    startTime: match.startTime,
+    endTime: match.endTime,
+    setDurations: match.setDurations,
+    status: match.status
+  })
+
   const handleShareMatch = () => {
     const shareUrl = `${window.location.origin}/live/${match.$id}`
     navigator.clipboard.writeText(shareUrl)
@@ -83,10 +91,17 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   const formatDuration = (durationMinutes?: number) => {
-    if (!durationMinutes) return "Unknown"
+    console.log('formatDuration called with:', durationMinutes)
+    
+    if (durationMinutes === undefined || durationMinutes === null) return "Unknown"
     
     const hours = Math.floor(durationMinutes / 60)
     const minutes = durationMinutes % 60
+    
+    // Handle very short durations (less than 1 minute)
+    if (durationMinutes < 1) {
+      return "< 1m"
+    }
     
     if (hours > 0) {
       return `${hours}h ${minutes}m`
@@ -312,15 +327,25 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             const totalPoints = stats.totalPoints
             // Calculate match duration from start/end time
             const getMatchDuration = () => {
+              console.log('getMatchDuration called with:', {
+                startTime: match.startTime,
+                endTime: match.endTime,
+                status: match.status
+              })
+              
               if (match.startTime && match.endTime) {
                 const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
                 const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                console.log('Duration calculation:', { durationMs, totalMinutes })
                 return formatDuration(totalMinutes)
               } else if (match.startTime && match.status === "In Progress") {
                 const durationMs = Date.now() - Date.parse(match.startTime)
                 const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                console.log('Ongoing duration calculation:', { durationMs, totalMinutes })
                 return formatDuration(totalMinutes) + " (ongoing)"
               }
+              
+              console.log('No timing data available, falling back')
               return pointDetails.length > 0 ? `${pointDetails.length} points` : "No data"
             }
 
