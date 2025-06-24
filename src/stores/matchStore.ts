@@ -308,24 +308,54 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
             isThisPointGameWinning = true
             
-            // Check if this wins the set
+            // SET POINT: Check if winning this game would win the set
             const tempGames = [...previousScore.games] as [number, number];
             tempGames[winner === 'p1' ? 0 : 1]++
+            
+            // Debug logging for Set Point detection
+            console.log('🎾 SET POINT Detection:', {
+                currentGames: previousScore.games,
+                tempGames,
+                winner,
+                wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat),
+                matchFormat: {
+                    shortSets: matchFormat.shortSets,
+                    tiebreak: matchFormat.tiebreak
+                },
+                currentSets: previousScore.sets,
+                explanation: `If ${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
+            })
             
             if (isSetWon(tempGames[0], tempGames[1], matchFormat)) {
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                // Check if this wins the match
+                console.log('✅ SET POINT DETECTED!', { winner, games: tempGames })
+                
+                // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
                 const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
+                    console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
+            } else {
+                console.log('❌ NOT Set Point:', { 
+                    tempGames, 
+                    isSetWonResult: isSetWon(tempGames[0], tempGames[1], matchFormat),
+                    reason: 'Winning this game would not win the set'
+                })
             }
+        } else {
+            console.log('❌ NOT Game Point:', {
+                currentPoints: previousScore.points,
+                tempPoints: [temp_p1_score, temp_p2_score],
+                winner,
+                isGameWonResult: isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd),
+                reason: 'This point would not win the game'
+            })
         }
-
     }
 
     // --- Create a temporary score object to find the score *after* this point ---
