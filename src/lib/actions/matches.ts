@@ -175,7 +175,7 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
     }
 
     if (scoreUpdate.setDurations) {
-      updateData.setDurations = scoreUpdate.setDurations
+      updateData.setDurations = scoreUpdate.setDurations.map(duration => duration.toString())
     }
 
     if (scoreUpdate.retirementReason) {
