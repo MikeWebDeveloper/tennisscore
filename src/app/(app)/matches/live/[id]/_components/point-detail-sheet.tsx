@@ -19,6 +19,7 @@ import {
   CourtPosition 
 } from "@/lib/types"
 import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -175,6 +176,8 @@ export function PointDetailSheet({
     }
   }
 
+  const t = useTranslations()
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
@@ -216,8 +219,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Ace</span>
-                  <span className="text-xs opacity-70">Unreturnable serve</span>
+                  <span className="font-semibold">{t('ace')}</span>
+                  <span className="text-xs opacity-70">{t('aceDescription')}</span>
                 </Button>
                 
                 <Button
@@ -225,8 +228,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Winner</span>
-                  <span className="text-xs opacity-70">Clean winner</span>
+                  <span className="font-semibold">{t('winner')}</span>
+                  <span className="text-xs opacity-70">{t('winnerDescription')}</span>
                 </Button>
                 
                 <Button
@@ -234,8 +237,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Unforced Error</span>
-                  <span className="text-xs opacity-70">Unforced mistake</span>
+                  <span className="font-semibold">{t('unforcedError')}</span>
+                  <span className="text-xs opacity-70">{t('unforcedErrorDescription')}</span>
                 </Button>
                 
                 <Button
@@ -243,8 +246,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Forced Error</span>
-                  <span className="text-xs opacity-70">Opponent forced error</span>
+                  <span className="font-semibold">{t('forcedError')}</span>
+                  <span className="text-xs opacity-70">{t('forcedErrorDescription')}</span>
                 </Button>
                 
                 <Button
@@ -253,8 +256,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 col-span-2"
                   variant="outline"
                 >
-                  <span className="font-semibold">Double Fault</span>
-                  <span className="text-xs opacity-70">Two consecutive faults</span>
+                  <span className="font-semibold">{t('doubleFault')}</span>
+                  <span className="text-xs opacity-70">{t('doubleFaultDescription')}</span>
                 </Button>
               </div>
               
@@ -356,23 +359,23 @@ export function PointDetailSheet({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="winner" id="winner" />
-                    <Label htmlFor="winner">Winner</Label>
+                    <Label htmlFor="winner">{t('winner')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="unforced_error" id="unforced_error" />
-                    <Label htmlFor="unforced_error">Unforced Error</Label>
+                    <Label htmlFor="unforced_error">{t('unforcedError')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="forced_error" id="forced_error" />
-                    <Label htmlFor="forced_error">Forced Error</Label>
+                    <Label htmlFor="forced_error">{t('forcedError')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="ace" id="ace" disabled={isOutcomeDisabled('ace')} />
-                    <Label htmlFor="ace" className={isOutcomeDisabled('ace') ? "text-muted-foreground" : ""}>Ace</Label>
+                    <Label htmlFor="ace" className={isOutcomeDisabled('ace') ? "text-muted-foreground" : ""}>{t('ace')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="double_fault" id="double_fault" disabled={isOutcomeDisabled('double_fault')} />
-                    <Label htmlFor="double_fault" className={isOutcomeDisabled('double_fault') ? "text-muted-foreground" : ""}>Double Fault</Label>
+                    <Label htmlFor="double_fault" className={isOutcomeDisabled('double_fault') ? "text-muted-foreground" : ""}>{t('doubleFault')}</Label>
                   </div>
                 </RadioGroup>
               </div>

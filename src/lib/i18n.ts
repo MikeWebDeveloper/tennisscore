@@ -230,6 +230,7 @@ export interface Translations {
   commentaryTab: string
   undo: string
   firstServe: string
+  secondServe: string
   match: string
   
   // Dashboard Stats Cards
@@ -258,6 +259,8 @@ export interface Translations {
   close: string
   confirm: string
   sort: string
+  saving: string
+  saveChanges: string
   
   // Status and states
   upcoming: string
@@ -331,6 +334,181 @@ export interface Translations {
   // Score displays
   tiebreak: string
   deuce: string
+
+  // Missing translations found in components
+  noPointDataAvailable: string
+  statsWillAppear: string
+  statsWillAppearDescription: string
+  pointsAndOutcomes: string
+  serviceStatistics: string
+  firstServeWin: string
+  secondServeWin: string
+  breakPointsFaced: string
+  breakPointsSaved: string
+  conversionRatePercent: string
+  forcedErrors: string
+  firstServeWinPercentage: string
+  secondServePointsWon: string
+  secondServePointsWonPercentage: string
+  firstServePointsWon: string
+  firstServePointsWonPercentage: string
+  totalPointsWon: string
+  
+  // Additional stat labels for match stats
+  breakPointsWon: string
+  breakPointConversion: string
+  
+  // End Match Dialog 
+  whyEndingMatch: string
+  matchCompletedNormally: string
+  playerRetired: string
+  weatherConditions: string
+  
+  // Simple Stats Popup
+  point: string
+  details: string
+  winsPoint: string
+  serving: string
+  selectHowPointEnded: string
+  
+  wins: string
+  ongoing: string
+  noData: string
+  switchToCzech: string
+  switchToEnglish: string
+  unableToConnect: string
+  checkInternetConnection: string
+  connectionIssue: string
+  failedToClearCache: string
+  failedToGetCacheInfo: string
+  clearingCache: string
+  cacheCleared: string
+  refreshing: string
+  checking: string
+  clearing: string
+  clearCache: string
+  hardRefresh: string
+  checkCacheInfo: string
+  cacheFound: string
+  cachesWithEntries: string
+  profilePreview: string
+  clickUploadButton: string
+  clickCropButton: string
+  uploadImageDescription: string
+  cropMe: string
+  replaceWithNewImage: string
+  editCrop: string
+  removeImage: string
+  recommendedActions: string
+  cleanup: string
+  dismiss: string
+  extensionConflictDetected: string
+  expandNavigation: string
+  collapseNavigation: string
+  newMatchButton: string
+  pleaseSelectImage: string
+  failedToReadFile: string
+  failedToProcessCroppedImage: string
+  pleaseSelectImageFile: string
+  copyLink: string
+  failed: string
+  unable: string
+  cannot: string
+  setNumber: string
+  selectAll: string
+  getLink: string
+  copy: string
+  failedTo: string
+  click: string
+  upload: string
+  select: string
+  choose: string
+  start: string
+  end: string
+  continue: string
+  appUpdated: string
+  refreshToGetLatest: string
+  somethingWentWrong: string
+  pleaseRefresh: string
+  managementDescription: string
+  forDoubles: string
+  returnDefaultAvatar: string
+  buildFullUrl: string
+  missingEnvironmentVariables: string
+  setUpPeriodicCleanup: string
+  dontRenderOnServer: string
+  couldNotGetCanvasContext: string
+  fallbackDataURLFailed: string
+  canvasToBlob: string
+  totalEntriesFound: string
+  cacheNames: string
+  cacheInfoCheck: string
+  cacheClearFailed: string
+  foundCaches: string
+  clearCacheAndReload: string
+  justifyStart: string
+  flexItemsCenter: string
+  pointsPlayed: string
+  matchLinkCopiedToClipboard: string
+  liveMatchLinkCopied: string
+  matchResultsLinkCopied: string
+  
+  // Enhanced Dashboard Statistics
+  performanceOverviewHeader: string
+  performanceOverviewDescription: string
+  serveStatisticsHeader: string
+  serveStatisticsDescription: string
+  returnGameHeader: string
+  returnGameDescription: string
+  shotMakingHeader: string
+  shotMakingDescription: string
+  
+  // Stat card labels
+  winStreakLabel: string
+  acesLabel: string
+  firstServePercentageLabel: string
+  servicePointsLabel: string
+  doubleFaultsLabel: string
+  breakPointsWonLabel: string
+  returnPointsLabel: string
+  breakPointsSavedLabel: string
+  firstReturnPercentageLabel: string
+  winnersLabel: string
+  unforcedErrorsLabel: string
+  netPointsLabel: string
+  forehandBackhandRatioLabel: string
+  
+  // Performance quality descriptors
+  qualityExcellent: string
+  qualityGood: string
+  qualityWorkNeeded: string
+  qualityImproving: string
+  
+  // Stat descriptions
+  opportunitiesConverted: string
+  pointsWonServing: string
+  pointsWonReturning: string
+  defensiveHolds: string
+  unforcedErrorsDescription: string
+  forwardPlay: string
+  winnerBalance: string
+  perMatch: string
+  ofTotal: string
+  completedDescription: string
+  best: string
+  
+  // Monthly stats
+  thisMonthHeader: string
+  matchesLabel: string
+  wonLabel: string
+  avgDurationLabel: string
+  winStreakMonthlyLabel: string
+
+  deleteMatch: string
+  deleteMatchConfirm: string
+  matchDeleted: string
+  failedToDeleteMatch: string
+  deleting: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -397,8 +575,8 @@ const translations: Record<Locale, Translations> = {
     bestOf3: "Best of 3",
     bestOf5: "Best of 5",
     scoringSystem: "Scoring System",
-    advantage: "Advantage",
-    noAdvantage: "No Advantage",
+    advantage: "With advantage",
+    noAdvantage: "No advantage",
     finalSet: "Final Set",
     fullSet: "Full Set",
     superTiebreak: "Super Tiebreak",
@@ -563,6 +741,7 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Commentary",
     undo: "Undo",
     firstServe: "1st Serve",
+    secondServe: "2nd Serve",
     match: "Match",
     
     // Dashboard Stats Cards
@@ -588,9 +767,11 @@ const translations: Record<Locale, Translations> = {
     
     // Common actions
     add: "Add",
-    close: "Close",
+    close: "Close", 
     confirm: "Confirm",
     sort: "Sort",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
     
     // Status and states
     upcoming: "Upcoming",
@@ -664,6 +845,208 @@ const translations: Record<Locale, Translations> = {
     // Score displays
     tiebreak: "Tiebreak",
     deuce: "Deuce",
+
+    // Missing translations found in components
+    noPointDataAvailable: "No point data available",
+    statsWillAppear: "Stats will appear here",
+    statsWillAppearDescription: "Stats will appear here once the first point is played",
+    pointsAndOutcomes: "Points & Outcomes",
+    serviceStatistics: "Service Statistics",
+    firstServeWin: "1st Serve Win %",
+    secondServeWin: "2nd Serve Win %", 
+    breakPointsFaced: "Break Points Faced",
+    breakPointsSaved: "Break Points Saved",
+    conversionRatePercent: "Conversion Rate %",
+    forcedErrors: "Forced Errors",
+    firstServeWinPercentage: "1st Serve Win %",
+    secondServePointsWon: "2nd Serve Points Won",
+    secondServePointsWonPercentage: "2nd Serve Points Won %",
+    firstServePointsWon: "1st Serve Points Won",
+    firstServePointsWonPercentage: "1st Serve Points Won %",
+    totalPointsWon: "Total Points Won",
+    
+    // Additional stat labels for match stats
+    breakPointsWon: "Break Points Won",
+    breakPointConversion: "Break Point Conversion",
+    
+    // End Match Dialog
+    whyEndingMatch: "Why are you ending the match?",
+    matchCompletedNormally: "Match completed normally",
+    playerRetired: "Player retired",
+    weatherConditions: "Weather conditions",
+    
+    // Simple Stats Popup
+    point: "Point",
+    details: "Details",
+    winsPoint: "wins point",
+    serving: "serving",
+    selectHowPointEnded: "Select how the point ended:",
+    
+    wins: "Wins",
+    ongoing: "ongoing",
+    noData: "No data",
+    switchToCzech: "Přepnout na češtinu",
+    switchToEnglish: "Přepnout na angličtinu",
+    unableToConnect: "Nelze se připojit k serveru",
+    checkInternetConnection: "Zkontrolujte připojení k internetu",
+    connectionIssue: "Problém s připojením",
+    failedToClearCache: "Nepodařilo se vymazat cache",
+    failedToGetCacheInfo: "Nepodařilo se získat informace o cache",
+    clearingCache: "Mazání cache a obnovování...",
+    cacheCleared: "Cache byla úspěšně vymazána!",
+    refreshing: "Obnovování",
+    checking: "Kontrola",
+    clearing: "Mazání",
+    clearCache: "Vymazat cache",
+    hardRefresh: "Tvrdé obnovení",
+    checkCacheInfo: "Zkontrolovat informace o cache",
+    cacheFound: "Nalezeno cache",
+    cachesWithEntries: "cache s položkami",
+    profilePreview: "Náhled profilu",
+    clickUploadButton: "Klikněte na tlačítko nahrát pro výměnu tohoto obrázku, nebo na X pro odstranění",
+    clickCropButton: "Klikněte na tlačítko oříznout pro úpravu, nahrát pro výměnu, nebo X pro odstranění",
+    uploadImageDescription: "Nahrajte obrázek do 10MB. Po výběru ho budete moci oříznout a umístit",
+    cropMe: "Oříznout",
+    replaceWithNewImage: "Nahradit novým obrázkem",
+    editCrop: "Upravit oříznutí",
+    removeImage: "Odstranit obrázek",
+    recommendedActions: "Doporučené akce:",
+    cleanup: "Vyčistit",
+    dismiss: "Zavřít",
+    extensionConflictDetected: "Byl zjištěn konflikt s rozšířením",
+    expandNavigation: "Rozbalit navigaci",
+    collapseNavigation: "Sbalit navigaci",
+    newMatchButton: "Nový zápas",
+    pleaseSelectImage: "Prosím vyberte obrázek",
+    failedToReadFile: "Nepodařilo se přečíst vybraný soubor",
+    failedToProcessCroppedImage: "Nepodařilo se zpracovat oříznutý obrázek. Zkuste to znovu",
+    pleaseSelectImageFile: "Prosím vyberte obrázkový soubor",
+    copyLink: "Kopírovat odkaz",
+    failed: "Nepodařilo se",
+    unable: "Nelze",
+    cannot: "Nelze",
+    setNumber: "Číslo setu",
+    selectAll: "Vybrat vše",
+    getLink: "Získat odkaz",
+    copy: "Kopírovat",
+    failedTo: "Nepodařilo se",
+    click: "Klikněte",
+    upload: "Nahrát",
+    select: "Vybrat",
+    choose: "Vyberte",
+    start: "Začátek",
+    end: "Konec",
+    continue: "Pokračovat",
+    appUpdated: "Aplikace byla aktualizována",
+    refreshToGetLatest: "Obnovte stránku pro získání nejnovější verze",
+    somethingWentWrong: "Něco se pokazilo",
+    pleaseRefresh: "Zkuste to znovu",
+    managementDescription: "Popis správy",
+    forDoubles: "Pro čtyřhru",
+    returnDefaultAvatar: "Vrátit výchozí avatar",
+    buildFullUrl: "Sestavit plnou URL",
+    missingEnvironmentVariables: "Chybějící proměnné prostředí",
+    setUpPeriodicCleanup: "Nastavit pravidelné čištění",
+    dontRenderOnServer: "Nevykreslovat na serveru",
+    couldNotGetCanvasContext: "Nepodařilo se získat kontext plátna",
+    fallbackDataURLFailed: "Záložní metoda data URL selhala",
+    canvasToBlob: "Canvas na blob",
+    totalEntriesFound: "celkem nalezených položek",
+    cacheNames: "názvy cache",
+    cacheInfoCheck: "kontrola informací o cache",
+    cacheClearFailed: "vymazání cache selhalo",
+    foundCaches: "Nalezeno",
+    clearCacheAndReload: "Vymazat cache a obnovit",
+    justifyStart: "Zarovnat na začátek",
+    flexItemsCenter: "Flex položky na střed",
+    pointsPlayed: "bodů odehráno",
+    matchLinkCopiedToClipboard: "Odkaz na zápas zkopírován do schránky",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován",
+    
+    // Enhanced Dashboard Statistics
+    performanceOverviewHeader: "📊 Performance Overview",
+    performanceOverviewDescription: "Core statistics and match results",
+    serveStatisticsHeader: "🎾 Serve Statistics",
+    serveStatisticsDescription: "Power and precision on serve",
+    returnGameHeader: "⚡ Return Game",
+    returnGameDescription: "Breaking serve and defensive skills",
+    shotMakingHeader: "🎯 Shot Making",
+    shotMakingDescription: "Aggressive play and court positioning",
+    
+    // Stat card labels
+    winStreakLabel: "Win Streak",
+    acesLabel: "Aces",
+    firstServePercentageLabel: "1st Serve %",
+    servicePointsLabel: "Service Pts",
+    doubleFaultsLabel: "Double Faults",
+    breakPointsWonLabel: "Break Pts Won",
+    returnPointsLabel: "Return Pts",
+    breakPointsSavedLabel: "Break Pts Saved",
+    firstReturnPercentageLabel: "1st Return %",
+    winnersLabel: "Winners",
+    unforcedErrorsLabel: "UE's",
+    netPointsLabel: "Net Points",
+    forehandBackhandRatioLabel: "FH/BH Ratio",
+    
+    // Performance quality descriptors
+    qualityExcellent: "Excellent",
+    qualityGood: "Good",
+    qualityWorkNeeded: "Work needed",
+    qualityImproving: "Improving",
+    
+    // Stat descriptions
+    opportunitiesConverted: "Opportunities converted",
+    pointsWonServing: "Points won serving",
+    pointsWonReturning: "Points won returning",
+    defensiveHolds: "Defensive holds",
+    unforcedErrorsDescription: "Unforced errors",
+    forwardPlay: "Forward play",
+    winnerBalance: "Winner balance",
+    perMatch: "/match",
+    ofTotal: "of",
+    completedDescription: "completed",
+    best: "Best",
+    
+    // Monthly stats
+    thisMonthHeader: "This Month",
+    matchesLabel: "Matches",
+    wonLabel: "Won",
+    avgDurationLabel: "Avg Duration",
+    winStreakMonthlyLabel: "Win Streak",
+
+    deleteMatch: "Delete Match",
+    deleteMatchConfirm: "Are you sure you want to delete this match between {p1} and {p2}? This action is irreversible and all match data will be permanently deleted.",
+    matchDeleted: "Match deleted successfully",
+    failedToDeleteMatch: "Failed to delete match",
+    deleting: "Deleting...",
+
+    // Fix terminology for match setup
+    advantage: "With advantage",
+    noAdvantage: "No advantage",
+    finalSet: "Final set",
+    fullSet: "Full set",
+    bestOf1: "On 1 set",
+    bestOf3: "On 3 sets",
+    bestOf5: "On 5 sets",
+    singles: "Singles",
+    doubles: "Doubles",
+    player1: "Player 1",
+    player2: "Player 2",
+    player3: "Player 3",
+    player4: "Player 4",
+    noTracking: "(no tracking)",
+
+    ace: "Ace",
+    aceDescription: "Unreturnable serve",
+    winner: "Winner",
+    winnerDescription: "Clean winner",
+    forcedError: "Forced Error",
+    forcedErrorDescription: "Opponent forced into error",
+    unforcedError: "Unforced Error",
+    unforcedErrorDescription: "Unforced mistake",
+    doubleFault: "Double Fault",
+    doubleFaultDescription: "Two consecutive faults"
   },
   cs: {
     // Common
@@ -728,7 +1111,7 @@ const translations: Record<Locale, Translations> = {
     bestOf3: "Na 3",
     bestOf5: "Na 5",
     scoringSystem: "Systém skórování",
-    advantage: "Výhoda",
+    advantage: "S výhodou",
     noAdvantage: "Bez výhody",
     finalSet: "Poslední sad",
     fullSet: "Plná sad",
@@ -857,35 +1240,35 @@ const translations: Record<Locale, Translations> = {
     unknownAttribute: "Neznámý atribut",
     
     // Additional translations for mobile & UI
-    backToMatches: "Zpět na zápasy",
+    backToMatches: "Zpět k zápasům",
     shareResults: "Sdílet výsledky",
     shareLive: "Sdílet živě",
-    continuScoring: "Pokračovat ve skórování",
+    continuScoring: "Pokračovat v skórování",
     copied: "Zkopírováno!",
     view: "Zobrazit",
-    unknown: "Neznámý",
+    unknown: "Neznámé",
     totalAces: "Celkem es",
     doublesMatch: "Čtyřhra",
     teams: "Týmy",
-    standard: "Standardní",
-    setBySetBreakdown: "Rozpis setů",
+    standard: "Standard",
+    setBySetBreakdown: "Rozdělení podle setů",
     set: "Set",
-    matchAnalysisInsights: "Analýza a pozorování zápasu",
-    matchSummary: "Souhrn zápasu",
-    ended: "Ukončeno",
+    matchAnalysisInsights: "Analýza zápasu a pozorování",
+    matchSummary: "Shrnutí zápasu",
+    ended: "Skončen",
     finish: "Dokončeno",
     refresh: "Obnovit",
     liveMatch: "Živý zápas",
     vs: "vs",
     live: "Živě",
-    changeServer: "Změnit podávajícího",
-    cannotChangeServer: "Nelze změnit podávajícího po začátku zápasu.",
-    switchServer: "Přepnout podávajícího",
+    changeServer: "Změnit podajícího",
+    cannotChangeServer: "Nelze změnit podajícího po zahájení zápasu.",
+    switchServer: "Přepnout podajícího",
     liveScoreboard: "Živé skóre",
     // New keys
-    server: "Podání",
+    server: "Podavač",
     game: "Hra",
-    lostServe: "ZTRÁTA PODÁNÍ",
+    lostServe: "ZTRACENÉ PODÁNÍ",
     breakPoint: "BP",
     setPoint: "SP",
     matchPoint: "MP",
@@ -894,34 +1277,37 @@ const translations: Record<Locale, Translations> = {
     commentaryTab: "Komentář",
     undo: "Zpět",
     firstServe: "1. podání",
+    secondServe: "2. podání",
     match: "Zápas",
     
     // Dashboard Stats Cards
-    performance: "Výkonnost",
+    performance: "Výkon",
     inProgressWithCount: "{count} probíhá",
     completedWithCount: "{count} dokončeno",
     playersCreated: "Hráči vytvořeni",
-    excellent: "Výborné",
+    excellent: "Vynikající",
     good: "Dobré",
-    fair: "Průměrné",
-    needsWork: "Potřebuje zlepšení",
+    fair: "Slušné",
+    needsWork: "Potřeba práce",
     overallRating: "Celkové hodnocení",
-    hot: "Horké",
+    hot: "Žhavé",
     
     // Match creation and forms
-    singlesMatch: "Dvouhra",
+    singlesMatch: "Dvouhru",
     trackBasicStats: "Sledovat základní statistiky",
-    trackDetailedStats: "Sledovat detailní statistiky",
+    trackDetailedStats: "Sledovat podrobné statistiky",
     
     // Tennis stats
     servicePoints: "Body na podání %",
-    receivingPoints: "Body na příjmu %",
+    receivingPoints: "Body na returnu %",
     
     // Common actions
     add: "Přidat",
     close: "Zavřít",
-    confirm: "Potvrdit",
-    sort: "Řadit",
+    confirm: "Potvrdit", 
+    sort: "Seřadit",
+    saving: "Ukládání...",
+    saveChanges: "Uložit změny",
     
     // Status and states
     upcoming: "Nadcházející",
@@ -938,52 +1324,52 @@ const translations: Record<Locale, Translations> = {
     profilePicture: "Profilový obrázek",
     
     // Error messages
-    errorOccurred: "Došlo k chybě",
+    errorOccurred: "Nastala chyba",
     tryAgain: "Zkusit znovu",
     connectionError: "Chyba připojení",
     loadingError: "Chyba načítání",
     
     // Success messages
-    playerCreated: "Hráč byl úspěšně vytvořen",
-    playerUpdated: "Hráč byl úspěšně upraven",
-    matchCreated: "Zápas byl úspěšně vytvořen",
+    playerCreated: "Hráč úspěšně vytvořen",
+    playerUpdated: "Hráč úspěšně aktualizován",
+    matchCreated: "Zápas úspěšně vytvořen",
     
     // Empty states
     noPlayersYet: "Zatím žádní hráči",
     noDataAvailable: "Nejsou k dispozici žádná data",
     
     // Dashboard bento grid specific
-    matchesWon: "Vyhráno zápasů",
+    matchesWon: "Vyhrané zápasy",
     avgDuration: "Průměrná doba",
     winStreak: "Vítězná série",
-    setsWon: "Vyhráno setů",
+    setsWon: "Vyhrané sety",
     activeMatches: "Aktivní zápasy",
     performanceOverview: "Přehled výkonu",
     last30Days: "Posledních 30 dní",
     
     // Matches page specific
     yourMatches: "Vaše zápasy",
-    unableToLoadMatches: "Nepodařilo se načíst zápasy",
+    unableToLoadMatches: "Nelze načíst zápasy",
     matchesConnectivityIssue: "Problém s připojením k zápasům",
     unknownPlayer: "Neznámý hráč",
     noMatchesFound: "Žádné zápasy nenalezeny",
     tennisMatchResults: "Výsledky tenisového zápasu",
-    checkMatchResults: "Podívejte se na výsledky zápasu",
-    matchSharedSuccessfully: "Zápas byl úspěšně sdílen",
-    matchLinkCopied: "Odkaz na zápas byl zkopírován",
-    copyLinkManually: "Zkopírujte odkaz ručně",
-    final: "Finální",
+    checkMatchResults: "Zkontrolovat výsledky zápasu",
+    matchSharedSuccessfully: "Zápas úspěšně sdílen",
+    matchLinkCopied: "Odkaz na zápas zkopírován",
+    copyLinkManually: "Kopírovat odkaz ručně",
+    final: "Finále",
     shareMatchResults: "Sdílet výsledky zápasu",
     player: "Hráč",
     
     // Players page specific
-    confirmDeletePlayer: "Opravdu chcete smazat tohoto hráče?",
-    managePlayersDescription: "Spravujte své tenisové hráče a jejich profily",
+    confirmDeletePlayer: "Potvrdit smazání hráče",
+    managePlayersDescription: "Popis správy hráčů",
     mainPlayer: "Hlavní hráč",
     born: "Narozen",
-    plays: "Hrál",
-    leftHanded: "Levoruký",
-    rightHanded: "Pravoruký",
+    plays: "Hraje",
+    leftHanded: "Levák",
+    rightHanded: "Pravák",
     addNewPlayerDescription: "Přidejte nového hráče pro sledování zápasů a statistik",
     uploadPictureOptional: "Nahrát obrázek (volitelné)",
     birthYear: "Rok narození",
@@ -993,8 +1379,210 @@ const translations: Record<Locale, Translations> = {
     setAsMainPlayer: "Nastavit jako hlavního hráče",
     
     // Score displays
-    tiebreak: "Tie-break",
+    tiebreak: "Tiebreak",
     deuce: "Shoda",
+
+    // Missing translations found in components
+    noPointDataAvailable: "Nejsou k dispozici žádná data bodů",
+    statsWillAppear: "Statistiky se zobrazí zde",
+    statsWillAppearDescription: "Statistiky se zobrazí zde po odehrání prvního bodu",
+    pointsAndOutcomes: "Body a výsledky",
+    serviceStatistics: "Statistiky podání",
+    firstServeWin: "Úspěšnost 1. podání %",
+    secondServeWin: "Úspěšnost 2. podání %",
+    breakPointsFaced: "Brejkboly čelené",
+    breakPointsSaved: "Brejkboly uložené",
+    conversionRatePercent: "Úspěšnost proměny %",
+    forcedErrors: "Vynucené chyby",
+    firstServeWinPercentage: "Úspěšnost 1. podání %",
+    secondServePointsWon: "Body vyhrané na 2. podání",
+    secondServePointsWonPercentage: "Úspěšnost 2. podání %",
+    firstServePointsWon: "Body vyhrané na 1. podání",
+    firstServePointsWonPercentage: "Úspěšnost 1. podání %",
+    totalPointsWon: "Celkem bodů vyhráno",
+    
+    // Additional stat labels for match stats
+    breakPointsWon: "Brejkboly vyhrané",
+    breakPointConversion: "Proměna brejkbolů",
+    
+    // End Match Dialog
+    whyEndingMatch: "Proč ukončujete zápas?",
+    matchCompletedNormally: "Zápas dokončen normálně",
+    playerRetired: "Hráč vzdal",
+    weatherConditions: "Povětrnostní podmínky",
+    
+    // Simple Stats Popup
+    point: "Bod",
+    details: "Detaily",
+    winsPoint: "vyhrává bod",
+    serving: "podává",
+    selectHowPointEnded: "Vyberte, jak bod skončil:",
+    
+    wins: "Vyhrává",
+    ongoing: "probíhá",
+    noData: "Žádná data",
+    switchToCzech: "Přepnout na češtinu",
+    switchToEnglish: "Switch to English",
+    unableToConnect: "Nelze se připojit k serveru",
+    checkInternetConnection: "Zkontrolujte připojení k internetu",
+    connectionIssue: "Problém s připojením",
+    failedToClearCache: "Nepodařilo se vymazat cache",
+    failedToGetCacheInfo: "Nepodařilo se získat informace o cache",
+    clearingCache: "Mazání cache a obnovování...",
+    cacheCleared: "Cache byla úspěšně vymazána!",
+    refreshing: "Obnovování",
+    checking: "Kontrola",
+    clearing: "Mazání",
+    clearCache: "Vymazat cache",
+    hardRefresh: "Tvrdé obnovení",
+    checkCacheInfo: "Zkontrolovat informace o cache",
+    cacheFound: "Nalezeno cache",
+    cachesWithEntries: "cache s položkami",
+    profilePreview: "Náhled profilu",
+    clickUploadButton: "Klikněte na tlačítko nahrát pro výměnu tohoto obrázku, nebo na X pro odstranění",
+    clickCropButton: "Klikněte na tlačítko oříznout pro úpravu, nahrát pro výměnu, nebo X pro odstranění",
+    uploadImageDescription: "Nahrajte obrázek do 10MB. Po výběru ho budete moci oříznout a umístit",
+    cropMe: "Oříznout",
+    replaceWithNewImage: "Nahradit novým obrázkem",
+    editCrop: "Upravit oříznutí",
+    removeImage: "Odstranit obrázek",
+    recommendedActions: "Doporučené akce:",
+    cleanup: "Vyčistit",
+    dismiss: "Zavřít",
+    extensionConflictDetected: "Byl zjištěn konflikt s rozšířením",
+    expandNavigation: "Rozbalit navigaci",
+    collapseNavigation: "Sbalit navigaci",
+    newMatchButton: "Nový zápas",
+    pleaseSelectImage: "Prosím vyberte obrázek",
+    failedToReadFile: "Nepodařilo se přečíst vybraný soubor",
+    failedToProcessCroppedImage: "Nepodařilo se zpracovat oříznutý obrázek. Zkuste to znovu",
+    pleaseSelectImageFile: "Prosím vyberte obrázkový soubor",
+    copyLink: "Kopírovat odkaz",
+    failed: "Nepodařilo se",
+    unable: "Nelze",
+    cannot: "Nelze",
+    setNumber: "Číslo setu",
+    selectAll: "Vybrat vše",
+    getLink: "Získat odkaz",
+    copy: "Kopírovat",
+    failedTo: "Nepodařilo se",
+    click: "Kliknout",
+    upload: "Nahrát",
+    select: "Vybrat",
+    choose: "Vyberte",
+    start: "Začátek",
+    end: "Konec",
+    continue: "Pokračovat",
+    appUpdated: "Aplikace byla aktualizována",
+    refreshToGetLatest: "Obnovte stránku pro získání nejnovější verze",
+    somethingWentWrong: "Něco se pokazilo",
+    pleaseRefresh: "Zkuste to znovu",
+    managementDescription: "Popis správy",
+    forDoubles: "Pro čtyřhru",
+    returnDefaultAvatar: "Vrátit výchozí avatar",
+    buildFullUrl: "Sestavit plnou URL",
+    missingEnvironmentVariables: "Chybějící proměnné prostředí",
+    setUpPeriodicCleanup: "Nastavit pravidelné čištění",
+    dontRenderOnServer: "Nevykreslovat na serveru",
+    couldNotGetCanvasContext: "Nepodařilo se získat kontext plátna",
+    fallbackDataURLFailed: "Záložní metoda data URL selhala",
+    canvasToBlob: "Canvas na blob",
+    totalEntriesFound: "celkem nalezených položek",
+    cacheNames: "názvy cache",
+    cacheInfoCheck: "kontrola informací o cache",
+    cacheClearFailed: "vymazání cache selhalo",
+    foundCaches: "Nalezeno",
+    clearCacheAndReload: "Vymazat cache a obnovit",
+    justifyStart: "Zarovnat na začátek",
+    flexItemsCenter: "Flex položky na střed",
+    pointsPlayed: "bodů odehráno",
+    matchLinkCopiedToClipboard: "Odkaz na zápas zkopírován do schránky",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován do schránky!",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován do schránky!",
+    
+    // Enhanced Dashboard Statistics
+    performanceOverviewHeader: "📊 Přehled výkonu",
+    performanceOverviewDescription: "Hlavní statistiky a výsledky zápasů",
+    serveStatisticsHeader: "🎾 Statistiky podání",
+    serveStatisticsDescription: "Síla a přesnost na podání",
+    returnGameHeader: "⚡ Returnová hra",
+    returnGameDescription: "Prolomení podání a obranné dovednosti",
+    shotMakingHeader: "🎯 Útočná hra",
+    shotMakingDescription: "Agresivní hra a pozicování na kurtu",
+    
+    // Stat card labels
+    winStreakLabel: "Vítězná série",
+    acesLabel: "Esa",
+    firstServePercentageLabel: "1. podání %",
+    servicePointsLabel: "Body na podání",
+    doubleFaultsLabel: "Dvojchyby",
+    breakPointsWonLabel: "Získané brejky",
+    returnPointsLabel: "Body na returnu",
+    breakPointsSavedLabel: "Obráněné brejky",
+    firstReturnPercentageLabel: "1. return %",
+    winnersLabel: "Vítězné údery",
+    unforcedErrorsLabel: "Nevynucené chyby",
+    netPointsLabel: "Body u sítě",
+    forehandBackhandRatioLabel: "Forhend/Bekhend",
+    
+    // Performance quality descriptors
+    qualityExcellent: "Vynikající",
+    qualityGood: "Dobré",
+    qualityWorkNeeded: "Potřeba zlepšení",
+    qualityImproving: "Zlepšuje se",
+    
+    // Stat descriptions
+    opportunitiesConverted: "Využité příležitosti",
+    pointsWonServing: "Body vyhrané na podání",
+    pointsWonReturning: "Body vyhrané na returnu",
+    defensiveHolds: "Obranné držení podání",
+    unforcedErrorsDescription: "Nevynucené chyby",
+    forwardPlay: "Hra u sítě",
+    winnerBalance: "Poměr vítězných úderů",
+    perMatch: "/zápas",
+    ofTotal: "z celkových",
+    completedDescription: "dokončeno",
+    best: "Nejlepší",
+    
+    // Monthly stats
+    thisMonthHeader: "Tento měsíc",
+    matchesLabel: "Zápasy",
+    wonLabel: "Vyhrané",
+    avgDurationLabel: "Průměrná doba",
+    winStreakMonthlyLabel: "Vítězná série",
+
+    deleteMatch: "Smazat zápas",
+    deleteMatchConfirm: "Opravdu chcete smazat tento zápas mezi {p1} a {p2}? Tato akce je nevratná a všechna data zápasu budou trvale odstraněna.",
+    matchDeleted: "Zápas byl úspěšně smazán",
+    failedToDeleteMatch: "Nepodařilo se smazat zápas",
+    deleting: "Mazání...",
+
+    // Fix terminology for match setup
+    advantage: "S výhodou",
+    noAdvantage: "Bez výhody",
+    finalSet: "Poslední sada",
+    fullSet: "Celý set",
+    bestOf1: "Na 1 set",
+    bestOf3: "Na 3 sety",
+    bestOf5: "Na 5 setů",
+    singles: "Dvouhra",
+    doubles: "Čtyřhra",
+    player1: "Hráč 1",
+    player2: "Hráč 2",
+    player3: "Hráč 3",
+    player4: "Hráč 4",
+    noTracking: "(bez sledování)",
+
+    ace: "Eso",
+    aceDescription: "Nepreturnovatelný servis",
+    winner: "Vítězný úder",
+    winnerDescription: "Čistý vítězný úder",
+    forcedError: "Vynucená chyba",
+    forcedErrorDescription: "Soupeř donucen k chybě",
+    unforcedError: "Nevynucená chyba",
+    unforcedErrorDescription: "Nevynucená chyba",
+    doubleFault: "Dvojchyba",
+    doubleFaultDescription: "Dvě chyby v řadě (dvojchyba)"
   }
 }
 

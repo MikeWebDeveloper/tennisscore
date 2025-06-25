@@ -17,6 +17,7 @@ import {
 import { X } from "lucide-react"
 import { deleteMatch } from "@/lib/actions/matches"
 import { toast } from "sonner"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface DeleteMatchButtonProps {
   matchId: string
@@ -29,19 +30,20 @@ interface DeleteMatchButtonProps {
 export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
+  const t = useTranslations()
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
       const result = await deleteMatch(matchId)
       if (result.success) {
-        toast.success("Match deleted successfully")
+        toast.success(t('matchDeleted'))
         router.push("/matches")
       } else {
-        toast.error(result.error || "Failed to delete match")
+        toast.error(result.error || t('failedToDeleteMatch'))
       }
     } catch {
-      toast.error("Failed to delete match")
+      toast.error(t('failedToDeleteMatch'))
     } finally {
       setIsDeleting(false)
     }
@@ -60,20 +62,19 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Match</AlertDialogTitle>
+          <AlertDialogTitle>{t('deleteMatch')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete this match between {playerNames.p1} and {playerNames.p2}? 
-            This action cannot be undone and all match data will be permanently lost.
+            {t('deleteMatchConfirm', { p1: playerNames.p1, p2: playerNames.p2 })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction 
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete Match"}
+            {isDeleting ? t('deleting') : t('deleteMatch')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

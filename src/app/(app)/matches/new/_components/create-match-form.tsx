@@ -229,11 +229,11 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <Label htmlFor="singles" className="radio-option">
                     <RadioGroupItem value="singles" id="singles" />
-                    <span className="font-medium">Singles</span>
+                    <span className="font-medium">{t('singles')}</span>
                   </Label>
                   <Label htmlFor="doubles" className="radio-option">
                     <RadioGroupItem value="doubles" id="doubles" />
-                    <span className="font-medium">Doubles</span>
+                    <span className="font-medium">{t('doubles')}</span>
                   </Label>
                 </div>
               </RadioGroup>

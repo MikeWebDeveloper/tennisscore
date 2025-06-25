@@ -101,6 +101,8 @@ function StatRow({
 }
 
 export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsComponentProps) {
+  const t = useTranslations()
+  
   return (
     <motion.div 
       variants={containerVariants}
@@ -113,27 +115,27 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Points
+{t('points')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <StatRow 
-            label="Total Points Won" 
+            label={t('totalPointsWon')} 
             value1={stats.player1.totalPointsWon} 
             value2={stats.player2.totalPointsWon} 
           />
           <StatRow 
-            label="Winners" 
+            label={t('winners')} 
             value1={stats.player1.winners} 
             value2={stats.player2.winners} 
           />
           <StatRow 
-            label="Unforced Errors" 
+            label={t('unforcedErrors')} 
             value1={stats.player1.unforcedErrors} 
             value2={stats.player2.unforcedErrors} 
           />
           <StatRow 
-            label="Forced Errors" 
+            label={t('forcedErrors')} 
             value1={stats.player1.forcedErrors} 
             value2={stats.player2.forcedErrors} 
           />
@@ -145,28 +147,28 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Zap className="h-4 w-4" />
-            Service
+            {t('serviceStatistics')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <StatRow 
-            label="Aces" 
+            label={t('aces')} 
             value1={stats.player1.aces} 
             value2={stats.player2.aces} 
           />
           <StatRow 
-            label="Double Faults" 
+            label={t('doubleFaults')} 
             value1={stats.player1.doubleFaults} 
             value2={stats.player2.doubleFaults} 
           />
           <StatRow 
-            label="1st Serve %" 
+            label={t('firstServePercentage')} 
             value1={Math.round(stats.player1.firstServePercentage)} 
             value2={Math.round(stats.player2.firstServePercentage)}
             format="percentage"
           />
           <StatRow 
-            label="1st Serve Points Won" 
+            label={t('firstServePointsWonPercentage')} 
             value1={Math.round(stats.player1.firstServeWinPercentage)} 
             value2={Math.round(stats.player2.firstServeWinPercentage)}
             format="percentage"
@@ -180,17 +182,17 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Break Points
+              {t('breakPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Break Points Won" 
+              label={t('breakPointsWon')} 
               value1={stats.player1.breakPointsWon} 
               value2={stats.player2.breakPointsWon} 
             />
             <StatRow 
-              label="Break Point Conversion" 
+              label={t('breakPointConversion')} 
               value1={Math.round(stats.player1.breakPointConversionPercentage)} 
               value2={Math.round(stats.player2.breakPointConversionPercentage)}
               format="percentage"
@@ -224,6 +226,7 @@ export function MatchStatsComponentSimple({
   playerNames: { p1: string; p2: string }
   detailLevel: "points" | "simple" | "complex"
 }) {
+  const t = useTranslations()
 
   const hasPoints = stats.totalPoints > 0
   
@@ -234,7 +237,7 @@ export function MatchStatsComponentSimple({
     return (
       <div className="text-center text-muted-foreground py-8">
         <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>Stats will appear here once the first point is played.</p>
+        <p>{t('statsWillAppearDescription')}</p>
       </div>
     )
   }
@@ -259,18 +262,18 @@ export function MatchStatsComponentSimple({
             // Points-only scoring: Show total points and serve/receive stats
             <>
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Service Points %" 
+                label={t('servicePoints')} 
                 value1={stats.servicePointsWonPercentageByPlayer[0]} 
                 value2={stats.servicePointsWonPercentageByPlayer[1]}
                 format="percentage"
               />
               <StatRow 
-                label="Receiving Points %" 
+                label={t('receivingPoints')} 
                 value1={stats.receivingPointsWonPercentageByPlayer[0]} 
                 value2={stats.receivingPointsWonPercentageByPlayer[1]}
                 format="percentage"
@@ -281,18 +284,18 @@ export function MatchStatsComponentSimple({
             <>
               {/* Points-only stats (from "points" level) */}
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Service Points %" 
+                label={t('servicePoints')} 
                 value1={stats.servicePointsWonPercentageByPlayer[0]} 
                 value2={stats.servicePointsWonPercentageByPlayer[1]}
                 format="percentage"
               />
               <StatRow 
-                label="Receiving Points %" 
+                label={t('receivingPoints')} 
                 value1={stats.receivingPointsWonPercentageByPlayer[0]} 
                 value2={stats.receivingPointsWonPercentageByPlayer[1]}
                 format="percentage"
@@ -300,27 +303,27 @@ export function MatchStatsComponentSimple({
               
               {/* Detailed stats */}
               <StatRow 
-                label="Winners" 
+                label={t('winners')} 
                 value1={stats.winnersByPlayer[0]} 
                 value2={stats.winnersByPlayer[1]} 
               />
               <StatRow 
-                label="Unforced Errors" 
+                label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Forced Errors" 
+                label={t('forcedErrors')} 
                 value1={stats.forcedErrorsByPlayer[0]} 
                 value2={stats.forcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Aces" 
+                label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]} 
               />
               <StatRow 
-                label="Double Faults" 
+                label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
                 value2={stats.doubleFaultsByPlayer[1]} 
               />
@@ -340,22 +343,22 @@ export function MatchStatsComponentSimple({
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Break Points Faced" 
+              label={t('breakPointsFaced')} 
               value1={stats.breakPointsByPlayer.faced[0]} 
               value2={stats.breakPointsByPlayer.faced[1]} 
             />
             <StatRow 
-              label="Break Points Converted" 
+              label={t('breakPointsConverted')} 
               value1={stats.breakPointsByPlayer.converted[0]} 
               value2={stats.breakPointsByPlayer.converted[1]} 
             />
             <StatRow 
-              label="Break Points Saved" 
+              label={t('breakPointsSaved')} 
               value1={stats.breakPointsByPlayer.saved[0]} 
               value2={stats.breakPointsByPlayer.saved[1]} 
             />
             <StatRow 
-              label="Conversion Rate" 
+              label={t('conversionRatePercent')} 
               value1={stats.breakPointsByPlayer.conversionRate[0]} 
               value2={stats.breakPointsByPlayer.conversionRate[1]}
               format="percentage"
@@ -478,18 +481,18 @@ export function MatchStatsComponentSimpleFixed({
             // Points-only scoring: Show total points and serve/receive stats
             <>
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Service Points %" 
+                label={t('servicePoints')} 
                 value1={stats.servicePointsWonPercentageByPlayer[0]} 
                 value2={stats.servicePointsWonPercentageByPlayer[1]}
                 format="percentage"
               />
               <StatRow 
-                label="Receiving Points %" 
+                label={t('receivingPoints')} 
                 value1={stats.receivingPointsWonPercentageByPlayer[0]} 
                 value2={stats.receivingPointsWonPercentageByPlayer[1]}
                 format="percentage"
@@ -499,27 +502,27 @@ export function MatchStatsComponentSimpleFixed({
             // Simple/Complex scoring: Show detailed stats
             <>
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Winners" 
+                label={t('winners')} 
                 value1={stats.winnersByPlayer[0]} 
                 value2={stats.winnersByPlayer[1]} 
               />
               <StatRow 
-                label="Unforced Errors" 
+                label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Aces" 
+                label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]} 
               />
               <StatRow 
-                label="Double Faults" 
+                label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
                 value2={stats.doubleFaultsByPlayer[1]} 
               />
