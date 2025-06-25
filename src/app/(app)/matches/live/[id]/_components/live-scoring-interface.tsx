@@ -921,7 +921,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             </div>
           </div>
 
-
+          {/* Match Timer in header */}
+          <div className="flex justify-center py-2">
+            <MatchTimerDisplay className="justify-center" />
+          </div>
         </div>
       </header>
 
@@ -952,9 +955,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           onSetServer={setServer}
           matchFormat={parsedMatchFormat}
         />
-
-        {/* Match Timer */}
-        <MatchTimerDisplay className="justify-center" />
 
         {/* Point Entry Interface */}
         <PointEntry 
