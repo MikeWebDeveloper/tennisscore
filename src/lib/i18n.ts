@@ -503,6 +503,12 @@ export interface Translations {
   wonLabel: string
   avgDurationLabel: string
   winStreakMonthlyLabel: string
+
+  deleteMatch: string
+  deleteMatchConfirm: string
+  matchDeleted: string
+  failedToDeleteMatch: string
+  deleting: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -569,8 +575,8 @@ const translations: Record<Locale, Translations> = {
     bestOf3: "Best of 3",
     bestOf5: "Best of 5",
     scoringSystem: "Scoring System",
-    advantage: "Advantage",
-    noAdvantage: "No Advantage",
+    advantage: "With advantage",
+    noAdvantage: "No advantage",
     finalSet: "Final Set",
     fullSet: "Full Set",
     superTiebreak: "Super Tiebreak",
@@ -955,8 +961,8 @@ const translations: Record<Locale, Translations> = {
     flexItemsCenter: "Flex položky na střed",
     pointsPlayed: "bodů odehráno",
     matchLinkCopiedToClipboard: "Odkaz na zápas zkopírován do schránky",
-    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován",
-    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován do schránky!",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován do schránky!",
     
     // Enhanced Dashboard Statistics
     performanceOverviewHeader: "📊 Performance Overview",
@@ -1007,7 +1013,40 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Matches",
     wonLabel: "Won",
     avgDurationLabel: "Avg Duration",
-    winStreakMonthlyLabel: "Win Streak"
+    winStreakMonthlyLabel: "Win Streak",
+
+    deleteMatch: "Delete Match",
+    deleteMatchConfirm: "Are you sure you want to delete this match between {p1} and {p2}? This action is irreversible and all match data will be permanently deleted.",
+    matchDeleted: "Match deleted successfully",
+    failedToDeleteMatch: "Failed to delete match",
+    deleting: "Deleting...",
+
+    // Fix terminology for match setup
+    advantage: "With advantage",
+    noAdvantage: "No advantage",
+    finalSet: "Final set",
+    fullSet: "Full set",
+    bestOf1: "On 1 set",
+    bestOf3: "On 3 sets",
+    bestOf5: "On 5 sets",
+    singles: "Singles",
+    doubles: "Doubles",
+    player1: "Player 1",
+    player2: "Player 2",
+    player3: "Player 3",
+    player4: "Player 4",
+    noTracking: "(no tracking)",
+
+    ace: "Ace",
+    aceDescription: "Unreturnable serve",
+    winner: "Winner",
+    winnerDescription: "Clean winner",
+    forcedError: "Forced Error",
+    forcedErrorDescription: "Opponent forced into error",
+    unforcedError: "Unforced Error",
+    unforcedErrorDescription: "Unforced mistake",
+    doubleFault: "Double Fault",
+    doubleFaultDescription: "Two consecutive faults"
   },
   cs: {
     // Common
@@ -1024,30 +1063,30 @@ const translations: Record<Locale, Translations> = {
     darkMode: "Tmavý režim",
     
     // Navigation
-    dashboard: "Přehled",
+    dashboard: "Panel",
     matches: "Zápasy",
     players: "Hráči",
     profile: "Profil",
     settings: "Nastavení",
     overviewStats: "Přehled statistik",
     matchHistory: "Historie zápasů",
-    managePlayers: "Spravovat hráče",
+    managePlayers: "Správa hráčů",
     
     // Dashboard specific
     welcomeBack: "Vítejte zpět",
     welcomeToTennisScore: "Vítejte v TennisScore",
-    dashboardSubtitle: "Sledujte svůj tenisový výkon a zlepšujte svou hru",
-    performanceTrackingStarts: "Sledování vašeho tenisového výkonu začíná zde",
-    readyToElevate: "Připraveni zvýšit úroveň své hry? Začněte sledovat zápasy a analyzovat svůj výkon.",
+    dashboardSubtitle: "Podnadpis panelu",
+    performanceTrackingStarts: "Sledování výkonu začíná",
+    readyToElevate: "Připraveni k povýšení",
     
     // Match scoring
     newMatch: "Nový zápas",
     liveScoring: "Živé skórování",
     matchCompleted: "Zápas dokončen",
-    winner: "Vítěz",
+    winner: "Vítězný úder",
     score: "Skóre",
     sets: "Sety",
-    games: "Hry",
+    games: "Gemy",
     points: "Body",
     
     // Create match form
@@ -1059,23 +1098,11 @@ const translations: Record<Locale, Translations> = {
     createNewPlayer: "Vytvořit nového hráče",
     searchOrSelectPlayer: "Hledat nebo vybrat hráče",
     noPlayersFound: "Žádní hráči nebyli nalezeni",
-    player1: "Hráč 1",
-    player2: "Hráč 2",
-    player3: "Hráč 3",
-    player4: "Hráč 4",
     team1: "Tým 1",
     team2: "Tým 2",
-    noTracking: "Žádné sledování",
     matchFormat: "Formát zápasu",
     numberOfSets: "Počet sad",
-    bestOf1: "Na 1",
-    bestOf3: "Na 3",
-    bestOf5: "Na 5",
     scoringSystem: "Systém skórování",
-    advantage: "Výhoda",
-    noAdvantage: "Bez výhody",
-    finalSet: "Poslední sad",
-    fullSet: "Plná sad",
     superTiebreak: "Super tiebreak",
     scoringDetailLevel: "Detailní úroveň skórování",
     pointsOnly: "Body jen",
@@ -1154,8 +1181,6 @@ const translations: Record<Locale, Translations> = {
     time: "Čas",
     format: "Formát",
     type: "Typ",
-    singles: "Singl",
-    doubles: "Čtyřhra",
     bestOf: "Na",
     noAd: "Bez výhody",
     traditional: "Tradiční",
@@ -1257,10 +1282,6 @@ const translations: Record<Locale, Translations> = {
     singlesMatch: "Dvouhru",
     trackBasicStats: "Sledovat základní statistiky",
     trackDetailedStats: "Sledovat podrobné statistiky",
-    
-    // Tennis stats
-    servicePoints: "Body na podání %",
-    receivingPoints: "Body na returnu %",
     
     // Common actions
     add: "Přidat",
@@ -1510,7 +1531,46 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Zápasy",
     wonLabel: "Vyhrané",
     avgDurationLabel: "Průměrná doba",
-    winStreakMonthlyLabel: "Vítězná série"
+    winStreakMonthlyLabel: "Vítězná série",
+
+    // Tennis stats - updated names to avoid duplicates 
+    servicePoints: "Body na podání %",
+    receivingPoints: "Body na returnu %",
+
+    // Delete match functionality
+    deleteMatch: "Smazat zápas",
+    deleteMatchConfirm: "Opravdu chcete smazat tento zápas mezi {p1} a {p2}? Tato akce je nevratná a všechna data zápasu budou trvale odstraněna.",
+    matchDeleted: "Zápas byl úspěšně smazán",
+    failedToDeleteMatch: "Nepodařilo se smazat zápas",
+    deleting: "Mazání...",
+
+    // Match setup terminology - using correct Czech tennis terms
+    advantage: "S výhodou",
+    noAdvantage: "Bez výhody",
+    finalSet: "Poslední sada",
+    fullSet: "Celý set",
+    bestOf1: "Na 1 set",
+    bestOf3: "Na 3 sety",
+    bestOf5: "Na 5 setů",
+    singles: "Dvouhra",
+    doubles: "Čtyřhra",
+    player1: "Hráč 1",
+    player2: "Hráč 2",
+    player3: "Hráč 3",
+    player4: "Hráč 4",
+    noTracking: "(bez sledování)",
+
+    // Point outcomes - using correct Czech tennis terminology
+    ace: "Eso",
+    aceDescription: "Nepreturnovatelný servis",
+    winner: "Vítězný úder",
+    winnerDescription: "Čistý vítězný úder",
+    forcedError: "Vynucená chyba",
+    forcedErrorDescription: "Soupeř donucen k chybě",
+    unforcedError: "Nevynucená chyba",
+    unforcedErrorDescription: "Nevynucená chyba",
+    doubleFault: "Dvojchyba",
+    doubleFaultDescription: "Dvě chyby v řadě (dvojchyba)"
   }
 }
 

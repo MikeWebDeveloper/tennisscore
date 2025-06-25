@@ -36,7 +36,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     if (!isClient || !mainPlayer) return []
     
     const completedMatches = matches
-      .filter(m => m.status === "completed")
+      .filter(m => m.status === "Completed" || m.status === "completed")
       .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
       .slice(-10) // Last 10 matches
     
@@ -64,7 +64,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
   const performanceBreakdown = useMemo(() => {
     if (!isClient) return []
     
-    const completedMatches = matches.filter(m => m.status === "completed")
+    const completedMatches = matches.filter(m => m.status === "Completed" || m.status === "completed")
     if (completedMatches.length === 0) return []
 
     const errorBreakdown = [
@@ -81,7 +81,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     if (!isClient || !mainPlayer) return []
     
     const recent = matches
-      .filter(m => m.status === "completed")
+      .filter(m => m.status === "Completed" || m.status === "completed")
       .slice(-5)
       .map((match, index) => ({
         match: `M${index + 1}`,
@@ -108,7 +108,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     )
   }
 
-  if (matches.filter(m => m.status === "completed").length === 0) {
+  if (matches.filter(m => m.status === "Completed" || m.status === "completed").length === 0) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-slate-900/50 border-slate-800">

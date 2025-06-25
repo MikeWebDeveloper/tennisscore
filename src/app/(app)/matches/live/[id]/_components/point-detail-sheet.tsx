@@ -16,9 +16,11 @@ import {
   ServeType, 
   PointOutcome, 
   ShotType, 
-  CourtPosition 
+  CourtPosition,
+  Player
 } from "@/lib/types"
 import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -37,13 +39,21 @@ interface PointDetailSheetProps {
     isMatchPoint: boolean
     playerNames: { p1: string; p2: string }
   }
+  playerOne: Player | null
+  playerTwo: Player | null
+  onPointScored: (pointData: PointDetail) => void
+  currentPoint: MatchPoint
 }
 
 export function PointDetailSheet({ 
   open, 
   onOpenChange, 
   onSave, 
-  pointContext 
+  pointContext,
+  playerOne,
+  playerTwo,
+  onPointScored,
+  currentPoint
 }: PointDetailSheetProps) {
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
@@ -175,6 +185,44 @@ export function PointDetailSheet({
     }
   }
 
+  const t = useTranslations()
+
+  const [selectedPlayer, setSelectedPlayer] = useState<'playerOne' | 'playerTwo' | null>(null)
+  const [selectedOutcome, setSelectedOutcome] = useState<PointOutcome | null>(null)
+
+  const outcomes: { type: PointOutcome; icon: any; color: string }[] = [
+    { type: 'winner', icon: Trophy, color: 'bg-green-500' },
+    { type: 'ace', icon: Zap, color: 'bg-blue-500' },
+    { type: 'forcedError', icon: Target, color: 'bg-orange-500' },
+    { type: 'unforcedError', icon: AlertTriangle, color: 'bg-red-500' },
+    { type: 'doubleFault', icon: AlertTriangle, color: 'bg-red-600' }
+  ]
+
+  const outcomeDescriptions = {
+    winner: t('winnerDescription'),
+    ace: t('aceDescription'),
+    forcedError: t('forcedErrorDescription'),
+    unforcedError: t('unforcedErrorDescription'),
+    doubleFault: t('doubleFaultDescription')
+  }
+
+  const handleSubmit = () => {
+    if (!selectedPlayer || !selectedOutcome) return
+
+    const pointData: PointDetail = {
+      winner: selectedPlayer,
+      outcome: selectedOutcome,
+      timestamp: new Date().toISOString()
+    }
+
+    onPointScored(pointData)
+    
+    // Reset form
+    setSelectedPlayer(null)
+    setSelectedOutcome(null)
+    onOpenChange(false)
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
@@ -216,8 +264,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Ace</span>
-                  <span className="text-xs opacity-70">Unreturnable serve</span>
+                  <span className="font-semibold">{t('ace')}</span>
+                  <span className="text-xs opacity-70">{t('aceDescription')}</span>
                 </Button>
                 
                 <Button
@@ -225,8 +273,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Winner</span>
-                  <span className="text-xs opacity-70">Clean winner</span>
+                  <span className="font-semibold">{t('winner')}</span>
+                  <span className="text-xs opacity-70">{t('winnerDescription')}</span>
                 </Button>
                 
                 <Button
@@ -234,8 +282,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Unforced Error</span>
-                  <span className="text-xs opacity-70">Unforced mistake</span>
+                  <span className="font-semibold">{t('unforcedError')}</span>
+                  <span className="text-xs opacity-70">{t('unforcedErrorDescription')}</span>
                 </Button>
                 
                 <Button
@@ -243,8 +291,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20"
                   variant="outline"
                 >
-                  <span className="font-semibold">Forced Error</span>
-                  <span className="text-xs opacity-70">Opponent forced error</span>
+                  <span className="font-semibold">{t('forcedError')}</span>
+                  <span className="text-xs opacity-70">{t('forcedErrorDescription')}</span>
                 </Button>
                 
                 <Button
@@ -253,8 +301,8 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 col-span-2"
                   variant="outline"
                 >
-                  <span className="font-semibold">Double Fault</span>
-                  <span className="text-xs opacity-70">Two consecutive faults</span>
+                  <span className="font-semibold">{t('doubleFault')}</span>
+                  <span className="text-xs opacity-70">{t('doubleFaultDescription')}</span>
                 </Button>
               </div>
               
@@ -356,23 +404,23 @@ export function PointDetailSheet({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="winner" id="winner" />
-                    <Label htmlFor="winner">Winner</Label>
+                    <Label htmlFor="winner">{t('winner')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="unforced_error" id="unforced_error" />
-                    <Label htmlFor="unforced_error">Unforced Error</Label>
+                    <Label htmlFor="unforced_error">{t('unforcedError')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="forced_error" id="forced_error" />
-                    <Label htmlFor="forced_error">Forced Error</Label>
+                    <Label htmlFor="forced_error">{t('forcedError')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="ace" id="ace" disabled={isOutcomeDisabled('ace')} />
-                    <Label htmlFor="ace" className={isOutcomeDisabled('ace') ? "text-muted-foreground" : ""}>Ace</Label>
+                    <Label htmlFor="ace" className={isOutcomeDisabled('ace') ? "text-muted-foreground" : ""}>{t('ace')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="double_fault" id="double_fault" disabled={isOutcomeDisabled('double_fault')} />
-                    <Label htmlFor="double_fault" className={isOutcomeDisabled('double_fault') ? "text-muted-foreground" : ""}>Double Fault</Label>
+                    <Label htmlFor="double_fault" className={isOutcomeDisabled('double_fault') ? "text-muted-foreground" : ""}>{t('doubleFault')}</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -468,6 +516,79 @@ export function PointDetailSheet({
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        <Separator />
+
+        {/* Player Selection */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-lg">{t('whoWonThePoint')}</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { key: 'playerOne' as const, player: playerOne },
+              { key: 'playerTwo' as const, player: playerTwo }
+            ].map(({ key, player }) => (
+              <Button
+                key={key}
+                variant={selectedPlayer === key ? "default" : "outline"}
+                className="h-16 text-lg"
+                onClick={() => setSelectedPlayer(key)}
+              >
+                {player ? `${player.firstName} ${player.lastName}` : 
+                 key === 'playerOne' ? t('player1') : t('player2')}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Outcome Selection */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-lg">{t('howDidTheyWin')}</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {outcomes.map(({ type, icon: Icon, color }) => (
+              <Button
+                key={type}
+                variant={selectedOutcome === type ? "default" : "outline"}
+                className="h-16 justify-start text-left p-4"
+                onClick={() => setSelectedOutcome(type)}
+              >
+                <div className="flex items-center gap-3 w-full">
+                  <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold">{t(type)}</div>
+                    <div className="text-xs opacity-70">
+                      {outcomeDescriptions[type]}
+                    </div>
+                  </div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Submit */}
+        <div className="space-y-3">
+          <Button
+            onClick={handleSubmit}
+            disabled={!selectedPlayer || !selectedOutcome}
+            className="w-full h-14 text-lg"
+            size="lg"
+          >
+            {t('recordPoint')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onOpenChange}
+            className="w-full h-12"
+          >
+            {t('cancel')}
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

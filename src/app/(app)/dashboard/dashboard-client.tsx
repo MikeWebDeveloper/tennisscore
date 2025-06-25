@@ -29,8 +29,8 @@ export default function DashboardClient({
     totalMatches: matches.length,
     winRate: 0,
     totalPlayers: 1, // Main player focused view
-    completedMatches: matches.filter(m => m.status === 'completed').length,
-    inProgressMatches: matches.filter(m => m.status === 'in-progress').length,
+    completedMatches: matches.filter(m => m.status === 'Completed').length,
+    inProgressMatches: matches.filter(m => m.status === 'In Progress').length,
   }
 
   // Calculate win rate for main player

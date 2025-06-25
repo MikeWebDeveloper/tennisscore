@@ -284,18 +284,18 @@ export function MatchStatsComponentSimple({
             <>
               {/* Points-only stats (from "points" level) */}
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Service Points %" 
+                label={t('servicePoints')} 
                 value1={stats.servicePointsWonPercentageByPlayer[0]} 
                 value2={stats.servicePointsWonPercentageByPlayer[1]}
                 format="percentage"
               />
               <StatRow 
-                label="Receiving Points %" 
+                label={t('receivingPoints')} 
                 value1={stats.receivingPointsWonPercentageByPlayer[0]} 
                 value2={stats.receivingPointsWonPercentageByPlayer[1]}
                 format="percentage"
@@ -481,18 +481,18 @@ export function MatchStatsComponentSimpleFixed({
             // Points-only scoring: Show total points and serve/receive stats
             <>
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Service Points %" 
+                label={t('servicePoints')} 
                 value1={stats.servicePointsWonPercentageByPlayer[0]} 
                 value2={stats.servicePointsWonPercentageByPlayer[1]}
                 format="percentage"
               />
               <StatRow 
-                label="Receiving Points %" 
+                label={t('receivingPoints')} 
                 value1={stats.receivingPointsWonPercentageByPlayer[0]} 
                 value2={stats.receivingPointsWonPercentageByPlayer[1]}
                 format="percentage"
@@ -502,27 +502,27 @@ export function MatchStatsComponentSimpleFixed({
             // Simple/Complex scoring: Show detailed stats
             <>
               <StatRow 
-                label="Total Points" 
+                label={t('totalPoints')} 
                 value1={stats.totalPointsWonByPlayer[0]} 
                 value2={stats.totalPointsWonByPlayer[1]} 
               />
               <StatRow 
-                label="Winners" 
+                label={t('winners')} 
                 value1={stats.winnersByPlayer[0]} 
                 value2={stats.winnersByPlayer[1]} 
               />
               <StatRow 
-                label="Unforced Errors" 
+                label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]} 
               />
               <StatRow 
-                label="Aces" 
+                label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]} 
               />
               <StatRow 
-                label="Double Faults" 
+                label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
                 value2={stats.doubleFaultsByPlayer[1]} 
               />

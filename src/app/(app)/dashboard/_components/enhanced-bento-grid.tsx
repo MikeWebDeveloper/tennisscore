@@ -21,15 +21,14 @@ import {
   CircleArrowDown,
   Percent,
   ArrowUpRight,
-  ArrowDownLeft,
-  Network
+  ArrowDownLeft
 } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
 import { PerformanceCharts } from "./performance-charts"
-import { Match, Player, PointDetail } from "@/lib/types"
+import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/hooks/use-translations"
-import { calculatePlayerStats } from "@/lib/utils/match-stats"
+import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -70,10 +69,11 @@ interface EnhancedStats {
   firstReturnPercentage: number
   
   // Additional contextual stats
-  completedMatches: number
   averageMatchDuration: string
   longestWinStreak: number
   thisMonthMatches: number
+  secondServePointsWonPercentage: number
+  totalForcedErrors: number
 }
 
 // Animation variants
@@ -161,167 +161,56 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
       firstReturnPercentage: 0,
       
       // Additional contextual stats
-      completedMatches: 0,
       averageMatchDuration: "0m",
       longestWinStreak: 0,
-      thisMonthMatches: 0
+      thisMonthMatches: 0,
+      secondServePointsWonPercentage: 0,
+      totalForcedErrors: 0
     }
   }
 
-  const completedMatches = matches.filter(m => m.status === 'completed')
-  const wonMatches = completedMatches.filter(m => m.winnerId === mainPlayerId)
-  
-  // Basic stats
-  const totalMatches = matches.length
-  const totalMatchesWon = wonMatches.length
-  const winRate = completedMatches.length > 0 ? Math.round((totalMatchesWon / completedMatches.length) * 100) : 0
-  
-  // Calculate win streak
-  let currentWinStreak = 0
-  let longestWinStreak = 0
-  let tempStreak = 0
-  
-  // Sort matches by date (most recent first) for streak calculation
-  const sortedMatches = [...completedMatches].sort((a, b) => 
-    new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime()
-  )
-  
-  for (const match of sortedMatches) {
-    if (match.winnerId === mainPlayerId) {
-      if (currentWinStreak === tempStreak) {
-        currentWinStreak++
-      }
-      tempStreak++
-      longestWinStreak = Math.max(longestWinStreak, tempStreak)
-    } else {
-      if (currentWinStreak === tempStreak) {
-        currentWinStreak = 0
-      }
-      tempStreak = 0
-    }
-  }
-
-  // Aggregate detailed statistics from point logs
-  let totalAces = 0
-  let totalDoubleFaults = 0
-  let totalWinners = 0
-  let totalUnforcedErrors = 0
-  let totalServicePointsWon = 0
-  let totalFirstServes = 0
-  let totalFirstServesIn = 0
-  let totalReturnPointsWon = 0
-  let breakPointsConverted = 0
-  let breakPointsSaved = 0
-  let netPointsWon = 0
-  let forehandWinners = 0
-  let backhandWinners = 0
-  let firstReturnPointsWon = 0
-  let firstReturnPointsPlayed = 0
-
-  // Process matches with detailed point logs
-  matches.forEach(match => {
-    if (match.pointLog && Array.isArray(match.pointLog) && match.pointLog.length > 0) {
-      try {
-        // Parse point log
-        const points: PointDetail[] = match.pointLog.map(pointStr => {
-          if (typeof pointStr === 'string') {
-            return JSON.parse(pointStr)
-          }
-          return pointStr
-        })
-
-        // Determine which player is the main player in this match
-        const isPlayerOne = match.playerOneId === mainPlayerId
-        const playerKey = isPlayerOne ? 'p1' : 'p2'
-
-        // Calculate stats for this match
-        const playerStats = calculatePlayerStats(points, playerKey)
-        
-        // Aggregate totals
-        totalAces += playerStats.aces
-        totalDoubleFaults += playerStats.doubleFaults
-        totalWinners += playerStats.winners
-        totalUnforcedErrors += playerStats.unforcedErrors
-        totalServicePointsWon += playerStats.firstServePointsWon + playerStats.secondServePointsWon
-        totalFirstServes += playerStats.firstServesAttempted
-        totalFirstServesIn += playerStats.firstServesMade
-        totalReturnPointsWon += playerStats.totalReturnPointsWon
-        breakPointsConverted += playerStats.breakPointsWon
-        breakPointsSaved += playerStats.breakPointsSaved
-        netPointsWon += playerStats.netPointsWon
-        forehandWinners += playerStats.forehandWinners
-        backhandWinners += playerStats.backhandWinners
-        firstReturnPointsWon += playerStats.firstReturnPointsWon
-        firstReturnPointsPlayed += playerStats.firstReturnPointsPlayed
-
-      } catch (error) {
-        console.error("Error parsing point log for match:", match.$id, error)
-      }
-    }
-  })
-
-  // Calculate percentages and derived stats
-  const firstServePercentage = totalFirstServes > 0 ? Math.round((totalFirstServesIn / totalFirstServes) * 100) : 0
-  const firstReturnWinPercentage = firstReturnPointsPlayed > 0 ? Math.round((firstReturnPointsWon / firstReturnPointsPlayed) * 100) : 0
-  const forehandBackhandRatio = backhandWinners > 0 ? Number((forehandWinners / backhandWinners).toFixed(1)) : forehandWinners > 0 ? forehandWinners : 0
-  
-  // Calculate missing derived stats
-  const winnersPerMatch = completedMatches.length > 0 ? totalWinners / completedMatches.length : 0
-  const breakPointsFaced = breakPointsConverted + breakPointsSaved
-  const breakPointConversionRate = breakPointsFaced > 0 ? Math.round((breakPointsConverted / breakPointsFaced) * 100) : 0
-  const firstReturnPercentage = firstReturnPointsPlayed > 0 ? Math.round((firstReturnPointsWon / firstReturnPointsPlayed) * 100) : 0
-  const winnerToErrorRatio = totalUnforcedErrors > 0 ? totalWinners / totalUnforcedErrors : totalWinners > 0 ? totalWinners : 0
-  const netPointsWonPercentage = netPointsWon > 0 ? Math.round((netPointsWon / Math.max(netPointsWon + 10, 1)) * 100) : 0 // Approximation
-
-  // Calculate this month's matches
-  const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
-  const thisMonthMatches = matches.filter(m => {
-    const matchDate = new Date(m.matchDate)
-    return matchDate.getMonth() === currentMonth && matchDate.getFullYear() === currentYear
-  }).length
-
-  // Calculate average match duration (placeholder - would need timing data)
-  const averageMatchDuration = `${Math.round(90 + Math.random() * 30)}m`
+  const agg = aggregatePlayerStatsAcrossMatches(matches, mainPlayerId)
+  const streaks = calculatePlayerWinStreak(matches, mainPlayerId)
 
   return {
     // Basic Performance
-    totalMatchesWon,
-    winRate,
-    totalMatches,
-    currentWinStreak,
+    totalMatchesWon: agg.matchesWon,
+    winRate: agg.winRate,
+    totalMatches: agg.totalMatches,
+    currentWinStreak: streaks.current,
     
     // Serve Performance
-    totalAces,
-    firstServePercentage,
-    servicePointsWon: totalServicePointsWon,
-    totalDoubleFaults,
+    totalAces: agg.totalAces,
+    firstServePercentage: agg.firstServePercentage,
+    servicePointsWon: agg.totalServicePointsWon,
+    totalDoubleFaults: agg.totalDoubleFaults,
     
     // Return Performance
-    breakPointsConverted,
-    returnPointsWon: totalReturnPointsWon,
-    breakPointsSaved,
-    firstReturnWinPercentage,
-    breakPointsFaced,
-    breakPointConversionRate,
+    breakPointsConverted: agg.totalBreakPointsWon,
+    returnPointsWon: agg.totalReturnPointsWon,
+    breakPointsSaved: agg.totalBreakPointsSaved,
+    firstReturnWinPercentage: agg.returnPointsPct,
+    breakPointsFaced: agg.totalBreakPointsFaced,
+    breakPointConversionRate: agg.breakPointConversionRate,
     
     // Shot Making
-    totalWinners,
-    totalUnforcedErrors,
-    netPointsWon,
-    forehandBackhandRatio,
-    winnersPerMatch,
-    winnerToErrorRatio,
-    netPointsWonPercentage,
+    totalWinners: agg.totalWinners,
+    totalUnforcedErrors: agg.totalUnforcedErrors,
+    netPointsWon: agg.totalNetPointsWon,
+    forehandBackhandRatio: 0, // Not yet aggregated
+    winnersPerMatch: agg.totalMatches > 0 ? agg.totalWinners / agg.totalMatches : 0,
+    winnerToErrorRatio: agg.winnerToErrorRatio,
+    netPointsWonPercentage: agg.netPointsWonPercentage,
     
     // Return Game Stats
-    firstReturnPercentage,
+    firstReturnPercentage: agg.returnPointsPct,
     
     // Additional contextual stats
-    completedMatches: completedMatches.length,
-    averageMatchDuration,
-    longestWinStreak,
-    thisMonthMatches
+    averageMatchDuration: "0m", // Placeholder
+    longestWinStreak: streaks.max,
+    thisMonthMatches: 0, // TODO: Add if needed
+    secondServePointsWonPercentage: agg.secondServePointsWonPercentage,
+    totalForcedErrors: agg.totalForcedErrors
   }
 }
 
@@ -487,7 +376,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               icon={Calendar} 
               label={t("totalMatches")} 
               value={stats.totalMatches}
-              subtitle={`${stats.completedMatches} ${t("completedDescription")}`}
+              subtitle={`${stats.thisMonthMatches} ${t("completedDescription")}`}
               variant="default"
             />
             <StatCard 
@@ -515,7 +404,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               icon={Zap} 
               label={t("acesLabel")} 
               value={stats.totalAces}
-              subtitle={`${(stats.totalAces / Math.max(stats.totalMatches, 1)).toFixed(1)}${t("perMatch")}`}
+              subtitle={`${(stats.totalAces / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               variant={(stats.totalAces / Math.max(stats.totalMatches, 1)) >= 5 ? "success" : (stats.totalAces / Math.max(stats.totalMatches, 1)) >= 2 ? "primary" : "default"}
             />
             <StatCard 
@@ -538,7 +427,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               icon={RotateCcw} 
               label={t("doubleFaultsLabel")} 
               value={stats.totalDoubleFaults}
-              subtitle={`${(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)).toFixed(1)}${t("perMatch")}`}
+              subtitle={`${(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               trend={(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 2 ? "up" : "down"}
               variant={(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 1 ? "success" : (stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 3 ? "primary" : "danger"}
             />
@@ -604,7 +493,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               icon={Award} 
               label={t("winnersLabel")} 
               value={stats.totalWinners}
-              subtitle={`${stats.winnersPerMatch.toFixed(1)}${t("perMatch")}`}
+              subtitle={`${(stats.totalWinners / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               variant={stats.winnersPerMatch >= 15 ? "success" : stats.winnersPerMatch >= 10 ? "primary" : "default"}
             />
             <StatCard 
@@ -616,18 +505,20 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               variant={stats.winnerToErrorRatio >= 1.2 ? "success" : stats.winnerToErrorRatio >= 0.8 ? "primary" : "warning"}
             />
             <StatCard 
-              icon={Network} 
-              label={t("netPointsLabel")} 
-              value={stats.netPointsWon}
-              subtitle={t("forwardPlay")}
-              variant={stats.netPointsWonPercentage >= 70 ? "success" : stats.netPointsWonPercentage >= 60 ? "primary" : "default"}
+              icon={Percent} 
+              label={"Second Serve Points Won %"}
+              value={`${stats.secondServePointsWonPercentage || 0}%`}
+              subtitle={`${(stats.secondServePointsWonPercentage / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
+              trend={stats.secondServePointsWonPercentage >= 50 ? "up" : "down"}
+              variant={stats.secondServePointsWonPercentage >= 60 ? "success" : stats.secondServePointsWonPercentage >= 45 ? "primary" : "warning"}
             />
             <StatCard 
               icon={BarChart3} 
-              label={t("forehandBackhandRatioLabel")} 
-              value={`${stats.forehandBackhandRatio.toFixed(1)}:1`}
-              subtitle={t("winnerBalance")}
-              variant={stats.forehandBackhandRatio >= 1.2 && stats.forehandBackhandRatio <= 2.5 ? "success" : "primary"}
+              label={"Forced Errors"}
+              value={stats.totalForcedErrors}
+              subtitle={`${(stats.totalForcedErrors / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
+              trend={stats.totalForcedErrors >= 10 ? "up" : "neutral"}
+              variant={stats.totalForcedErrors >= 15 ? "success" : stats.totalForcedErrors >= 10 ? "primary" : "default"}
             />
           </motion.div>
         </motion.div>
@@ -672,11 +563,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        match.status === "completed" 
-                          ? match.winnerId === mainPlayer?.$id 
-                            ? "bg-green-500" 
-                            : "bg-red-500"
-                          : "bg-yellow-500"
+                        match.winnerId === mainPlayer?.$id 
+                          ? "bg-green-500" 
+                          : "bg-red-500"
                       }`} />
                       <div>
                         <p className="text-sm font-medium">
@@ -687,8 +576,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                         </p>
                       </div>
                     </div>
-                    <Badge variant={match.status === "completed" ? "secondary" : "default"} className="text-xs">
-                      {match.status === "completed" ? t("completed") : t("inProgress")}
+                    <Badge variant="secondary" className="text-xs">
+                      {t("inProgress")}
                     </Badge>
                   </motion.div>
                 ))}
