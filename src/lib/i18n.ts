@@ -74,6 +74,8 @@ export interface Translations {
   breakPointsConverted: string
   breakPointsSaved: string
   conversionRatePercent: string
+  secondServePointsWonPercentage: string
+  match: string
   
   // Point outcomes
   ace: string
@@ -202,6 +204,24 @@ export interface Translations {
   
   // Stats descriptions
   statsWillAppearDescription: string
+  
+  // Create match form
+  setUpMatch: string
+  searchByTyping: string
+  team1: string
+  team2: string
+  matchFormat: string
+  numberOfSets: string
+  scoringSystem: string
+  superTiebreak: string
+  scoringDetailLevel: string
+  pointsOnly: string
+  trackJustScore: string
+  simpleStats: string
+  acesDoubleFaultsWinnersErrors: string
+  detailedStats: string
+  shotPlacementRallyLength: string
+  creatingMatch: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -279,6 +299,8 @@ const translations: Record<Locale, Translations> = {
     breakPointsConverted: "Break Points Converted",
     breakPointsSaved: "Break Points Saved",
     conversionRatePercent: "Conversion Rate %",
+    secondServePointsWonPercentage: "Second Serve Points Won %",
+    match: "Match",
     
     // Point outcomes
     ace: "Ace",
@@ -406,7 +428,25 @@ const translations: Record<Locale, Translations> = {
     matchCreated: "Match created successfully",
     
     // Stats descriptions
-    statsWillAppearDescription: "Stats will appear here once the first point is played"
+    statsWillAppearDescription: "Stats will appear here once the first point is played",
+    
+    // Create match form
+    setUpMatch: "Set up the details for your new match",
+    searchByTyping: "Search by typing",
+    team1: "Team 1",
+    team2: "Team 2",
+    matchFormat: "Match Format",
+    numberOfSets: "Number of Sets",
+    scoringSystem: "Scoring System",
+    superTiebreak: "Super Tiebreak",
+    scoringDetailLevel: "Scoring Detail Level",
+    pointsOnly: "Points Only",
+    trackJustScore: "Track just the score (no stats)",
+    simpleStats: "Simple Stats",
+    acesDoubleFaultsWinnersErrors: "Aces, double faults, winners, errors",
+    detailedStats: "Detailed Stats (Coming Soon)",
+    shotPlacementRallyLength: "Shot placement, rally length, etc.",
+    creatingMatch: "Creating match..."
   },
   cs: {
     // Common
@@ -482,6 +522,8 @@ const translations: Record<Locale, Translations> = {
     breakPointsConverted: "Proměněné brejkboly",
     breakPointsSaved: "Odvrácené brejkboly",
     conversionRatePercent: "Úspěšnost %",
+    secondServePointsWonPercentage: "Body na 2. podání %",
+    match: "Zápas",
     
     // Point outcomes
     ace: "Eso",
@@ -609,7 +651,25 @@ const translations: Record<Locale, Translations> = {
     matchCreated: "Zápas úspěšně vytvořen",
     
     // Stats descriptions
-    statsWillAppearDescription: "Statistiky se zobrazí zde po odehrání prvního bodu"
+    statsWillAppearDescription: "Statistiky se zobrazí zde po odehrání prvního bodu",
+    
+    // Create match form
+    setUpMatch: "Nastavte detaily pro váš nový zápas",
+    searchByTyping: "Hledejte psaním",
+    team1: "Tým 1",
+    team2: "Tým 2",
+    matchFormat: "Formát zápasu",
+    numberOfSets: "Počet setů",
+    scoringSystem: "Systém bodování",
+    superTiebreak: "Super Tiebreak",
+    scoringDetailLevel: "Úroveň detailů bodování",
+    pointsOnly: "Pouze body",
+    trackJustScore: "Sledovat pouze skóre (bez statistik)",
+    simpleStats: "Jednoduché statistiky",
+    acesDoubleFaultsWinnersErrors: "Esa, dvojchyby, vítězné údery, chyby",
+    detailedStats: "Detailní statistiky (již brzy)",
+    shotPlacementRallyLength: "Umístění úderu, délka výměny atd.",
+    creatingMatch: "Vytváření zápasu..."
   }
 }
 
