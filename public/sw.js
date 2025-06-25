@@ -1,222 +1,305 @@
-// TennisScore Service Worker - Development Optimized
-// Version: 1.2.2
-const CACHE_NAME = 'tennisscore-v1.2.2'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.2.2'
+// TennisScore Service Worker - Production Ready
+// Version: 1.3.0
+const CACHE_NAME = 'tennisscore-v1.3.0'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.0'
 
-// Detect development mode
-const isDevelopment = self.location.hostname === 'localhost' || 
-                     self.location.hostname === '127.0.0.1' ||
-                     self.location.port === '3000'
+// Robust development detection
+const isDevelopment = (() => {
+  try {
+    return self.location.hostname === 'localhost' || 
+           self.location.hostname === '127.0.0.1' ||
+           self.location.hostname.includes('localhost') ||
+           self.location.port === '3000' ||
+           self.location.port === '3001' ||
+           self.location.href.includes('localhost')
+  } catch {
+    return false
+  }
+})()
 
-// Minimal static assets for production only
+// Essential static assets (production only)
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ]
 
-// Very conservative caching strategies
+// Cache strategies
 const CACHE_STRATEGIES = {
-  // Only cache manifest and icons in development
-  PRODUCTION_ASSETS: /\.(png|jpg|jpeg|gif|webp|svg|ico)$/,
-  MANIFEST: /\/manifest\.json$/
+  PRODUCTION_ASSETS: /\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)$/,
+  MANIFEST: /\/manifest\.json$/,
+  ICONS: /\/icons\//
 }
 
-// Aggressive bypass patterns for development
+// Requests to bypass (never intercept)
 const BYPASS_PATTERNS = [
-  // All Next.js development requests
+  // Development assets
   /_next\//,
-  
-  // All webpack and development assets
   /webpack/,
   /\.hot-update\./,
   /hmr/,
   /_dev/,
   
-  // All API routes
+  // API routes
   /\/api\//,
   
   // Service Worker itself
-  /sw\.js/,
+  /sw\.js$/,
   
-  // Chrome DevTools
+  // DevTools and development
   /\.well-known/,
+  /chrome-extension/,
+  /moz-extension/,
   
-  // All page routes in development (let Next.js handle routing)
-  isDevelopment ? /^\// : /^$/
+  // Authentication routes (critical for login)
+  /\/login/,
+  /\/signup/,
+  /\/auth/,
+  
+  // Don't intercept same-origin API calls
+  /appwrite\.io/
 ]
 
-// Install event - minimal caching
+// Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker (dev-optimized)...')
+  console.log('[SW] Installing service worker v1.3.0...')
   
   if (isDevelopment) {
-    console.log('[SW] Development mode detected - minimal caching')
+    console.log('[SW] Development mode - skipping cache setup')
     return self.skipWaiting()
   }
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(async (cache) => {
-        console.log('[SW] Caching essential assets only')
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME)
+        console.log('[SW] Caching essential assets...')
         
+        // Cache assets one by one with error handling
         for (const url of STATIC_ASSETS) {
           try {
-            const response = await fetch(url)
+            const response = await fetch(url, { 
+              method: 'GET',
+              cache: 'no-cache'
+            })
             if (response.ok) {
               await cache.put(url, response)
               console.log('[SW] Cached:', url)
             }
           } catch (error) {
-            console.log('[SW] Skipped:', url, error.message)
+            console.log('[SW] Skipped:', url, '-', error.message)
           }
         }
-      })
-      .then(() => self.skipWaiting())
-      .catch(error => console.log('[SW] Install failed:', error.message))
+        
+        await self.skipWaiting()
+        console.log('[SW] Installation complete')
+      } catch (error) {
+        console.error('[SW] Install failed:', error)
+        await self.skipWaiting() // Still activate even if caching fails
+      }
+    })()
   )
 })
 
-// Activate event - clean up
+// Activate event
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker...')
   
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
-            console.log('[SW] Deleting old cache:', cacheName)
-            return caches.delete(cacheName)
-          }
-        })
-      ).then(() => self.clients.claim())
-    })
+    (async () => {
+      try {
+        // Clean up old caches
+        const cacheNames = await caches.keys()
+        await Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
+              console.log('[SW] Deleting old cache:', cacheName)
+              return caches.delete(cacheName)
+            }
+          })
+        )
+        
+        // Take control of all pages
+        await self.clients.claim()
+        console.log('[SW] Activation complete')
+      } catch (error) {
+        console.error('[SW] Activation failed:', error)
+      }
+    })()
   )
 })
 
-// Helper function to check if request should be bypassed
+// Helper: Should we bypass this request?
 function shouldBypassRequest(request) {
-  // In development, bypass almost everything
-  if (isDevelopment) {
-    const url = new URL(request.url)
-    
-    // Only handle manifest and icons
-    if (CACHE_STRATEGIES.MANIFEST.test(request.url) || 
-        (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url) && url.pathname.includes('/icons/'))) {
-      return false
-    }
-    
-    return true // Bypass everything else in development
-  }
-  
-  // In production, use normal bypass patterns
+  // Always bypass non-GET requests
   if (request.method !== 'GET') {
     return true
   }
   
   const url = new URL(request.url)
   
-  for (const pattern of BYPASS_PATTERNS) {
-    if (pattern.test(request.url) || pattern.test(url.pathname)) {
-      return true
-    }
-  }
-  
+  // Bypass external origins
   if (url.origin !== self.location.origin) {
     return true
+  }
+  
+  // In development, bypass almost everything except manifest/icons
+  if (isDevelopment) {
+    if (CACHE_STRATEGIES.MANIFEST.test(request.url) || 
+        CACHE_STRATEGIES.ICONS.test(request.url)) {
+      return false // Don't bypass - we want to handle these
+    }
+    return true // Bypass everything else in development
+  }
+  
+  // Check against bypass patterns
+  const urlString = request.url
+  const pathname = url.pathname
+  
+  for (const pattern of BYPASS_PATTERNS) {
+    if (pattern.test(urlString) || pattern.test(pathname)) {
+      return true
+    }
   }
   
   return false
 }
 
-// Fetch event - minimal handling
+// Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event
   
-  // Check if we should bypass this request
+  // Bypass check
   if (shouldBypassRequest(request)) {
-    return // Let the request pass through naturally
+    return // Let browser handle naturally
   }
   
-  // Only handle essential requests
+  // Handle the request
   event.respondWith(handleRequest(request))
 })
 
+// Main request handler
 async function handleRequest(request) {
   try {
-    // In development, only handle manifest and icons
-    if (isDevelopment) {
-      if (CACHE_STRATEGIES.MANIFEST.test(request.url)) {
-        return await cacheFirst(request, CACHE_NAME)
-      }
-      
-      if (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url)) {
-        return await cacheFirst(request, DYNAMIC_CACHE)
-      }
-      
-      // Everything else goes to network
-      return await fetch(request)
-    }
     
-    // Production handling (when not in development)
+    // Production asset handling
     if (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url)) {
       return await cacheFirst(request, DYNAMIC_CACHE)
     }
     
+    // Manifest handling
     if (CACHE_STRATEGIES.MANIFEST.test(request.url)) {
       return await cacheFirst(request, CACHE_NAME)
     }
     
-    // Navigation requests - network only to avoid stale content
-    if (request.mode === 'navigate') {
-      try {
-        return await fetch(request)
-      } catch (error) {
-        // Only provide offline fallback in production
-        return await getOfflineFallback()
-      }
+    // Icon handling
+    if (CACHE_STRATEGIES.ICONS.test(request.url)) {
+      return await cacheFirst(request, DYNAMIC_CACHE)
     }
     
-    // Default: network only
-    return await fetch(request)
+    // Navigation requests (pages)
+    if (request.mode === 'navigate') {
+      return await handleNavigation(request)
+    }
+    
+    // Default: Network with fallback
+    return await networkWithFallback(request)
     
   } catch (error) {
-    console.log('[SW] Request failed:', error.message)
-    throw error
+    console.error('[SW] Request handler failed:', error)
+    return await networkWithFallback(request)
   }
 }
 
-// Simple cache first strategy
+// Cache-first strategy
 async function cacheFirst(request, cacheName) {
   try {
     const cache = await caches.open(cacheName)
     const cachedResponse = await cache.match(request)
     
     if (cachedResponse) {
+      // Return cached version, update in background
+      fetchAndCache(request, cache).catch(() => {
+        // Ignore background update failures
+      })
       return cachedResponse
     }
     
-    const networkResponse = await fetch(request)
+    // Not in cache, fetch and cache
+    return await fetchAndCache(request, cache)
     
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone()).catch(() => {
-        // Ignore cache errors
-      })
+  } catch (error) {
+    console.error('[SW] Cache-first failed:', error)
+    return await networkWithFallback(request)
+  }
+}
+
+// Helper: Fetch and cache
+async function fetchAndCache(request, cache) {
+  const response = await fetch(request, { 
+    redirect: 'follow',
+    cache: 'default'
+  })
+  
+  if (response.ok && response.status === 200) {
+    // Clone before caching (response can only be consumed once)
+    cache.put(request, response.clone()).catch(() => {
+      // Ignore cache errors
+    })
+  }
+  
+  return response
+}
+
+// Handle navigation requests
+async function handleNavigation(request) {
+  try {
+    // Always try network first for navigation
+    const response = await fetch(request, { 
+      redirect: 'follow',
+      cache: 'default'
+    })
+    
+    return response
+    
+  } catch (error) {
+    console.error('[SW] Navigation failed:', error)
+    
+    // Only provide offline fallback in production
+    if (!isDevelopment) {
+      return await getOfflineFallback()
     }
     
-    return networkResponse
-  } catch (error) {
+    // In development, let the error propagate
     throw error
   }
 }
 
-// Minimal offline fallback (production only)
-async function getOfflineFallback() {
-  if (isDevelopment) {
-    throw new Error('Network error in development')
+// Network with graceful fallback
+async function networkWithFallback(request) {
+  try {
+    return await fetch(request, { 
+      redirect: 'follow',
+      cache: 'default'
+    })
+  } catch (error) {
+    console.error('[SW] Network request failed:', error)
+    
+    // Try to serve from cache as last resort
+    if (!isDevelopment) {
+      const cache = await caches.open(DYNAMIC_CACHE)
+      const cachedResponse = await cache.match(request)
+      if (cachedResponse) {
+        return cachedResponse
+      }
+    }
+    
+    throw error
   }
-  
+}
+
+// Offline fallback page
+async function getOfflineFallback() {
   return new Response(`
     <!DOCTYPE html>
     <html lang="en">
@@ -225,42 +308,76 @@ async function getOfflineFallback() {
         <title>TennisScore - Offline</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
           body { 
-            font-family: system-ui, sans-serif; 
-            text-align: center; 
-            padding: 50px 20px; 
-            color: #333;
-            background: #f8f9fa;
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
           }
           .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 20px;
+            font-weight: 700;
+          }
+          p { 
+            font-size: 1.1rem; 
+            margin-bottom: 30px; 
+            opacity: 0.9;
+            line-height: 1.5;
           }
           button { 
-            padding: 12px 24px; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
+            background: linear-gradient(45deg, #39FF14, #32CD32);
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 15px rgba(57, 255, 20, 0.3);
+          }
+          button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 255, 20, 0.4);
+          }
+          .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <h1>🎾 TennisScore</h1>
-          <p>You're offline. Please check your connection.</p>
-          <button onclick="window.location.reload()">Retry</button>
+          <span class="icon">🎾</span>
+          <h1>TennisScore</h1>
+          <p>You're currently offline. Please check your internet connection to continue using the app.</p>
+          <button onclick="window.location.reload()">Try Again</button>
         </div>
       </body>
     </html>
   `, {
     status: 200,
-    headers: { 'Content-Type': 'text/html' }
+    headers: { 
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache'
+    }
   })
 }
 
@@ -270,22 +387,33 @@ self.addEventListener('message', (event) => {
   
   switch (type) {
     case 'SKIP_WAITING':
+      console.log('[SW] Skipping waiting...')
       self.skipWaiting()
       break
       
     case 'CLEAR_CACHE':
-      caches.keys().then((names) => {
-        names.forEach((name) => caches.delete(name))
+      console.log('[SW] Clearing all caches...')
+      caches.keys().then(names => {
+        return Promise.all(names.map(name => caches.delete(name)))
+      }).then(() => {
+        console.log('[SW] All caches cleared')
+      }).catch(error => {
+        console.error('[SW] Cache clear failed:', error)
       })
+      break
+      
+    case 'GET_VERSION':
+      event.ports[0]?.postMessage({ version: '1.3.0' })
       break
   }
 })
 
-// Minimal error handling
+// Error handling
 self.addEventListener('error', (event) => {
-  console.log('[SW] Error:', event.error)
+  console.error('[SW] Global error:', event.error)
 })
 
 self.addEventListener('unhandledrejection', (event) => {
-  console.log('[SW] Unhandled promise rejection:', event.reason)
+  console.error('[SW] Unhandled promise rejection:', event.reason)
+  event.preventDefault() // Prevent browser console error
 }) 
