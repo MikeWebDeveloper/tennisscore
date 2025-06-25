@@ -1,382 +1,419 @@
-// TennisScore Service Worker
-// Version: 1.0.0
-const CACHE_NAME = 'tennisscore-v1'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1'
-const APP_VERSION = '1.0.0'
+// TennisScore Service Worker - Production Ready
+// Version: 1.3.0
+const CACHE_NAME = 'tennisscore-v1.3.0'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.0'
 
-// Define what to cache
+// Robust development detection
+const isDevelopment = (() => {
+  try {
+    return self.location.hostname === 'localhost' || 
+           self.location.hostname === '127.0.0.1' ||
+           self.location.hostname.includes('localhost') ||
+           self.location.port === '3000' ||
+           self.location.port === '3001' ||
+           self.location.href.includes('localhost')
+  } catch {
+    return false
+  }
+})()
+
+// Essential static assets (production only)
 const STATIC_ASSETS = [
-  '/',
-  '/dashboard',
-  '/matches',
-  '/players',
-  '/login',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ]
 
-// Define runtime caching strategies
+// Cache strategies
 const CACHE_STRATEGIES = {
-  // App shell - Cache first with network fallback
-  APP_SHELL: /^https?:\/\/.*\.(css|js|woff|woff2|ttf|eot)$/,
-  
-  // API calls - Network first with cache fallback
-  API_CALLS: /^https?:\/\/.*\/api\//,
-  
-  // Images - Cache first with network fallback
-  IMAGES: /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)$/,
-  
-  // Appwrite API - Network first with cache fallback
-  APPWRITE: /^https:\/\/cloud\.appwrite\.io\//
+  PRODUCTION_ASSETS: /\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)$/,
+  MANIFEST: /\/manifest\.json$/,
+  ICONS: /\/icons\//
 }
 
-// Install event - cache static assets
+// Requests to bypass (never intercept)
+const BYPASS_PATTERNS = [
+  // Development assets
+  /_next\//,
+  /webpack/,
+  /\.hot-update\./,
+  /hmr/,
+  /_dev/,
+  
+  // API routes
+  /\/api\//,
+  
+  // Service Worker itself
+  /sw\.js$/,
+  
+  // DevTools and development
+  /\.well-known/,
+  /chrome-extension/,
+  /moz-extension/,
+  
+  // Authentication routes (critical for login)
+  /\/login/,
+  /\/signup/,
+  /\/auth/,
+  
+  // Don't intercept same-origin API calls
+  /appwrite\.io/
+]
+
+// Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...')
+  console.log('[SW] Installing service worker v1.3.0...')
+  
+  if (isDevelopment) {
+    console.log('[SW] Development mode - skipping cache setup')
+    return self.skipWaiting()
+  }
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching static assets')
-        return cache.addAll(STATIC_ASSETS)
-      })
-      .then(() => {
-        console.log('[SW] Static assets cached successfully')
-        return self.skipWaiting() // Force activation
-      })
-      .catch((error) => {
-        console.error('[SW] Failed to cache static assets:', error)
-      })
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME)
+        console.log('[SW] Caching essential assets...')
+        
+        // Cache assets one by one with error handling
+        for (const url of STATIC_ASSETS) {
+          try {
+            const response = await fetch(url, { 
+              method: 'GET',
+              cache: 'no-cache'
+            })
+            if (response.ok) {
+              await cache.put(url, response)
+              console.log('[SW] Cached:', url)
+            }
+          } catch (error) {
+            console.log('[SW] Skipped:', url, '-', error.message)
+          }
+        }
+        
+        await self.skipWaiting()
+        console.log('[SW] Installation complete')
+      } catch (error) {
+        console.error('[SW] Install failed:', error)
+        await self.skipWaiting() // Still activate even if caching fails
+      }
+    })()
   )
 })
 
-// Activate event - clean up old caches
+// Activate event
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker...')
   
   event.waitUntil(
-    Promise.all([
-      // Clean up old caches
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
+    (async () => {
+      try {
+        // Clean up old caches
+        const cacheNames = await caches.keys()
+        await Promise.all(
+          cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
               console.log('[SW] Deleting old cache:', cacheName)
               return caches.delete(cacheName)
             }
           })
         )
-      }),
-      
-      // Take control of all pages
-      self.clients.claim()
-    ])
+        
+        // Take control of all pages
+        await self.clients.claim()
+        console.log('[SW] Activation complete')
+      } catch (error) {
+        console.error('[SW] Activation failed:', error)
+      }
+    })()
   )
-  
-  // Notify clients about the update
-  self.clients.matchAll().then((clients) => {
-    clients.forEach((client) => {
-      client.postMessage({
-        type: 'SW_ACTIVATED',
-        version: APP_VERSION
-      })
-    })
-  })
 })
 
-// Fetch event - implement caching strategies
-self.addEventListener('fetch', (event) => {
-  const { request } = event
+// Helper: Should we bypass this request?
+function shouldBypassRequest(request) {
+  // Always bypass non-GET requests
+  if (request.method !== 'GET') {
+    return true
+  }
+  
   const url = new URL(request.url)
   
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return
+  // Bypass external origins
+  if (url.origin !== self.location.origin) {
+    return true
   }
   
-  // Skip Chrome extension requests
-  if (url.protocol === 'chrome-extension:') {
-    return
+  // In development, bypass almost everything except manifest/icons
+  if (isDevelopment) {
+    if (CACHE_STRATEGIES.MANIFEST.test(request.url) || 
+        CACHE_STRATEGIES.ICONS.test(request.url)) {
+      return false // Don't bypass - we want to handle these
+    }
+    return true // Bypass everything else in development
   }
   
+  // Check against bypass patterns
+  const urlString = request.url
+  const pathname = url.pathname
+  
+  for (const pattern of BYPASS_PATTERNS) {
+    if (pattern.test(urlString) || pattern.test(pathname)) {
+      return true
+    }
+  }
+  
+  return false
+}
+
+// Fetch event
+self.addEventListener('fetch', (event) => {
+  const { request } = event
+  
+  // Bypass check
+  if (shouldBypassRequest(request)) {
+    return // Let browser handle naturally
+  }
+  
+  // Handle the request
   event.respondWith(handleRequest(request))
 })
 
+// Main request handler
 async function handleRequest(request) {
-  
   try {
-    // Strategy 1: App Shell (CSS, JS, fonts) - Cache First
-    if (CACHE_STRATEGIES.APP_SHELL.test(request.url)) {
-      return await cacheFirst(request, CACHE_NAME)
-    }
     
-    // Strategy 2: Images - Cache First
-    if (CACHE_STRATEGIES.IMAGES.test(request.url)) {
+    // Production asset handling
+    if (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url)) {
       return await cacheFirst(request, DYNAMIC_CACHE)
     }
     
-    // Strategy 3: API calls and Appwrite - Network First
-    if (CACHE_STRATEGIES.API_CALLS.test(request.url) || CACHE_STRATEGIES.APPWRITE.test(request.url)) {
-      return await networkFirst(request, DYNAMIC_CACHE)
+    // Manifest handling
+    if (CACHE_STRATEGIES.MANIFEST.test(request.url)) {
+      return await cacheFirst(request, CACHE_NAME)
     }
     
-    // Strategy 4: Navigation requests - Network First with App Shell fallback
+    // Icon handling
+    if (CACHE_STRATEGIES.ICONS.test(request.url)) {
+      return await cacheFirst(request, DYNAMIC_CACHE)
+    }
+    
+    // Navigation requests (pages)
     if (request.mode === 'navigate') {
-      return await navigationHandler(request)
+      return await handleNavigation(request)
     }
     
-    // Default: Network First
-    return await networkFirst(request, DYNAMIC_CACHE)
+    // Default: Network with fallback
+    return await networkWithFallback(request)
     
   } catch (error) {
-    console.error('[SW] Request failed:', error)
-    
-    // Return offline page for navigation requests
-    if (request.mode === 'navigate') {
-      const cache = await caches.open(CACHE_NAME)
-      return await cache.match('/') || new Response('Offline')
-    }
-    
-    // Return empty response for other requests
-    return new Response('Network error', { status: 503 })
+    console.error('[SW] Request handler failed:', error)
+    return await networkWithFallback(request)
   }
 }
 
-// Cache First strategy
+// Cache-first strategy
 async function cacheFirst(request, cacheName) {
-  const cache = await caches.open(cacheName)
-  const cachedResponse = await cache.match(request)
-  
-  if (cachedResponse) {
-    // Return cached version immediately
-    updateCache(request, cacheName) // Update in background
-    return cachedResponse
-  }
-  
-  // Not in cache, fetch from network
-  const networkResponse = await fetch(request)
-  
-  if (networkResponse.ok) {
-    cache.put(request, networkResponse.clone())
-  }
-  
-  return networkResponse
-}
-
-// Network First strategy
-async function networkFirst(request, cacheName) {
-  const cache = await caches.open(cacheName)
-  
   try {
-    const networkResponse = await fetch(request)
-    
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone())
-    }
-    
-    return networkResponse
-  } catch (error) {
-    // Network failed, try cache
+    const cache = await caches.open(cacheName)
     const cachedResponse = await cache.match(request)
     
     if (cachedResponse) {
+      // Return cached version, update in background
+      fetchAndCache(request, cache).catch(() => {
+        // Ignore background update failures
+      })
       return cachedResponse
     }
     
+    // Not in cache, fetch and cache
+    return await fetchAndCache(request, cache)
+    
+  } catch (error) {
+    console.error('[SW] Cache-first failed:', error)
+    return await networkWithFallback(request)
+  }
+}
+
+// Helper: Fetch and cache
+async function fetchAndCache(request, cache) {
+  const response = await fetch(request, { 
+    redirect: 'follow',
+    cache: 'default'
+  })
+  
+  if (response.ok && response.status === 200) {
+    // Clone before caching (response can only be consumed once)
+    cache.put(request, response.clone()).catch(() => {
+      // Ignore cache errors
+    })
+  }
+  
+  return response
+}
+
+// Handle navigation requests
+async function handleNavigation(request) {
+  try {
+    // Always try network first for navigation
+    const response = await fetch(request, { 
+      redirect: 'follow',
+      cache: 'default'
+    })
+    
+    return response
+    
+  } catch (error) {
+    console.error('[SW] Navigation failed:', error)
+    
+    // Only provide offline fallback in production
+    if (!isDevelopment) {
+      return await getOfflineFallback()
+    }
+    
+    // In development, let the error propagate
     throw error
   }
 }
 
-// Navigation handler for SPA routing
-async function navigationHandler(request) {
+// Network with graceful fallback
+async function networkWithFallback(request) {
   try {
-    // Try network first
-    const networkResponse = await fetch(request)
+    return await fetch(request, { 
+      redirect: 'follow',
+      cache: 'default'
+    })
+  } catch (error) {
+    console.error('[SW] Network request failed:', error)
     
-    if (networkResponse.ok) {
+    // Try to serve from cache as last resort
+    if (!isDevelopment) {
       const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, networkResponse.clone())
-      return networkResponse
-    }
-    
-    throw new Error('Network response not ok')
-  } catch (error) {
-    // Network failed, return cached page or app shell
-    const cache = await caches.open(CACHE_NAME)
-    const cachedResponse = await cache.match(request) || 
-                          await cache.match('/dashboard') || 
-                          await cache.match('/')
-    
-    if (cachedResponse) {
-      return cachedResponse
+      const cachedResponse = await cache.match(request)
+      if (cachedResponse) {
+        return cachedResponse
+      }
     }
     
     throw error
   }
 }
 
-// Background cache update
-async function updateCache(request, cacheName) {
-  try {
-    const cache = await caches.open(cacheName)
-    const networkResponse = await fetch(request)
-    
-    if (networkResponse.ok) {
-      await cache.put(request, networkResponse)
+// Offline fallback page
+async function getOfflineFallback() {
+  return new Response(`
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>TennisScore - Offline</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+          }
+          .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 20px;
+            font-weight: 700;
+          }
+          p { 
+            font-size: 1.1rem; 
+            margin-bottom: 30px; 
+            opacity: 0.9;
+            line-height: 1.5;
+          }
+          button { 
+            background: linear-gradient(45deg, #39FF14, #32CD32);
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 15px rgba(57, 255, 20, 0.3);
+          }
+          button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 255, 20, 0.4);
+          }
+          .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <span class="icon">🎾</span>
+          <h1>TennisScore</h1>
+          <p>You're currently offline. Please check your internet connection to continue using the app.</p>
+          <button onclick="window.location.reload()">Try Again</button>
+        </div>
+      </body>
+    </html>
+  `, {
+    status: 200,
+    headers: { 
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache'
     }
-  } catch (error) {
-    console.log('[SW] Background cache update failed:', error.message)
-  }
+  })
 }
 
-// Message handling for communication with the app
+// Message handling
 self.addEventListener('message', (event) => {
-  const { type, payload } = event.data
+  const { type } = event.data || {}
   
   switch (type) {
     case 'SKIP_WAITING':
+      console.log('[SW] Skipping waiting...')
       self.skipWaiting()
       break
       
-    case 'CHECK_UPDATE':
-      // Force check for updates
-      self.registration.update().then(() => {
-        event.ports[0].postMessage({
-          type: 'UPDATE_CHECKED',
-          hasUpdate: false
-        })
-      })
-      break
-      
     case 'CLEAR_CACHE':
-      // Clear specific cache or all caches
-      const cacheName = payload?.cacheName
-      if (cacheName) {
-        caches.delete(cacheName)
-      } else {
-        // Clear all caches
-        caches.keys().then((names) => {
-          names.forEach((name) => caches.delete(name))
-        })
-      }
+      console.log('[SW] Clearing all caches...')
+      caches.keys().then(names => {
+        return Promise.all(names.map(name => caches.delete(name)))
+      }).then(() => {
+        console.log('[SW] All caches cleared')
+      }).catch(error => {
+        console.error('[SW] Cache clear failed:', error)
+      })
       break
       
-    case 'GET_CACHE_INFO':
-      // Return cache information
-      getCacheInfo().then((info) => {
-        event.ports[0].postMessage({
-          type: 'CACHE_INFO',
-          data: info
-        })
-      })
+    case 'GET_VERSION':
+      event.ports[0]?.postMessage({ version: '1.3.0' })
       break
   }
 })
 
-// Get cache information
-async function getCacheInfo() {
-  const cacheNames = await caches.keys()
-  const info = {
-    version: APP_VERSION,
-    caches: [],
-    totalSize: 0
-  }
-  
-  for (const name of cacheNames) {
-    const cache = await caches.open(name)
-    const keys = await cache.keys()
-    
-    info.caches.push({
-      name,
-      entries: keys.length,
-      urls: keys.map(req => req.url)
-    })
-  }
-  
-  return info
-}
-
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync triggered:', event.tag)
-  
-  if (event.tag === 'background-sync-matches') {
-    event.waitUntil(syncOfflineMatches())
-  }
+// Error handling
+self.addEventListener('error', (event) => {
+  console.error('[SW] Global error:', event.error)
 })
 
-// Sync offline match data when connection is restored
-async function syncOfflineMatches() {
-  try {
-    // This would integrate with your offline storage strategy
-    console.log('[SW] Syncing offline match data...')
-    
-    // Notify clients that sync is happening
-    const clients = await self.clients.matchAll()
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'SYNC_STARTED',
-        data: { type: 'matches' }
-      })
-    })
-    
-    // Your sync logic would go here
-    // For now, just simulate success
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Notify clients that sync completed
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'SYNC_COMPLETED',
-        data: { type: 'matches', success: true }
-      })
-    })
-    
-  } catch (error) {
-    console.error('[SW] Background sync failed:', error)
-    
-    const clients = await self.clients.matchAll()
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'SYNC_FAILED',
-        data: { type: 'matches', error: error.message }
-      })
-    })
-  }
-}
-
-// Push notifications (for future use)
-self.addEventListener('push', (event) => {
-  if (event.data) {
-    const data = event.data.json()
-    
-    const options = {
-      body: data.body,
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/icon-96x96.png',
-      tag: data.tag || 'general',
-      data: data.data || {},
-      actions: data.actions || []
-    }
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    )
-  }
-})
-
-// Notification click handling
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close()
-  
-  if (event.action) {
-    // Handle specific action clicks
-    console.log('[SW] Notification action clicked:', event.action)
-  } else {
-    // Handle general notification click
-    event.waitUntil(
-      clients.openWindow('/dashboard')
-    )
-  }
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('[SW] Unhandled promise rejection:', event.reason)
+  event.preventDefault() // Prevent browser console error
 }) 
