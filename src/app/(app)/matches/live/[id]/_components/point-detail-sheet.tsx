@@ -42,7 +42,6 @@ interface PointDetailSheetProps {
   playerOne: Player | null
   playerTwo: Player | null
   onPointScored: (pointData: PointDetail) => void
-  currentPoint: MatchPoint
 }
 
 export function PointDetailSheet({ 
@@ -52,8 +51,7 @@ export function PointDetailSheet({
   pointContext,
   playerOne,
   playerTwo,
-  onPointScored,
-  currentPoint
+  onPointScored
 }: PointDetailSheetProps) {
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
@@ -190,38 +188,7 @@ export function PointDetailSheet({
   const [selectedPlayer, setSelectedPlayer] = useState<'playerOne' | 'playerTwo' | null>(null)
   const [selectedOutcome, setSelectedOutcome] = useState<PointOutcome | null>(null)
 
-  const outcomes: { type: PointOutcome; icon: any; color: string }[] = [
-    { type: 'winner', icon: Trophy, color: 'bg-green-500' },
-    { type: 'ace', icon: Zap, color: 'bg-blue-500' },
-    { type: 'forcedError', icon: Target, color: 'bg-orange-500' },
-    { type: 'unforcedError', icon: AlertTriangle, color: 'bg-red-500' },
-    { type: 'doubleFault', icon: AlertTriangle, color: 'bg-red-600' }
-  ]
 
-  const outcomeDescriptions = {
-    winner: t('winnerDescription'),
-    ace: t('aceDescription'),
-    forcedError: t('forcedErrorDescription'),
-    unforcedError: t('unforcedErrorDescription'),
-    doubleFault: t('doubleFaultDescription')
-  }
-
-  const handleSubmit = () => {
-    if (!selectedPlayer || !selectedOutcome) return
-
-    const pointData: PointDetail = {
-      winner: selectedPlayer,
-      outcome: selectedOutcome,
-      timestamp: new Date().toISOString()
-    }
-
-    onPointScored(pointData)
-    
-    // Reset form
-    setSelectedPlayer(null)
-    setSelectedOutcome(null)
-    onOpenChange(false)
-  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
