@@ -15,6 +15,7 @@ import { PointByPointView } from "@/app/(app)/matches/[id]/_components/point-by-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LiveScoreboard } from "@/components/shared/live-scoreboard"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { MatchTimerDisplay } from "@/app/(app)/matches/live/[id]/_components/MatchTimerDisplay"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -131,6 +132,9 @@ interface PublicLiveMatchProps {
     pointLog?: string[]
     winnerId?: string
     matchDate: string
+    startTime?: string | null
+    endTime?: string | null
+    setDurations?: number[]
   }
 }
 
@@ -384,6 +388,17 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             currentServer={currentServer}
             matchFormat={match.matchFormatParsed}
             className="min-w-0 w-full"
+          />
+        </motion.div>
+
+        {/* Match Timer */}
+        <motion.div variants={itemVariants}>
+          <MatchTimerDisplay 
+            className="justify-center"
+            startTime={match.startTime}
+            endTime={match.endTime}
+            setDurations={match.setDurations}
+            isMatchComplete={match.status === "Completed"}
           />
         </motion.div>
 

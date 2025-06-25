@@ -233,7 +233,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         initialTiebreakServer: score.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
-        events: match.events || []
+        events: match.events || [],
+        startTime: match.startTime || null,
+        endTime: match.endTime || null,
+        setDurations: match.setDurations || [],
+        currentSetStartTime: match.startTime || null,
       })
     }
   },

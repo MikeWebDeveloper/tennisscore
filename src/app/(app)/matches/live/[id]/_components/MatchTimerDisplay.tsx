@@ -6,11 +6,28 @@ import { Clock } from "lucide-react"
 
 interface MatchTimerDisplayProps {
   className?: string
+  // Optional props to override store data (for public pages)
+  startTime?: string | null
+  endTime?: string | null
+  setDurations?: number[]
+  isMatchComplete?: boolean
 }
 
-export function MatchTimerDisplay({ className }: MatchTimerDisplayProps) {
-  const { startTime, endTime, setDurations, isMatchComplete } = useMatchStore()
+export function MatchTimerDisplay({ 
+  className, 
+  startTime: propStartTime,
+  endTime: propEndTime,
+  setDurations: propSetDurations,
+  isMatchComplete: propIsMatchComplete
+}: MatchTimerDisplayProps) {
+  const storeData = useMatchStore()
   const [currentTime, setCurrentTime] = useState<string>(new Date().toISOString())
+
+  // Use props if provided, otherwise fall back to store
+  const startTime = propStartTime !== undefined ? propStartTime : storeData.startTime
+  const endTime = propEndTime !== undefined ? propEndTime : storeData.endTime
+  const setDurations = propSetDurations !== undefined ? propSetDurations : storeData.setDurations
+  const isMatchComplete = propIsMatchComplete !== undefined ? propIsMatchComplete : storeData.isMatchComplete
 
   // Update current time every second for live timer
   useEffect(() => {
