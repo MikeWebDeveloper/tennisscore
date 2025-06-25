@@ -18,6 +18,15 @@ export interface Translations {
   players: string
   settings: string
   
+  // Navigation descriptions
+  overviewStats: string
+  matchHistory: string
+  managePlayers: string
+  
+  // Theme
+  lightMode: string
+  darkMode: string
+  
   // Match scoring and setup
   newMatch: string
   winner: string
@@ -44,6 +53,7 @@ export interface Translations {
   
   // Stats
   totalPoints: string
+  totalPointsWon: string
   winners: string
   unforcedErrors: string
   aces: string
@@ -53,6 +63,17 @@ export interface Translations {
   pointsAndOutcomes: string
   serviceStatistics: string
   breakPoints: string
+  forcedErrors: string
+  
+  // Detailed stats
+  firstServePercentage: string
+  firstServePointsWonPercentage: string
+  breakPointsWon: string
+  breakPointConversion: string
+  breakPointsFaced: string
+  breakPointsConverted: string
+  breakPointsSaved: string
+  conversionRatePercent: string
   
   // Point outcomes
   ace: string
@@ -77,6 +98,87 @@ export interface Translations {
   createPlayer: string
   editPlayer: string
   mainPlayer: string
+  born: string
+  plays: string
+  leftHanded: string
+  rightHanded: string
+  
+  // Image upload
+  replaceWithNewImage: string
+  editCrop: string
+  removeImage: string
+  upload: string
+  
+  // Dashboard
+  welcomeToTennisScore: string
+  performanceTrackingStarts: string
+  welcomeBack: string
+  dashboardSubtitle: string
+  readyToElevate: string
+  
+  // Stats cards
+  totalMatches: string
+  inProgress: string
+  completed: string
+  winRate: string
+  excellent: string
+  good: string
+  fair: string
+  needsWork: string
+  playersCreated: string
+  performance: string
+  overallRating: string
+  hot: string
+  noMatchesYet: string
+  
+  // Point by point view
+  noPointDataAvailable: string
+  set: string
+  lostServe: string
+  matchPoint: string
+  setPoint: string
+  breakPoint: string
+  
+  // Enhanced bento grid
+  performanceOverviewHeader: string
+  performanceOverviewDescription: string
+  matchesWon: string
+  ofTotal: string
+  qualityExcellent: string
+  qualityGood: string
+  qualityWorkNeeded: string
+  completedDescription: string
+  winStreakLabel: string
+  best: string
+  serveStatisticsHeader: string
+  serveStatisticsDescription: string
+  acesLabel: string
+  firstServePercentageLabel: string
+  servicePointsLabel: string
+  pointsWonServing: string
+  doubleFaultsLabel: string
+  returnGameHeader: string
+  returnGameDescription: string
+  breakPointsWonLabel: string
+  opportunitiesConverted: string
+  returnPointsLabel: string
+  pointsWonReturning: string
+  breakPointsSavedLabel: string
+  defensiveHolds: string
+  firstReturnPercentageLabel: string
+  qualityImproving: string
+  shotMakingHeader: string
+  shotMakingDescription: string
+  winnersLabel: string
+  unforcedErrorsLabel: string
+  unforcedErrorsDescription: string
+  performanceOverview: string
+  last30Days: string
+  recentMatches: string
+  viewAll: string
+  vs: string
+  thisMonthHeader: string
+  matchesLabel: string
   
   // Match deletion
   deleteMatch: string
@@ -121,6 +223,15 @@ const translations: Record<Locale, Translations> = {
     players: "Players",
     settings: "Settings",
     
+    // Navigation descriptions
+    overviewStats: "Overview & stats",
+    matchHistory: "Match history",
+    managePlayers: "Manage players",
+    
+    // Theme
+    lightMode: "Light mode",
+    darkMode: "Dark mode",
+    
     // Match scoring and setup
     newMatch: "New Match",
     winner: "Winner",
@@ -147,6 +258,7 @@ const translations: Record<Locale, Translations> = {
     
     // Stats
     totalPoints: "Total Points",
+    totalPointsWon: "Total Points Won",
     winners: "Winners",
     unforcedErrors: "Unforced Errors",
     aces: "Aces",
@@ -156,6 +268,17 @@ const translations: Record<Locale, Translations> = {
     pointsAndOutcomes: "Points & Outcomes",
     serviceStatistics: "Service Statistics",
     breakPoints: "Break Points",
+    forcedErrors: "Forced Errors",
+    
+    // Detailed stats
+    firstServePercentage: "First Serve %",
+    firstServePointsWonPercentage: "First Serve Points Won %",
+    breakPointsWon: "Break Points Won",
+    breakPointConversion: "Break Point Conversion %",
+    breakPointsFaced: "Break Points Faced",
+    breakPointsConverted: "Break Points Converted",
+    breakPointsSaved: "Break Points Saved",
+    conversionRatePercent: "Conversion Rate %",
     
     // Point outcomes
     ace: "Ace",
@@ -180,6 +303,87 @@ const translations: Record<Locale, Translations> = {
     createPlayer: "Create Player",
     editPlayer: "Edit Player",
     mainPlayer: "Main Player",
+    born: "Born",
+    plays: "Plays",
+    leftHanded: "Left-handed",
+    rightHanded: "Right-handed",
+    
+    // Image upload
+    replaceWithNewImage: "Replace with new image",
+    editCrop: "Edit crop",
+    removeImage: "Remove image",
+    upload: "Upload",
+    
+    // Dashboard
+    welcomeToTennisScore: "Welcome to TennisScore",
+    performanceTrackingStarts: "Your performance tracking starts here",
+    welcomeBack: "Welcome back",
+    dashboardSubtitle: "Track your progress and analyze your game",
+    readyToElevate: "Ready to elevate your game?",
+    
+    // Stats cards
+    totalMatches: "Total Matches",
+    inProgress: "in progress",
+    completed: "completed",
+    winRate: "Win Rate",
+    excellent: "Excellent",
+    good: "Good",
+    fair: "Fair",
+    needsWork: "Needs work",
+    playersCreated: "players created",
+    performance: "Performance",
+    overallRating: "Overall rating",
+    hot: "Hot",
+    noMatchesYet: "No matches yet",
+    
+    // Point by point view
+    noPointDataAvailable: "No point data available",
+    set: "Set",
+    lostServe: "Lost serve",
+    matchPoint: "Match point",
+    setPoint: "Set point",
+    breakPoint: "Break point",
+    
+    // Enhanced bento grid
+    performanceOverviewHeader: "Performance Overview",
+    performanceOverviewDescription: "Track your wins, losses, and overall progress",
+    matchesWon: "Matches Won",
+    ofTotal: "of total",
+    qualityExcellent: "Excellent",
+    qualityGood: "Good",
+    qualityWorkNeeded: "Work needed",
+    completedDescription: "this month",
+    winStreakLabel: "Win Streak",
+    best: "Best",
+    serveStatisticsHeader: "Service Statistics",
+    serveStatisticsDescription: "Analyze your serving performance",
+    acesLabel: "Aces",
+    firstServePercentageLabel: "First Serve %",
+    servicePointsLabel: "Service Points Won %",
+    pointsWonServing: "Points won serving",
+    doubleFaultsLabel: "Double Faults",
+    returnGameHeader: "Return Game",
+    returnGameDescription: "Break down your return statistics",
+    breakPointsWonLabel: "Break Points Won %",
+    opportunitiesConverted: "Opportunities converted",
+    returnPointsLabel: "Return Points Won %",
+    pointsWonReturning: "Points won returning",
+    breakPointsSavedLabel: "Break Points Saved %",
+    defensiveHolds: "Defensive holds",
+    firstReturnPercentageLabel: "First Return %",
+    qualityImproving: "Improving",
+    shotMakingHeader: "Shot Making",
+    shotMakingDescription: "Winners vs unforced errors analysis",
+    winnersLabel: "Winners",
+    unforcedErrorsLabel: "Unforced Errors",
+    unforcedErrorsDescription: "Minimize these for better results",
+    performanceOverview: "Performance Overview",
+    last30Days: "Last 30 days",
+    recentMatches: "Recent Matches",
+    viewAll: "View all",
+    vs: "vs",
+    thisMonthHeader: "This Month",
+    matchesLabel: "matches",
     
     // Match deletion
     deleteMatch: "Delete Match",
@@ -222,6 +426,15 @@ const translations: Record<Locale, Translations> = {
     players: "Hráči",
     settings: "Nastavení",
     
+    // Navigation descriptions
+    overviewStats: "Přehled a statistiky",
+    matchHistory: "Historie zápasů",
+    managePlayers: "Správa hráčů",
+    
+    // Theme
+    lightMode: "Světlý režim",
+    darkMode: "Tmavý režim",
+    
     // Match scoring and setup
     newMatch: "Nový zápas",
     winner: "Vítězný úder",
@@ -248,6 +461,7 @@ const translations: Record<Locale, Translations> = {
     
     // Stats
     totalPoints: "Celkem bodů",
+    totalPointsWon: "Celkem vyhraných bodů",
     winners: "Vítězné údery",
     unforcedErrors: "Nevynucené chyby",
     aces: "Esa",
@@ -257,6 +471,17 @@ const translations: Record<Locale, Translations> = {
     pointsAndOutcomes: "Body a výsledky",
     serviceStatistics: "Statistiky podání",
     breakPoints: "Brejkboly",
+    forcedErrors: "Vynucené chyby",
+    
+    // Detailed stats
+    firstServePercentage: "1. podání %",
+    firstServePointsWonPercentage: "Body na 1. podání %",
+    breakPointsWon: "Vyhraté brejkboly",
+    breakPointConversion: "Úspěšnost brejkbolů %",
+    breakPointsFaced: "Čelené brejkboly",
+    breakPointsConverted: "Proměněné brejkboly",
+    breakPointsSaved: "Odvrácené brejkboly",
+    conversionRatePercent: "Úspěšnost %",
     
     // Point outcomes
     ace: "Eso",
@@ -281,6 +506,87 @@ const translations: Record<Locale, Translations> = {
     createPlayer: "Vytvořit hráče",
     editPlayer: "Upravit hráče",
     mainPlayer: "Hlavní hráč",
+    born: "Narozen",
+    plays: "Hraje",
+    leftHanded: "Levák",
+    rightHanded: "Pravák",
+    
+    // Image upload
+    replaceWithNewImage: "Nahradit novým obrázkem",
+    editCrop: "Upravit ořez",
+    removeImage: "Odebrat obrázek",
+    upload: "Nahrát",
+    
+    // Dashboard
+    welcomeToTennisScore: "Vítejte v TennisScore",
+    performanceTrackingStarts: "Sledování vašich výkonů začíná zde",
+    welcomeBack: "Vítejte zpět",
+    dashboardSubtitle: "Sledujte svůj pokrok a analyzujte svou hru",
+    readyToElevate: "Připraveni posunout svou hru na vyšší úroveň?",
+    
+    // Stats cards
+    totalMatches: "Celkem zápasů",
+    inProgress: "probíhá",
+    completed: "dokončeno",
+    winRate: "Úspěšnost",
+    excellent: "Výborná",
+    good: "Dobrá",
+    fair: "Průměrná",
+    needsWork: "Potřebuje zlepšení",
+    playersCreated: "hráčů vytvořeno",
+    performance: "Výkon",
+    overallRating: "Celkové hodnocení",
+    hot: "V pohodě",
+    noMatchesYet: "Zatím žádné zápasy",
+    
+    // Point by point view
+    noPointDataAvailable: "Nejsou k dispozici data o bodech",
+    set: "Set",
+    lostServe: "Ztráta podání",
+    matchPoint: "Mečbol",
+    setPoint: "Setbol",
+    breakPoint: "Brejkbol",
+    
+    // Enhanced bento grid
+    performanceOverviewHeader: "Přehled výkonů",
+    performanceOverviewDescription: "Sledujte své výhry, porážky a celkový pokrok",
+    matchesWon: "Vyhraných zápasů",
+    ofTotal: "z celkem",
+    qualityExcellent: "Výborná",
+    qualityGood: "Dobrá",
+    qualityWorkNeeded: "Potřebuje práci",
+    completedDescription: "tento měsíc",
+    winStreakLabel: "Vítězná série",
+    best: "Nejlepší",
+    serveStatisticsHeader: "Statistiky podání",
+    serveStatisticsDescription: "Analyzujte svůj výkon při podání",
+    acesLabel: "Esa",
+    firstServePercentageLabel: "1. podání %",
+    servicePointsLabel: "Body na podání %",
+    pointsWonServing: "Body vyhrané při podání",
+    doubleFaultsLabel: "Dvojchyby",
+    returnGameHeader: "Return",
+    returnGameDescription: "Rozbor vašich statistik returnu",
+    breakPointsWonLabel: "Brejkboly vyhrané %",
+    opportunitiesConverted: "Proměněné příležitosti",
+    returnPointsLabel: "Body na returnu %",
+    pointsWonReturning: "Body vyhrané na returnu",
+    breakPointsSavedLabel: "Odvrácené brejkboly %",
+    defensiveHolds: "Obranná udržení",
+    firstReturnPercentageLabel: "1. return %",
+    qualityImproving: "Zlepšující se",
+    shotMakingHeader: "Útočná hra",
+    shotMakingDescription: "Analýza vítězných úderů vs nevynucených chyb",
+    winnersLabel: "Vítězné údery",
+    unforcedErrorsLabel: "Nevynucené chyby",
+    unforcedErrorsDescription: "Minimalizujte je pro lepší výsledky",
+    performanceOverview: "Přehled výkonů",
+    last30Days: "Posledních 30 dní",
+    recentMatches: "Nedávné zápasy",
+    viewAll: "Zobrazit vše",
+    vs: "vs",
+    thisMonthHeader: "Tento měsíc",
+    matchesLabel: "zápasů",
     
     // Match deletion
     deleteMatch: "Smazat zápas",
