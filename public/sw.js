@@ -1,7 +1,7 @@
 // TennisScore Service Worker - Production Ready
-// Version: 1.3.0
-const CACHE_NAME = 'tennisscore-v1.3.0'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.0'
+// Version: 1.3.1
+const CACHE_NAME = 'tennisscore-v1.3.1'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.1'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -62,7 +62,7 @@ const BYPASS_PATTERNS = [
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.0...')
+  console.log('[SW] Installing service worker v1.3.1...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -80,7 +80,8 @@ self.addEventListener('install', (event) => {
           try {
             const response = await fetch(url, { 
               method: 'GET',
-              cache: 'no-cache'
+              cache: 'no-cache',
+              redirect: 'follow'
             })
             if (response.ok) {
               await cache.put(url, response)
@@ -236,34 +237,47 @@ async function cacheFirst(request, cacheName) {
 
 // Helper: Fetch and cache
 async function fetchAndCache(request, cache) {
-  const response = await fetch(request, { 
-    redirect: 'follow',
-    cache: 'default'
-  })
-  
-  if (response.ok && response.status === 200) {
-    // Clone before caching (response can only be consumed once)
-    cache.put(request, response.clone()).catch(() => {
-      // Ignore cache errors
+  try {
+    const response = await fetch(request, { 
+      redirect: 'follow',
+      cache: 'default',
+      mode: request.mode === 'navigate' ? 'cors' : request.mode
     })
+    
+    if (response.ok && response.status === 200) {
+      // Clone before caching (response can only be consumed once)
+      cache.put(request, response.clone()).catch(() => {
+        // Ignore cache errors
+      })
+    }
+    
+    return response
+  } catch (error) {
+    console.error('[SW] Fetch and cache failed for:', request.url, error)
+    throw error
   }
-  
-  return response
 }
 
 // Handle navigation requests
 async function handleNavigation(request) {
   try {
-    // Always try network first for navigation
-    const response = await fetch(request, { 
+    // Create a new request with explicit redirect handling for proxy scenarios
+    const url = request.url
+    const navigationRequest = new Request(url, {
+      method: 'GET',
+      headers: request.headers,
+      mode: request.mode === 'navigate' ? 'cors' : request.mode,
+      credentials: request.credentials,
       redirect: 'follow',
       cache: 'default'
     })
     
+    const response = await fetch(navigationRequest)
+    
     return response
     
   } catch (error) {
-    console.error('[SW] Navigation failed:', error)
+    console.error('[SW] Navigation failed for:', request.url, error)
     
     // Only provide offline fallback in production
     if (!isDevelopment) {
@@ -403,7 +417,7 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.0' })
+      event.ports[0]?.postMessage({ version: '1.3.1' })
       break
   }
 })
