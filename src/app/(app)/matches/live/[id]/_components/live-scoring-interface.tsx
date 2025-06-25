@@ -13,7 +13,8 @@ import {
   MessageCircle,
   MessageSquare,
   Copy,
-  Mail
+  Mail,
+  Activity
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
@@ -921,10 +922,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             </div>
           </div>
 
-          {/* Match Timer in header */}
-          <div className="flex justify-center py-2">
-            <MatchTimerDisplay className="justify-center" />
-          </div>
+
         </div>
       </header>
 
@@ -978,27 +976,32 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             {t('undo')}
           </Button>
 
-          {/* Enhanced Serve Type Switcher */}
-          <div className="flex items-center gap-3 bg-muted/50 rounded-lg p-1">
-            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+          {/* Match Timer */}
+          <MatchTimerDisplay />
+
+          {/* Compact Serve Type Switcher */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
               serveType === 'first' 
                 ? 'bg-primary text-primary-foreground shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-              {t('firstServe')}
+              <Activity className="h-3 w-3" />
+              1st
             </span>
             <Switch
               id="serve-type"
               checked={serveType === 'second'}
-              onCheckedChange={handleServeTypeChange}
-              className="data-[state=checked]:bg-orange-500"
+              onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
+              className="data-[state=checked]:bg-orange-500 scale-75"
             />
-            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
               serveType === 'second' 
                 ? 'bg-orange-500 text-white shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-{t('secondServe')}
+              <Activity className="h-3 w-3" />
+              2nd
             </span>
           </div>
         </div>
