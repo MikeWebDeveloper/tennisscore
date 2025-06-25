@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -59,6 +59,8 @@ interface LiveScoringInterfaceProps {
     pointLog?: string[]
     status: string
     startTime?: string
+    endTime?: string
+    setDurations?: number[]
   }
 }
 
@@ -523,10 +525,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
   const pointSituation = getPointSituation()
   
-  // Memoized serve type handler
-  const handleServeTypeChange = useCallback((checked: boolean) => {
-    setServeType(checked ? 'second' : 'first')
-  }, [])
+
   
   // Initialize match data
   useEffect(() => {
@@ -977,7 +976,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </Button>
 
           {/* Match Timer */}
-          <MatchTimerDisplay />
+          <MatchTimerDisplay 
+            startTime={match.startTime}
+            endTime={match.endTime}
+            setDurations={match.setDurations}
+            isMatchComplete={match.status === "Completed"}
+          />
 
           {/* Compact Serve Type Switcher */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
