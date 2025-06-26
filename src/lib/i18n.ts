@@ -418,6 +418,17 @@ export interface Translations {
   forcedError: string
   unforcedError: string
   
+  // Detailed scoring terms
+  detailedStatistics: string
+  serveType: string
+  servePlacement: string
+  wide: string
+  body: string
+  tDownTheMiddle: string
+  serveSpeed: string
+  ace: string
+  doubleFault: string
+  
   // Missing translations for components
   quickActions: string
   aceDescription: string
@@ -993,6 +1004,17 @@ const translations: Record<Locale, Translations> = {
     forcedError: "Forced Error",
     unforcedError: "Unforced Error",
     
+    // Detailed scoring terms
+    detailedStatistics: "Detailed Statistics",
+    serveType: "Serve Type",
+    servePlacement: "Serve Placement",
+    wide: "Wide",
+    body: "Body",
+    tDownTheMiddle: "T (Down the middle)",
+    serveSpeed: "Serve Speed (km/h)",
+    ace: "Ace",
+    doubleFault: "Double Fault",
+    
     // Missing translations for components
     quickActions: "Quick Actions",
     aceDescription: "Unreturnable serve",
@@ -1565,6 +1587,17 @@ const translations: Record<Locale, Translations> = {
     // Additional tennis terms
     forcedError: "Vynucená chyba",
     unforcedError: "Nevynucená chyba",
+    
+    // Detailed scoring terms
+    detailedStatistics: "Podrobné statistiky",
+    serveType: "Typ podání",
+    servePlacement: "Umístění podání",
+    wide: "Široce",
+    body: "Na tělo",
+    tDownTheMiddle: "T (Dolů středem)",
+    serveSpeed: "Rychlost podání (km/h)",
+    ace: "Eso",
+    doubleFault: "Dvojchyba",
     
     // Missing translations for components
     quickActions: "Rychlé akce",

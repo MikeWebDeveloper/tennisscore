@@ -16,8 +16,7 @@ import {
   ServeType, 
   PointOutcome, 
   ShotType, 
-  CourtPosition,
-  Player
+  CourtPosition
 } from "@/lib/types"
 import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
@@ -39,19 +38,13 @@ interface PointDetailSheetProps {
     isMatchPoint: boolean
     playerNames: { p1: string; p2: string }
   }
-  playerOne: Player | null
-  playerTwo: Player | null
-  onPointScored: (pointData: PointDetail) => void
 }
 
 export function PointDetailSheet({ 
   open, 
   onOpenChange, 
   onSave, 
-  pointContext,
-  playerOne,
-  playerTwo,
-  onPointScored
+  pointContext
 }: PointDetailSheetProps) {
   // Translations hook must be at the top
   const t = useTranslations()
@@ -185,11 +178,6 @@ export function PointDetailSheet({
         return false
     }
   }
-
-  const [selectedPlayer, setSelectedPlayer] = useState<'playerOne' | 'playerTwo' | null>(null)
-  const [selectedOutcome, setSelectedOutcome] = useState<PointOutcome | null>(null)
-
-
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -483,79 +471,6 @@ export function PointDetailSheet({
               </Button>
             </CardContent>
           </Card>
-        </div>
-
-        <Separator />
-
-        {/* Player Selection */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg">{t('whoWonThePoint')}</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { key: 'playerOne' as const, player: playerOne },
-              { key: 'playerTwo' as const, player: playerTwo }
-            ].map(({ key, player }) => (
-              <Button
-                key={key}
-                variant={selectedPlayer === key ? "default" : "outline"}
-                className="h-16 text-lg"
-                onClick={() => setSelectedPlayer(key)}
-              >
-                {player ? `${player.firstName} ${player.lastName}` : 
-                 key === 'playerOne' ? t('player1') : t('player2')}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Outcome Selection */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-lg">{t('howDidTheyWin')}</h3>
-          <div className="grid grid-cols-1 gap-3">
-            {outcomes.map(({ type, icon: Icon, color }) => (
-              <Button
-                key={type}
-                variant={selectedOutcome === type ? "default" : "outline"}
-                className="h-16 justify-start text-left p-4"
-                onClick={() => setSelectedOutcome(type)}
-              >
-                <div className="flex items-center gap-3 w-full">
-                  <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center`}>
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{t(type)}</div>
-                    <div className="text-xs opacity-70">
-                      {outcomeDescriptions[type]}
-                    </div>
-                  </div>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Submit */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleSubmit}
-            disabled={!selectedPlayer || !selectedOutcome}
-            className="w-full h-14 text-lg"
-            size="lg"
-          >
-            {t('recordPoint')}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onOpenChange}
-            className="w-full h-12"
-          >
-            {t('cancel')}
-          </Button>
         </div>
       </SheetContent>
     </Sheet>
