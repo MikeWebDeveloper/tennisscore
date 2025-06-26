@@ -431,6 +431,16 @@ export interface Translations {
   enableDetailedLoggingForAnalysis: string
   setBySetBreakdownTitle: string
   
+  // Additional validation error messages
+  doubleFaultSecondServeError: string
+  doubleFaultReceiverError: string
+  aceServerError: string
+  serviceWinnerError: string
+  aceDisabledHint: string
+  doubleFaultDisabledHint: string
+  pointDetailsTitle: string
+  pointContext: string
+  
   wins: string
   ongoing: string
   noData: string
@@ -996,6 +1006,16 @@ const translations: Record<Locale, Translations> = {
     enableDetailedLoggingForAnalysis: "Enable detailed logging during live scoring to see AI-powered match insights.",
     setBySetBreakdownTitle: "Set by Set Breakdown",
     
+    // Additional validation error messages
+    doubleFaultSecondServeError: "Double fault can only occur on second serve",
+    doubleFaultReceiverError: "Double fault means receiver wins the point",
+    aceServerError: "Ace means server wins the point",
+    serviceWinnerError: "Service winner means server wins the point",
+    aceDisabledHint: "Server must win for ace",
+    doubleFaultDisabledHint: "Only on second serve loss",
+    pointDetailsTitle: "Point #{pointNumber} Details",
+    pointContext: "Set {setNumber}, Game {gameNumber} • {gameScore} • {winnerName} wins",
+    
     wins: "Wins",
     ongoing: "ongoing",
     noData: "No data",
@@ -1558,6 +1578,16 @@ const translations: Record<Locale, Translations> = {
     noDetailedAnalysis: "Pro tento zápas není k dispozici podrobná analýza.",
     enableDetailedLoggingForAnalysis: "Povolte podrobné zaznamenávání během živého skórování pro zobrazení pozorování zápasu poháněných AI.",
     setBySetBreakdownTitle: "Rozdělení podle setů",
+    
+    // Additional validation error messages
+    doubleFaultSecondServeError: "Dvojchyba může nastat pouze při druhém podání",
+    doubleFaultReceiverError: "Dvojchyba znamená, že returner vyhrává bod",
+    aceServerError: "Eso znamená, že podávající vyhrává bod",
+    serviceWinnerError: "Vítězné podání znamená, že podávající vyhrává bod",
+    aceDisabledHint: "Podávající musí vyhrát pro eso",
+    doubleFaultDisabledHint: "Pouze při ztrátě druhého podání",
+    pointDetailsTitle: "Detail bodu #{pointNumber}",
+    pointContext: "Set {setNumber}, Hra {gameNumber} • {gameScore} • {winnerName} vyhrává",
     
     wins: "Vyhrává",
     ongoing: "probíhá",

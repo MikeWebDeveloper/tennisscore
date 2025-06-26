@@ -115,7 +115,7 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-{t('points')}
+            {t('points')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -254,7 +254,7 @@ export function MatchStatsComponentSimple({
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            {detailLevel === "points" ? "Points" : "Points & Outcomes"}
+            {detailLevel === "points" ? t('points') : t('pointsAndOutcomes')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -338,7 +338,7 @@ export function MatchStatsComponentSimple({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Break Points
+              {t('breakPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -373,24 +373,24 @@ export function MatchStatsComponentSimple({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="h-4 w-4" />
-              Service Statistics
+              {t('serviceStatistics')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="1st Serve %" 
+              label={t('firstServePercentage')} 
               value1={stats.firstServePercentageByPlayer[0]} 
               value2={stats.firstServePercentageByPlayer[1]}
               format="percentage"
             />
             <StatRow 
-              label="1st Serve Points Won %" 
+              label={t('firstServePointsWonPercentage')} 
               value1={stats.firstServePointsWonByPlayer[0]} 
               value2={stats.firstServePointsWonByPlayer[1]}
               format="percentage"
             />
             <StatRow 
-              label="2nd Serve Points Won %" 
+              label={t('secondServePointsWonPercentage')} 
               value1={stats.secondServePointsWonByPlayer[0]} 
               value2={stats.secondServePointsWonByPlayer[1]}
               format="percentage"
@@ -455,7 +455,7 @@ export function MatchStatsComponentSimpleFixed({
     return (
       <div className="text-center text-muted-foreground py-8">
         <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>Stats will appear here once the first point is played.</p>
+        <p>{t('statsWillAppearDescription')}</p>
       </div>
     )
   }
@@ -473,7 +473,7 @@ export function MatchStatsComponentSimpleFixed({
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            {detailLevel === "points" ? "Points" : "Points & Outcomes"}
+            {detailLevel === "points" ? t('points') : t('pointsAndOutcomes')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -537,24 +537,24 @@ export function MatchStatsComponentSimpleFixed({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="h-4 w-4" />
-              Service Statistics
+              {t('serviceStatistics')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="1st Serve %" 
+              label={t('firstServePercentage')} 
               value1={stats.firstServePercentageByPlayer[0]} 
               value2={stats.firstServePercentageByPlayer[1]}
               format="percentage"
             />
             <StatRow 
-              label="1st Serve Points Won %" 
+              label={t('firstServePointsWonPercentage')} 
               value1={stats.firstServePointsWonByPlayer[0]} 
               value2={stats.firstServePointsWonByPlayer[1]}
               format="percentage"
             />
             <StatRow 
-              label="2nd Serve Points Won %" 
+              label={t('secondServePointsWonPercentage')} 
               value1={stats.secondServePointsWonByPlayer[0]} 
               value2={stats.secondServePointsWonByPlayer[1]}
               format="percentage"
@@ -569,22 +569,22 @@ export function MatchStatsComponentSimpleFixed({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Break Points
+              {t('breakPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <StatRow 
-              label="Break Points Faced" 
+              label={t('breakPointsFaced')}
               value1={stats.breakPointsByPlayer.faced[0]} 
               value2={stats.breakPointsByPlayer.faced[1]} 
             />
             <StatRow 
-              label="Break Points Converted" 
+              label={t('breakPointsConverted')}
               value1={stats.breakPointsByPlayer.converted[0]} 
               value2={stats.breakPointsByPlayer.converted[1]} 
             />
             <StatRow 
-              label="Conversion Rate" 
+              label={t('conversionRatePercent')}
               value1={stats.breakPointsByPlayer.conversionRate[0]} 
               value2={stats.breakPointsByPlayer.conversionRate[1]}
               format="percentage"
@@ -600,7 +600,7 @@ export function MatchStatsComponentSimpleFixed({
     return (
       <>
         {renderStatsContent(overallStats)}
-        <div className="flex justify-between text-sm text-muted-foreground px-2 mt-4">
+        <div className="flex justify-between text-sm text-muted-foreground px-2">
           <span className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded" />
             {playerNames.p1}

@@ -26,14 +26,6 @@ interface CreateMatchFormProps {
   players: Player[]
 }
 
-// Anonymous players for quick matches
-const ANONYMOUS_PLAYERS = [
-  { $id: "anonymous-1", firstName: "Player", lastName: "1", displayName: "Player 1 (No Tracking)" },
-  { $id: "anonymous-2", firstName: "Player", lastName: "2", displayName: "Player 2 (No Tracking)" },
-  { $id: "anonymous-3", firstName: "Player", lastName: "3", displayName: "Player 3 (No Tracking)" },
-  { $id: "anonymous-4", firstName: "Player", lastName: "4", displayName: "Player 4 (No Tracking)" },
-]
-
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -60,6 +52,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const router = useRouter()
   const t = useTranslations()
   const [loading, setLoading] = useState(false)
+  
+  const ANONYMOUS_PLAYERS = [
+    { $id: "anonymous-1", firstName: t('player1'), lastName: `(${t('noTracking')})`, displayName: `${t('player1')} (${t('noTracking')})` },
+    { $id: "anonymous-2", firstName: t('player2'), lastName: `(${t('noTracking')})`, displayName: `${t('player2')} (${t('noTracking')})` },
+    { $id: "anonymous-3", firstName: t('player3'), lastName: `(${t('noTracking')})`, displayName: `${t('player3')} (${t('noTracking')})` },
+    { $id: "anonymous-4", firstName: t('player4'), lastName: `(${t('noTracking')})`, displayName: `${t('player4')} (${t('noTracking')})` },
+  ]
   
   // Form state with default anonymous players
   const [matchType, setMatchType] = useState<"singles" | "doubles">("singles")
@@ -108,7 +107,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       if (result.error) {
         toast.error(result.error)
       } else if (result.matchId) {
-        toast.success("Match created successfully!")
+        toast.success(t('matchCreatedSuccessfully'))
         router.push(`/matches/live/${result.matchId}`)
       }
     } catch (error) {
@@ -116,7 +115,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         const firstError = error.errors[0]
         toast.error(firstError.message)
       } else {
-        toast.error("Failed to create match")
+        toast.error(t('failedToCreateMatch'))
       }
     } finally {
       setLoading(false)
@@ -125,9 +124,9 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
   const getSetsLabel = (value: number) => {
     switch (value) {
-      case 1: return "Best of 1"
-      case 3: return "Best of 3"
-      case 5: return "Best of 5"
+      case 1: return t("bestOf1")
+      case 3: return t("bestOf3")
+      case 5: return t("bestOf5")
       default: return `Best of ${value}`
     }
   }
@@ -142,7 +141,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         options.push({
           value: player.$id,
           label: player.displayName,
-          group: "Quick Match",
+          group: t('quickMatch'),
           icon: <User className="h-4 w-4 text-muted-foreground" />,
         })
       }
@@ -151,8 +150,8 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
     // Add create new player option
     options.push({
       value: "create-new",
-      label: "Create New Player",
-      group: "Actions",
+      label: t('createNewPlayer'),
+      group: t('actions'),
       icon: <Plus className="h-4 w-4 text-primary" />,
     })
 
@@ -163,7 +162,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           options.push({
             value: player.$id,
             label: `${player.firstName} ${player.lastName}`,
-            group: "Tracked Players",
+            group: t('trackedPlayers'),
             icon: <PlayerAvatar player={player} className="h-5 w-5" />,
           })
         }
@@ -193,8 +192,8 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         options={createPlayerOptions(excludeIds)}
         value={value}
         onValueChange={(val) => handlePlayerChange(val, onChange)}
-        placeholder="Search or select player..."
-        emptyText="No players found. Try searching or create a new player."
+        placeholder={t('searchOrSelectPlayer')}
+        emptyText={t('noPlayersFound')}
       />
     </div>
   )
@@ -257,14 +256,14 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   {renderPlayerSelect(
                     playerOne, 
                     setPlayerOne, 
-                    "Player 1", 
+                    t('player1'), 
                     [playerTwo, playerThree, playerFour].filter(Boolean)
                   )}
                   
                   {renderPlayerSelect(
                     playerTwo, 
                     setPlayerTwo, 
-                    "Player 2", 
+                    t('player2'), 
                     [playerOne, playerThree, playerFour].filter(Boolean)
                   )}
                 </div>
@@ -281,14 +280,14 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       {renderPlayerSelect(
                         playerOne, 
                         setPlayerOne, 
-                        "Player 1", 
+                        t('player1'), 
                         [playerTwo, playerThree, playerFour].filter(Boolean)
                       )}
                       
                       {renderPlayerSelect(
                         playerThree, 
                         setPlayerThree, 
-                        "Player 3", 
+                        t('player3'), 
                         [playerOne, playerTwo, playerFour].filter(Boolean)
                       )}
                     </div>
@@ -305,14 +304,14 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       {renderPlayerSelect(
                         playerTwo, 
                         setPlayerTwo, 
-                        "Player 2", 
+                        t('player2'), 
                         [playerOne, playerThree, playerFour].filter(Boolean)
                       )}
                       
                       {renderPlayerSelect(
                         playerFour, 
                         setPlayerFour, 
-                        "Player 4", 
+                        t('player4'), 
                         [playerOne, playerTwo, playerThree].filter(Boolean)
                       )}
                     </div>
@@ -342,9 +341,9 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Best of 1</span>
-                    <span>Best of 3</span>
-                    <span>Best of 5</span>
+                    <span>{t('bestOf1')}</span>
+                    <span>{t('bestOf3')}</span>
+                    <span>{t('bestOf5')}</span>
                   </div>
                 </div>
 

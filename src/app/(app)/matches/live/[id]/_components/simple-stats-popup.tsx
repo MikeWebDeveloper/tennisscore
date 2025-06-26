@@ -51,36 +51,36 @@ export function SimpleStatsPopup({
   const outcomes = [
     {
       id: 'winner' as const,
-      label: 'Winner',
-      description: 'Clean winner',
+      label: t('winner'),
+      description: t('cleanWinner'),
       disabled: false,
       color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
     },
     {
       id: 'ace' as const,
-      label: 'Ace',
-      description: 'Unreturnable serve',
+      label: t('aces'),
+      description: t('unreturnableServe'),
       disabled: isAceDisabled,
       color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
     },
     {
       id: 'forced_error' as const,
-      label: 'Forced Error',
-      description: 'Opponent forced into error',
+      label: t('forcedError'),
+      description: t('opponentForcedIntoError'),
       disabled: false,
       color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
     },
     {
       id: 'unforced_error' as const,
-      label: 'Unforced Error',
-      description: 'Unforced mistake',
+      label: t('unforcedError'),
+      description: t('unforcedMistake'),
       disabled: false,
       color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
     },
     {
       id: 'double_fault' as const,
-      label: 'Double Fault',
-      description: 'Two consecutive faults',
+      label: t('doubleFaults'),
+      description: t('twoConsecutiveFaults'),
       disabled: isDoubleFaultDisabled,
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
     }
@@ -131,8 +131,8 @@ export function SimpleStatsPopup({
                   {outcome.description}
                   {outcome.disabled && (
                     <span className="text-red-500 ml-2">
-                      {outcome.id === 'ace' && '(Server must win for ace)'}
-                      {outcome.id === 'double_fault' && '(Only on 2nd serve loss)'}
+                      {outcome.id === 'ace' && t('serverMustWinForAce')}
+                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
                     </span>
                   )}
                 </div>
