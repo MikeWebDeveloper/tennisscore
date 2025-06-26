@@ -1192,10 +1192,10 @@ const translations: Record<Locale, Translations> = {
     bestOf3: "Na 3",
     bestOf5: "Na 5",
     scoringSystem: "Systém skórování",
-    advantage: "Výhoda",
+    advantage: "S výhodou",
     noAdvantage: "Bez výhody",
-    finalSet: "Poslední sad",
-    fullSet: "Plná sad",
+    finalSet: "Poslední sada",
+    fullSet: "Celý set",
     superTiebreak: "Super tiebreak",
     scoringDetailLevel: "Detailní úroveň skórování",
     pointsOnly: "Body jen",
@@ -1274,7 +1274,7 @@ const translations: Record<Locale, Translations> = {
     time: "Čas",
     format: "Formát",
     type: "Typ",
-    singles: "Singl",
+    singles: "Dvouhra",
     doubles: "Čtyřhra",
     bestOf: "Na",
     noAd: "Bez výhody",
@@ -1374,7 +1374,7 @@ const translations: Record<Locale, Translations> = {
     hot: "Žhavé",
     
     // Match creation and forms
-    singlesMatch: "Dvouhru",
+    singlesMatch: "Dvouhra",
     trackBasicStats: "Sledovat základní statistiky",
     trackDetailedStats: "Sledovat podrobné statistiky",
     
