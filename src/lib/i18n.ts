@@ -1626,7 +1626,7 @@ const translations: Record<Locale, Translations> = {
     ongoing: "probíhá",
     noData: "Žádná data",
     switchToCzech: "Přepnout na češtinu",
-    switchToEnglish: "Switch to English",
+    switchToEnglish: "Přepnout na angličtinu",
     unableToConnect: "Nelze se připojit k serveru",
     checkInternetConnection: "Zkontrolujte připojení k internetu",
     connectionIssue: "Problém s připojením",
