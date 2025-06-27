@@ -277,7 +277,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="relative z-10 p-3 sm:p-4 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4">
+        <div className="relative z-10 p-3 sm:p-4 max-w-6xl mx-auto w-full space-y-3 sm:space-y-4">
           <div className="text-center pt-6 sm:pt-8">
             <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -296,7 +296,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 p-3 sm:p-4 max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4"
+        className="relative z-10 p-3 sm:p-4 max-w-6xl mx-auto w-full space-y-3 sm:space-y-4"
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center pt-2 sm:pt-4">
@@ -359,8 +359,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           )}
         </motion.div>
 
-        {/* Live Scoreboard with enhanced responsive design */}
-        <motion.div variants={itemVariants} className="w-full">
+        {/* Live Scoreboard - Remove wrapper motion and extra classes that might interfere */}
+        <motion.div variants={itemVariants}>
           <LiveScoreboard
             playerOneName={playerNames.p1}
             playerTwoName={playerNames.p2}
@@ -387,7 +387,6 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
             matchFormat={match.matchFormatParsed}
-            className="min-w-0 w-full"
           />
         </motion.div>
 
