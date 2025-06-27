@@ -329,6 +329,7 @@ export function ImageUpload({
                 circularCrop
                 className="max-h-64"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={imageRef}
                   alt="Crop me"

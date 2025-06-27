@@ -55,6 +55,5 @@ export function useServiceWorker() {
     }
 
     register()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 } 

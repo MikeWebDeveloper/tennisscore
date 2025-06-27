@@ -163,21 +163,37 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
           />
           <StatRow 
             label={t('firstServePercentage')} 
-            value1={Math.round(stats.player1.firstServePercentage)} 
-            value2={Math.round(stats.player2.firstServePercentage)}
+            value1={Math.round(
+              stats.player1.firstServesAttempted > 0 
+                ? (stats.player1.firstServesMade / stats.player1.firstServesAttempted) * 100 
+                : 0
+            )} 
+            value2={Math.round(
+              stats.player2.firstServesAttempted > 0 
+                ? (stats.player2.firstServesMade / stats.player2.firstServesAttempted) * 100 
+                : 0
+            )}
             format="percentage"
           />
           <StatRow 
             label={t('firstServePointsWonPercentage')} 
-            value1={Math.round(stats.player1.firstServeWinPercentage)} 
-            value2={Math.round(stats.player2.firstServeWinPercentage)}
+            value1={Math.round(
+              stats.player1.firstServesMade > 0 
+                ? (stats.player1.firstServePointsWon / stats.player1.firstServesMade) * 100 
+                : 0
+            )} 
+            value2={Math.round(
+              stats.player2.firstServesMade > 0 
+                ? (stats.player2.firstServePointsWon / stats.player2.firstServesMade) * 100 
+                : 0
+            )}
             format="percentage"
           />
         </CardContent>
       </Card>
 
       {/* Break Points Section */}
-      {(stats.player1.breakPointsPlayed > 0 || stats.player2.breakPointsPlayed > 0) && (
+      {(stats.player1.breakPointsFaced > 0 || stats.player2.breakPointsFaced > 0) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -193,8 +209,16 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
             />
             <StatRow 
               label={t('breakPointConversion')} 
-              value1={Math.round(stats.player1.breakPointConversionPercentage)} 
-              value2={Math.round(stats.player2.breakPointConversionPercentage)}
+              value1={Math.round(
+                stats.player1.breakPointsFaced > 0 
+                  ? (stats.player1.breakPointsWon / stats.player1.breakPointsFaced) * 100 
+                  : 0
+              )} 
+              value2={Math.round(
+                stats.player2.breakPointsFaced > 0 
+                  ? (stats.player2.breakPointsWon / stats.player2.breakPointsFaced) * 100 
+                  : 0
+              )}
               format="percentage"
             />
           </CardContent>

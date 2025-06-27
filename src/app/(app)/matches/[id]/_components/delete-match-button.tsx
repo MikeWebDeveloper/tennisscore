@@ -64,7 +64,10 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
         <AlertDialogHeader>
           <AlertDialogTitle>{t('deleteMatch')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t('deleteMatchConfirm', { p1: playerNames.p1, p2: playerNames.p2 })}
+            {t('deleteMatchConfirm')
+              .replace('{p1}', playerNames.p1)
+              .replace('{p2}', playerNames.p2)
+            }
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
