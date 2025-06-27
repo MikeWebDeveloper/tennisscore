@@ -66,18 +66,25 @@ export function LiveScoreboard({
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
   
-  // Format team names for doubles - use initial + last name for doubles
+  // Enhanced name formatting with better responsive logic
   const formatPlayerName = (fullName: string, isDoubles = false) => {
     const parts = fullName.split(' ')
     if (parts.length < 2) return fullName
     
-    // For doubles or very long names on mobile, abbreviate more aggressively
-    if (isDoubles || (typeof window !== 'undefined' && window.innerWidth < 640 && fullName.length > 20)) {
+    const totalLength = fullName.length
+    
+    // Very aggressive abbreviation for extremely long names
+    if (totalLength > 30) {
+      return `${parts[0][0]}. ${parts[parts.length - 1][0]}.`
+    }
+    
+    // For doubles or long names
+    if (isDoubles || totalLength > 20) {
       return `${parts[0][0]}. ${parts[parts.length - 1]}`
     }
     
-    // For long single names on mobile, use first name + initial
-    if (typeof window !== 'undefined' && window.innerWidth < 640 && fullName.length > 15) {
+    // For moderately long names
+    if (totalLength > 15) {
       return `${parts[0]} ${parts[parts.length - 1][0]}.`
     }
     
@@ -90,6 +97,15 @@ export function LiveScoreboard({
   const teamTwoName = isDoubles 
     ? `${formatPlayerName(playerTwoName, true)} / ${formatPlayerName(playerFourName!, true)}`
     : formatPlayerName(playerTwoName)
+
+  // Dynamic font sizing based on name length
+  const getNameFontSize = (name: string) => {
+    const length = name.length
+    if (length > 40) return "text-[10px] sm:text-xs"
+    if (length > 30) return "text-[11px] sm:text-xs lg:text-sm"
+    if (length > 20) return "text-xs sm:text-sm lg:text-base"
+    return "text-xs sm:text-sm lg:text-base"
+  }
   
   // Calculate sets won
   const setsWon = [
@@ -155,15 +171,19 @@ export function LiveScoreboard({
           aria-label={!isInGame ? `Set ${teamOneName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
         >
-          <div className="flex items-center justify-between">
-            {/* Left: Player info - ENSURE LEFT ALIGNMENT */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
+          {/* FIXED LAYOUT: Use CSS Grid for consistent alignment */}
+          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+            {/* Left: Player info - Always takes available space */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate text-left">
+                  <h3 className={cn(
+                    "font-semibold truncate text-left",
+                    getNameFontSize(teamOneName)
+                  )}>
                     {teamOneName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
@@ -204,12 +224,12 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - ENSURE RIGHT ALIGNMENT */}
-            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 ml-auto">
+            {/* Right: Score - Fixed width for consistent alignment */}
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 justify-end">
               {/* Serving Indicator */}
               <div 
                 className={cn(
-                  "flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7",
+                  "flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6",
                   onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
                 )}
                 onClick={onSetServer && !isInGame ? () => onSetServer('p1') : undefined}
@@ -219,20 +239,18 @@ export function LiveScoreboard({
               >
                 {(server === "p1" || (onSetServer && !isInGame)) && (
                   <TennisBallIcon
-                    className="w-3 h-3 sm:w-5 sm:h-5"
+                    className="w-2.5 h-2.5 sm:w-4 sm:h-4"
                     isServing={server === "p1"}
                   />
                 )}
               </div>
+              
               {/* Sets Won Count */}
-              <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-sm lg:text-base font-medium font-mono">
+              <div className="text-center min-w-[14px] sm:min-w-[20px]">
+                <div className="text-xs sm:text-sm font-medium font-mono">
                   {setsWon[0]}
                 </div>
               </div>
-              
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
               
               {/* Individual Set Scores */}
               <div className="flex gap-0.5">
@@ -241,7 +259,7 @@ export function LiveScoreboard({
                     <div 
                       key={idx} 
                       className={cn(
-                        "text-[10px] sm:text-xs font-medium min-w-[14px] sm:min-w-[18px] h-3 sm:h-5 flex items-center justify-center rounded border",
+                        "text-[9px] sm:text-[10px] font-medium min-w-[12px] sm:min-w-[16px] h-3 sm:h-4 flex items-center justify-center rounded border",
                         set[0] > set[1] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -249,27 +267,21 @@ export function LiveScoreboard({
                     </div>
                   ))
                 ) : (
-                  <div className="text-[10px] sm:text-xs text-muted-foreground min-w-[14px] sm:min-w-[18px] text-center">-</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground min-w-[12px] sm:min-w-[16px] text-center">-</div>
                 )}
               </div>
               
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
-              
               {/* Current Games */}
-              <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-base lg:text-lg font-medium font-mono">
+              <div className="text-center min-w-[14px] sm:min-w-[20px]">
+                <div className="text-sm sm:text-base font-medium font-mono">
                   {score.games[0]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
-              
-              {/* Current Points */}
-              <div className="text-center min-w-[24px] sm:min-w-[36px]">
+              {/* Current Points - Larger font as requested */}
+              <div className="text-center min-w-[20px] sm:min-w-[28px]">
                 <div className={cn(
-                  "text-xs sm:text-base lg:text-lg font-medium font-mono",
+                  "text-sm sm:text-lg lg:text-xl font-medium font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
@@ -294,15 +306,19 @@ export function LiveScoreboard({
           aria-label={!isInGame ? `Set ${teamTwoName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
         >
-          <div className="flex items-center justify-between">
-            {/* Left: Player info - ENSURE LEFT ALIGNMENT */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
+          {/* FIXED LAYOUT: Use CSS Grid for consistent alignment */}
+          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+            {/* Left: Player info - Always takes available space */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate text-left">
+                  <h3 className={cn(
+                    "font-semibold truncate text-left",
+                    getNameFontSize(teamTwoName)
+                  )}>
                     {teamTwoName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
@@ -343,12 +359,12 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - ENSURE RIGHT ALIGNMENT */}
-            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 ml-auto">
+            {/* Right: Score - Fixed width for consistent alignment */}
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 justify-end">
               {/* Serving Indicator */}
               <div 
                 className={cn(
-                  "flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7",
+                  "flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6",
                   onSetServer && !isInGame && "cursor-pointer hover:bg-muted rounded-full transition-colors"
                 )}
                 onClick={onSetServer && !isInGame ? () => onSetServer('p2') : undefined}
@@ -358,20 +374,18 @@ export function LiveScoreboard({
               >
                 {(server === "p2" || (onSetServer && !isInGame)) && (
                   <TennisBallIcon
-                    className="w-3 h-3 sm:w-5 sm:h-5"
+                    className="w-2.5 h-2.5 sm:w-4 sm:h-4"
                     isServing={server === "p2"}
                   />
                 )}
               </div>
+              
               {/* Sets Won Count */}
-              <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-sm lg:text-base font-medium font-mono">
+              <div className="text-center min-w-[14px] sm:min-w-[20px]">
+                <div className="text-xs sm:text-sm font-medium font-mono">
                   {setsWon[1]}
                 </div>
               </div>
-              
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
               
               {/* Individual Set Scores */}
               <div className="flex gap-0.5">
@@ -380,7 +394,7 @@ export function LiveScoreboard({
                     <div 
                       key={idx} 
                       className={cn(
-                        "text-[10px] sm:text-xs font-medium min-w-[14px] sm:min-w-[18px] h-3 sm:h-5 flex items-center justify-center rounded border",
+                        "text-[9px] sm:text-[10px] font-medium min-w-[12px] sm:min-w-[16px] h-3 sm:h-4 flex items-center justify-center rounded border",
                         set[1] > set[0] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -388,27 +402,21 @@ export function LiveScoreboard({
                     </div>
                   ))
                 ) : (
-                  <div className="text-[10px] sm:text-xs text-muted-foreground min-w-[14px] sm:min-w-[18px] text-center">-</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground min-w-[12px] sm:min-w-[16px] text-center">-</div>
                 )}
               </div>
               
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
-              
               {/* Current Games */}
-              <div className="text-center min-w-[16px] sm:min-w-[24px]">
-                <div className="text-xs sm:text-base lg:text-lg font-medium font-mono">
+              <div className="text-center min-w-[14px] sm:min-w-[20px]">
+                <div className="text-sm sm:text-base font-medium font-mono">
                   {score.games[1]}
                 </div>
               </div>
               
-              {/* Divider */}
-              <div className="h-6 sm:h-8 w-px bg-border"></div>
-              
-              {/* Current Points */}
-              <div className="text-center min-w-[24px] sm:min-w-[36px]">
+              {/* Current Points - Larger font as requested */}
+              <div className="text-center min-w-[20px] sm:min-w-[28px]">
                 <div className={cn(
-                  "text-xs sm:text-base lg:text-lg font-medium font-mono",
+                  "text-sm sm:text-lg lg:text-xl font-medium font-mono",
                   breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""

@@ -175,9 +175,9 @@ export function useRealtimeMatch(matchId: string) {
         // Calculate time since last visibility change
         const timeSinceLastChange = now - lastVisibilityChangeRef.current
         
-        // If page was hidden for more than 30 seconds, force data refresh
-        if (timeSinceLastChange > 30000) {
-          console.log("🔄 Page was hidden for >30s, refreshing data...")
+        // If page was hidden for more than 10 seconds, force data refresh (reduced from 30s)
+        if (timeSinceLastChange > 10000) {
+          console.log("🔄 Page was hidden for >10s, refreshing data...")
           fetchMatchData()
         }
         

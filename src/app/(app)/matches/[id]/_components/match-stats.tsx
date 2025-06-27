@@ -517,6 +517,11 @@ export function MatchStatsComponentSimpleFixed({
                 value2={stats.unforcedErrorsByPlayer[1]} 
               />
               <StatRow 
+                label={t('forcedErrors')} 
+                value1={stats.forcedErrorsByPlayer[0]} 
+                value2={stats.forcedErrorsByPlayer[1]} 
+              />
+              <StatRow 
                 label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]} 
