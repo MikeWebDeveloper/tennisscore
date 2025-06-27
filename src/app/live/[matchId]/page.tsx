@@ -3,6 +3,10 @@ import { createAdminClient } from "@/lib/appwrite-server"
 import { Player, MatchFormat, Score } from "@/lib/types"
 import { PublicLiveMatch } from "./_components/public-live-match"
 
+// Force dynamic rendering and no caching for live matches
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface PageProps {
   params: Promise<{
     matchId: string
@@ -199,11 +203,21 @@ export async function generateMetadata({ params }: PageProps) {
     return {
       title: `${teamOneName} vs ${teamTwoName} - Live Match`,
       description: `Follow the live tennis match between ${teamOneName} and ${teamTwoName}`,
+      other: {
+        'cache-control': 'no-cache, no-store, must-revalidate',
+        'pragma': 'no-cache',
+        'expires': '0'
+      }
     }
   } catch {
     return {
       title: "Live Tennis Match",
       description: "Follow this live tennis match",
+      other: {
+        'cache-control': 'no-cache, no-store, must-revalidate',
+        'pragma': 'no-cache',
+        'expires': '0'
+      }
     }
   }
 } 

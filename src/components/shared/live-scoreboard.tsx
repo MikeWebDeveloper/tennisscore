@@ -156,14 +156,14 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
         >
           <div className="flex items-center justify-between">
-            {/* Left: Player info */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* Left: Player info - ENSURE LEFT ALIGNMENT */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate">
+                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate text-left">
                     {teamOneName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
@@ -204,8 +204,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Structured layout */}
-            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
+            {/* Right: Score - ENSURE RIGHT ALIGNMENT */}
+            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 ml-auto">
               {/* Serving Indicator */}
               <div 
                 className={cn(
@@ -295,14 +295,14 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
         >
           <div className="flex items-center justify-between">
-            {/* Left: Player info */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* Left: Player info - ENSURE LEFT ALIGNMENT */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate">
+                  <h3 className="font-semibold text-xs sm:text-sm lg:text-base truncate text-left">
                     {teamTwoName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
@@ -343,8 +343,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Structured layout */}
-            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
+            {/* Right: Score - ENSURE RIGHT ALIGNMENT */}
+            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 ml-auto">
               {/* Serving Indicator */}
               <div 
                 className={cn(
