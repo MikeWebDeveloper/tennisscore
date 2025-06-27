@@ -6,6 +6,7 @@ import { TennisBallIcon } from "./tennis-ball-icon"
 import { Score } from "@/stores/matchStore"
 import { cn } from "@/lib/utils"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
+import { useEffect } from "react"
 
 interface LiveScoreboardProps {
   playerOneName: string
@@ -60,6 +61,17 @@ export function LiveScoreboard({
   className,
   matchFormat
 }: LiveScoreboardProps) {
+  useEffect(() => {
+    // Force layout recalculation after mount to fix mobile alignment issues
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('resize'))
+      }
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [])
+  
   const isTiebreak = score.isTiebreak || false
   const server = currentServer
   
@@ -156,7 +168,17 @@ export function LiveScoreboard({
   const isWinner = (playerId?: string) => winnerId && playerId && winnerId === playerId
 
   return (
-    <div className={cn("bg-card rounded-lg border shadow-sm", className)}>
+    <div 
+      className={cn("bg-card rounded-lg border shadow-sm", className)}
+      suppressHydrationWarning={true}
+      style={{
+        // Force CSS Grid with explicit Safari compatibility
+        display: 'grid',
+        gridTemplateRows: 'auto auto',
+        transform: 'translateZ(0)', // Force hardware acceleration for Safari
+        WebkitTransform: 'translateZ(0)', // Safari prefix
+      }}
+    >
       <div className="divide-y">
         {/* Player 1 */}
         <div 
@@ -170,20 +192,45 @@ export function LiveScoreboard({
           role={!isInGame ? "button" : undefined}
           aria-label={!isInGame ? `Set ${teamOneName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
+          suppressHydrationWarning={true}
         >
-          {/* FIXED LAYOUT: Use CSS Grid for consistent alignment */}
-          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-            {/* Left: Player info - Always takes available space */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* MOBILE-FIRST FIXED LAYOUT: Explicit CSS Grid for consistent alignment */}
+          <div 
+            className="items-center gap-2"
+            style={{
+              // Force explicit CSS Grid layout with proper alignment
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gridTemplateAreas: '"player-info score-info"',
+              alignItems: 'center',
+              minHeight: '48px', // Minimum height for consistent layout
+              WebkitBoxAlign: 'center', // Safari fallback
+            }}
+            suppressHydrationWarning={true}
+          >
+            {/* Left: Player info - Always takes available space, left-aligned */}
+            <div 
+              className="flex items-center gap-2 sm:gap-3 min-w-0"
+              style={{
+                gridArea: 'player-info',
+                justifySelf: 'start', // Force left alignment
+                alignSelf: 'center',
+                width: '100%',
+                textAlign: 'left',
+              }}
+            >
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className={cn(
-                    "font-semibold truncate text-left",
-                    getNameFontSize(teamOneName)
-                  )}>
+                  <h3 
+                    className={cn(
+                      "font-semibold truncate",
+                      getNameFontSize(teamOneName)
+                    )}
+                    style={{ textAlign: 'left' }}
+                  >
                     {teamOneName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
@@ -199,7 +246,7 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center gap-1 mt-0.5" style={{ textAlign: 'left' }}>
                   {playerOneYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerOneYearOfBirth}
@@ -224,8 +271,17 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Fixed width for consistent alignment */}
-            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 justify-end">
+            {/* Right: Score - Fixed width for consistent right alignment */}
+            <div 
+              className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
+              style={{
+                gridArea: 'score-info',
+                justifySelf: 'end', // Force right alignment
+                alignSelf: 'center',
+                textAlign: 'right',
+                minWidth: 'max-content',
+              }}
+            >
               {/* Serving Indicator */}
               <div 
                 className={cn(
@@ -305,20 +361,45 @@ export function LiveScoreboard({
           role={!isInGame ? "button" : undefined}
           aria-label={!isInGame ? `Set ${teamTwoName} as server` : undefined}
           tabIndex={!isInGame ? 0 : -1}
+          suppressHydrationWarning={true}
         >
-          {/* FIXED LAYOUT: Use CSS Grid for consistent alignment */}
-          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-            {/* Left: Player info - Always takes available space */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* MOBILE-FIRST FIXED LAYOUT: Explicit CSS Grid for consistent alignment */}
+          <div 
+            className="items-center gap-2"
+            style={{
+              // Force explicit CSS Grid layout with proper alignment
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gridTemplateAreas: '"player-info score-info"',
+              alignItems: 'center',
+              minHeight: '48px', // Minimum height for consistent layout
+              WebkitBoxAlign: 'center', // Safari fallback
+            }}
+            suppressHydrationWarning={true}
+          >
+            {/* Left: Player info - Always takes available space, left-aligned */}
+            <div 
+              className="flex items-center gap-2 sm:gap-3 min-w-0"
+              style={{
+                gridArea: 'player-info',
+                justifySelf: 'start', // Force left alignment
+                alignSelf: 'center',
+                width: '100%',
+                textAlign: 'left',
+              }}
+            >
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <h3 className={cn(
-                    "font-semibold truncate text-left",
-                    getNameFontSize(teamTwoName)
-                  )}>
+                  <h3 
+                    className={cn(
+                      "font-semibold truncate",
+                      getNameFontSize(teamTwoName)
+                    )}
+                    style={{ textAlign: 'left' }}
+                  >
                     {teamTwoName}
                   </h3>
                   {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
@@ -334,7 +415,7 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center gap-1 mt-0.5" style={{ textAlign: 'left' }}>
                   {playerTwoYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerTwoYearOfBirth}
@@ -359,8 +440,17 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Fixed width for consistent alignment */}
-            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 justify-end">
+            {/* Right: Score - Fixed width for consistent right alignment */}
+            <div 
+              className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
+              style={{
+                gridArea: 'score-info',
+                justifySelf: 'end', // Force right alignment
+                alignSelf: 'center',
+                textAlign: 'right',
+                minWidth: 'max-content',
+              }}
+            >
               {/* Serving Indicator */}
               <div 
                 className={cn(
