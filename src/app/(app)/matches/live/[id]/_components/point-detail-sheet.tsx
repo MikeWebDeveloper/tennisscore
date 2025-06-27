@@ -179,8 +179,6 @@ export function PointDetailSheet({
     }
   }
 
-  const t = useTranslations()
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
@@ -221,11 +219,7 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20"
                   variant="outline"
                 >
-<<<<<<< HEAD
-                  <span className="font-semibold">{t('ace')}</span>
-=======
                   <span className="font-semibold">{t('aces')}</span>
->>>>>>> test
                   <span className="text-xs opacity-70">{t('aceDescription')}</span>
                 </Button>
                 
@@ -253,11 +247,7 @@ export function PointDetailSheet({
                   variant="outline"
                 >
                   <span className="font-semibold">{t('forcedError')}</span>
-<<<<<<< HEAD
-                  <span className="text-xs opacity-70">{t('forcedErrorDescription')}</span>
-=======
                   <span className="text-xs opacity-70">{t('forcedError')}</span>
->>>>>>> test
                 </Button>
                 
                 <Button
@@ -266,11 +256,7 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 col-span-2"
                   variant="outline"
                 >
-<<<<<<< HEAD
-                  <span className="font-semibold">{t('doubleFault')}</span>
-=======
                   <span className="font-semibold">{t('doubleFaults')}</span>
->>>>>>> test
                   <span className="text-xs opacity-70">{t('doubleFaultDescription')}</span>
                 </Button>
               </div>
