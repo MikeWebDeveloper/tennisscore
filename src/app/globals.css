@@ -341,3 +341,110 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(0);
   }
 }
+
+/* Mobile Safari CSS Grid fixes */
+@layer utilities {
+  /* Force CSS Grid consistency across all mobile browsers */
+  .mobile-grid-fix {
+    display: -webkit-grid !important;
+    display: -ms-grid !important;
+    display: grid !important;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+  
+  /* Safari-specific grid alignment fixes */
+  @supports (-webkit-touch-callout: none) {
+    .mobile-grid-fix {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      will-change: transform;
+    }
+    
+    /* Force consistent text alignment on Safari */
+    .mobile-grid-fix [style*="text-align: left"] {
+      -webkit-text-align: left !important;
+      text-align: left !important;
+    }
+    
+    .mobile-grid-fix [style*="text-align: right"] {
+      -webkit-text-align: right !important;
+      text-align: right !important;
+    }
+    
+    /* Ensure grid areas are properly defined */
+    .mobile-grid-fix [style*="grid-area"] {
+      -webkit-grid-area: inherit;
+      -ms-grid-area: inherit;
+      grid-area: inherit;
+    }
+  }
+  
+  /* Force grid template columns consistency */
+  .scoreboard-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "player-info score-info";
+    align-items: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    min-height: 48px;
+  }
+  
+  /* Ensure proper alignment in grid areas */
+  .player-info-area {
+    grid-area: player-info;
+    justify-self: start;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .score-info-area {
+    grid-area: score-info;
+    justify-self: end;
+    text-align: right;
+    min-width: max-content;
+  }
+}
+
+/* Mobile browser specific fixes */
+@media screen and (max-width: 768px) {
+  /* Force layout recalculation on mobile devices */
+  .mobile-grid-fix {
+    contain: layout style;
+  }
+  
+  /* Prevent text centering on smaller screens */
+  .mobile-grid-fix h1,
+  .mobile-grid-fix h2,
+  .mobile-grid-fix h3,
+  .mobile-grid-fix h4,
+  .mobile-grid-fix h5,
+  .mobile-grid-fix h6 {
+    text-align: inherit !important;
+  }
+  
+  /* Fix for Opera Mobile */
+  @supports (-o-min-device-pixel-ratio: 2/1) {
+    .mobile-grid-fix {
+      -o-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+  }
+  
+  /* Fix for Chrome Mobile */
+  @supports (-webkit-appearance: none) {
+    .mobile-grid-fix {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+  }
+}
+
+/* Anti-hydration mismatch utilities */
+.suppress-hydration {
+  /* Prevent layout shift during hydration */
+  contain: layout;
+  will-change: contents;
+}
