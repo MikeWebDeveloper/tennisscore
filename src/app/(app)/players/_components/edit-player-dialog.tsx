@@ -22,6 +22,7 @@ import { Player } from "@/lib/types"
 import { ImageUpload } from "@/components/features/player/image-upload"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface EditPlayerDialogProps {
   player: Player | null
@@ -37,6 +38,7 @@ export function EditPlayerDialog({
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
   const router = useRouter()
+  const t = useTranslations()
 
   const [isMainPlayer, setIsMainPlayer] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -72,7 +74,7 @@ export function EditPlayerDialog({
 
       if (playerUpdateResult?.error) {
         toast({
-          title: "Error",
+          title: t('errorOccurred'),
           description: playerUpdateResult.error,
           variant: "destructive",
         })
@@ -89,7 +91,7 @@ export function EditPlayerDialog({
           await updatePlayerProfilePicture(player.$id, uploadResult.fileId)
         } else {
           toast({
-            title: "Upload Error",
+            title: t('errorOccurred'),
             description: uploadResult.error,
             variant: "destructive",
           })
@@ -100,8 +102,8 @@ export function EditPlayerDialog({
       }
 
       toast({
-        title: "Success",
-        description: "Player updated successfully.",
+        title: t('playerUpdated'),
+        description: t('playerUpdated'),
       })
       onOpenChange(false)
       router.refresh()
@@ -114,9 +116,9 @@ export function EditPlayerDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Player</DialogTitle>
+          <DialogTitle>{t('editPlayer')}</DialogTitle>
           <DialogDescription>
-            Update player information and settings.
+            {t('managementDescription')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSave} className="space-y-4">
@@ -127,7 +129,7 @@ export function EditPlayerDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t('firstName')}</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -136,7 +138,7 @@ export function EditPlayerDialog({
               />
             </div>
             <div>
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t('lastName')}</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -148,7 +150,7 @@ export function EditPlayerDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="yearOfBirth">Birth Year</Label>
+              <Label htmlFor="yearOfBirth">{t('birthYear')}</Label>
               <Input
                 id="yearOfBirth"
                 name="yearOfBirth"
@@ -157,12 +159,37 @@ export function EditPlayerDialog({
               />
             </div>
             <div>
-              <Label htmlFor="rating">Rating</Label>
+              <Label htmlFor="rating">{t('rating')}</Label>
               <Input
                 id="rating"
                 name="rating"
                 defaultValue={player.rating || ""}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="club">{t('club')}</Label>
+              <Input
+                id="club"
+                name="club"
+                placeholder={t('clubPlaceholder')}
+                defaultValue={player.club || ""}
+              />
+            </div>
+            <div>
+              <Label htmlFor="playingHand">{t('playingHand')}</Label>
+              <select
+                id="playingHand"
+                name="playingHand"
+                defaultValue={player.playingHand || ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">{t('selectOption')}</option>
+                <option value="right">{t('right')}</option>
+                <option value="left">{t('left')}</option>
+              </select>
             </div>
           </div>
 
@@ -172,7 +199,7 @@ export function EditPlayerDialog({
               checked={isMainPlayer}
               onCheckedChange={checked => setIsMainPlayer(checked as boolean)}
             />
-            <Label htmlFor="isMainPlayer">Set as main player</Label>
+            <Label htmlFor="isMainPlayer">{t('setAsMainPlayer')}</Label>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
@@ -182,10 +209,10 @@ export function EditPlayerDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save Changes"}
+              {isPending ? t('saving') : t('saveChanges')}
             </Button>
           </div>
         </form>

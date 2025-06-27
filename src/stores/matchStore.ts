@@ -68,7 +68,7 @@ export interface Match {
   pointLog: PointDetail[]
   startTime?: string       // When first point was played
   endTime?: string         // When match ended
-  duration?: number        // Match duration in minutes
+  setDurations?: number[]  // Duration of each completed set in milliseconds
   retirementReason?: string // Reason if match was retired
   events: Array<{
     type: 'comment' | 'photo'
@@ -98,7 +98,8 @@ interface MatchState {
   // Timing
   startTime: string | null
   endTime: string | null
-  duration: number | null  // Duration in minutes
+  setDurations: number[]  // Duration of each completed set in milliseconds
+  currentSetStartTime: string | null  // When current set started
   
   // Detailed logging mode
   detailedLoggingEnabled: boolean
@@ -114,7 +115,10 @@ interface MatchState {
     newScore: Score
     pointDetail: PointDetail
     isMatchComplete: boolean
-    winnerId?: string
+    winnerId?: string | null
+    startTime?: string
+    endTime?: string
+    setDurations?: number[]
   }
   undoLastPoint: () => { newScore: Score; newPointLog: PointDetail[] }
   setServer: (server: 'p1' | 'p2') => void
@@ -166,7 +170,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   
   startTime: null,
   endTime: null,
-  duration: null,
+  setDurations: [],
+  currentSetStartTime: null,
   
   detailedLoggingEnabled: false,
   setDetailedLoggingEnabled: (enabled) => set({ detailedLoggingEnabled: enabled }),
@@ -206,7 +211,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
-        events: match.events || []
+        events: match.events || [],
+        startTime: match.startTime || null,
+        endTime: match.endTime || null,
+        setDurations: match.setDurations || [],
+        currentSetStartTime: match.startTime || null,
       })
     } else {
       // For new matches, keep existing server or default to player 1
@@ -224,7 +233,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         initialTiebreakServer: score.initialTiebreakServer || null,
         isMatchComplete: match.status === 'Completed',
         winnerId: match.winnerId || null,
-        events: match.events || []
+        events: match.events || [],
+        startTime: match.startTime || null,
+        endTime: match.endTime || null,
+        setDurations: match.setDurations || [],
+        currentSetStartTime: match.startTime || null,
       })
     }
   },
@@ -234,6 +247,17 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     
     if (state.isMatchComplete) throw new Error('Match is already complete.')
     if (!state.currentServer || !state.matchFormat || !state.currentMatch) throw new Error('Match not properly initialized')
+    
+    // Handle timing for first point
+    const isFirstPoint = state.pointLog.length === 0
+    const currentTime = new Date().toISOString()
+    let newStartTime = state.startTime
+    let newCurrentSetStartTime = state.currentSetStartTime
+    
+    if (isFirstPoint) {
+      newStartTime = currentTime
+      newCurrentSetStartTime = currentTime
+    }
 
     const { matchFormat, currentServer, pointLog, score: previousScore } = state
     const winnerId_map = { p1: state.currentMatch.playerOneId, p2: state.currentMatch.playerTwoId }
@@ -284,28 +308,119 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         // Check if this is a break point situation (receiver can win game with this point)
         isThisPointBreakPoint = isBreakPoint(serverPoints, returnerPoints, matchFormat.noAd)
         
-        // GAME WINNING: This point wins the game
+        // SET POINT & MATCH POINT: Check if winning this point could win the set
+        // First check if this point would win the game
         if (isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd)) {
             isThisPointGameWinning = true
             
-            // Check if this wins the set
+            // Check if winning this game would win the set
             const tempGames = [...previousScore.games] as [number, number];
             tempGames[winner === 'p1' ? 0 : 1]++
+            
+            // Debug logging for Set Point detection
+            console.log('🎾 SET POINT Detection (Game Winning):', {
+                currentGames: previousScore.games,
+                tempGames,
+                winner,
+                wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat),
+                currentPoints: previousScore.points,
+                tempPoints: [temp_p1_score, temp_p2_score],
+                explanation: `${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
+            })
             
             if (isSetWon(tempGames[0], tempGames[1], matchFormat)) {
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                // Check if this wins the match
+                console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
+                
+                // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
                 const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
+                    console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
             }
+        } else {
+            console.log('❌ NOT Game Point:', {
+                currentPoints: previousScore.points,
+                tempPoints: [temp_p1_score, temp_p2_score],
+                winner,
+                isGameWonResult: isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd),
+                reason: 'This point would not win the game'
+            })
+            
+            // ADDITIONAL SET POINT CHECK: Even if this point doesn't win the game,
+            // check if the player would be in a winning position next point
+            // This handles cases where player is at 40 and could win set with next point
+            const currentGames = [...previousScore.games] as [number, number]
+            
+            // Check if player would be close to winning set if they get to a winning position
+            const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
+            const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
+            
+            // Check if this player is at 40 (3 points) or in advantage position and opponent has fewer points
+            // UPDATED: Also consider deuce situations when player could win set
+            const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
+            const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
+            
+            // DEUCE SET POINT: At deuce (40-40), if either player could win the set, it's a set point
+            const isDeuceSetPoint = (p1Score === 3 && p2Score === 3) && 
+                ((winner === 'p1' && p1CouldWinSetNextGame) || (winner === 'p2' && p2CouldWinSetNextGame))
+            
+            console.log('🎾 Additional Set Point Check:', {
+                currentGames,
+                currentPoints: previousScore.points,
+                p1Score,
+                p2Score,
+                p1CouldWinSetNextGame,
+                p2CouldWinSetNextGame,
+                p1AtGamePoint,
+                p2AtGamePoint,
+                isDeuceSetPoint,
+                winner,
+                                    p1AtGamePointLogic: `p1Score >= 3: ${p1Score >= 3}, p1Score > p2Score: ${p1Score > p2Score}, p1Score === 3 && p2Score < 3: ${p1Score === 3 && p2Score < 3}`,
+                p2AtGamePointLogic: `p2Score >= 3: ${p2Score >= 3}, p2Score > p1Score: ${p2Score > p1Score}, p2Score === 3 && p1Score < 3: ${p2Score === 3 && p1Score < 3}`,
+                deuceLogic: `p1Score === 3 && p2Score === 3: ${p1Score === 3 && p2Score === 3}`,
+                setPointCondition: `Regular: ${(winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) || (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame)}, Deuce: ${isDeuceSetPoint}`
+            })
+            
+            if ((winner === 'p1' && p1AtGamePoint && p1CouldWinSetNextGame) ||
+                (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame) ||
+                isDeuceSetPoint) {
+                isThisPointSetPoint = true
+                console.log('✅ SET POINT DETECTED! (player at game point position)', { 
+                    winner, 
+                    currentGames,
+                    points: previousScore.points,
+                    detectionType: isDeuceSetPoint ? 'DEUCE SET POINT' : 'REGULAR SET POINT',
+                    gamePointPlayer: winner === 'p1' ? 'p1AtGamePoint' : 'p2AtGamePoint',
+                    gamePointValue: winner === 'p1' ? p1AtGamePoint : p2AtGamePoint
+                })
+                
+                // Check if this would also be match point
+                const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
+                const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
+                if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
+                    isThisPointMatchPoint = true
+                    console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
+                }
+            } else {
+                console.log('❌ SET POINT NOT DETECTED:', {
+                    winner,
+                    p1AtGamePoint,
+                    p2AtGamePoint, 
+                    isDeuceSetPoint,
+                    p1CouldWinSetNextGame,
+                    p2CouldWinSetNextGame,
+                    reason: winner === 'p1' ? 
+                        `p1AtGamePoint: ${p1AtGamePoint}, p1CouldWinSetNextGame: ${p1CouldWinSetNextGame}, isDeuceSetPoint: ${isDeuceSetPoint}` :
+                        `p2AtGamePoint: ${p2AtGamePoint}, p2CouldWinSetNextGame: ${p2CouldWinSetNextGame}, isDeuceSetPoint: ${isDeuceSetPoint}`
+                })
+            }
         }
-
     }
 
     // --- Create a temporary score object to find the score *after* this point ---
@@ -369,7 +484,25 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const finalP2SetsWon = newScore.sets.length > 0 ? newScore.sets.filter((set: [number, number]) => set[1] > set[0]).length : 0
     
     const isMatchComplete = finalP1SetsWon >= setsNeededToWin || finalP2SetsWon >= setsNeededToWin
-    const matchWinnerId = isMatchComplete ? (finalP1SetsWon >= setsNeededToWin ? winnerId_map.p1 : winnerId_map.p2) : undefined
+    const matchWinnerId = isMatchComplete ? (finalP1SetsWon >= setsNeededToWin ? winnerId_map.p1 : winnerId_map.p2) : null
+    
+    // Handle set completion timing
+    const newSetDurations = [...state.setDurations]
+    const previousSetCount = previousScore.sets.length
+    const newSetCount = newScore.sets.length
+    
+    if (newSetCount > previousSetCount && newCurrentSetStartTime) {
+      // A new set has been completed
+      const setDuration = Date.parse(currentTime) - Date.parse(newCurrentSetStartTime)
+      newSetDurations.push(setDuration)
+      newCurrentSetStartTime = isMatchComplete ? null : currentTime // Start timing next set unless match is over
+    }
+    
+    // Handle match completion timing
+    let newEndTime = state.endTime
+    if (isMatchComplete && !newEndTime) {
+      newEndTime = currentTime
+    }
 
     let nextServer = currentServer
     if (newScore.isTiebreak) {
@@ -390,9 +523,21 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       initialTiebreakServer: newScore.initialTiebreakServer || null,
       isMatchComplete: isMatchComplete,
       winnerId: matchWinnerId || null,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      setDurations: newSetDurations,
+      currentSetStartTime: newCurrentSetStartTime,
     })
 
-    return { newScore, pointDetail, isMatchComplete, winnerId: matchWinnerId }
+    return { 
+      newScore, 
+      pointDetail, 
+      isMatchComplete, 
+      winnerId: matchWinnerId,
+      startTime: newStartTime || undefined,
+      endTime: newEndTime || undefined,
+      setDurations: newSetDurations
+    }
   },
   
   undoLastPoint: () => {

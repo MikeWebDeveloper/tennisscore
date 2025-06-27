@@ -16,7 +16,7 @@ import {
   ServeType, 
   PointOutcome, 
   ShotType, 
-  CourtPosition 
+  CourtPosition
 } from "@/lib/types"
 import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
@@ -44,8 +44,11 @@ export function PointDetailSheet({
   open, 
   onOpenChange, 
   onSave, 
-  pointContext 
+  pointContext
 }: PointDetailSheetProps) {
+  // Translations hook must be at the top
+  const t = useTranslations()
+  
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
   const [servePlacement, setServePlacement] = useState<"wide" | "body" | "t">("wide")
@@ -67,28 +70,28 @@ export function PointDetailSheet({
     // Double fault validation
     if (pointOutcome === "double_fault") {
       if (pointContext.serveType !== "second") {
-        error = "Double faults can only occur on second serves"
+        error = t('doubleFaultSecondServeError')
       } else if (pointContext.winner === pointContext.server) {
-        error = "Double faults must be won by the receiving player"
+        error = t('doubleFaultReceiverError')
       }
     }
 
     // Ace validation
     if (pointOutcome === "ace") {
       if (pointContext.winner !== pointContext.server) {
-        error = "Aces must be won by the serving player"
+        error = t('aceServerError')
       }
     }
 
     // Serve winner validation (for non-ace serves)
     if (pointOutcome === "winner" && lastShotType === "serve") {
       if (pointContext.winner !== pointContext.server) {
-        error = "Service winners must be won by the serving player"
+        error = t('serviceWinnerError')
       }
     }
 
     setValidationError(error)
-  }, [pointOutcome, pointContext.serveType, pointContext.winner, pointContext.server, lastShotType])
+  }, [pointOutcome, pointContext.serveType, pointContext.winner, pointContext.server, lastShotType, t])
 
   // Auto-correct winner for certain outcomes
   useEffect(() => {
@@ -158,9 +161,9 @@ export function PointDetailSheet({
 
   const getContextBadges = () => {
     const badges = []
-    if (pointContext.isBreakPoint) badges.push({ label: "Break Point", icon: Target, color: "destructive" })
-    if (pointContext.isSetPoint) badges.push({ label: "Set Point", icon: Zap, color: "secondary" })
-    if (pointContext.isMatchPoint) badges.push({ label: "Match Point", icon: Trophy, color: "default" })
+    if (pointContext.isBreakPoint) badges.push({ label: t('breakPoint'), icon: Target, color: "destructive" })
+    if (pointContext.isSetPoint) badges.push({ label: t('setPoint'), icon: Zap, color: "secondary" })
+    if (pointContext.isMatchPoint) badges.push({ label: t('matchPoint'), icon: Trophy, color: "default" })
     return badges
   }
 
@@ -183,7 +186,7 @@ export function PointDetailSheet({
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
         <SheetHeader className="pb-4">
           <SheetTitle className="flex items-center gap-2">
-            Point #{pointContext.pointNumber} Details
+            {t('point')} #{pointContext.pointNumber} {t('details')}
             <div className="flex gap-1">
               {getContextBadges().map((badge, index) => {
                 const Icon = badge.icon
@@ -197,8 +200,7 @@ export function PointDetailSheet({
             </div>
           </SheetTitle>
           <div className="text-sm text-muted-foreground">
-            Set {pointContext.setNumber}, Game {pointContext.gameNumber} • {pointContext.gameScore} • 
-            <span className="font-medium"> {pointContext.playerNames[pointContext.winner]} wins point</span>
+            {t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore} • {pointContext.playerNames[pointContext.winner]} {t('wins')}
           </div>
         </SheetHeader>
 
@@ -208,7 +210,7 @@ export function PointDetailSheet({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Zap className="h-4 w-4" />
-                Quick Actions
+                {t('quickActions')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -219,7 +221,11 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20"
                   variant="outline"
                 >
+<<<<<<< HEAD
                   <span className="font-semibold">{t('ace')}</span>
+=======
+                  <span className="font-semibold">{t('aces')}</span>
+>>>>>>> test
                   <span className="text-xs opacity-70">{t('aceDescription')}</span>
                 </Button>
                 
@@ -247,7 +253,11 @@ export function PointDetailSheet({
                   variant="outline"
                 >
                   <span className="font-semibold">{t('forcedError')}</span>
+<<<<<<< HEAD
                   <span className="text-xs opacity-70">{t('forcedErrorDescription')}</span>
+=======
+                  <span className="text-xs opacity-70">{t('forcedError')}</span>
+>>>>>>> test
                 </Button>
                 
                 <Button
@@ -256,7 +266,11 @@ export function PointDetailSheet({
                   className="h-16 flex flex-col gap-1 bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 col-span-2"
                   variant="outline"
                 >
+<<<<<<< HEAD
                   <span className="font-semibold">{t('doubleFault')}</span>
+=======
+                  <span className="font-semibold">{t('doubleFaults')}</span>
+>>>>>>> test
                   <span className="text-xs opacity-70">{t('doubleFaultDescription')}</span>
                 </Button>
               </div>
@@ -264,10 +278,10 @@ export function PointDetailSheet({
               {(isOutcomeDisabled('ace') || isOutcomeDisabled('double_fault')) && (
                 <div className="mt-3 text-xs text-muted-foreground">
                   <p>
-                    {isOutcomeDisabled('ace') && "• Ace requires server to win the point"}
+                    {isOutcomeDisabled('ace') && `• ${t('aceDisabledHint')}`}
                   </p>
                   <p>
-                    {isOutcomeDisabled('double_fault') && "• Double fault only on 2nd serve when receiver wins"}
+                    {isOutcomeDisabled('double_fault') && `• ${t('doubleFaultDisabledHint')}`}
                   </p>
                 </div>
               )}
@@ -281,8 +295,8 @@ export function PointDetailSheet({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                Detailed Statistics
-                <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
+                {t('detailedStatistics')}
+                <span className="text-sm font-normal text-muted-foreground">{t('optional')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -295,7 +309,7 @@ export function PointDetailSheet({
               )}
 
               <div>
-                <Label className="text-sm font-medium">Serve Type</Label>
+                <Label className="text-sm font-medium">{t('serveType')}</Label>
                 <RadioGroup 
                   value={serveType} 
                   onValueChange={(value) => setServeType(value as ServeType)}
@@ -303,18 +317,18 @@ export function PointDetailSheet({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="first" id="first-serve" />
-                    <Label htmlFor="first-serve">First Serve</Label>
+                    <Label htmlFor="first-serve">{t('firstServe')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="second" id="second-serve" />
-                    <Label htmlFor="second-serve">Second Serve</Label>
+                    <Label htmlFor="second-serve">{t('secondServe')}</Label>
                   </div>
                 </RadioGroup>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium">Serve Placement</Label>
+                  <Label className="text-sm font-medium">{t('servePlacement')}</Label>
                   <RadioGroup 
                     value={servePlacement} 
                     onValueChange={(value) => setServePlacement(value as "wide" | "body" | "t")}
@@ -322,22 +336,22 @@ export function PointDetailSheet({
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="wide" id="wide" />
-                      <Label htmlFor="wide">Wide</Label>
+                      <Label htmlFor="wide">{t('wide')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="body" id="body" />
-                      <Label htmlFor="body">Body</Label>
+                      <Label htmlFor="body">{t('body')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="t" id="t" />
-                      <Label htmlFor="t">T (Down the Middle)</Label>
+                      <Label htmlFor="t">{t('tDownTheMiddle')}</Label>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div>
                   <Label htmlFor="serve-speed" className="text-sm font-medium">
-                    Serve Speed (mph) <span className="text-muted-foreground">(optional)</span>
+                    {t('serveSpeed')} <span className="text-muted-foreground">{t('optional')}</span>
                   </Label>
                   <Input
                     id="serve-speed"
@@ -351,7 +365,7 @@ export function PointDetailSheet({
               </div>
 
               <div>
-                <Label className="text-sm font-medium">Point Outcome</Label>
+                <Label className="text-sm font-medium">{t('pointOutcome')}</Label>
                 <RadioGroup 
                   value={pointOutcome} 
                   onValueChange={(value) => setPointOutcome(value as PointOutcome)}
@@ -383,7 +397,7 @@ export function PointDetailSheet({
               {pointOutcome !== "ace" && pointOutcome !== "double_fault" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium">Last Shot Type</Label>
+                    <Label className="text-sm font-medium">{t('lastShotType')}</Label>
                     <RadioGroup 
                       value={lastShotType} 
                       onValueChange={(value) => setLastShotType(value as ShotType)}
@@ -391,29 +405,29 @@ export function PointDetailSheet({
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="serve" id="serve-shot" />
-                        <Label htmlFor="serve-shot">Serve</Label>
+                        <Label htmlFor="serve-shot">{t('serve')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="forehand" id="forehand" />
-                        <Label htmlFor="forehand">Forehand</Label>
+                        <Label htmlFor="forehand">{t('forehand')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="backhand" id="backhand" />
-                        <Label htmlFor="backhand">Backhand</Label>
+                        <Label htmlFor="backhand">{t('backhand')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="volley" id="volley" />
-                        <Label htmlFor="volley">Volley</Label>
+                        <Label htmlFor="volley">{t('volley')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="overhead" id="overhead" />
-                        <Label htmlFor="overhead">Overhead</Label>
+                        <Label htmlFor="overhead">{t('overhead')}</Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium">Rally Length</Label>
+                    <Label className="text-sm font-medium">{t('rallyLength')}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -424,14 +438,14 @@ export function PointDetailSheet({
                       className="mt-2"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Number of shots including serve
+                      {t('rallyLengthHint')}
                     </p>
                   </div>
                 </div>
               )}
 
               <div>
-                <Label className="text-sm font-medium">Court Position</Label>
+                <Label className="text-sm font-medium">{t('courtPosition')}</Label>
                 <RadioGroup 
                   value={courtPosition} 
                   onValueChange={(value) => setCourtPosition(value as CourtPosition)}
@@ -439,22 +453,22 @@ export function PointDetailSheet({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="deuce" id="deuce-side" />
-                    <Label htmlFor="deuce-side">Deuce Side</Label>
+                    <Label htmlFor="deuce-side">{t('deuceSide')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="ad" id="ad-side" />
-                    <Label htmlFor="ad-side">Ad Side</Label>
+                    <Label htmlFor="ad-side">{t('adSide')}</Label>
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
                 <Label htmlFor="notes" className="text-sm font-medium">
-                  Notes <span className="text-muted-foreground">(optional)</span>
+                  {t('notes')} <span className="text-muted-foreground">{t('optional')}</span>
                 </Label>
                 <Textarea
                   id="notes"
-                  placeholder="Great passing shot down the line..."
+                  placeholder={t('notesPlaceholder')}
                   value={notes}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
                   className="mt-2 resize-none"
@@ -467,7 +481,7 @@ export function PointDetailSheet({
                 className="w-full"
                 disabled={!!validationError}
               >
-                Save Detailed Point
+                {t('saveDetailedPoint')}
               </Button>
             </CardContent>
           </Card>

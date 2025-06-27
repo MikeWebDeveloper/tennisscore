@@ -1,98 +1,65 @@
 #!/usr/bin/env node
 
+/**
+ * Script to push environment variables to Vercel for specific branches
+ * Usage: node scripts/push-env-to-vercel.js [branch-name]
+ */
+
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Pushing environment variables to Vercel...');
+// Get branch name from command line argument or default to 'test'
+const targetBranch = process.argv[2] || 'test';
 
-// Read environment variables from .env.local
-const envPath = path.join(__dirname, '..', '.env.local');
+// Read environment variables from backup file
+const envBackupPath = path.join(__dirname, '..', '.env.local.backup');
 
-if (!fs.existsSync(envPath)) {
-  console.error('❌ .env.local file not found!');
+if (!fs.existsSync(envBackupPath)) {
+  console.error('❌ .env.local.backup file not found');
   process.exit(1);
 }
 
-const envContent = fs.readFileSync(envPath, 'utf8');
+const envContent = fs.readFileSync(envBackupPath, 'utf8');
+const envLines = envContent.split('\n').filter(line => 
+  line.trim() && !line.startsWith('#') && line.includes('=')
+);
 
-// Parse environment variables
-const envVars = {};
-envContent.split('\n').forEach(line => {
-  const trimmedLine = line.trim();
-  if (trimmedLine && !trimmedLine.startsWith('#')) {
-    const equalIndex = trimmedLine.indexOf('=');
-    if (equalIndex > 0) {
-      const key = trimmedLine.substring(0, equalIndex).trim();
-      const value = trimmedLine.substring(equalIndex + 1).trim();
-      if (key && value) {
-        envVars[key] = value;
-      }
-    }
-  }
-});
+console.log(`🚀 Pushing environment variables to Vercel (will apply to all branches including: ${targetBranch})`);
+console.log(`📄 Found ${envLines.length} environment variables\n`);
 
-// List of required environment variables for Vercel
-const requiredVars = [
-  'NEXT_PUBLIC_APPWRITE_ENDPOINT',
-  'NEXT_PUBLIC_APPWRITE_PROJECT',
-  'NEXT_PUBLIC_APPWRITE_DATABASE_ID',
-  'NEXT_PUBLIC_APPWRITE_PLAYERS_COLLECTION_ID',
-  'NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID',
-  'NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID',
-  'APPWRITE_API_KEY',
-  'APPWRITE_DATABASE_ID',
-  'APPWRITE_PLAYERS_COLLECTION_ID',
-  'APPWRITE_MATCHES_COLLECTION_ID',
-  'APPWRITE_PROFILE_PICTURES_BUCKET_ID',
-  'SESSION_SECRET'
-];
-
-console.log(`📋 Found ${Object.keys(envVars).length} environment variables in .env.local`);
-console.log(`🎯 Setting ${requiredVars.length} required variables in Vercel...\n`);
-
-let successCount = 0;
-let errorCount = 0;
-
-// Set each environment variable in Vercel
-for (const varName of requiredVars) {
-  if (envVars[varName]) {
+for (const line of envLines) {
+  const [key, ...valueParts] = line.split('=');
+  const value = valueParts.join('=').trim();
+  
+  if (!key || !value) continue;
+  
+  // Set for both preview (test branches) and production environments
+  const environments = ['preview', 'production'];
+  
+  for (const env of environments) {
     try {
-      console.log(`⏳ Setting ${varName}...`);
+      console.log(`⏳ Setting ${key} for ${env}...`);
       
-      // Escape special characters for shell
-      const escapedValue = envVars[varName].replace(/"/g, '\\"');
+      // Use the correct vercel env add syntax with stdin
+      const command = `vercel env add ${key} ${env} --force`;
       
-      // Use vercel env add command
-      const command = `echo "${escapedValue}" | vercel env add ${varName} production --force`;
-      execSync(command, { stdio: 'pipe' });
+      // Execute the command with the value as stdin
+      execSync(command, { 
+        input: value,
+        stdio: ['pipe', 'pipe', 'inherit']
+      });
       
-      console.log(`✅ ${varName} set successfully`);
-      successCount++;
+      console.log(`✅ ${key} set successfully for ${env}`);
     } catch (error) {
-      console.error(`❌ Failed to set ${varName}:`, error.message);
-      errorCount++;
+      console.error(`❌ Failed to set ${key} for ${env}:`, error.message);
     }
-  } else {
-    console.warn(`⚠️  ${varName} not found in .env.local`);
-    errorCount++;
   }
 }
 
-console.log(`\n📊 Summary:`);
-console.log(`✅ Successfully set: ${successCount} variables`);
-console.log(`❌ Failed/Missing: ${errorCount} variables`);
-
-if (successCount > 0) {
-  console.log('\n🚀 Triggering new deployment...');
-  try {
-    execSync('vercel --prod --yes', { stdio: 'inherit' });
-    console.log('\n🎉 Deployment triggered successfully!');
-    console.log('🔗 Your app will be available shortly at your production URL');
-  } catch (error) {
-    console.error('\n❌ Failed to trigger deployment:', error.message);
-    console.log('💡 You can manually deploy by running: vercel --prod');
-  }
-} else {
-  console.log('\n⚠️  No environment variables were set. Please check your .env.local file.');
-} 
+console.log(`\n🎉 Environment variables setup complete! Available for all branches including: ${targetBranch}`);
+console.log('\n📝 Next steps:');
+console.log('1. Trigger a new deployment for your test branch');
+console.log('2. Check the deployment logs for any environment variable issues');
+console.log('3. Test login functionality on the deployed URL'); 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,8 @@ import {
   MessageCircle,
   MessageSquare,
   Copy,
-  Mail
+  Mail,
+  Activity
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
@@ -33,6 +34,7 @@ import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { MatchTimerDisplay } from "./MatchTimerDisplay"
 
 // This is the format of the score object as stored in the Appwrite database
 interface DbScore {
@@ -57,6 +59,8 @@ interface LiveScoringInterfaceProps {
     pointLog?: string[]
     status: string
     startTime?: string
+    endTime?: string
+    setDurations?: number[]
   }
 }
 
@@ -162,19 +166,17 @@ function PointEntry({
   onPointWin,
   score,
   isTiebreak,
-  breakPointStatus,
+  pointSituation,
   playerNames,
   players,
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
   isTiebreak: boolean,
-  breakPointStatus: { isBreakPoint: boolean, facingBreakPoint: 'p1' | 'p2' | null },
+  pointSituation: { type: 'matchPoint' | 'setPoint' | 'breakPoint'; player: 'p1' | 'p2' | null; badge: string; color: string; textColor: string; borderColor: string; bgColor: string } | null,
   playerNames: { p1: string, p2: string },
   players: { p1: Player; p2: Player }
 }) {
-  const t = useTranslations()
-  
   const getPointDisplay = (playerIndex: number) => {
     if (isTiebreak) {
       return score.tiebreakPoints?.[playerIndex] || 0
@@ -198,24 +200,42 @@ function PointEntry({
     return fullName.split(' ')[0] // First name only for buttons
   }
 
+  const getSituationText = () => {
+    if (!pointSituation) return null
+    
+    const playerName = getPlayerDisplayName(pointSituation.player as 'p1' | 'p2')
+    
+    switch (pointSituation.type) {
+      case 'matchPoint':
+        return `${playerName} has match point`
+      case 'setPoint':
+        return `${playerName} has set point`
+      case 'breakPoint':
+        return `${playerName} has break point`
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {/* Breakpoint context header */}
-      {breakPointStatus.isBreakPoint && (
+      {/* Critical point context header */}
+      {pointSituation && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-950/20 px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-800">
-            <Badge variant="destructive" className="bg-orange-500 hover:bg-orange-600 text-white">
-              {t('breakPoint')}
+          <div className={cn(
+            "inline-flex items-center gap-2 px-4 py-2 rounded-lg border",
+            pointSituation.bgColor,
+            pointSituation.borderColor
+          )}>
+            <Badge variant="destructive" className={cn("text-white hover:opacity-90", pointSituation.color)}>
+              {pointSituation.badge}
             </Badge>
-            <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-              {breakPointStatus.facingBreakPoint === 'p1' 
-                ? `${getPlayerDisplayName('p1')} has break point`
-                : `${getPlayerDisplayName('p2')} has break point`
-              }
+            <span className={cn("text-sm font-medium", pointSituation.textColor)}>
+              {getSituationText()}
             </span>
           </div>
         </motion.div>
@@ -227,15 +247,16 @@ function PointEntry({
           onClick={() => onPointWin("p1")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+            pointSituation && pointSituation.player === 'p1' && pointSituation.borderColor,
+            pointSituation && pointSituation.player === 'p1' && pointSituation.bgColor
           )}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Breakpoint indicator */}
-          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
+          {/* Critical point indicator */}
+          {pointSituation && pointSituation.player === 'p1' && (
             <div className="absolute top-2 right-2">
-              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
-                BP
+              <Badge variant="destructive" className={cn("text-xs text-white", pointSituation.color)}>
+                {pointSituation.badge}
               </Badge>
             </div>
           )}
@@ -251,8 +272,8 @@ function PointEntry({
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
-              ? "text-orange-600 dark:text-orange-400"
+            pointSituation && pointSituation.player === 'p1' 
+              ? pointSituation.textColor
               : "text-card-foreground"
           )}>
             {getPointDisplay(0)}
@@ -263,15 +284,16 @@ function PointEntry({
           onClick={() => onPointWin("p2")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/10"
+            pointSituation && pointSituation.player === 'p2' && pointSituation.borderColor,
+            pointSituation && pointSituation.player === 'p2' && pointSituation.bgColor
           )}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Breakpoint indicator */}
-          {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
+          {/* Critical point indicator */}
+          {pointSituation && pointSituation.player === 'p2' && (
             <div className="absolute top-2 right-2">
-              <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
-                BP
+              <Badge variant="destructive" className={cn("text-xs text-white", pointSituation.color)}>
+                {pointSituation.badge}
               </Badge>
             </div>
           )}
@@ -287,8 +309,8 @@ function PointEntry({
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
-              ? "text-orange-600 dark:text-orange-400"
+            pointSituation && pointSituation.player === 'p2' 
+              ? pointSituation.textColor
               : "text-card-foreground"
           )}>
             {getPointDisplay(1)}
@@ -320,6 +342,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showSimpleStats, setShowSimpleStats] = useState(false)
   const [showRetireDialog, setShowRetireDialog] = useState(false)
   const [retireReason, setRetireReason] = useState<'completed' | 'retired' | 'weather' | 'injury' | ''>('')
+  const [selectedWinner, setSelectedWinner] = useState<'p1' | 'p2' | ''>('')
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [serveType, setServeType] = useState<'first' | 'second'>('first')
   const [isInGame, setIsInGame] = useState(false)
@@ -383,20 +406,126 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     // The RETURNER has the breakpoint opportunity (should get the BP badge)
     const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
     
-    // Breakpoint detection logic completed
-    
     return {
       isBreakPoint: isCurrentlyBreakPoint,
       facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
     }
   }
   
-  const breakPointStatus = getBreakPointStatus()
+  // Calculate current set point and match point status
+  const getSetAndMatchPointStatus = () => {
+    if (!score) return { isSetPoint: false, isMatchPoint: false, facingSetPoint: null, facingMatchPoint: null }
+    
+    const setsNeededToWin = Math.ceil(parsedMatchFormat.sets / 2)
+    const currentP1SetsWon = score.sets.filter((s: [number, number]) => s[0] > s[1]).length
+    const currentP2SetsWon = score.sets.filter((s: [number, number]) => s[1] > s[0]).length
+    
+    // Check if either player could win the set by winning the current game
+    const currentGames = score.games as [number, number]
+    const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
+    const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
+    
+    let isSetPoint = false
+    let facingSetPoint: 'p1' | 'p2' | null = null
+    
+    if (isTiebreak) {
+      // In tiebreak, check if either player is close to winning
+      const p1TbPoints = score.tiebreakPoints?.[0] || 0
+      const p2TbPoints = score.tiebreakPoints?.[1] || 0
+      const tiebreakTarget = 7 // Standard tiebreak
+      
+      if ((p1TbPoints >= tiebreakTarget - 1 && p1TbPoints >= p2TbPoints) && p1CouldWinSetNextGame) {
+        isSetPoint = true
+        facingSetPoint = 'p1'
+      } else if ((p2TbPoints >= tiebreakTarget - 1 && p2TbPoints >= p1TbPoints) && p2CouldWinSetNextGame) {
+        isSetPoint = true
+        facingSetPoint = 'p2'
+      }
+    } else {
+      // Regular game scoring
+      const [p1Score, p2Score] = score.points as [number, number]
+      
+      // Check if either player is at game point AND could win the set
+      const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
+      const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
+      
+      // Deuce set point: At deuce, if either player could win the set
+      const isDeuceSetPoint = (p1Score === 3 && p2Score === 3)
+      
+      if ((p1AtGamePoint && p1CouldWinSetNextGame) || (isDeuceSetPoint && p1CouldWinSetNextGame)) {
+        isSetPoint = true
+        facingSetPoint = 'p1'
+      } else if ((p2AtGamePoint && p2CouldWinSetNextGame) || (isDeuceSetPoint && p2CouldWinSetNextGame)) {
+        isSetPoint = true
+        facingSetPoint = 'p2'
+      }
+    }
+    
+    // Check for match point
+    let isMatchPoint = false
+    let facingMatchPoint: 'p1' | 'p2' | null = null
+    
+    if (isSetPoint && facingSetPoint) {
+      // If this is a set point, check if winning this set would win the match
+      const newP1Sets = currentP1SetsWon + (facingSetPoint === 'p1' ? 1 : 0)
+      const newP2Sets = currentP2SetsWon + (facingSetPoint === 'p2' ? 1 : 0)
+      
+      if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
+        isMatchPoint = true
+        facingMatchPoint = facingSetPoint
+      }
+    }
+    
+    return {
+      isSetPoint,
+      isMatchPoint,
+      facingSetPoint,
+      facingMatchPoint
+    }
+  }
   
-  // Memoized serve type handler
-  const handleServeTypeChange = useCallback((checked: boolean) => {
-    setServeType(checked ? 'second' : 'first')
-  }, [])
+  const breakPointStatus = getBreakPointStatus()
+  const setMatchPointStatus = getSetAndMatchPointStatus()
+  
+  // Determine the highest priority situation for display
+  const getPointSituation = () => {
+    if (setMatchPointStatus.isMatchPoint) {
+      return {
+        type: 'matchPoint' as const,
+        player: setMatchPointStatus.facingMatchPoint,
+        badge: 'MP',
+        color: 'bg-red-600',
+        textColor: 'text-red-600 dark:text-red-400',
+        borderColor: 'border-red-300 dark:border-red-700',
+        bgColor: 'bg-red-50/50 dark:bg-red-950/10'
+      }
+    } else if (setMatchPointStatus.isSetPoint) {
+      return {
+        type: 'setPoint' as const,
+        player: setMatchPointStatus.facingSetPoint,
+        badge: 'SP',
+        color: 'bg-blue-500',
+        textColor: 'text-blue-600 dark:text-blue-400',
+        borderColor: 'border-blue-300 dark:border-blue-700',
+        bgColor: 'bg-blue-50/50 dark:bg-blue-950/10'
+      }
+    } else if (breakPointStatus.isBreakPoint) {
+      return {
+        type: 'breakPoint' as const,
+        player: breakPointStatus.facingBreakPoint,
+        badge: 'BP',
+        color: 'bg-orange-500',
+        textColor: 'text-orange-600 dark:text-orange-400',
+        borderColor: 'border-orange-300 dark:border-orange-700',
+        bgColor: 'bg-orange-50/50 dark:bg-orange-950/10'
+      }
+    }
+    return null
+  }
+  
+  const pointSituation = getPointSituation()
+  
+
   
   // Initialize match data
   useEffect(() => {
@@ -463,7 +592,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     } catch (error) {
       console.error("Failed to initialize match:", error)
     }
-  }, [match, parsedMatchFormat, initializeMatch])
+  }, [match, parsedMatchFormat, initializeMatch, setServer])
 
   // Show loading state until match is initialized
   if (!isMatchInitialized || !currentServer) {
@@ -558,20 +687,36 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Reset serve type back to first serve for next point
       setServeType('first')
 
-      // The server action will now handle updating start/end times
+      // Include timing data in the update payload
       const updatePayload: {
         score: Score;
         pointLog: object[];
         status?: 'Completed';
         winnerId?: string;
+        startTime?: string;
+        endTime?: string;
+        setDurations?: number[];
       } = {
         score: result.newScore,
         pointLog: [...pointLog, result.pointDetail],
       }
 
+      // Include timing data from the store result
+      if (result.startTime) {
+        updatePayload.startTime = result.startTime
+      }
+      if (result.endTime) {
+        updatePayload.endTime = result.endTime
+      }
+      if (result.setDurations) {
+        updatePayload.setDurations = result.setDurations
+      }
+
       if (result.isMatchComplete) {
         updatePayload.status = 'Completed'
-        updatePayload.winnerId = result.winnerId
+        if (result.winnerId) {
+          updatePayload.winnerId = result.winnerId
+        }
       }
 
       await updateMatchScore(match.$id, updatePayload)
@@ -646,38 +791,34 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleRetireMatch = async (reason: 'retired' | 'weather' | 'injury') => {
     try {
-      // Update match as completed with retirement reason
+      if (!selectedWinner) {
+        toast.error("Please select which player won")
+        return
+      }
+
+      // Determine winner ID based on selection
+      const winnerId = selectedWinner === 'p1' ? match.playerOne.$id : match.playerTwo.$id
+
+      // Create a new score showing 1-0 sets for the winner
+      const retiredScore: Score = {
+        sets: selectedWinner === 'p1' ? [[1, 0]] : [[0, 1]],
+        games: [0, 0],
+        points: [0, 0],
+        isTiebreak: false,
+        tiebreakPoints: [0, 0],
+      }
+
       const updateData: {
         status: "Completed"
-        winnerId?: string
-        retirementReason?: string
-        endTime?: string
+        winnerId: string
+        retirementReason: string
+        endTime: string
         duration?: number
       } = {
         status: "Completed",
+        winnerId,
         retirementReason: reason,
         endTime: new Date().toISOString()
-      }
-      
-      // If match has started, determine winner based on current score
-      if (pointLog.length > 0) {
-        // Simple logic: player with more sets/games wins, or player 1 if tied
-        const p1SetsWon = score.sets.filter(set => set[0] > set[1]).length
-        const p2SetsWon = score.sets.filter(set => set[1] > set[0]).length
-        
-        if (p1SetsWon > p2SetsWon) {
-          updateData.winnerId = match.playerOne.$id
-        } else if (p2SetsWon > p1SetsWon) {
-          updateData.winnerId = match.playerTwo.$id
-        } else {
-          // If tied on sets, check games in the current set
-          const p1Games = score.games[0]
-          const p2Games = score.games[1]
-          updateData.winnerId = p1Games >= p2Games ? match.playerOne.$id : match.playerTwo.$id
-        }
-      } else {
-        // No points played, default to player 1 as winner
-        updateData.winnerId = match.playerOne.$id
       }
 
       // Calculate duration if we have a start time
@@ -686,16 +827,19 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }
 
       await updateMatchScore(match.$id, {
-        score,
+        score: retiredScore,
         pointLog,
         ...updateData
       })
       
       const reasonText = reason === 'retired' ? 'retirement' : 
                         reason === 'weather' ? 'weather conditions' : 'injury'
+      const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
       
-      toast.success(`Match ended due to ${reasonText}`)
+      toast.success(`Match ended due to ${reasonText}. ${winnerName} wins 1-0.`)
       setShowRetireDialog(false)
+      setRetireReason('')
+      setSelectedWinner('')
       
       // Navigate to match details after a short delay
       setTimeout(() => {
@@ -754,13 +898,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
             <div className="flex items-center gap-2">
               {/* Breakpoint indicator in header */}
-              {breakPointStatus.isBreakPoint && (
+              {pointSituation && (
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                 >
                   <Badge variant="destructive" className="text-xs font-bold bg-orange-500 hover:bg-orange-600">
-                    {t('breakPoint')}
+                    {pointSituation.badge}
                   </Badge>
                 </motion.div>
               )}
@@ -814,7 +958,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           onPointWin={handlePointWin} 
           score={score}
           isTiebreak={isTiebreak}
-          breakPointStatus={breakPointStatus}
+          pointSituation={pointSituation}
           playerNames={playerNames}
           players={players}
         />
@@ -831,27 +975,37 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             {t('undo')}
           </Button>
 
-          {/* Enhanced Serve Type Switcher */}
-          <div className="flex items-center gap-3 bg-muted/50 rounded-lg p-1">
-            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+          {/* Match Timer */}
+          <MatchTimerDisplay 
+            startTime={match.startTime}
+            endTime={match.endTime}
+            setDurations={match.setDurations}
+            isMatchComplete={match.status === "Completed"}
+          />
+
+          {/* Compact Serve Type Switcher */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
               serveType === 'first' 
                 ? 'bg-primary text-primary-foreground shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-              1st Serve
+              <Activity className="h-3 w-3" />
+              1st
             </span>
             <Switch
               id="serve-type"
               checked={serveType === 'second'}
-              onCheckedChange={handleServeTypeChange}
-              className="data-[state=checked]:bg-orange-500"
+              onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
+              className="data-[state=checked]:bg-orange-500 scale-75"
             />
-            <span className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
               serveType === 'second' 
                 ? 'bg-orange-500 text-white shadow-sm' 
                 : 'text-muted-foreground'
             }`}>
-              2nd Serve
+              <Activity className="h-3 w-3" />
+              2nd
             </span>
           </div>
         </div>
@@ -898,7 +1052,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             onClick={() => setShowRetireDialog(true)}
           >
             <Trophy className="h-4 w-4 mr-2" />
-            End Match
+            {t('endMatch')}
           </Button>
         </div>
       </div>
@@ -939,9 +1093,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           winner: pendingPointWinner || 'p1',
           server: currentServer || 'p1',
           serveType: serveType,
-          isBreakPoint: breakPointStatus.isBreakPoint,
-          isSetPoint: false, // TODO: Add set point detection
-          isMatchPoint: false, // TODO: Add match point detection
+                      isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
           playerNames
         }}
       />
@@ -949,84 +1103,134 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       <Dialog open={showRetireDialog} onOpenChange={setShowRetireDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>End Match</DialogTitle>
+            <DialogTitle>{t('endMatch')}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Why are you ending the match?
-            </p>
-            
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="completed"
-                  checked={retireReason === 'completed'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Match completed normally</span>
-              </label>
+          <div className="space-y-6">
+            <div>
+              <p className="text-muted-foreground mb-4">
+                {t('whyEndingMatch')}
+              </p>
               
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="retired"
-                  checked={retireReason === 'retired'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Player retired</span>
-              </label>
-              
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="weather"
-                  checked={retireReason === 'weather'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Weather conditions</span>
-              </label>
-              
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="retireReason"
-                  value="injury"
-                  checked={retireReason === 'injury'}
-                  onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                  className="text-primary"
-                />
-                <span>Injury</span>
-              </label>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="completed"
+                    checked={retireReason === 'completed'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>{t('matchCompletedNormally')}</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="retired"
+                    checked={retireReason === 'retired'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>{t('playerRetired')}</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="weather"
+                    checked={retireReason === 'weather'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>{t('weatherConditions')}</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retireReason"
+                    value="injury"
+                    checked={retireReason === 'injury'}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    className="text-primary"
+                  />
+                  <span>{t('injury')}</span>
+                </label>
+              </div>
             </div>
+
+            {/* Winner Selection - only show for early endings */}
+            {retireReason && retireReason !== 'completed' && (
+              <div>
+                <p className="text-muted-foreground mb-4">
+                  Which player should be declared the winner?
+                </p>
+                
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="selectedWinner"
+                      value="p1"
+                      checked={selectedWinner === 'p1'}
+                      onChange={(e) => setSelectedWinner(e.target.value as 'p1' | 'p2')}
+                      className="text-primary"
+                    />
+                    <PlayerAvatar player={match.playerOne} className="h-6 w-6" />
+                    <span className="font-medium">{playerNames.p1}</span>
+                  </label>
+                  
+                  <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="selectedWinner"
+                      value="p2"
+                      checked={selectedWinner === 'p2'}
+                      onChange={(e) => setSelectedWinner(e.target.value as 'p1' | 'p2')}
+                      className="text-primary"
+                    />
+                    <PlayerAvatar player={match.playerTwo} className="h-6 w-6" />
+                    <span className="font-medium">{playerNames.p2}</span>
+                  </label>
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-2">
+                  The final score will be recorded as 1-0 sets for the selected winner.
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => {
               setShowRetireDialog(false)
               setRetireReason('')
+              setSelectedWinner('')
             }}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button 
               onClick={() => {
                 if (retireReason === 'completed') {
                   router.push(`/matches/${match.$id}`)
-                } else if (retireReason) {
+                } else if (retireReason && selectedWinner) {
                   handleRetireMatch(retireReason as 'retired' | 'weather' | 'injury')
+                } else if (retireReason && !selectedWinner) {
+                  toast.error("Please select which player won")
                 }
-                setShowRetireDialog(false)
-                setRetireReason('')
+                
+                if (retireReason === 'completed') {
+                  setShowRetireDialog(false)
+                  setRetireReason('')
+                  setSelectedWinner('')
+                }
               }}
-              disabled={!retireReason}
+              disabled={!retireReason || (retireReason !== 'completed' && !selectedWinner)}
             >
-              End Match
+              {t('endMatch')}
             </Button>
           </div>
         </DialogContent>

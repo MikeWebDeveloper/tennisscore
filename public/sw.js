@@ -1,7 +1,7 @@
 // TennisScore Service Worker - Production Ready
-// Version: 1.3.1
-const CACHE_NAME = 'tennisscore-v1.3.1'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.1'
+// Version: 1.3.2
+const CACHE_NAME = 'tennisscore-v1.3.2'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.2'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -57,12 +57,16 @@ const BYPASS_PATTERNS = [
   /\/auth/,
   
   // Don't intercept same-origin API calls
-  /appwrite\.io/
+  /appwrite\.io/,
+  
+  // Live match pages should always be fresh
+  /\/live\//,
+  /\/matches\/live\//
 ]
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.1...')
+  console.log('[SW] Installing service worker v1.3.2...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -166,6 +170,12 @@ function shouldBypassRequest(request) {
   return false
 }
 
+// Helper: Check if this is a live match route
+function isLiveMatchRoute(request) {
+  const url = new URL(request.url)
+  return url.pathname.includes('/live/') || url.pathname.includes('/matches/live/')
+}
+
 // Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event
@@ -182,6 +192,10 @@ self.addEventListener('fetch', (event) => {
 // Main request handler
 async function handleRequest(request) {
   try {
+    // For live match routes, always go network-first with no-cache
+    if (isLiveMatchRoute(request)) {
+      return await networkFirstNoCache(request)
+    }
     
     // Production asset handling
     if (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url)) {
@@ -209,6 +223,41 @@ async function handleRequest(request) {
   } catch (error) {
     console.error('[SW] Request handler failed:', error)
     return await networkWithFallback(request)
+  }
+}
+
+// Network-first with no-cache strategy for live matches
+async function networkFirstNoCache(request) {
+  try {
+    const response = await fetch(request, {
+      method: 'GET',
+      headers: {
+        ...request.headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      },
+      mode: 'cors',
+      credentials: request.credentials,
+      redirect: 'follow',
+      cache: 'no-store'
+    })
+    
+    // Add cache-control headers to response
+    const modifiedResponse = new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: new Headers(response.headers)
+    })
+    
+    modifiedResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    modifiedResponse.headers.set('Pragma', 'no-cache')
+    modifiedResponse.headers.set('Expires', '0')
+    
+    return modifiedResponse
+  } catch (error) {
+    console.error('[SW] Network-first failed for live match:', error)
+    // Don't fall back to cache for live matches
+    throw error
   }
 }
 
@@ -417,8 +466,11 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.1' })
+      event.ports[0]?.postMessage({ version: '1.3.2' })
       break
+      
+    default:
+      console.log('[SW] Unknown message type:', type)
   }
 })
 

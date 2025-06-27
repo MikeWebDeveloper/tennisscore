@@ -11,6 +11,7 @@ import ReactCrop, {
 } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface ImageUploadProps {
   onFileChange: (file: File | null) => void
@@ -102,6 +103,7 @@ export function ImageUpload({
   onFileChange,
   initialImageUrl,
 }: ImageUploadProps) {
+  const t = useTranslations()
   const [originalImageSrc, setOriginalImageSrc] = useState<string | null>(null)
   const [croppedImageSrc, setCroppedImageSrc] = useState<string | null>(initialImageUrl || null)
   const [crop, setCrop] = useState<CropType>()
@@ -271,7 +273,7 @@ export function ImageUpload({
                     size="icon"
                     className="rounded-full h-8 w-8"
                     onClick={handleReplaceImage}
-                    title="Replace with new image"
+                    title={t('replaceWithNewImage')}
                   >
                     <Upload className="h-4 w-4" />
                   </Button>
@@ -282,7 +284,7 @@ export function ImageUpload({
                     size="icon"
                     className="rounded-full h-8 w-8"
                     onClick={handleEditCrop}
-                    title="Edit crop"
+                    title={t('editCrop')}
                   >
                     <Crop className="h-4 w-4" />
                   </Button>
@@ -293,7 +295,7 @@ export function ImageUpload({
                   size="icon"
                   className="rounded-full h-8 w-8"
                   onClick={handleRemoveImage}
-                  title="Remove image"
+                  title={t('removeImage')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -305,7 +307,7 @@ export function ImageUpload({
               className="cursor-pointer flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 w-full h-full"
             >
               <Upload className="w-8 h-8" />
-              <span className="text-xs mt-1">Upload</span>
+              <span className="text-xs mt-1">{t('upload')}</span>
             </label>
           )}
         </div>
@@ -327,6 +329,7 @@ export function ImageUpload({
                 circularCrop
                 className="max-h-64"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={imageRef}
                   alt="Crop me"
@@ -344,7 +347,7 @@ export function ImageUpload({
                 onClick={handleCancelCrop}
                 disabled={isProcessing}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 type="button"

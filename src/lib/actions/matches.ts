@@ -115,6 +115,7 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
       playerThree: playerThree || undefined,
       playerFour: playerFour || undefined,
       pointLog: match.pointLog || [],
+      setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
     }
   } catch (error) {
     console.error(`Failed to fetch match ${matchId}:`, error)
@@ -125,11 +126,11 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
 export async function updateMatchScore(matchId: string, scoreUpdate: {
   score: object
   pointLog: object[]
-  status?: "In Progress" | "Completed"
+  status?: "In Progress" | "Completed" | "retired"
   winnerId?: string
   startTime?: string
   endTime?: string
-  duration?: number
+  setDurations?: number[]
   retirementReason?: string
 }): Promise<{ success?: boolean; match?: Match; error?: string }> {
   try {
@@ -174,8 +175,8 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       updateData.endTime = scoreUpdate.endTime
     }
 
-    if (scoreUpdate.duration !== undefined) {
-      updateData.duration = scoreUpdate.duration
+    if (scoreUpdate.setDurations) {
+      updateData.setDurations = scoreUpdate.setDurations.map(duration => duration.toString())
     }
 
     if (scoreUpdate.retirementReason) {
@@ -254,7 +255,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
   }
 }
 
-export async function getMatch(matchId: string) {
+export async function getMatch(matchId: string): Promise<Match> {
   const { databases } = await createAdminClient()
   
   try {
@@ -266,7 +267,11 @@ export async function getMatch(matchId: string) {
       )
     )
     
-    return match
+    // Convert setDurations from string array to number array
+    return {
+      ...match,
+      setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
+    } as Match
   } catch (error: unknown) {
     console.error("Error fetching match:", error)
     

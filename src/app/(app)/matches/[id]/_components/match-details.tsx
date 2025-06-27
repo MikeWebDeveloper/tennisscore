@@ -54,7 +54,7 @@ interface MatchDetailsProps {
     winnerId?: string
     startTime?: string
     endTime?: string
-    duration?: number
+    setDurations?: number[]
     retirementReason?: string
     userId: string
     $collectionId: string
@@ -70,6 +70,14 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations()
 
+  // Debug timing data
+  console.log('Match timing data received:', {
+    startTime: match.startTime,
+    endTime: match.endTime,
+    setDurations: match.setDurations,
+    status: match.status
+  })
+
   const handleShareMatch = () => {
     const shareUrl = `${window.location.origin}/live/${match.$id}`
     navigator.clipboard.writeText(shareUrl)
@@ -83,10 +91,17 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   const formatDuration = (durationMinutes?: number) => {
-    if (!durationMinutes) return "Unknown"
+    console.log('formatDuration called with:', durationMinutes)
+    
+    if (durationMinutes === undefined || durationMinutes === null) return "Unknown"
     
     const hours = Math.floor(durationMinutes / 60)
     const minutes = durationMinutes % 60
+    
+    // Handle very short durations (less than 1 minute)
+    if (durationMinutes < 1) {
+      return "< 1m"
+    }
     
     if (hours > 0) {
       return `${hours}h ${minutes}m`
@@ -101,6 +116,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+    })
+  }
+
+  const formatFullDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  }
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     })
   }
 
@@ -310,11 +342,31 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
             const setsWon = getSetsWon()
             const totalPoints = stats.totalPoints
-            const matchDurationText = match.duration 
-              ? formatDuration(match.duration)
-              : pointDetails.length > 0 
-                ? `${pointDetails.length} points`
-                : "No data"
+            // Calculate match duration from start/end time
+            const getMatchDuration = () => {
+              console.log('getMatchDuration called with:', {
+                startTime: match.startTime,
+                endTime: match.endTime,
+                status: match.status
+              })
+              
+              if (match.startTime && match.endTime) {
+                const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
+                const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                console.log('Duration calculation:', { durationMs, totalMinutes })
+                return formatDuration(totalMinutes)
+              } else if (match.startTime && match.status === "In Progress") {
+                const durationMs = Date.now() - Date.parse(match.startTime)
+                const totalMinutes = Math.floor(durationMs / (1000 * 60))
+                console.log('Ongoing duration calculation:', { durationMs, totalMinutes })
+                return formatDuration(totalMinutes) + " (ongoing)"
+              }
+              
+              console.log('No timing data available, falling back')
+              return pointDetails.length > 0 ? `${pointDetails.length} points` : "No data"
+            }
+
+            const matchDurationText = getMatchDuration()
 
             return (
               <>
@@ -330,7 +382,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         {match.status === "Completed" && (
                           <Badge className="bg-green-500 text-white">
                             <Trophy className="w-3 h-3 mr-1" />
-                            Completed
+{t('completed')}
                           </Badge>
                         )}
                       </div>
@@ -387,12 +439,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         {match.startTime && (
                           <div className="text-xs text-green-500">
-                            {t('started')}: {formatDateTime(match.startTime).split(',')[1]?.trim()}
+                            {t('started')}: {formatTime(match.startTime)}
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="text-xs text-green-500">
-                            Ended: {formatDateTime(match.endTime).split(',')[1]?.trim()}
+{t('ended')}: {formatTime(match.endTime)}
                           </div>
                         )}
                       </div>
@@ -431,26 +483,22 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">{t('date')}</span>
-                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[0]}</span>
+                          <span className="text-sm font-medium">{formatFullDate(match.matchDate)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">{t('time')}</span>
-                          <span className="text-sm font-medium">{formatDateTime(match.matchDate).split(',')[1]?.trim()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Duration</span>
+                          <span className="text-sm text-muted-foreground">{t('duration')}</span>
                           <span className="text-sm font-medium">{matchDurationText}</span>
                         </div>
                         {match.startTime && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Started</span>
-                            <span className="text-sm font-medium">{formatDateTime(match.startTime).split(',')[1]?.trim()}</span>
+                            <span className="text-sm text-muted-foreground">{t('started')}</span>
+                            <span className="text-sm font-medium">{formatTime(match.startTime)}</span>
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Finished</span>
-                            <span className="text-sm font-medium">{formatDateTime(match.endTime).split(',')[1]?.trim()}</span>
+                            <span className="text-sm text-muted-foreground">{t('finished')}</span>
+                            <span className="text-sm font-medium">{formatTime(match.endTime)}</span>
                           </div>
                         )}
                         {match.retirementReason && (
@@ -700,7 +748,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <h4 className="font-semibold text-sm mb-2 text-blue-900">MATCH SUMMARY</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Total Points Played</span>
+                              <span className="text-muted-foreground">{t('totalPointsPlayed')}</span>
                               <span className="font-semibold">{totalPoints}</span>
                             </div>
                             <div className="flex justify-between">
@@ -766,11 +814,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Break Points Created</span>
+                            <span className="text-muted-foreground">{t('breakPointsCreated')}</span>
                             <span className="font-semibold">{breakPointsCreated}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Break Points Converted</span>
+                            <span className="text-muted-foreground">{t('breakPointsConverted')}</span>
                             <span className="font-semibold text-orange-600">{breakPointsConverted}</span>
                           </div>
                         </div>
@@ -831,11 +879,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 rounded-lg bg-blue-50">
                         <div className="text-2xl font-bold text-blue-900">{stats.acesByPlayer[0]}</div>
-                        <div className="text-xs text-blue-600">Aces - {getTeamName("team1")}</div>
+                                                    <div className="text-xs text-blue-600">{t('aces')} - {getTeamName("team1")}</div>
                       </div>
                       <div className="text-center p-4 rounded-lg bg-red-50">
                         <div className="text-2xl font-bold text-red-900">{stats.acesByPlayer[1]}</div>
-                        <div className="text-xs text-red-600">Aces - {getTeamName("team2")}</div>
+                                                    <div className="text-xs text-red-600">{t('aces')} - {getTeamName("team2")}</div>
                       </div>
                       <div className="text-center p-4 rounded-lg bg-yellow-50">
                         <div className="text-2xl font-bold text-yellow-900">{stats.doubleFaultsByPlayer[0]}</div>
@@ -855,8 +903,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         <li>• Service power: {stats.acesByPlayer[0] + stats.acesByPlayer[1]} aces served total</li>
                         <li>• Pressure points: {breakPointsCreated} break point opportunities created</li>
                         <li>• Match rhythm: {totalPoints} points over {setsPlayed} sets ({(totalPoints / Math.max(setsPlayed, 1)).toFixed(1)} points per set)</li>
-                        {match.duration && (
-                          <li>• Playing pace: {(totalPoints / (match.duration / 60)).toFixed(1)} points per minute</li>
+                        {match.startTime && match.endTime && (
+                          <li>• Playing pace: {(() => {
+                            const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
+                            const durationMinutes = durationMs / (1000 * 60)
+                            return (totalPoints / durationMinutes).toFixed(1)
+                          })()} points per minute</li>
                         )}
                       </ul>
                     </div>

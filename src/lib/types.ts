@@ -39,6 +39,12 @@ export interface Match extends Models.Document {
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
   detailLevel?: "points" | "simple" | "complex"
+  
+  // Timing fields
+  startTime?: string // ISO timestamp when first point is awarded
+  endTime?: string // ISO timestamp when match completes
+  setDurations?: number[] // Duration of each completed set in milliseconds
+  
   userId: string
 }
 
@@ -106,6 +112,7 @@ export interface PointDetail {
   pointOutcome: PointOutcome // How the point ended
   lastShotType?: ShotType // Type of shot that ended the point
   lastShotPlayer?: "p1" | "p2" // Player who hit the last shot
+  actionPlayer?: "p1" | "p2" // Player who performed the point-ending action
   
   // Context
   isBreakPoint: boolean // Was this a break point?
@@ -118,6 +125,7 @@ export interface PointDetail {
   // Optional Additional Details
   notes?: string // Free text notes about the point
   courtPosition?: CourtPosition // Where the point was played
+  atNet?: "p1" | "p2" | "both" // Which player was at the net
 }
 
 export interface DetailedPointLog {
@@ -131,50 +139,31 @@ export interface MatchStats {
 }
 
 export interface PlayerStats {
-  totalPointsPlayed: number
   totalPointsWon: number
-  pointWinPercentage: number
-  servicePointsWon: number
-  returnPointsWon: number
   winners: number
-  unforcedErrors: number
-  forcedErrors: number
   aces: number
   doubleFaults: number
-  firstServesMade: number
+  unforcedErrors: number
+  forcedErrors: number
+  
+  // Serve Stats
   firstServesAttempted: number
-  firstServePercentage: number
+  firstServesMade: number
   firstServePointsWon: number
-  firstServePointsPlayed: number
-  firstServeWinPercentage: number
   secondServesMade: number
-  secondServesAttempted: number
-  secondServePercentage: number
   secondServePointsWon: number
-  secondServePointsPlayed: number
-  secondServeWinPercentage: number
-  firstReturnPointsWon: number
-  firstReturnPointsPlayed: number
-  firstReturnWinPercentage: number
-  secondReturnPointsWon: number
-  secondReturnPointsPlayed: number
-  secondReturnWinPercentage: number
-  totalReturnPointsWon: number
-  totalReturnPointsPlayed: number
-  totalReturnWinPercentage: number
-  breakPointsWon: number
-  breakPointsPlayed: number
-  breakPointsSaved: number
+  
+  // Break Point Stats
   breakPointsFaced: number
-  breakPointConversionPercentage: number
-  breakPointSavePercentage: number
-  forehandWinners: number
-  forehandErrors: number
-  backhandWinners: number
-  backhandErrors: number
-  volleyWinners: number
-  volleyErrors: number
+  breakPointsSaved: number
+  breakPointsWon: number
+  
+  // Return Stats
+  totalReturnPointsWon: number
+  firstReturnPointsWon: number
+  secondReturnPointsWon: number
+
+  // Net Stats
+  netPointsAttempted: number
   netPointsWon: number
-  netPointsPlayed: number
-  netPointWinPercentage: number
 } 

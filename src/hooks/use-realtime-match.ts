@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { client } from "@/lib/appwrite-client"
+import { databases } from "@/lib/appwrite-client"
 
 interface RealtimeMatchData {
   score?: string
@@ -18,6 +19,40 @@ export function useRealtimeMatch(matchId: string) {
   const [retryCount, setRetryCount] = useState(0)
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const isConnectingRef = useRef(false)
+  const lastVisibilityChangeRef = useRef<number>(0)
+
+  // Function to fetch current match data
+  const fetchMatchData = useCallback(async () => {
+    if (!matchId) return
+
+    try {
+      console.log("📊 Fetching current match data...")
+      const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID?.trim()
+      const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID?.trim()
+      
+      if (!dbId || !collectionId) {
+        throw new Error("Missing environment variables")
+      }
+
+      const response = await databases.getDocument(
+        dbId,
+        collectionId,
+        matchId
+      )
+
+      console.log("✅ Match data fetched:", response)
+      
+      setLastUpdate({
+        score: response.score as string,
+        pointLog: response.pointLog as string[],
+        events: response.events as string[],
+        status: response.status as "In Progress" | "Completed",
+        winnerId: response.winnerId as string | undefined
+      })
+    } catch (err) {
+      console.error("❌ Failed to fetch match data:", err)
+    }
+  }, [matchId])
 
   useEffect(() => {
     if (!matchId || isConnectingRef.current) {
@@ -88,6 +123,9 @@ export function useRealtimeMatch(matchId: string) {
         setError(null)
         console.log("✅ Real-time subscription established")
 
+        // Fetch initial data after establishing connection
+        fetchMatchData()
+
       } catch (err) {
         console.error("❌ Real-time connection failed:", err)
         setError(err instanceof Error ? err.message : "Connection failed")
@@ -124,23 +162,70 @@ export function useRealtimeMatch(matchId: string) {
       setConnected(false)
       isConnectingRef.current = false
     }
-  }, [matchId, retryCount])
+  }, [matchId, retryCount, fetchMatchData])
 
-  // Handle page visibility changes for mobile
+  // Enhanced visibility change handling
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !connected && matchId && !isConnectingRef.current) {
-        console.log("👁️ Page became visible, reconnecting...")
-        setRetryCount(0) // Reset retry count
+      const now = Date.now()
+      
+      if (document.visibilityState === 'visible' && matchId) {
+        console.log("👁️ Page became visible")
+        
+        // Calculate time since last visibility change
+        const timeSinceLastChange = now - lastVisibilityChangeRef.current
+        
+        // If page was hidden for more than 10 seconds, force data refresh (reduced from 30s)
+        if (timeSinceLastChange > 10000) {
+          console.log("🔄 Page was hidden for >10s, refreshing data...")
+          fetchMatchData()
+        }
+        
+        // If not connected and not already connecting, trigger reconnection
+        if (!connected && !isConnectingRef.current) {
+          console.log("🔌 Not connected, triggering reconnection...")
+          setRetryCount(0) // Reset retry count to trigger reconnection
+        }
+      } else if (document.visibilityState === 'hidden') {
+        lastVisibilityChangeRef.current = now
+        console.log("👻 Page became hidden")
       }
     }
 
+    // Initial timestamp
+    lastVisibilityChangeRef.current = Date.now()
+    
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Also handle focus events for better mobile support
+    const handleFocus = () => {
+      if (matchId && !connected && !isConnectingRef.current) {
+        console.log("🎯 Window focused, checking connection...")
+        fetchMatchData()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
     }
-  }, [connected, matchId])
+  }, [connected, matchId, fetchMatchData])
+
+  // Periodically check connection health (every 30 seconds)
+  useEffect(() => {
+    if (!matchId || !connected) return
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        console.log("⏰ Periodic connection check")
+        // You could implement a ping mechanism here if needed
+      }
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [matchId, connected])
 
   return { connected, lastUpdate, error, retryCount }
 } 

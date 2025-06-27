@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface SimpleStatsPopupProps {
   open: boolean
@@ -35,6 +36,7 @@ export function SimpleStatsPopup({
   pointContext 
 }: SimpleStatsPopupProps) {
   const { winner, server, serveType, playerNames } = pointContext
+  const t = useTranslations()
   
   // Conditional logic for disabled buttons
   const isAceDisabled = winner !== server
@@ -49,36 +51,36 @@ export function SimpleStatsPopup({
   const outcomes = [
     {
       id: 'winner' as const,
-      label: 'Winner',
-      description: 'Clean winner',
+      label: t('winner'),
+      description: t('cleanWinner'),
       disabled: false,
       color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
     },
     {
       id: 'ace' as const,
-      label: 'Ace',
-      description: 'Unreturnable serve',
+      label: t('aces'),
+      description: t('unreturnableServe'),
       disabled: isAceDisabled,
       color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
     },
     {
       id: 'forced_error' as const,
-      label: 'Forced Error',
-      description: 'Opponent forced into error',
+      label: t('forcedError'),
+      description: t('opponentForcedIntoError'),
       disabled: false,
       color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
     },
     {
       id: 'unforced_error' as const,
-      label: 'Unforced Error',
-      description: 'Unforced mistake',
+      label: t('unforcedError'),
+      description: t('unforcedMistake'),
       disabled: false,
       color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
     },
     {
       id: 'double_fault' as const,
-      label: 'Double Fault',
-      description: 'Two consecutive faults',
+      label: t('doubleFaults'),
+      description: t('twoConsecutiveFaults'),
       disabled: isDoubleFaultDisabled,
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
     }
@@ -92,23 +94,23 @@ export function SimpleStatsPopup({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            Point #{pointContext.pointNumber} Details
+            {t('point')} #{pointContext.pointNumber} {t('details')}
           </DialogTitle>
           <div className="text-center text-sm text-muted-foreground space-y-1">
-            <p>Set {pointContext.setNumber}, Game {pointContext.gameNumber} • {pointContext.gameScore}</p>
+            <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
             <p>
               <Badge variant="outline" className="mr-2">
-                {winnerName} wins point
+{winnerName} {t('winsPoint')}
               </Badge>
               <Badge variant="secondary">
-                {serverName} serving ({serveType})
+{serverName} {t('serving')} ({serveType})
               </Badge>
             </p>
           </div>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="text-sm font-medium text-muted-foreground">Select how the point ended:</div>
+          <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
           
           <div className="grid grid-cols-1 gap-2">
             {outcomes.map((outcome) => (
@@ -129,8 +131,8 @@ export function SimpleStatsPopup({
                   {outcome.description}
                   {outcome.disabled && (
                     <span className="text-red-500 ml-2">
-                      {outcome.id === 'ace' && '(Server must win for ace)'}
-                      {outcome.id === 'double_fault' && '(Only on 2nd serve loss)'}
+                      {outcome.id === 'ace' && t('serverMustWinForAce')}
+                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
                     </span>
                   )}
                 </div>

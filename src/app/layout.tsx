@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -61,12 +62,14 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          {children}
-          <Toaster 
-            position="top-center"
-            richColors
-            closeButton
-          />
+          <ServiceWorkerProvider>
+            {children}
+            <Toaster 
+              position="top-center"
+              richColors
+              closeButton
+            />
+          </ServiceWorkerProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -371,6 +371,87 @@ export interface Translations {
   serving: string
   selectHowPointEnded: string
   
+  // Point outcome labels and descriptions
+  cleanWinner: string
+  unreturnableServe: string
+  twoConsecutiveFaults: string
+  opponentForcedIntoError: string
+  unforcedMistake: string
+  serverMustWinForAce: string
+  onlyOnSecondServeLoss: string
+  
+  // Tennis shot types
+  serve: string
+  forehand: string
+  backhand: string
+  volley: string
+  overhead: string
+  
+  // Court positions and game elements
+  deuceSide: string
+  adSide: string
+  rallyLength: string
+  rallyLengthHint: string
+  courtPosition: string
+  pointOutcome: string
+  lastShotType: string
+  
+  // Point detail sheet
+  notes: string
+  notesPlaceholder: string
+  saveDetailedPoint: string
+  whoWonThePoint: string
+  howDidTheyWin: string
+  recordPoint: string
+  
+  // Delete confirmation
+  deleteMatch: string
+  deleteMatchConfirm: string
+  matchDeleted: string
+  failedToDeleteMatch: string
+  deleting: string
+  
+  // Tab labels  
+  commentary: string
+  
+  // Additional tennis terms
+  forcedError: string
+  unforcedError: string
+  
+  // Detailed scoring terms
+  detailedStatistics: string
+  serveType: string
+  servePlacement: string
+  wide: string
+  body: string
+  tDownTheMiddle: string
+  serveSpeed: string
+  ace: string
+  doubleFault: string
+  
+  // Missing translations for components
+  quickActions: string
+  aceDescription: string
+  winnerDescription: string
+  unforcedErrorDescription: string
+  doubleFaultDescription: string
+  pointByPointAnalysis: string
+  noDetailedPointLog: string
+  enableDetailedLogging: string
+  noDetailedAnalysis: string
+  enableDetailedLoggingForAnalysis: string
+  setBySetBreakdownTitle: string
+  
+  // Additional validation error messages
+  doubleFaultSecondServeError: string
+  doubleFaultReceiverError: string
+  aceServerError: string
+  serviceWinnerError: string
+  aceDisabledHint: string
+  doubleFaultDisabledHint: string
+  pointDetailsTitle: string
+  pointContext: string
+  
   wins: string
   ongoing: string
   noData: string
@@ -503,12 +584,6 @@ export interface Translations {
   wonLabel: string
   avgDurationLabel: string
   winStreakMonthlyLabel: string
-
-  deleteMatch: string
-  deleteMatchConfirm: string
-  matchDeleted: string
-  failedToDeleteMatch: string
-  deleting: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -575,8 +650,8 @@ const translations: Record<Locale, Translations> = {
     bestOf3: "Best of 3",
     bestOf5: "Best of 5",
     scoringSystem: "Scoring System",
-    advantage: "With advantage",
-    noAdvantage: "No advantage",
+    advantage: "Advantage",
+    noAdvantage: "No Advantage",
     finalSet: "Final Set",
     fullSet: "Full Set",
     superTiebreak: "Super Tiebreak",
@@ -882,6 +957,87 @@ const translations: Record<Locale, Translations> = {
     serving: "serving",
     selectHowPointEnded: "Select how the point ended:",
     
+    // Point outcome labels and descriptions
+    cleanWinner: "Clean winner",
+    unreturnableServe: "Unreturnable serve",
+    twoConsecutiveFaults: "Two consecutive faults",
+    opponentForcedIntoError: "Opponent forced into error",
+    unforcedMistake: "Unforced mistake",
+    serverMustWinForAce: "(Server must win for ace)",
+    onlyOnSecondServeLoss: "(Only on 2nd serve loss)",
+    
+    // Tennis shot types
+    serve: "Serve",
+    forehand: "Forehand",
+    backhand: "Backhand",
+    volley: "Volley",
+    overhead: "Overhead",
+    
+    // Court positions and game elements
+    deuceSide: "Deuce Side",
+    adSide: "Ad Side",
+    rallyLength: "Rally Length",
+    rallyLengthHint: "Number of shots in rally",
+    courtPosition: "Court Position",
+    pointOutcome: "Point Outcome",
+    lastShotType: "Last Shot Type",
+    
+    // Point detail sheet
+    notes: "Notes",
+    notesPlaceholder: "Add any additional notes about this point...",
+    saveDetailedPoint: "Save Detailed Point",
+    whoWonThePoint: "Who won the point?",
+    howDidTheyWin: "How did they win?",
+    recordPoint: "Record Point",
+    
+    // Delete confirmation
+    deleteMatch: "Delete Match",
+    deleteMatchConfirm: "Are you sure you want to delete the match between {p1} and {p2}? This action cannot be undone.",
+    matchDeleted: "Match deleted successfully",
+    failedToDeleteMatch: "Failed to delete match",
+    deleting: "Deleting...",
+    
+    // Tab labels  
+    commentary: "Commentary",
+    
+    // Additional tennis terms
+    forcedError: "Forced Error",
+    unforcedError: "Unforced Error",
+    
+    // Detailed scoring terms
+    detailedStatistics: "Detailed Statistics",
+    serveType: "Serve Type",
+    servePlacement: "Serve Placement",
+    wide: "Wide",
+    body: "Body",
+    tDownTheMiddle: "T (Down the middle)",
+    serveSpeed: "Serve Speed (km/h)",
+    ace: "Ace",
+    doubleFault: "Double Fault",
+    
+    // Missing translations for components
+    quickActions: "Quick Actions",
+    aceDescription: "Unreturnable serve",
+    winnerDescription: "Clean winner",
+    unforcedErrorDescription: "Unforced mistake",
+    doubleFaultDescription: "Two consecutive faults",
+    pointByPointAnalysis: "Point-by-Point Analysis",
+    noDetailedPointLog: "No detailed point log available for this match.",
+    enableDetailedLogging: "Enable detailed logging during live scoring to see point-by-point analysis.",
+    noDetailedAnalysis: "No detailed analysis available for this match.",
+    enableDetailedLoggingForAnalysis: "Enable detailed logging during live scoring to see AI-powered match insights.",
+    setBySetBreakdownTitle: "Set by Set Breakdown",
+    
+    // Additional validation error messages
+    doubleFaultSecondServeError: "Double fault can only occur on second serve",
+    doubleFaultReceiverError: "Double fault means receiver wins the point",
+    aceServerError: "Ace means server wins the point",
+    serviceWinnerError: "Service winner means server wins the point",
+    aceDisabledHint: "Server must win for ace",
+    doubleFaultDisabledHint: "Only on second serve loss",
+    pointDetailsTitle: "Point #{pointNumber} Details",
+    pointContext: "Set {setNumber}, Game {gameNumber} • {gameScore} • {winnerName} wins",
+    
     wins: "Wins",
     ongoing: "ongoing",
     noData: "No data",
@@ -961,8 +1117,8 @@ const translations: Record<Locale, Translations> = {
     flexItemsCenter: "Flex položky na střed",
     pointsPlayed: "bodů odehráno",
     matchLinkCopiedToClipboard: "Odkaz na zápas zkopírován do schránky",
-    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován",
-    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován",
+    liveMatchLinkCopied: "Odkaz na živý zápas zkopírován do schránky!",
+    matchResultsLinkCopied: "Odkaz na výsledky zápasu zkopírován do schránky!",
     
     // Enhanced Dashboard Statistics
     performanceOverviewHeader: "📊 Performance Overview",
@@ -1013,40 +1169,7 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Matches",
     wonLabel: "Won",
     avgDurationLabel: "Avg Duration",
-    winStreakMonthlyLabel: "Win Streak",
-
-    deleteMatch: "Delete Match",
-    deleteMatchConfirm: "Are you sure you want to delete this match between {p1} and {p2}? This action is irreversible and all match data will be permanently deleted.",
-    matchDeleted: "Match deleted successfully",
-    failedToDeleteMatch: "Failed to delete match",
-    deleting: "Deleting...",
-
-    // Fix terminology for match setup
-    advantage: "With advantage",
-    noAdvantage: "No advantage",
-    finalSet: "Final set",
-    fullSet: "Full set",
-    bestOf1: "On 1 set",
-    bestOf3: "On 3 sets",
-    bestOf5: "On 5 sets",
-    singles: "Singles",
-    doubles: "Doubles",
-    player1: "Player 1",
-    player2: "Player 2",
-    player3: "Player 3",
-    player4: "Player 4",
-    noTracking: "(no tracking)",
-
-    ace: "Ace",
-    aceDescription: "Unreturnable serve",
-    winner: "Winner",
-    winnerDescription: "Clean winner",
-    forcedError: "Forced Error",
-    forcedErrorDescription: "Opponent forced into error",
-    unforcedError: "Unforced Error",
-    unforcedErrorDescription: "Unforced mistake",
-    doubleFault: "Double Fault",
-    doubleFaultDescription: "Two consecutive faults"
+    winStreakMonthlyLabel: "Win Streak"
   },
   cs: {
     // Common
@@ -1113,8 +1236,8 @@ const translations: Record<Locale, Translations> = {
     scoringSystem: "Systém skórování",
     advantage: "S výhodou",
     noAdvantage: "Bez výhody",
-    finalSet: "Poslední sad",
-    fullSet: "Plná sad",
+    finalSet: "Poslední sada",
+    fullSet: "Celý set",
     superTiebreak: "Super tiebreak",
     scoringDetailLevel: "Detailní úroveň skórování",
     pointsOnly: "Body jen",
@@ -1193,7 +1316,7 @@ const translations: Record<Locale, Translations> = {
     time: "Čas",
     format: "Formát",
     type: "Typ",
-    singles: "Singl",
+    singles: "Dvouhra",
     doubles: "Čtyřhra",
     bestOf: "Na",
     noAd: "Bez výhody",
@@ -1293,7 +1416,7 @@ const translations: Record<Locale, Translations> = {
     hot: "Žhavé",
     
     // Match creation and forms
-    singlesMatch: "Dvouhru",
+    singlesMatch: "Dvouhra",
     trackBasicStats: "Sledovat základní statistiky",
     trackDetailedStats: "Sledovat podrobné statistiky",
     
@@ -1418,11 +1541,92 @@ const translations: Record<Locale, Translations> = {
     serving: "podává",
     selectHowPointEnded: "Vyberte, jak bod skončil:",
     
+    // Point outcome labels and descriptions
+    cleanWinner: "Čistý vítězný úder",
+    unreturnableServe: "Nevrátitelné podání",
+    twoConsecutiveFaults: "Dvě po sobě jdoucí chyby",
+    opponentForcedIntoError: "Soupeř donucen k chybě",
+    unforcedMistake: "Nevynucená chyba",
+    serverMustWinForAce: "(Podávající musí vyhrát pro eso)",
+    onlyOnSecondServeLoss: "(Pouze při ztrátě 2. podání)",
+    
+    // Tennis shot types
+    serve: "Podání",
+    forehand: "Forhend",
+    backhand: "Bekhend",
+    volley: "Volej",
+    overhead: "Smeč",
+    
+    // Court positions and game elements
+    deuceSide: "Strana shody",
+    adSide: "Strana výhody",
+    rallyLength: "Délka výměny",
+    rallyLengthHint: "Počet úderů ve výměně",
+    courtPosition: "Pozice na kurtu",
+    pointOutcome: "Výsledek bodu",
+    lastShotType: "Typ posledního úderu",
+    
+    // Point detail sheet
+    notes: "Poznámky",
+    notesPlaceholder: "Přidejte jakékoli další poznámky k tomuto bodu...",
+    saveDetailedPoint: "Uložit podrobný bod",
+    whoWonThePoint: "Kdo vyhrál bod?",
+    howDidTheyWin: "Jak vyhráli?",
+    recordPoint: "Zaznamenat bod",
+    
+    // Delete confirmation
+    deleteMatch: "Smazat zápas",
+    deleteMatchConfirm: "Opravdu chcete smazat zápas mezi {p1} a {p2}? Tuto akci nelze vrátit zpět.",
+    matchDeleted: "Zápas úspěšně smazán",
+    failedToDeleteMatch: "Nepodařilo se smazat zápas",
+    deleting: "Mazání...",
+    
+    // Tab labels  
+    commentary: "Komentář",
+    
+    // Additional tennis terms
+    forcedError: "Vynucená chyba",
+    unforcedError: "Nevynucená chyba",
+    
+    // Detailed scoring terms
+    detailedStatistics: "Podrobné statistiky",
+    serveType: "Typ podání",
+    servePlacement: "Umístění podání",
+    wide: "Široce",
+    body: "Na tělo",
+    tDownTheMiddle: "T (Dolů středem)",
+    serveSpeed: "Rychlost podání (km/h)",
+    ace: "Eso",
+    doubleFault: "Dvojchyba",
+    
+    // Missing translations for components
+    quickActions: "Rychlé akce",
+    aceDescription: "Nevrátitelné podání",
+    winnerDescription: "Čistý vítězný úder",
+    unforcedErrorDescription: "Nevynucená chyba",
+    doubleFaultDescription: "Dvě po sobě jdoucí chyby",
+    pointByPointAnalysis: "Analýza bod za bodem",
+    noDetailedPointLog: "Pro tento zápas není k dispozici podrobný záznam bodů.",
+    enableDetailedLogging: "Povolte podrobné zaznamenávání během živého skórování pro zobrazení analýzy bod za bodem.",
+    noDetailedAnalysis: "Pro tento zápas není k dispozici podrobná analýza.",
+    enableDetailedLoggingForAnalysis: "Povolte podrobné zaznamenávání během živého skórování pro zobrazení pozorování zápasu poháněných AI.",
+    setBySetBreakdownTitle: "Rozdělení podle setů",
+    
+    // Additional validation error messages
+    doubleFaultSecondServeError: "Dvojchyba může nastat pouze při druhém podání",
+    doubleFaultReceiverError: "Dvojchyba znamená, že returner vyhrává bod",
+    aceServerError: "Eso znamená, že podávající vyhrává bod",
+    serviceWinnerError: "Vítězné podání znamená, že podávající vyhrává bod",
+    aceDisabledHint: "Podávající musí vyhrát pro eso",
+    doubleFaultDisabledHint: "Pouze při ztrátě druhého podání",
+    pointDetailsTitle: "Detail bodu #{pointNumber}",
+    pointContext: "Set {setNumber}, Hra {gameNumber} • {gameScore} • {winnerName} vyhrává",
+    
     wins: "Vyhrává",
     ongoing: "probíhá",
     noData: "Žádná data",
     switchToCzech: "Přepnout na češtinu",
-    switchToEnglish: "Switch to English",
+    switchToEnglish: "Přepnout na angličtinu",
     unableToConnect: "Nelze se připojit k serveru",
     checkInternetConnection: "Zkontrolujte připojení k internetu",
     connectionIssue: "Problém s připojením",
@@ -1549,40 +1753,7 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Zápasy",
     wonLabel: "Vyhrané",
     avgDurationLabel: "Průměrná doba",
-    winStreakMonthlyLabel: "Vítězná série",
-
-    deleteMatch: "Smazat zápas",
-    deleteMatchConfirm: "Opravdu chcete smazat tento zápas mezi {p1} a {p2}? Tato akce je nevratná a všechna data zápasu budou trvale odstraněna.",
-    matchDeleted: "Zápas byl úspěšně smazán",
-    failedToDeleteMatch: "Nepodařilo se smazat zápas",
-    deleting: "Mazání...",
-
-    // Fix terminology for match setup
-    advantage: "S výhodou",
-    noAdvantage: "Bez výhody",
-    finalSet: "Poslední sada",
-    fullSet: "Celý set",
-    bestOf1: "Na 1 set",
-    bestOf3: "Na 3 sety",
-    bestOf5: "Na 5 setů",
-    singles: "Dvouhra",
-    doubles: "Čtyřhra",
-    player1: "Hráč 1",
-    player2: "Hráč 2",
-    player3: "Hráč 3",
-    player4: "Hráč 4",
-    noTracking: "(bez sledování)",
-
-    ace: "Eso",
-    aceDescription: "Nepreturnovatelný servis",
-    winner: "Vítězný úder",
-    winnerDescription: "Čistý vítězný úder",
-    forcedError: "Vynucená chyba",
-    forcedErrorDescription: "Soupeř donucen k chybě",
-    unforcedError: "Nevynucená chyba",
-    unforcedErrorDescription: "Nevynucená chyba",
-    doubleFault: "Dvojchyba",
-    doubleFaultDescription: "Dvě chyby v řadě (dvojchyba)"
+    winStreakMonthlyLabel: "Vítězná série"
   }
 }
 
@@ -1593,4 +1764,4 @@ export function getTranslations(locale: Locale): Translations {
 export function t(locale: Locale, key: keyof Translations): string {
   const trans = getTranslations(locale)
   return trans[key] || translations.en[key] || key
-} 
+}
