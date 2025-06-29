@@ -155,8 +155,12 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
           if (isP1) p1FirstServePointsWon++
         }
       } else if (point.serveType === 'second') {
-        p1SecondServePoints++
-        if (isP1) p1SecondServePointsWon++
+        // Only count second serves that are actually played (not double faults)
+        // Double faults are automatic point losses and shouldn't count as "points played"
+        if (point.pointOutcome !== 'double_fault' && point.serveOutcome !== 'double_fault') {
+          p1SecondServePoints++
+          if (isP1) p1SecondServePointsWon++
+        }
       }
     } else {
       if (point.serveType === 'first') {
@@ -165,8 +169,12 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
           if (!isP1) p2FirstServePointsWon++
         }
       } else if (point.serveType === 'second') {
-        p2SecondServePoints++
-        if (!isP1) p2SecondServePointsWon++
+        // Only count second serves that are actually played (not double faults)
+        // Double faults are automatic point losses and shouldn't count as "points played"
+        if (point.pointOutcome !== 'double_fault' && point.serveOutcome !== 'double_fault') {
+          p2SecondServePoints++
+          if (!isP1) p2SecondServePointsWon++
+        }
       }
     }
   })

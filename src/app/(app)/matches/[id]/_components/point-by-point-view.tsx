@@ -6,7 +6,6 @@ import { PointDetail } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { useTranslations } from "@/hooks/use-translations"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -107,15 +106,37 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                 const finalGameScore = getGameScoreAfterGame(pointsInGame, pointLog);
                 
                 // Determine the correct server for this game based on tennis rules
-                // Server alternates every game, starting with whoever served first in the match
+                // Server alternates every game within a set
+                // Between sets: player who served SECOND in previous set serves FIRST in next set
                 const currentGameNumber = firstPoint.gameNumber;
+                const currentSetNumber = firstPoint.setNumber;
                 
-                // Use the same logic as getServerWithStartingChoice function in match store
-                const totalGamesPlayed = currentGameNumber - 1
+                let correctServer: 'p1' | 'p2';
                 
-                const correctServer = matchStartingServer === 'p1' 
-                  ? (totalGamesPlayed % 2 === 0 ? 'p1' : 'p2')  // P1 started: P1 serves games 1,3,5... P2 serves games 2,4,6...
-                  : (totalGamesPlayed % 2 === 0 ? 'p2' : 'p1')  // P2 started: P2 serves games 1,3,5... P1 serves games 2,4,6...
+                if (currentSetNumber === 1) {
+                  // First set: use match starting server and alternate within the set
+                  const gamesIntoSet = currentGameNumber - 1;
+                  correctServer = matchStartingServer === 'p1' 
+                    ? (gamesIntoSet % 2 === 0 ? 'p1' : 'p2')
+                    : (gamesIntoSet % 2 === 0 ? 'p2' : 'p1');
+                } else {
+                  // For sets after the first, determine who served last in the previous set
+                  const previousSetPoints = pointsBySets[currentSetNumber - 1] || [];
+                  const lastGameInPreviousSet = Math.max(...previousSetPoints.map(p => p.gameNumber));
+                  const lastPointOfPreviousSet = previousSetPoints
+                    .filter(p => p.gameNumber === lastGameInPreviousSet)
+                    .pop();
+                  
+                  // The player who served SECOND in the previous set serves FIRST in this set
+                  const previousSetLastServer = lastPointOfPreviousSet?.server || matchStartingServer;
+                  const newSetStartingServer = previousSetLastServer === 'p1' ? 'p2' : 'p1';
+                  
+                  // Now alternate within this set starting with the new set starting server
+                  const gamesIntoSet = currentGameNumber - 1;
+                  correctServer = newSetStartingServer === 'p1'
+                    ? (gamesIntoSet % 2 === 0 ? 'p1' : 'p2')
+                    : (gamesIntoSet % 2 === 0 ? 'p2' : 'p1');
+                }
 
                 return (
                   <div key={gameKey} className="py-4 px-2 border-b border-border/50 text-center">
@@ -145,45 +166,20 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                     
                                       <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
                         {(() => {
-                          // Helper function to convert tennis score strings to numeric values
-                          const convertTennisScore = (score: string): number => {
-                            if (score === '0') return 0
-                            if (score === '15') return 1
-                            if (score === '30') return 2
-                            if (score === '40') return 3
-                            if (score === 'AD') return 4
-                            return parseInt(score) || 0
-                          }
-                          
-                                           return pointsInGame
+                          return pointsInGame
                          .filter(point => !point.isGameWinning)
                          .map((point) => {
-                           // Parse the CURRENT score (after this point) to check if it's a breakpoint situation
-                           const currentScoreParts = point.gameScore.split('-')
+                           // For break point detection, we need the score BEFORE this point was played
+                           // We can reconstruct this by looking at the previous point or calculating backwards
+                           
                            let isCurrentlyBreakPoint = false
                            
-                           if (currentScoreParts.length === 2) {
-                             const p1Score = convertTennisScore(currentScoreParts[0])
-                             const p2Score = convertTennisScore(currentScoreParts[1])
-                             
-                             // Determine server and returner points for CURRENT score
-                             const serverPoints = point.server === 'p1' ? p1Score : p2Score
-                             const returnerPoints = point.server === 'p1' ? p2Score : p1Score
-                             
-                             // Check if the CURRENT score represents a breakpoint situation
-                             isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, false)
+                           if (point.gameScore) {
+                             // The gameScore field contains the score AFTER this point
+                             // For break point detection, we need to check if this point's stored isBreakPoint is correct
+                             // or use the stored value since break points are calculated correctly when the point is logged
+                             isCurrentlyBreakPoint = point.isBreakPoint || false
                            }
-                           
-                           // Enhanced debug logging
-                           console.log(`🎾 Point ${point.id}:`, {
-                             gameScore: point.gameScore,
-                             server: point.server,
-                             serverPoints: point.server === 'p1' ? convertTennisScore(currentScoreParts[0]) : convertTennisScore(currentScoreParts[1]),
-                             returnerPoints: point.server === 'p1' ? convertTennisScore(currentScoreParts[1]) : convertTennisScore(currentScoreParts[0]),
-                             isCurrentlyBreakPoint,
-                             storedBP: point.isBreakPoint,
-                             gameNumber: point.gameNumber
-                           })
                            
                            return (
                              <div key={point.id} className="inline-flex items-center gap-1">
