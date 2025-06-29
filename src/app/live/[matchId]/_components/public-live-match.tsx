@@ -129,6 +129,7 @@ interface PublicLiveMatchProps {
     playerFour?: Player
     score: string
     matchFormatParsed: MatchFormat
+    detailLevel?: "points" | "simple" | "complex"
     status: "In Progress" | "Completed"
     pointLog?: string[]
     winnerId?: string
@@ -436,7 +437,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                   <MatchStatsComponentSimpleFixed 
                     stats={matchStats}
                     playerNames={playerNames}
-                    detailLevel={match.matchFormatParsed.detailLevel || "simple"}
+                    detailLevel={match.detailLevel || "simple"}
                     pointLog={pointLog}
                   />
                 </CardContent>

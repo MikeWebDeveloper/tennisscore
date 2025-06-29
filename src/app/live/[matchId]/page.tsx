@@ -110,6 +110,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       score: match.score,
       scoreParsed: JSON.parse(match.score) as Score,
       matchFormatParsed: JSON.parse(match.matchFormat) as MatchFormat,
+      detailLevel: match.detailLevel || "simple", // Include detailLevel from database
       status: match.status as "In Progress" | "Completed",
       pointLog: match.pointLog || [],
       winnerId: match.winnerId,
