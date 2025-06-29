@@ -169,12 +169,10 @@ export function LiveScoreboard({
 
   return (
     <div 
-      className={cn("bg-card rounded-lg border shadow-sm", className)}
+      className={cn("bg-card rounded-lg border shadow-sm mobile-grid-fix", className)}
       suppressHydrationWarning={true}
       style={{
         // Force CSS Grid with explicit Safari compatibility
-        display: 'grid',
-        gridTemplateRows: 'auto auto',
         transform: 'translateZ(0)', // Force hardware acceleration for Safari
         WebkitTransform: 'translateZ(0)', // Safari prefix
       }}
@@ -194,31 +192,10 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
           suppressHydrationWarning={true}
         >
-          {/* MOBILE-FIRST FIXED LAYOUT: Explicit CSS Grid for consistent alignment */}
-          <div 
-            className="items-center gap-2"
-            style={{
-              // Force explicit CSS Grid layout with proper alignment
-              display: 'grid',
-              gridTemplateColumns: '1fr auto',
-              gridTemplateAreas: '"player-info score-info"',
-              alignItems: 'center',
-              minHeight: '48px', // Minimum height for consistent layout
-              WebkitBoxAlign: 'center', // Safari fallback
-            }}
-            suppressHydrationWarning={true}
-          >
-            {/* Left: Player info - Always takes available space, left-aligned */}
-            <div 
-              className="flex items-center gap-2 sm:gap-3 min-w-0"
-              style={{
-                gridArea: 'player-info',
-                justifySelf: 'start', // Force left alignment
-                alignSelf: 'center',
-                width: '100%',
-                textAlign: 'left',
-              }}
-            >
+          {/* Enhanced CSS Grid layout with WebKit compatibility */}
+          <div className="scoreboard-grid webkit-grid-fix">
+            {/* Left: Player info - Always left-aligned */}
+            <div className="player-info-area webkit-player-info flex items-center gap-2 sm:gap-3 min-w-0">
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
@@ -246,7 +223,10 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5" style={{ textAlign: 'left' }}>
+                <div 
+                  className="flex items-center gap-1 mt-0.5" 
+                  style={{ textAlign: 'left' }}
+                >
                   {playerOneYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerOneYearOfBirth}
@@ -271,17 +251,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Fixed width for consistent right alignment */}
-            <div 
-              className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
-              style={{
-                gridArea: 'score-info',
-                justifySelf: 'end', // Force right alignment
-                alignSelf: 'center',
-                textAlign: 'right',
-                minWidth: 'max-content',
-              }}
-            >
+            {/* Right: Score - Always right-aligned */}
+            <div className="score-info-area webkit-score-info flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               {/* Serving Indicator */}
               <div 
                 className={cn(
@@ -363,31 +334,10 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
           suppressHydrationWarning={true}
         >
-          {/* MOBILE-FIRST FIXED LAYOUT: Explicit CSS Grid for consistent alignment */}
-          <div 
-            className="items-center gap-2"
-            style={{
-              // Force explicit CSS Grid layout with proper alignment
-              display: 'grid',
-              gridTemplateColumns: '1fr auto',
-              gridTemplateAreas: '"player-info score-info"',
-              alignItems: 'center',
-              minHeight: '48px', // Minimum height for consistent layout
-              WebkitBoxAlign: 'center', // Safari fallback
-            }}
-            suppressHydrationWarning={true}
-          >
-            {/* Left: Player info - Always takes available space, left-aligned */}
-            <div 
-              className="flex items-center gap-2 sm:gap-3 min-w-0"
-              style={{
-                gridArea: 'player-info',
-                justifySelf: 'start', // Force left alignment
-                alignSelf: 'center',
-                width: '100%',
-                textAlign: 'left',
-              }}
-            >
+          {/* Enhanced CSS Grid layout with WebKit compatibility */}
+          <div className="scoreboard-grid webkit-grid-fix">
+            {/* Left: Player info - Always left-aligned */}
+            <div className="player-info-area webkit-player-info flex items-center gap-2 sm:gap-3 min-w-0">
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
@@ -415,7 +365,10 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="flex items-center gap-1 mt-0.5" style={{ textAlign: 'left' }}>
+                <div 
+                  className="flex items-center gap-1 mt-0.5" 
+                  style={{ textAlign: 'left' }}
+                >
                   {playerTwoYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerTwoYearOfBirth}
@@ -440,17 +393,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Fixed width for consistent right alignment */}
-            <div 
-              className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
-              style={{
-                gridArea: 'score-info',
-                justifySelf: 'end', // Force right alignment
-                alignSelf: 'center',
-                textAlign: 'right',
-                minWidth: 'max-content',
-              }}
-            >
+            {/* Right: Score - Always right-aligned */}
+            <div className="score-info-area webkit-score-info flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               {/* Serving Indicator */}
               <div 
                 className={cn(
