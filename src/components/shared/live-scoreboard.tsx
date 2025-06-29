@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
 import { Score } from "@/stores/matchStore"
-import { cn, formatPlayerName } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { useEffect } from "react"
 
@@ -78,28 +78,13 @@ export function LiveScoreboard({
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
   
-  // Format player names using new "Last Name, First Name" format
-  const formatDisplayName = (fullName: string, isDoubles = false) => {
-    // Parse the current "First Last" format to extract names
-    const parts = fullName.split(' ')
-    if (parts.length < 2) return fullName
-    
-    const firstName = parts[0]
-    const lastName = parts.slice(1).join(' ') // Handle multi-part last names
-    
-    // Use the new formatPlayerName utility with responsive logic
-    return formatPlayerName(firstName, lastName, {
-      isDoubles,
-      maxLength: isDoubles ? 15 : 20
-    })
-  }
-  
+  // Use names directly as they come already formatted from formatPlayerFromObject
   const teamOneName = isDoubles 
-    ? `${formatDisplayName(playerOneName, true)} / ${formatDisplayName(playerThreeName!, true)}`
-    : formatDisplayName(playerOneName)
+    ? `${playerOneName} / ${playerThreeName}`
+    : playerOneName
   const teamTwoName = isDoubles 
-    ? `${formatDisplayName(playerTwoName, true)} / ${formatDisplayName(playerFourName!, true)}`
-    : formatDisplayName(playerTwoName)
+    ? `${playerTwoName} / ${playerFourName}`
+    : playerTwoName
 
   // Dynamic font sizing based on name length
   const getNameFontSize = (name: string) => {
