@@ -163,7 +163,7 @@ export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat):
     if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
-  if (format.finalSetTiebreak) {
+  if (format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super") {
     const tiebreakAt = format.shortSets ? 4 : 6
     if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
@@ -191,7 +191,7 @@ export function getSetWinner(p1Games: number, p2Games: number, format: MatchForm
   }
 
   // Final set tiebreak
-  if (isFinalSet && format.finalSetTiebreak) {
+  if (isFinalSet && (format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super")) {
     const tiebreakAt = format.shortSets ? 4 : 6
     if (p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) return "p1"
     if (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt) return "p2"
@@ -216,7 +216,7 @@ export function shouldStartTiebreak(p1Games: number, p2Games: number, format: Ma
   if (format.tiebreak && p1Games === targetGames && p2Games === targetGames) {
     return true
   }
-  if (format.finalSetTiebreak && p1Games === targetGames && p2Games === targetGames) {
+  if ((format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super") && p1Games === targetGames && p2Games === targetGames) {
     return true
   }
   return false
@@ -318,7 +318,7 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
     if (newScore.isTiebreak) {
       newScore.tiebreakPoints![winnerIdx]++;
       const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
-      const tiebreakTarget = (isDecidingSet && format.finalSetTiebreak) ? (format.finalSetTiebreakAt || 10) : 7;
+      const tiebreakTarget = (isDecidingSet && format.finalSetTiebreak === "super") ? (format.finalSetTiebreakAt || 10) : 7;
 
       if (isTiebreakWon(newScore.tiebreakPoints![0], newScore.tiebreakPoints![1], tiebreakTarget)) {
         newScore.games[winnerIdx]++;
@@ -335,7 +335,7 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
 
         const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
         
-        if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || !format.finalSetTiebreak)) {
+        if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || format.finalSetTiebreak !== "none")) {
             newScore.isTiebreak = true;
             newScore.initialTiebreakServer = point.server === 'p1' ? (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p1' : 'p2' : (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p2' : 'p1';
         } else if (isSetWon(newScore.games[0], newScore.games[1], format)) {

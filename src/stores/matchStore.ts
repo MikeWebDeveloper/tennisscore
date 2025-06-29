@@ -13,7 +13,7 @@ export interface MatchFormat {
   sets: 1 | 3 | 5
   noAd: boolean
   tiebreak: boolean
-  finalSetTiebreak: boolean
+  finalSetTiebreak: "standard" | "super" | "none"
   finalSetTiebreakAt?: number
   shortSets?: boolean
   detailLevel?: "points" | "simple" | "complex"

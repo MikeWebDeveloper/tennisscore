@@ -54,6 +54,7 @@ export interface MatchFormat {
   tiebreakAt: number
   finalSetTiebreak?: 'standard' | 'super' | 'none'
   noAd: boolean
+  detailLevel?: "points" | "simple" | "complex"
 }
 
 export interface Score {

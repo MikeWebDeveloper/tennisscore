@@ -375,7 +375,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         sets: parsed.sets || 3,
         noAd: parsed.noAd || false,
         tiebreak: parsed.tiebreak !== false,
-        finalSetTiebreak: parsed.finalSetTiebreak || false,
+        finalSetTiebreak: parsed.finalSetTiebreak || "standard",
         finalSetTiebreakAt: parsed.finalSetTiebreakAt || 10,
       }
     } catch (error) {
@@ -384,7 +384,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         sets: 3,
         noAd: false,
         tiebreak: true,
-        finalSetTiebreak: false,
+        finalSetTiebreak: "standard" as const,
         finalSetTiebreakAt: 10,
       }
     }
@@ -432,7 +432,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // In tiebreak, check if either player is close to winning
       const p1TbPoints = score.tiebreakPoints?.[0] || 0
       const p2TbPoints = score.tiebreakPoints?.[1] || 0
-      const tiebreakTarget = 7 // Standard tiebreak
+      // Determine tiebreak target based on whether it's a deciding set and format
+      const isDecidingSet = currentP1SetsWon === setsNeededToWin - 1 && currentP2SetsWon === setsNeededToWin - 1
+      const tiebreakTarget = (isDecidingSet && parsedMatchFormat.finalSetTiebreak === "super") ? 
+        (parsedMatchFormat.finalSetTiebreakAt || 10) : 7
       
       if ((p1TbPoints >= tiebreakTarget - 1 && p1TbPoints >= p2TbPoints) && p1CouldWinSetNextGame) {
         isSetPoint = true

@@ -436,7 +436,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                   <MatchStatsComponentSimpleFixed 
                     stats={matchStats}
                     playerNames={playerNames}
-                    detailLevel="simple"
+                    detailLevel={match.matchFormatParsed.detailLevel || "simple"}
                     pointLog={pointLog}
                   />
                 </CardContent>
