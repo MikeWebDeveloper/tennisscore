@@ -58,12 +58,12 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
   // Count totals
   let p1FirstServesIn = 0
   let p1FirstServePointsWon = 0
-  let p1SecondServePoints = 0
+  let p1SecondServeAttempts = 0  // Include all second serve attempts (including double faults)
   let p1SecondServePointsWon = 0
 
   let p2FirstServesIn = 0
   let p2FirstServePointsWon = 0
-  let p2SecondServePoints = 0
+  let p2SecondServeAttempts = 0  // Include all second serve attempts (including double faults)
   let p2SecondServePointsWon = 0
 
   pointLog.forEach(point => {
@@ -155,12 +155,10 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
           if (isP1) p1FirstServePointsWon++
         }
       } else if (point.serveType === 'second') {
-        // Only count second serves that are actually played (not double faults)
-        // Double faults are automatic point losses and shouldn't count as "points played"
-        if (point.pointOutcome !== 'double_fault' && point.serveOutcome !== 'double_fault') {
-          p1SecondServePoints++
-          if (isP1) p1SecondServePointsWon++
-        }
+        // Count ALL second serve attempts (including double faults) for proper percentage calculation
+        p1SecondServeAttempts++
+        // Only count as won if server actually won the point (never for double faults)
+        if (isP1) p1SecondServePointsWon++
       }
     } else {
       if (point.serveType === 'first') {
@@ -169,12 +167,10 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
           if (!isP1) p2FirstServePointsWon++
         }
       } else if (point.serveType === 'second') {
-        // Only count second serves that are actually played (not double faults)
-        // Double faults are automatic point losses and shouldn't count as "points played"
-        if (point.pointOutcome !== 'double_fault' && point.serveOutcome !== 'double_fault') {
-          p2SecondServePoints++
-          if (!isP1) p2SecondServePointsWon++
-        }
+        // Count ALL second serve attempts (including double faults) for proper percentage calculation
+        p2SecondServeAttempts++
+        // Only count as won if server actually won the point (never for double faults)
+        if (!isP1) p2SecondServePointsWon++
       }
     }
   })
@@ -190,7 +186,7 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
     p2FirstServesIn > 0 ? Math.round((p2FirstServePointsWon / p2FirstServesIn) * 100) : 0
   ]
 
-  stats.secondServePointsPlayedByPlayer = [p1SecondServePoints, p2SecondServePoints]
+  stats.secondServePointsPlayedByPlayer = [p1SecondServeAttempts, p2SecondServeAttempts]
   stats.secondServePointsWonByPlayer = [p1SecondServePointsWon, p2SecondServePointsWon]
 
   // Calculate service and receiving percentages
