@@ -416,8 +416,16 @@ export function MatchStatsComponentSimple({
             />
             <StatRow 
               label={t('secondServePointsWonPercentage')} 
-              value1={stats.secondServePointsWonByPlayer[0]} 
-              value2={stats.secondServePointsWonByPlayer[1]}
+              value1={Math.round(
+                stats.secondServePointsPlayedByPlayer[0] > 0 
+                  ? (stats.secondServePointsWonByPlayer[0] / stats.secondServePointsPlayedByPlayer[0]) * 100 
+                  : 0
+              )}
+              value2={Math.round(
+                stats.secondServePointsPlayedByPlayer[1] > 0 
+                  ? (stats.secondServePointsWonByPlayer[1] / stats.secondServePointsPlayedByPlayer[1]) * 100 
+                  : 0
+              )}
               format="percentage"
             />
           </CardContent>
@@ -585,8 +593,16 @@ export function MatchStatsComponentSimpleFixed({
             />
             <StatRow 
               label={t('secondServePointsWonPercentage')} 
-              value1={stats.secondServePointsWonByPlayer[0]} 
-              value2={stats.secondServePointsWonByPlayer[1]}
+              value1={Math.round(
+                stats.secondServePointsPlayedByPlayer[0] > 0 
+                  ? (stats.secondServePointsWonByPlayer[0] / stats.secondServePointsPlayedByPlayer[0]) * 100 
+                  : 0
+              )}
+              value2={Math.round(
+                stats.secondServePointsPlayedByPlayer[1] > 0 
+                  ? (stats.secondServePointsWonByPlayer[1] / stats.secondServePointsPlayedByPlayer[1]) * 100 
+                  : 0
+              )}
               format="percentage"
             />
           </CardContent>
