@@ -222,6 +222,17 @@ export function shouldStartTiebreak(p1Games: number, p2Games: number, format: Ma
   return false
 }
 
+export function shouldBeInSuperTiebreak(currentSets: number[][], format: MatchFormat): boolean {
+  if (format.finalSetTiebreak !== "super") return false
+  
+  const setsToWin = Math.ceil(format.sets / 2)
+  const p1SetsWon = currentSets.filter(s => s[0] > s[1]).length
+  const p2SetsWon = currentSets.filter(s => s[1] > s[0]).length
+  
+  // Check if we're in the deciding set (both players have won setsToWin - 1 sets)
+  return p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1
+}
+
 export function formatFinalScore(sets: number[][]): string {
   // Format final match score like "6-4, 6-3" or "6-4, 3-6, 6-2"
   return sets.map(set => `${set[0]}-${set[1]}`).join(", ")
@@ -313,16 +324,30 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
       break; 
     }
     
+    // Check if we should be in a super tiebreak (deciding set with super tiebreak format)
+    const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
+    const shouldStartSuperTiebreak = isDecidingSet && format.finalSetTiebreak === "super" && newScore.games[0] === 0 && newScore.games[1] === 0 && !newScore.isTiebreak;
+    
+    if (shouldStartSuperTiebreak) {
+      newScore.isTiebreak = true;
+      newScore.tiebreakPoints = [0, 0];
+      newScore.initialTiebreakServer = point.server;
+    }
+    
     const winnerIdx = point.winner === 'p1' ? 0 : 1;
 
     if (newScore.isTiebreak) {
       newScore.tiebreakPoints![winnerIdx]++;
-      const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
       const tiebreakTarget = (isDecidingSet && format.finalSetTiebreak === "super") ? (format.finalSetTiebreakAt || 10) : 7;
 
       if (isTiebreakWon(newScore.tiebreakPoints![0], newScore.tiebreakPoints![1], tiebreakTarget)) {
-        newScore.games[winnerIdx]++;
-        newScore.sets.push([...newScore.games]);
+        // In super tiebreak, winning the tiebreak wins the set directly
+        if (isDecidingSet && format.finalSetTiebreak === "super") {
+          newScore.sets.push([newScore.tiebreakPoints![0], newScore.tiebreakPoints![1]]);
+        } else {
+          newScore.games[winnerIdx]++;
+          newScore.sets.push([...newScore.games]);
+        }
         newScore.games = [0, 0];
         newScore.isTiebreak = false;
         newScore.tiebreakPoints = [0, 0];
@@ -333,9 +358,7 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
         newScore.games[winnerIdx]++;
         newScore.points = [0, 0];
 
-        const isDecidingSet = p1SetsWon === setsToWin - 1 && p2SetsWon === setsToWin - 1;
-        
-        if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || format.finalSetTiebreak !== "none")) {
+        if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || format.finalSetTiebreak === "standard")) {
             newScore.isTiebreak = true;
             newScore.initialTiebreakServer = point.server === 'p1' ? (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p1' : 'p2' : (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p2' : 'p1';
         } else if (isSetWon(newScore.games[0], newScore.games[1], format)) {
