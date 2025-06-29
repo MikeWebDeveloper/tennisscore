@@ -169,13 +169,8 @@ export function LiveScoreboard({
 
   return (
     <div 
-      className={cn("bg-card rounded-lg border shadow-sm mobile-grid-fix", className)}
+      className={cn("bg-card rounded-lg border shadow-sm", className)}
       suppressHydrationWarning={true}
-      style={{
-        // Force CSS Grid with explicit Safari compatibility
-        transform: 'translateZ(0)', // Force hardware acceleration for Safari
-        WebkitTransform: 'translateZ(0)', // Safari prefix
-      }}
     >
       <div className="divide-y">
         {/* Player 1 */}
@@ -192,21 +187,20 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
           suppressHydrationWarning={true}
         >
-          {/* Enhanced CSS Grid layout with WebKit compatibility */}
-          <div className="scoreboard-grid webkit-grid-fix">
-            {/* Left: Player info - Always left-aligned */}
-            <div className="player-info-area webkit-player-info flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* SIMPLIFIED MOBILE-FIRST LAYOUT: Clean flexbox for iOS Safari compatibility */}
+          <div className="ios-safe-layout">
+            {/* Left: Player info - Always takes available space */}
+            <div className="player-names-section">
               {playerOneAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="player-text-content">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <h3 
                     className={cn(
-                      "font-semibold truncate",
+                      "font-semibold player-name-text",
                       getNameFontSize(teamOneName)
                     )}
-                    style={{ textAlign: 'left' }}
                   >
                     {teamOneName}
                   </h3>
@@ -223,10 +217,7 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div 
-                  className="flex items-center gap-1 mt-0.5" 
-                  style={{ textAlign: 'left' }}
-                >
+                <div className="player-details-line">
                   {playerOneYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerOneYearOfBirth}
@@ -251,8 +242,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Always right-aligned */}
-            <div className="score-info-area webkit-score-info flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+            {/* Right: Score - Fixed width, always right */}
+            <div className="score-section">
               {/* Serving Indicator */}
               <div 
                 className={cn(
@@ -334,21 +325,20 @@ export function LiveScoreboard({
           tabIndex={!isInGame ? 0 : -1}
           suppressHydrationWarning={true}
         >
-          {/* Enhanced CSS Grid layout with WebKit compatibility */}
-          <div className="scoreboard-grid webkit-grid-fix">
-            {/* Left: Player info - Always left-aligned */}
-            <div className="player-info-area webkit-player-info flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* SIMPLIFIED MOBILE-FIRST LAYOUT: Clean flexbox for iOS Safari compatibility */}
+          <div className="ios-safe-layout">
+            {/* Left: Player info - Always takes available space */}
+            <div className="player-names-section">
               {playerTwoAvatar || (
                 <div className="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"></div>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="player-text-content">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <h3 
                     className={cn(
-                      "font-semibold truncate",
+                      "font-semibold player-name-text",
                       getNameFontSize(teamTwoName)
                     )}
-                    style={{ textAlign: 'left' }}
                   >
                     {teamTwoName}
                   </h3>
@@ -365,10 +355,7 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div 
-                  className="flex items-center gap-1 mt-0.5" 
-                  style={{ textAlign: 'left' }}
-                >
+                <div className="player-details-line">
                   {playerTwoYearOfBirth && (
                     <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                       {playerTwoYearOfBirth}
@@ -393,8 +380,8 @@ export function LiveScoreboard({
               </div>
             </div>
             
-            {/* Right: Score - Always right-aligned */}
-            <div className="score-info-area webkit-score-info flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+            {/* Right: Score - Fixed width, always right */}
+            <div className="score-section">
               {/* Serving Indicator */}
               <div 
                 className={cn(

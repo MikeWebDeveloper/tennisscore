@@ -344,169 +344,98 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Mobile Safari CSS Grid fixes */
 @layer utilities {
-  /* Force CSS Grid consistency across all mobile browsers */
-  .mobile-grid-fix {
-    display: -webkit-grid !important;
-    display: -ms-grid !important;
-    display: grid !important;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
+  /* Remove all complex webkit fixes and use simple iOS-compatible layout */
   
-  /* Safari-specific grid alignment fixes */
-  @supports (-webkit-touch-callout: none) {
-    .mobile-grid-fix {
-      -webkit-transform: translateZ(0);
-      transform: translateZ(0);
-      will-change: transform;
-    }
-    
-    /* Force consistent text alignment on Safari */
-    .mobile-grid-fix [style*="text-align: left"] {
-      -webkit-text-align: left !important;
-      text-align: left !important;
-    }
-    
-    .mobile-grid-fix [style*="text-align: right"] {
-      -webkit-text-align: right !important;
-      text-align: right !important;
-    }
-    
-    /* Ensure grid areas are properly defined */
-    .mobile-grid-fix [style*="grid-area"] {
-      -webkit-grid-area: inherit;
-      -ms-grid-area: inherit;
-      grid-area: inherit;
-    }
-  }
-  
-  /* Force grid template columns consistency */
-  .scoreboard-grid {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "player-info score-info";
-    align-items: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    min-height: 48px;
-  }
-  
-  /* Ensure proper alignment in grid areas */
-  .player-info-area {
-    grid-area: player-info;
-    justify-self: start;
-    text-align: left;
-    width: 100%;
-  }
-  
-  .score-info-area {
-    grid-area: score-info;
-    justify-self: end;
-    text-align: right;
-    min-width: max-content;
-  }
-}
-
-/* WebKit-specific fixes based on research for iPhone/macOS Safari */
-@layer utilities {
-  /* Enhanced WebKit prefix support for Flexbox */
-  .webkit-grid-fix {
-    /* Grid with WebKit prefixes */
-    display: -webkit-grid;
-    display: -ms-grid;
-    display: grid;
-    
-    /* Flexbox fallback with full WebKit support */
-    display: -webkit-flex;
-    display: -moz-flex;
-    display: -ms-flexbox;
+  /* iOS Safari compatible layout - Simple flexbox approach */
+  .ios-safe-layout {
     display: flex;
-    
-    /* WebKit-specific justify-content support */
-    -webkit-justify-content: space-between;
-    -moz-justify-content: space-between;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    
-    /* Alignment with WebKit prefixes */
-    -webkit-align-items: center;
-    -moz-align-items: center;
-    -ms-flex-align: center;
     align-items: center;
-    
-    /* Force hardware acceleration */
+    justify-content: space-between;
+    width: 100%;
+    min-height: 48px;
+    /* Safari-specific hardware acceleration */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    will-change: transform;
   }
   
-  /* Player info area with comprehensive WebKit support */
-  .webkit-player-info {
-    /* Flexbox properties with WebKit prefixes */
-    -webkit-flex-grow: 1;
-    -moz-flex-grow: 1;
-    -ms-flex-positive: 1;
-    flex-grow: 1;
-    
-    /* Explicit flex-basis for WebKit */
-    -webkit-flex-basis: 70%;
-    -moz-flex-basis: 70%;
-    -ms-flex-preferred-size: 70%;
-    flex-basis: 70%;
-    
-    /* Text alignment with WebKit prefixes */
-    -webkit-text-align: left;
-    -moz-text-align: left;
+  /* Player names section - takes available space, left aligned */
+  .player-names-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0; /* Allows text truncation */
     text-align: left;
-    
-    /* Ensure left alignment */
-    -webkit-justify-self: start;
-    -moz-justify-self: start;
-    justify-self: start;
   }
   
-  /* Score info area with margin auto technique */
-  .webkit-score-info {
-    /* Margin auto technique for WebKit fallback */
-    margin-left: auto;
-    -webkit-margin-start: auto;
-    -moz-margin-start: auto;
-    
-    /* Flexbox properties with WebKit prefixes */
-    -webkit-flex-shrink: 0;
-    -moz-flex-shrink: 0;
-    -ms-flex-negative: 0;
+  /* Player text content wrapper */
+  .player-text-content {
+    min-width: 0;
+    flex: 1;
+  }
+  
+  /* Player name text with proper truncation for mobile */
+  .player-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    text-align: left;
+  }
+  
+  /* Player details line */
+  .player-details-line {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.125rem;
+    text-align: left;
+  }
+  
+  /* Score section - fixed width, right aligned */
+  .score-section {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
     flex-shrink: 0;
-    
-    /* Explicit flex-basis for content sizing */
-    -webkit-flex-basis: auto;
-    -moz-flex-basis: auto;
-    -ms-flex-preferred-size: auto;
-    flex-basis: auto;
-    
-    /* Text alignment with WebKit prefixes */
-    -webkit-text-align: right;
-    -moz-text-align: right;
+    margin-left: auto; /* Force right alignment */
     text-align: right;
+  }
+  
+  /* Mobile-specific fixes for iOS Safari */
+  @media (max-width: 768px) {
+    .ios-safe-layout {
+      /* Force consistent behavior on mobile */
+      min-height: 44px; /* iOS minimum touch target */
+    }
     
-    /* Ensure right alignment */
-    -webkit-justify-self: end;
-    -moz-justify-self: end;
-    justify-self: end;
+    .player-name-text {
+      /* More aggressive truncation on mobile */
+      max-width: calc(100vw - 200px); /* Reserve space for scores */
+    }
+    
+    .score-section {
+      gap: 0.25rem; /* Slightly more space on mobile */
+    }
   }
   
-  /* Force text alignment consistency on WebKit */
-  .webkit-text-left {
-    -webkit-text-align: left !important;
-    -moz-text-align: left !important;
-    text-align: left !important;
-  }
-  
-  .webkit-text-right {
-    -webkit-text-align: right !important;
-    -moz-text-align: right !important;
-    text-align: right !important;
+  /* iPhone specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .ios-safe-layout {
+      /* Ensure proper alignment on iOS */
+      -webkit-box-align: center;
+      -webkit-justify-content: space-between;
+      -webkit-box-pack: justify;
+    }
+    
+    .player-names-section {
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
+    }
+    
+    .score-section {
+      -webkit-margin-start: auto;
+    }
   }
 }
 
