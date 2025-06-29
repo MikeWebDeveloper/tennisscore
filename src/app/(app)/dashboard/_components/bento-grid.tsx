@@ -276,7 +276,7 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-slate-200 truncate">
-                          {player.firstName} {player.lastName}
+                          {player.lastName} {player.firstName}
                         </p>
                         {player.rating && (
                           <p className="text-sm text-slate-400">Rating: {player.rating}</p>

@@ -27,7 +27,7 @@ import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTranslations } from "@/hooks/use-translations"
-import { cn } from "@/lib/utils"
+import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
@@ -350,10 +350,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [startTime, setStartTime] = useState<string | null>(null)
   
   const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
-    p3: match.playerThree ? `${match.playerThree.firstName} ${match.playerThree.lastName}` : undefined,
-    p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
+    p1: formatPlayerFromObject(match.playerOne),
+    p2: formatPlayerFromObject(match.playerTwo),
+    p3: match.playerThree ? formatPlayerFromObject(match.playerThree) : undefined,
+    p4: match.playerFour ? formatPlayerFromObject(match.playerFour) : undefined,
   }
 
   const players = {

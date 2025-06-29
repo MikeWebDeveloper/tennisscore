@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Edit, Trash2, Star } from "lucide-react"
 import { Player } from "@/lib/types"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { formatPlayerFromObject } from "@/lib/utils"
 import { useTranslations } from "@/hooks/use-translations"
 
 interface PlayerCardProps {
@@ -49,7 +50,7 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
           <div className="min-w-0 flex-1 pr-10">
             <div className="flex items-center space-x-1.5 mb-1">
               <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
-                {player.firstName} {player.lastName}
+                {formatPlayerFromObject(player)}
               </h3>
               {player.isMainPlayer && (
                 <Star className="h-3 w-3 text-amber-500 flex-shrink-0" fill="currentColor" />

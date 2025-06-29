@@ -25,7 +25,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
     }
   }
 
-  const getPlayerName = (player: Player) => `${player.firstName} ${player.lastName}`
+  const getPlayerName = (player: Player) => `${player.lastName} ${player.firstName}`
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">

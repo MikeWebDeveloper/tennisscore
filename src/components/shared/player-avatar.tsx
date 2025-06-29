@@ -36,7 +36,7 @@ export function PlayerAvatar({ player, className }: PlayerAvatarProps) {
     <Avatar className={className}>
       <AvatarImage
         src={profilePictureUrl}
-        alt={`${player.firstName} ${player.lastName}`}
+        alt={`${player.lastName} ${player.firstName}`}
       />
       <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>

@@ -229,10 +229,10 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
       <div className="flex justify-between text-sm text-muted-foreground px-2">
         <span className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-500 rounded" />
-          {playerOne.firstName} {playerOne.lastName}
+          {playerOne.lastName} {playerOne.firstName}
         </span>
         <span className="flex items-center gap-2">
-          {playerTwo.firstName} {playerTwo.lastName}
+          {playerTwo.lastName} {playerTwo.firstName}
           <div className="w-3 h-3 bg-red-500 rounded" />
         </span>
       </div>

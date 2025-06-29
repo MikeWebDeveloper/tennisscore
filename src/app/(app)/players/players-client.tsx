@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { User as UserType, Player } from "@/lib/types"
 import { deletePlayer } from "@/lib/actions/players"
+import { formatPlayerFromObject } from "@/lib/utils"
 import { PlayerList } from "./_components/player-list"
 import { CreatePlayerDialog, CreatePlayerTrigger } from "./_components/create-player-dialog"
 import { EditPlayerDialog } from "./_components/edit-player-dialog"
@@ -34,8 +35,8 @@ export function PlayersClient({ players }: PlayersClientProps) {
     if (sortOrder === 'none') return players
 
     const sorted = [...players].sort((a, b) => {
-      const nameA = `${a.firstName} ${a.lastName}`.toLowerCase()
-      const nameB = `${b.firstName} ${b.lastName}`.toLowerCase()
+      const nameA = formatPlayerFromObject(a).toLowerCase()
+      const nameB = formatPlayerFromObject(b).toLowerCase()
       
       if (sortOrder === 'asc') {
         return nameA.localeCompare(nameB)

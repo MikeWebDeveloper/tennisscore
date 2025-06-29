@@ -81,6 +81,10 @@ export interface Translations {
   failedToCreateMatch: string
   searchByTyping: string
   
+  // Anonymous player options
+  anonymousPlayer: string
+  dontTrackStats: string
+  
   // Dashboard
   winRate: string
   completedMatches: string
@@ -666,9 +670,13 @@ const translations: Record<Locale, Translations> = {
     startMatch: "Start Match",
     matchCreatedSuccessfully: "Match Created Successfully",
     failedToCreateMatch: "Failed to Create Match",
-    searchByTyping: "Search by Typing",
-    
-    // Dashboard
+      searchByTyping: "Search by Typing",
+  
+  // Anonymous player options
+  anonymousPlayer: "Anonymous Player",
+  dontTrackStats: "Don't track stats",
+  
+  // Dashboard
     winRate: "Win Rate",
     completedMatches: "Completed Matches",
     totalMatches: "Total Matches",
@@ -1251,6 +1259,10 @@ const translations: Record<Locale, Translations> = {
     matchCreatedSuccessfully: "Zápas vytvořen úspěšně",
     failedToCreateMatch: "Nepodařilo se vytvořit zápas",
     searchByTyping: "Hledat při psaní",
+    
+    // Anonymous player options
+    anonymousPlayer: "Anonymní hráč",
+    dontTrackStats: "Nesledovat statistiky",
     
     // Dashboard
     winRate: "Úspěšnost",

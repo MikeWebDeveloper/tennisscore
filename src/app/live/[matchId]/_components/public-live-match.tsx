@@ -198,7 +198,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   const shareMatch = async () => {
     const url = window.location.href
-    const title = `${match.playerOne.firstName} ${match.playerOne.lastName} vs ${match.playerTwo.firstName} ${match.playerTwo.lastName} - Live Tennis Match`
+    const title = `${match.playerOne.lastName} ${match.playerOne.firstName} vs ${match.playerTwo.lastName} ${match.playerTwo.firstName} - Live Tennis Match`
     const text = "Watch this live tennis match!"
     
     // Check if we're on a mobile device
@@ -241,10 +241,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const matchStats = calculateMatchStats(pointLog)
   const hasPointData = pointLog.length > 0
   const playerNames = {
-    p1: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-    p2: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
-    p3: match.playerThree ? `${match.playerThree.firstName} ${match.playerThree.lastName}` : undefined,
-    p4: match.playerFour ? `${match.playerFour.firstName} ${match.playerFour.lastName}` : undefined,
+    p1: `${match.playerOne.lastName} ${match.playerOne.firstName}`,
+    p2: `${match.playerTwo.lastName} ${match.playerTwo.firstName}`,
+    p3: match.playerThree ? `${match.playerThree.lastName} ${match.playerThree.firstName}` : undefined,
+    p4: match.playerFour ? `${match.playerFour.lastName} ${match.playerFour.firstName}` : undefined,
   }
 
   // Extract current server from the latest point or score

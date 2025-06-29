@@ -193,16 +193,18 @@ export async function generateMetadata({ params }: PageProps) {
     }
 
     const isDoubles = !!(playerThree && playerFour)
-    const teamOneName = isDoubles 
-      ? `${playerOne.firstName} ${playerOne.lastName} / ${playerThree.firstName} ${playerThree.lastName}`
-      : `${playerOne.firstName} ${playerOne.lastName}`
-    const teamTwoName = isDoubles 
-      ? `${playerTwo.firstName} ${playerTwo.lastName} / ${playerFour.firstName} ${playerFour.lastName}`
-      : `${playerTwo.firstName} ${playerTwo.lastName}`
+    const playerNames = {
+      p1: isDoubles 
+        ? `${playerOne.lastName} ${playerOne.firstName} / ${playerThree.lastName} ${playerThree.firstName}`
+        : `${playerOne.lastName} ${playerOne.firstName}`,
+      p2: isDoubles 
+        ? `${playerTwo.lastName} ${playerTwo.firstName} / ${playerFour.lastName} ${playerFour.firstName}`
+        : `${playerTwo.lastName} ${playerTwo.firstName}`,
+    }
 
     return {
-      title: `${teamOneName} vs ${teamTwoName} - Live Match`,
-      description: `Follow the live tennis match between ${teamOneName} and ${teamTwoName}`,
+      title: `${playerNames.p1} vs ${playerNames.p2} - Live Match`,
+      description: `Follow the live tennis match between ${playerNames.p1} and ${playerNames.p2}`,
       other: {
         'cache-control': 'no-cache, no-store, must-revalidate',
         'pragma': 'no-cache',

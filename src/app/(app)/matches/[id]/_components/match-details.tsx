@@ -28,6 +28,7 @@ import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface MatchDetailsProps {
   match: {
@@ -145,11 +146,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             <span className="text-lg text-muted-foreground">{t('doublesMatch')}</span>
           </div>
           <div className="text-2xl font-bold">
-            {match.playerOne?.firstName} {match.playerOne?.lastName} / {match.playerThree?.firstName} {match.playerThree?.lastName}
+            {match.playerOne && formatPlayerFromObject(match.playerOne)} / {match.playerThree && formatPlayerFromObject(match.playerThree)}
           </div>
           <div className="text-lg text-muted-foreground">vs</div>
           <div className="text-2xl font-bold">
-            {match.playerTwo?.firstName} {match.playerTwo?.lastName} / {match.playerFour?.firstName} {match.playerFour?.lastName}
+            {match.playerTwo && formatPlayerFromObject(match.playerTwo)} / {match.playerFour && formatPlayerFromObject(match.playerFour)}
           </div>
         </div>
       )
@@ -157,8 +158,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     
     return (
       <h1 className="text-2xl font-bold">
-        {match.playerOne?.firstName} {match.playerOne?.lastName} vs{" "}
-        {match.playerTwo?.firstName} {match.playerTwo?.lastName}
+        {match.playerOne && formatPlayerFromObject(match.playerOne)} vs{" "}
+        {match.playerTwo && formatPlayerFromObject(match.playerTwo)}
       </h1>
     )
   }
@@ -166,13 +167,13 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const getTeamName = (team: "team1" | "team2") => {
     if (!isDoubles) {
       return team === "team1" 
-        ? `${match.playerOne?.firstName} ${match.playerOne?.lastName}`
-        : `${match.playerTwo?.firstName} ${match.playerTwo?.lastName}`
+        ? (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player")
+        : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
     }
     
     return team === "team1"
-      ? `${match.playerOne?.firstName} / ${match.playerThree?.firstName}`
-      : `${match.playerTwo?.firstName} / ${match.playerFour?.firstName}`
+      ? `${match.playerOne && formatPlayerFromObject(match.playerOne)} / ${match.playerThree && formatPlayerFromObject(match.playerThree)}`
+      : `${match.playerTwo && formatPlayerFromObject(match.playerTwo)} / ${match.playerFour && formatPlayerFromObject(match.playerFour)}`
   }
 
   return (
@@ -204,11 +205,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             <div className="text-center space-y-3">
               <div className="space-y-2">
                 <h1 className="text-xl font-bold text-foreground leading-tight">
-                  {match.playerOne?.firstName} {match.playerOne?.lastName}
+                  {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"}
                 </h1>
                 <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
                 <h2 className="text-xl font-bold text-foreground leading-tight">
-                  {match.playerTwo?.firstName} {match.playerTwo?.lastName}
+                  {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"}
                 </h2>
               </div>
               
@@ -400,7 +401,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         <div className="flex items-center justify-center gap-2 text-yellow-400">
                           <Trophy className="h-6 w-6" />
                           <span className="text-xl font-semibold">
-                            {match.winner.firstName} {match.winner.lastName} Wins!
+                            {formatPlayerFromObject(match.winner)} Wins!
                           </span>
                         </div>
                       )}

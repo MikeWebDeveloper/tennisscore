@@ -1,7 +1,24 @@
 import { getMatchesByUser } from "@/lib/actions/matches"
 import { getPlayersByUser } from "@/lib/actions/players"
 import { Match, Player } from "@/lib/types"
+import { formatPlayerFromObject } from "@/lib/utils"
 import { MatchesPageClient, EnhancedMatch } from "./matches-page-client"
+
+// Helper function to get anonymous player display name
+function getAnonymousPlayerName(playerId: string): { firstName: string; lastName: string } {
+  if (playerId.includes('player-1') || playerId.includes('player1')) {
+    return { firstName: "Player", lastName: "1" }
+  } else if (playerId.includes('player-2') || playerId.includes('player2')) {
+    return { firstName: "Player", lastName: "2" }
+  } else if (playerId.includes('player-3') || playerId.includes('player3')) {
+    return { firstName: "Player", lastName: "3" }
+  } else if (playerId.includes('player-4') || playerId.includes('player4')) {
+    return { firstName: "Player", lastName: "4" }
+  } else {
+    // Fallback for other anonymous formats
+    return { firstName: "Anonymous", lastName: "Player" }
+  }
+}
 
 export default async function MatchesPage() {
   let matches: Match[] = []
@@ -38,25 +55,33 @@ export default async function MatchesPage() {
   const enhancedMatches: EnhancedMatch[] = matches.map(match => {
     // Handle anonymous players by checking ID prefix
     const playerOne = match.playerOneId.startsWith('anonymous-') 
-      ? { firstName: "Player", lastName: "1", $id: match.playerOneId } as Player
+      ? { ...getAnonymousPlayerName(match.playerOneId), $id: match.playerOneId } as Player
       : playersMap.get(match.playerOneId)
     const playerTwo = match.playerTwoId.startsWith('anonymous-') 
-      ? { firstName: "Player", lastName: "2", $id: match.playerTwoId } as Player
+      ? { ...getAnonymousPlayerName(match.playerTwoId), $id: match.playerTwoId } as Player
       : playersMap.get(match.playerTwoId)
     
     // Handle doubles players
     const playerThree = match.playerThreeId 
       ? (match.playerThreeId.startsWith('anonymous-') 
-        ? { firstName: "Player", lastName: "3", $id: match.playerThreeId } as Player
+        ? { ...getAnonymousPlayerName(match.playerThreeId), $id: match.playerThreeId } as Player
         : playersMap.get(match.playerThreeId))
       : undefined
     const playerFour = match.playerFourId 
       ? (match.playerFourId.startsWith('anonymous-') 
-        ? { firstName: "Player", lastName: "4", $id: match.playerFourId } as Player
+        ? { ...getAnonymousPlayerName(match.playerFourId), $id: match.playerFourId } as Player
         : playersMap.get(match.playerFourId))
       : undefined
 
-    const winner = match.winnerId ? playersMap.get(match.winnerId) : null
+    // Handle winner - check if it's anonymous
+    let winner: Player | null = null
+    if (match.winnerId) {
+      if (match.winnerId.startsWith('anonymous-')) {
+        winner = { ...getAnonymousPlayerName(match.winnerId), $id: match.winnerId } as Player
+      } else {
+        winner = playersMap.get(match.winnerId) || null
+      }
+    }
 
     let scoreParsed: { sets: { p1: number; p2: number }[], games?: number[], points?: number[] } | undefined = undefined
     try {
@@ -81,11 +106,11 @@ export default async function MatchesPage() {
 
     return {
       ...match,
-      playerOneName: playerOne ? `${playerOne.firstName} ${playerOne.lastName}` : "Unknown Player",
-      playerTwoName: playerTwo ? `${playerTwo.firstName} ${playerTwo.lastName}` : "Unknown Player",
-      playerThreeName: playerThree ? `${playerThree.firstName} ${playerThree.lastName}` : undefined,
-      playerFourName: playerFour ? `${playerFour.firstName} ${playerFour.lastName}` : undefined,
-      winnerName: winner ? `${winner.firstName} ${winner.lastName}` : "",
+      playerOneName: playerOne ? formatPlayerFromObject(playerOne) : "Unknown Player",
+      playerTwoName: playerTwo ? formatPlayerFromObject(playerTwo) : "Unknown Player",
+      playerThreeName: playerThree ? formatPlayerFromObject(playerThree) : undefined,
+      playerFourName: playerFour ? formatPlayerFromObject(playerFour) : undefined,
+      winnerName: winner ? formatPlayerFromObject(winner) : "",
       scoreParsed: scoreParsed,
       playerOne,
       playerTwo,

@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
 import { Score } from "@/stores/matchStore"
-import { cn } from "@/lib/utils"
+import { cn, formatPlayerName } from "@/lib/utils"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { useEffect } from "react"
 
@@ -78,37 +78,28 @@ export function LiveScoreboard({
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
   
-  // Enhanced name formatting with better responsive logic
-  const formatPlayerName = (fullName: string, isDoubles = false) => {
+  // Format player names using new "Last Name, First Name" format
+  const formatDisplayName = (fullName: string, isDoubles = false) => {
+    // Parse the current "First Last" format to extract names
     const parts = fullName.split(' ')
     if (parts.length < 2) return fullName
     
-    const totalLength = fullName.length
+    const firstName = parts[0]
+    const lastName = parts.slice(1).join(' ') // Handle multi-part last names
     
-    // Very aggressive abbreviation for extremely long names
-    if (totalLength > 30) {
-      return `${parts[0][0]}. ${parts[parts.length - 1][0]}.`
-    }
-    
-    // For doubles or long names
-    if (isDoubles || totalLength > 20) {
-      return `${parts[0][0]}. ${parts[parts.length - 1]}`
-    }
-    
-    // For moderately long names
-    if (totalLength > 15) {
-      return `${parts[0]} ${parts[parts.length - 1][0]}.`
-    }
-    
-    return fullName
+    // Use the new formatPlayerName utility with responsive logic
+    return formatPlayerName(firstName, lastName, {
+      isDoubles,
+      maxLength: isDoubles ? 15 : 20
+    })
   }
   
   const teamOneName = isDoubles 
-    ? `${formatPlayerName(playerOneName, true)} / ${formatPlayerName(playerThreeName!, true)}`
-    : formatPlayerName(playerOneName)
+    ? `${formatDisplayName(playerOneName, true)} / ${formatDisplayName(playerThreeName!, true)}`
+    : formatDisplayName(playerOneName)
   const teamTwoName = isDoubles 
-    ? `${formatPlayerName(playerTwoName, true)} / ${formatPlayerName(playerFourName!, true)}`
-    : formatPlayerName(playerTwoName)
+    ? `${formatDisplayName(playerTwoName, true)} / ${formatDisplayName(playerFourName!, true)}`
+    : formatDisplayName(playerTwoName)
 
   // Dynamic font sizing based on name length
   const getNameFontSize = (name: string) => {

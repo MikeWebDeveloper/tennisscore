@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, User, Plus } from "lucide-react"
 import Link from "next/link"
 import { Player } from "@/lib/types"
@@ -53,19 +54,19 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const t = useTranslations()
   const [loading, setLoading] = useState(false)
   
-  const ANONYMOUS_PLAYERS = [
-    { $id: "anonymous-1", firstName: t('player1'), lastName: `(${t('noTracking')})`, displayName: `${t('player1')} (${t('noTracking')})` },
-    { $id: "anonymous-2", firstName: t('player2'), lastName: `(${t('noTracking')})`, displayName: `${t('player2')} (${t('noTracking')})` },
-    { $id: "anonymous-3", firstName: t('player3'), lastName: `(${t('noTracking')})`, displayName: `${t('player3')} (${t('noTracking')})` },
-    { $id: "anonymous-4", firstName: t('player4'), lastName: `(${t('noTracking')})`, displayName: `${t('player4')} (${t('noTracking')})` },
-  ]
-  
-  // Form state with default anonymous players
+  // Form state
   const [matchType, setMatchType] = useState<"singles" | "doubles">("singles")
-  const [playerOne, setPlayerOne] = useState("anonymous-1") // Default to Player 1
-  const [playerTwo, setPlayerTwo] = useState("anonymous-2") // Default to Player 2
+  const [playerOne, setPlayerOne] = useState("")
+  const [playerTwo, setPlayerTwo] = useState("")
   const [playerThree, setPlayerThree] = useState("")
   const [playerFour, setPlayerFour] = useState("")
+  
+  // Anonymous player tracking
+  const [playerOneAnonymous, setPlayerOneAnonymous] = useState(false)
+  const [playerTwoAnonymous, setPlayerTwoAnonymous] = useState(false)
+  const [playerThreeAnonymous, setPlayerThreeAnonymous] = useState(false)
+  const [playerFourAnonymous, setPlayerFourAnonymous] = useState(false)
+  
   const [sets, setSets] = useState([3]) // Best of 3 by default
   const [scoring, setScoring] = useState<"ad" | "no-ad">("ad")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb">("full")
@@ -77,12 +78,20 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
     setLoading(true)
 
     try {
+      // Generate anonymous player IDs if needed
+      const getPlayerIdOrAnonymous = (playerId: string, isAnonymous: boolean, defaultName: string) => {
+        if (isAnonymous || !playerId) {
+          return `anonymous-${defaultName.toLowerCase().replace(' ', '-')}`
+        }
+        return playerId
+      }
+
       // Prepare data for validation
       const formData: CreateMatchData = {
-        playerOneId: playerOne,
-        playerTwoId: playerTwo,
-        playerThreeId: matchType === "doubles" ? playerThree : undefined,
-        playerFourId: matchType === "doubles" ? playerFour : undefined,
+        playerOneId: getPlayerIdOrAnonymous(playerOne, playerOneAnonymous, t('player1')),
+        playerTwoId: getPlayerIdOrAnonymous(playerTwo, playerTwoAnonymous, t('player2')),
+        playerThreeId: matchType === "doubles" ? getPlayerIdOrAnonymous(playerThree, playerThreeAnonymous, t('player3')) : undefined,
+        playerFourId: matchType === "doubles" ? getPlayerIdOrAnonymous(playerFour, playerFourAnonymous, t('player4')) : undefined,
         matchFormat: {
           sets: sets[0] as 1 | 3 | 5,
           gamesPerSet: 6,
@@ -135,18 +144,6 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
     const options: ComboboxOption[] = []
 
-    // Add anonymous players
-    ANONYMOUS_PLAYERS.forEach((player) => {
-      if (!excludeIds.includes(player.$id)) {
-        options.push({
-          value: player.$id,
-          label: player.displayName,
-          group: t('quickMatch'),
-          icon: <User className="h-4 w-4 text-muted-foreground" />,
-        })
-      }
-    })
-
     // Add create new player option
     options.push({
       value: "create-new",
@@ -161,7 +158,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         if (!excludeIds.includes(player.$id)) {
           options.push({
             value: player.$id,
-            label: `${player.firstName} ${player.lastName}`,
+            label: `${player.lastName} ${player.firstName}`,
             group: t('trackedPlayers'),
             icon: <PlayerAvatar player={player} className="h-5 w-5" />,
           })
@@ -184,19 +181,63 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
     value: string,
     onChange: (value: string) => void,
     label: string,
+    isAnonymous: boolean,
+    onAnonymousChange: (checked: boolean) => void,
     excludeIds: string[] = []
   ) => (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(" ", "-")}>{label}</Label>
-      <Combobox
-        options={createPlayerOptions(excludeIds)}
-        value={value}
-        onValueChange={(val) => handlePlayerChange(val, onChange)}
-        placeholder={t('searchOrSelectPlayer')}
-        emptyText={t('noPlayersFound')}
-      />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Label htmlFor={label.toLowerCase().replace(" ", "-")}>{label}</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id={`${label.toLowerCase().replace(" ", "-")}-anonymous`}
+            checked={isAnonymous}
+            onCheckedChange={onAnonymousChange}
+            className="h-3 w-3"
+          />
+          <Label 
+            htmlFor={`${label.toLowerCase().replace(" ", "-")}-anonymous`}
+            className="text-xs text-muted-foreground cursor-pointer"
+          >
+            {t('dontTrackStats')}
+          </Label>
+        </div>
+      </div>
+      
+      {!isAnonymous && (
+        <Combobox
+          options={createPlayerOptions(excludeIds)}
+          value={value}
+          onValueChange={(val) => handlePlayerChange(val, onChange)}
+          placeholder={t('searchOrSelectPlayer')}
+          emptyText={t('noPlayersFound')}
+        />
+      )}
+      
+      {isAnonymous && (
+        <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+          <User className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {t('anonymousPlayer')} - {t('noTracking')}
+          </span>
+        </div>
+      )}
     </div>
   )
+
+  // Check if form is valid
+  const isFormValid = () => {
+    const hasPlayerOne = playerOneAnonymous || playerOne
+    const hasPlayerTwo = playerTwoAnonymous || playerTwo
+    
+    if (matchType === "singles") {
+      return hasPlayerOne && hasPlayerTwo
+    } else {
+      const hasPlayerThree = playerThreeAnonymous || playerThree
+      const hasPlayerFour = playerFourAnonymous || playerFour
+      return hasPlayerOne && hasPlayerTwo && hasPlayerThree && hasPlayerFour
+    }
+  }
 
   return (
     <motion.div
@@ -212,10 +253,10 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-                  <div>
-            <h1 className="text-2xl font-bold">{t("newMatch")}</h1>
-            <p className="text-muted-foreground">{t("setUpMatch")}</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">{t("newMatch")}</h1>
+          <p className="text-muted-foreground">{t("setUpMatch")}</p>
+        </div>
       </motion.div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -223,7 +264,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-                              <h3 className="font-medium mb-4">{t("matchType")}</h3>
+              <h3 className="font-medium mb-4">{t("matchType")}</h3>
               <RadioGroup value={matchType} onValueChange={(value: "singles" | "doubles") => setMatchType(value)}>
                 <div className="grid grid-cols-2 gap-3">
                   <Label htmlFor="singles" className="radio-option">
@@ -244,26 +285,30 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-                              <div className="flex items-center gap-2 mb-4">
-                  <h3 className="font-medium">{t("players")}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    {t("searchByTyping")}
-                  </div>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium">{t("players")}</h3>
+                <div className="text-sm text-muted-foreground">
+                  {t("searchByTyping")}
                 </div>
+              </div>
               
               {matchType === "singles" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {renderPlayerSelect(
                     playerOne, 
                     setPlayerOne, 
-                    t('player1'), 
+                    t('player1'),
+                    playerOneAnonymous,
+                    setPlayerOneAnonymous,
                     [playerTwo, playerThree, playerFour].filter(Boolean)
                   )}
                   
                   {renderPlayerSelect(
                     playerTwo, 
                     setPlayerTwo, 
-                    t('player2'), 
+                    t('player2'),
+                    playerTwoAnonymous,
+                    setPlayerTwoAnonymous,
                     [playerOne, playerThree, playerFour].filter(Boolean)
                   )}
                 </div>
@@ -273,21 +318,25 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-px flex-1 bg-border" />
-                                              <span className="text-sm font-medium text-muted-foreground px-2">{t("team1")}</span>
+                      <span className="text-sm font-medium text-muted-foreground px-2">{t("team1")}</span>
                       <div className="h-px flex-1 bg-border" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border-2 border-primary/20">
                       {renderPlayerSelect(
                         playerOne, 
                         setPlayerOne, 
-                        t('player1'), 
+                        t('player1'),
+                        playerOneAnonymous,
+                        setPlayerOneAnonymous,
                         [playerTwo, playerThree, playerFour].filter(Boolean)
                       )}
                       
                       {renderPlayerSelect(
                         playerThree, 
                         setPlayerThree, 
-                        t('player3'), 
+                        t('player3'),
+                        playerThreeAnonymous,
+                        setPlayerThreeAnonymous,
                         [playerOne, playerTwo, playerFour].filter(Boolean)
                       )}
                     </div>
@@ -304,14 +353,18 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       {renderPlayerSelect(
                         playerTwo, 
                         setPlayerTwo, 
-                        t('player2'), 
+                        t('player2'),
+                        playerTwoAnonymous,
+                        setPlayerTwoAnonymous,
                         [playerOne, playerThree, playerFour].filter(Boolean)
                       )}
                       
                       {renderPlayerSelect(
                         playerFour, 
                         setPlayerFour, 
-                        t('player4'), 
+                        t('player4'),
+                        playerFourAnonymous,
+                        setPlayerFourAnonymous,
                         [playerOne, playerTwo, playerThree].filter(Boolean)
                       )}
                     </div>
@@ -424,7 +477,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           <Button 
             type="submit" 
             className="w-full h-12 text-base font-medium"
-            disabled={loading || !playerOne || !playerTwo || (matchType === "doubles" && (!playerThree || !playerFour))}
+            disabled={loading || !isFormValid()}
           >
             {loading ? t("creatingMatch") : t("startMatch")}
           </Button>

@@ -211,8 +211,8 @@ export function MatchesList({ matches }: MatchesListProps) {
                 <DeleteMatchButton 
                   matchId={match.$id}
                   playerNames={{
-                    p1: `${match.playerOne?.firstName || t("player")} ${match.playerOne?.lastName || '1'}`,
-                    p2: `${match.playerTwo?.firstName || t("player")} ${match.playerTwo?.lastName || '2'}`,
+                    p1: match.playerOneName,
+                    p2: match.playerTwoName,
                   }}
                 />
               </div>
