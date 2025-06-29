@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LiveScoreboard } from "@/components/shared/live-scoreboard"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "@/app/(app)/matches/live/[id]/_components/MatchTimerDisplay"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -198,7 +199,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   const shareMatch = async () => {
     const url = window.location.href
-    const title = `${match.playerOne.lastName} ${match.playerOne.firstName} vs ${match.playerTwo.lastName} ${match.playerTwo.firstName} - Live Tennis Match`
+    const title = `${formatPlayerFromObject(match.playerOne)} vs ${formatPlayerFromObject(match.playerTwo)} - Live Tennis Match`
     const text = "Watch this live tennis match!"
     
     // Check if we're on a mobile device
@@ -241,10 +242,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const matchStats = calculateMatchStats(pointLog)
   const hasPointData = pointLog.length > 0
   const playerNames = {
-    p1: `${match.playerOne.lastName} ${match.playerOne.firstName}`,
-    p2: `${match.playerTwo.lastName} ${match.playerTwo.firstName}`,
-    p3: match.playerThree ? `${match.playerThree.lastName} ${match.playerThree.firstName}` : undefined,
-    p4: match.playerFour ? `${match.playerFour.lastName} ${match.playerFour.firstName}` : undefined,
+    p1: formatPlayerFromObject(match.playerOne),
+    p2: formatPlayerFromObject(match.playerTwo),
+    p3: match.playerThree ? formatPlayerFromObject(match.playerThree) : undefined,
+    p4: match.playerFour ? formatPlayerFromObject(match.playerFour) : undefined,
   }
 
   // Extract current server from the latest point or score
@@ -272,6 +273,24 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       currentServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
     }
   }
+
+  const generateMetaTags = useCallback(() => {
+    const title = `${formatPlayerFromObject(match.playerOne)} vs ${formatPlayerFromObject(match.playerTwo)} - Live Tennis Match`
+    const description = `Follow the live tennis match between ${formatPlayerFromObject(match.playerOne)} and ${formatPlayerFromObject(match.playerTwo)}`
+    
+    return { title, description }
+  }, [match.playerOne, match.playerTwo])
+
+  useEffect(() => {
+    const { title, description } = generateMetaTags()
+    
+    // Update document title and description
+    document.title = title
+    const metaDescription = document.querySelector('meta[name="description"]')
+    if (metaDescription) {
+      metaDescription.setAttribute('content', description)
+    }
+  }, [generateMetaTags])
 
   // Prevent hydration mismatch by showing loading state until mounted
   if (!mounted) {

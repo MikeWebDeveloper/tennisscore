@@ -12,6 +12,7 @@ import {
   Play
 } from "lucide-react"
 import Link from "next/link"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface BentoGridProps {
   stats: {
@@ -276,7 +277,7 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-slate-200 truncate">
-                          {player.lastName} {player.firstName}
+                          {formatPlayerFromObject(player)}
                         </p>
                         {player.rating && (
                           <p className="text-sm text-slate-400">Rating: {player.rating}</p>

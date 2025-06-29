@@ -22,6 +22,7 @@ const MobileBottomNavSpacer = () => <div className="h-16 md:hidden" />
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -158,7 +159,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         if (!excludeIds.includes(player.$id)) {
           options.push({
             value: player.$id,
-            label: `${player.lastName} ${player.firstName}`,
+            label: formatPlayerFromObject(player),
             group: t('trackedPlayers'),
             icon: <PlayerAvatar player={player} className="h-5 w-5" />,
           })

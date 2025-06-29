@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/hooks/use-translations"
 import { PointDetail } from "@/lib/types"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface MatchStatsComponentProps {
   stats: MatchStats
@@ -229,10 +230,10 @@ export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsC
       <div className="flex justify-between text-sm text-muted-foreground px-2">
         <span className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-500 rounded" />
-          {playerOne.lastName} {playerOne.firstName}
+          {formatPlayerFromObject(playerOne)}
         </span>
         <span className="flex items-center gap-2">
-          {playerTwo.lastName} {playerTwo.firstName}
+          {formatPlayerFromObject(playerTwo)}
           <div className="w-3 h-3 bg-red-500 rounded" />
         </span>
       </div>

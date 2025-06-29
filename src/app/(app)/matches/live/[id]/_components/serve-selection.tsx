@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface ServeSelectionProps {
   playerOne: Player
@@ -25,7 +26,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
     }
   }
 
-  const getPlayerName = (player: Player) => `${player.lastName} ${player.firstName}`
+  const getPlayerName = (player: Player) => formatPlayerFromObject(player)
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">

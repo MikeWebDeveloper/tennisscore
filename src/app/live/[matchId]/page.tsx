@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { Player, MatchFormat, Score } from "@/lib/types"
 import { PublicLiveMatch } from "./_components/public-live-match"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 // Force dynamic rendering and no caching for live matches
 export const dynamic = 'force-dynamic'
@@ -195,12 +196,14 @@ export async function generateMetadata({ params }: PageProps) {
     const isDoubles = !!(playerThree && playerFour)
     const playerNames = {
       p1: isDoubles 
-        ? `${playerOne.lastName} ${playerOne.firstName} / ${playerThree.lastName} ${playerThree.firstName}`
-        : `${playerOne.lastName} ${playerOne.firstName}`,
+        ? `${formatPlayerFromObject(playerOne)} / ${formatPlayerFromObject(playerThree!)}`
+        : formatPlayerFromObject(playerOne),
       p2: isDoubles 
-        ? `${playerTwo.lastName} ${playerTwo.firstName} / ${playerFour.lastName} ${playerFour.firstName}`
-        : `${playerTwo.lastName} ${playerTwo.firstName}`,
+        ? `${formatPlayerFromObject(playerTwo)} / ${formatPlayerFromObject(playerFour!)}`
+        : formatPlayerFromObject(playerTwo),
     }
+
+
 
     return {
       title: `${playerNames.p1} vs ${playerNames.p2} - Live Match`,
