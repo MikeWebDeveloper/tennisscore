@@ -36,6 +36,8 @@ import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
+import { FlameIcon } from "@/components/ui/flame-icon"
+import { MomentumBar } from "@/components/ui/momentum-bar"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -206,13 +208,17 @@ function PointEntry({
   pointSituation,
   playerNames,
   players,
+  p1Streak,
+  p2Streak,
 }: { 
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
   isTiebreak: boolean,
   pointSituation: { type: 'matchPoint' | 'setPoint' | 'breakPoint'; player: 'p1' | 'p2' | null; badge: string; color: string; textColor: string; borderColor: string; bgColor: string } | null,
   playerNames: { p1: string, p2: string },
-  players: { p1: Player; p2: Player }
+  players: { p1: Player; p2: Player },
+  p1Streak: number,
+  p2Streak: number,
 }) {
   const getPointDisplay = (playerIndex: number) => {
     if (isTiebreak) {
@@ -301,8 +307,11 @@ function PointEntry({
           {/* Player info */}
           <div className="flex flex-col items-center gap-2">
             <PlayerAvatar player={players.p1} className="h-12 w-12" />
-            <div className="text-xs font-medium text-muted-foreground text-center px-2">
+            <div className="text-xs font-medium text-muted-foreground text-center px-2 flex items-center gap-1">
               {getPlayerDisplayName('p1')}
+              {p1Streak >= 5 && (
+                <FlameIcon size={14} streak={p1Streak} className="ml-1" />
+              )}
             </div>
           </div>
           
@@ -338,8 +347,11 @@ function PointEntry({
           {/* Player info */}
           <div className="flex flex-col items-center gap-2">
             <PlayerAvatar player={players.p2} className="h-12 w-12" />
-            <div className="text-xs font-medium text-muted-foreground text-center px-2">
+            <div className="text-xs font-medium text-muted-foreground text-center px-2 flex items-center gap-1">
               {getPlayerDisplayName('p2')}
+              {p2Streak >= 5 && (
+                <FlameIcon size={14} streak={p2Streak} className="ml-1" />
+              )}
             </div>
           </div>
           
@@ -367,6 +379,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     score, 
     pointLog, 
     currentServer,
+    p1Streak,
+    p2Streak,
     initializeMatch, 
     awardPoint, 
     undoLastPoint, 
@@ -1008,7 +1022,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           pointSituation={pointSituation}
           playerNames={playerNames}
           players={players}
+          p1Streak={p1Streak}
+          p2Streak={p2Streak}
         />
+
+        {/* Match Momentum Bar */}
+        {pointLog.length > 0 && (
+          <MomentumBar
+            pointLog={pointLog}
+            playerNames={playerNames}
+            className="mx-auto max-w-md"
+          />
+        )}
 
         {/* Controls */}
         <div className="flex items-center justify-between mb-6">

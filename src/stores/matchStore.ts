@@ -95,6 +95,10 @@ interface MatchState {
   isMatchComplete: boolean
   winnerId: string | null
   
+  // Streak tracking
+  p1Streak: number
+  p2Streak: number
+  
   // Timing
   startTime: string | null
   endTime: string | null
@@ -151,6 +155,39 @@ const getServerWithStartingChoice = (gameNumber: number, startingServer: 'p1' | 
   }
 }
 
+// Helper function to calculate current winning streaks
+const calculateStreaks = (pointLog: PointDetail[]): { p1Streak: number; p2Streak: number } => {
+  if (pointLog.length === 0) return { p1Streak: 0, p2Streak: 0 }
+  
+  // Look at the most recent points and count consecutive wins
+  let p1Streak = 0
+  let p2Streak = 0
+  
+  // Start from the most recent point and count backwards
+  for (let i = pointLog.length - 1; i >= 0; i--) {
+    const point = pointLog[i]
+    if (i === pointLog.length - 1) {
+      // Most recent point - start the streak
+      if (point.winner === 'p1') {
+        p1Streak = 1
+      } else {
+        p2Streak = 1
+      }
+    } else {
+      // Continue counting if same winner, otherwise break
+      if (point.winner === 'p1' && p1Streak > 0) {
+        p1Streak++
+      } else if (point.winner === 'p2' && p2Streak > 0) {
+        p2Streak++
+      } else {
+        break // Streak broken
+      }
+    }
+  }
+  
+  return { p1Streak, p2Streak }
+}
+
 // This function will be the single source of truth for score calculation.
 // The calculateScoreFromPointLog function is being moved to tennis-scoring.ts
 // to centralize scoring logic. It will be removed from this file.
@@ -167,6 +204,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   initialTiebreakServer: null,
   isMatchComplete: false,
   winnerId: null,
+  
+  p1Streak: 0,
+  p2Streak: 0,
   
   startTime: null,
   endTime: null,
@@ -201,6 +241,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         calculatedServer = getServerWithStartingChoice(totalGamesPlayed + 1, startingServer)
       }
       
+      const streaks = calculateStreaks(pointLog)
+      
       set({
         currentMatch: match,
         score: recalculatedScore,
@@ -216,6 +258,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         endTime: match.endTime || null,
         setDurations: match.setDurations || [],
         currentSetStartTime: match.startTime || null,
+        p1Streak: streaks.p1Streak,
+        p2Streak: streaks.p2Streak,
       })
     } else {
       // For new matches, keep existing server or default to player 1
@@ -238,6 +282,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         endTime: match.endTime || null,
         setDurations: match.setDurations || [],
         currentSetStartTime: match.startTime || null,
+        p1Streak: 0,
+        p2Streak: 0,
       })
     }
   },
@@ -480,6 +526,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const newPointLog = [...pointLog, pointDetail]
     const newScore = calculateScoreFromPointLog(newPointLog, matchFormat)
     
+    // Calculate updated streaks
+    const newStreaks = calculateStreaks(newPointLog)
+    
     const finalP1SetsWon = newScore.sets.length > 0 ? newScore.sets.filter((set: [number, number]) => set[0] > set[1]).length : 0
     const finalP2SetsWon = newScore.sets.length > 0 ? newScore.sets.filter((set: [number, number]) => set[1] > set[0]).length : 0
     
@@ -527,6 +576,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       endTime: newEndTime,
       setDurations: newSetDurations,
       currentSetStartTime: newCurrentSetStartTime,
+      p1Streak: newStreaks.p1Streak,
+      p2Streak: newStreaks.p2Streak,
     })
 
     return { 
@@ -549,6 +600,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const lastPoint = state.pointLog[state.pointLog.length -1]
     
     const recalculatedScore = calculateScoreFromPointLog(newPointLog, state.matchFormat)
+    const newStreaks = calculateStreaks(newPointLog)
     
     const newServer = lastPoint.server
     
@@ -558,7 +610,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       currentServer: newServer,
       initialTiebreakServer: recalculatedScore.initialTiebreakServer || null,
       isMatchComplete: false,
-      winnerId: null
+      winnerId: null,
+      p1Streak: newStreaks.p1Streak,
+      p2Streak: newStreaks.p2Streak,
     })
     return { newScore: recalculatedScore, newPointLog }
   },
@@ -577,6 +631,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     currentMatch: null,
     score: initialScore,
     pointLog: [],
+    p1Streak: 0,
+    p2Streak: 0,
     currentServer: null,
     startingServer: null,
     matchFormat: null,
