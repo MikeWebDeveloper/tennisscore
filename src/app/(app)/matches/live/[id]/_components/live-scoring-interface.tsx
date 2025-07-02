@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -35,6 +36,42 @@ import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
+
+// Confetti celebration function
+const triggerMatchWinConfetti = () => {
+  // Main burst from the center
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 }
+  })
+  
+  // Side bursts for more dramatic effect
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 }
+    })
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 }
+    })
+  }, 250)
+  
+  // Final burst with gold colors
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 100,
+      origin: { y: 0.7 },
+      colors: ['#FFD700', '#FFA500', '#FF6347', '#39FF14']
+    })
+  }, 500)
+}
 
 // This is the format of the score object as stored in the Appwrite database
 interface DbScore {
@@ -726,6 +763,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
       if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
+        
+        // Trigger celebratory confetti
+        triggerMatchWinConfetti()
+        
         toast.success(`Match completed! ${winnerName} wins!`)
         
         // Navigate to match details after a short delay
@@ -838,6 +879,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const reasonText = reason === 'retired' ? 'retirement' : 
                         reason === 'weather' ? 'weather conditions' : 'injury'
       const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
+      
+      // Trigger celebratory confetti for match completion
+      triggerMatchWinConfetti()
       
       toast.success(`Match ended due to ${reasonText}. ${winnerName} wins 1-0.`)
       setShowRetireDialog(false)
