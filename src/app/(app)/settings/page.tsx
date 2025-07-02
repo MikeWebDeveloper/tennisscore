@@ -1,6 +1,7 @@
 import { CacheManager } from "@/components/features/cache-manager"
+import { SoundSettings } from "@/components/ui/sound-settings"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings, Database } from "lucide-react"
+import { Settings, Database, Volume2 } from "lucide-react"
 
 export default function SettingsPage() {
   return (
@@ -29,6 +30,20 @@ export default function SettingsPage() {
         
         <div className="max-w-4xl">
           <CacheManager />
+        </div>
+      </div>
+
+      {/* Sound Settings Section */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Volume2 className="h-6 w-6 text-primary" />
+          <h2 className="text-xl font-semibold text-slate-200">
+            Sound Effects
+          </h2>
+        </div>
+        
+        <div className="max-w-4xl">
+          <SoundSettings />
         </div>
       </div>
 

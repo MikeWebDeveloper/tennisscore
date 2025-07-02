@@ -38,6 +38,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
 import { FlameIcon } from "@/components/ui/flame-icon"
 import { MomentumBar } from "@/components/ui/momentum-bar"
+import { playSound } from "@/lib/sounds"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -738,6 +739,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const result = awardPoint(winner, pointDetails || {})
       setIsInGame(true)
 
+      // Play appropriate sound effects
+      if (pointDetails?.pointOutcome === 'ace') {
+        playSound('ace')
+      } else if (pointDetails?.pointOutcome === 'double_fault') {
+        playSound('double-fault')
+      } else if (result.isMatchComplete) {
+        playSound('match-won')
+      } else if (result.newScore.sets.length > score.sets.length) {
+        playSound('set-won')
+      } else if ((result.newScore.games[0] + result.newScore.games[1]) > (score.games[0] + score.games[1])) {
+        playSound('game-won')
+      } else {
+        // Check for critical point situations before playing point sound
+        if (pointSituation?.type === 'matchPoint') {
+          playSound('match-point')
+        } else if (pointSituation?.type === 'setPoint') {
+          playSound('set-point')
+        } else if (pointSituation?.type === 'breakPoint') {
+          playSound('break-point')
+        } else {
+          playSound('point-won')
+        }
+      }
+
       // Reset serve type back to first serve for next point
       setServeType('first')
 
@@ -839,10 +864,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         pointLog: result.newPointLog
       })
       
+      // Play undo sound effect
+      playSound('undo')
+      
       setIsInGame(result.newPointLog.length > 0)
       toast.success("Point undone")
     } catch (error) {
       console.error("Failed to undo point:", error)
+      playSound('error')
       toast.error("Failed to undo point")
     }
   }
