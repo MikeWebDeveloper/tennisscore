@@ -170,6 +170,12 @@ This guide will help you set up the Appwrite backend for TennisScore, including 
    - Compression: Enabled
    - Encryption: Enabled
 
+4. Update your `.env.local` with the bucket ID:
+   ```
+   APPWRITE_PROFILE_PICTURES_BUCKET_ID=profile-pictures
+   NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID=profile-pictures
+   ```
+
 **Permissions:**
 - Create: `users` (authenticated users can upload)
 - Read: `any` (public read for profile pictures)
