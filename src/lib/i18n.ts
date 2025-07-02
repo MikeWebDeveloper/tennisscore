@@ -622,6 +622,10 @@ export interface Translations {
   secondServePointsWonPercent: string
   forcedErrorsLabel: string
   unforcedErrorsChart: string
+  
+  // Tournament theming translations
+  tournamentTheme: string
+  selectTournamentForTheme: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -1245,7 +1249,11 @@ const translations: Record<Locale, Translations> = {
     // Enhanced bento grid translations
     secondServePointsWonPercent: "Second Serve Points Won %",
     forcedErrorsLabel: "Forced Errors",
-    unforcedErrorsChart: "Unforced Errors Chart"
+    unforcedErrorsChart: "Unforced Errors Chart",
+    
+    // Tournament theming translations
+    tournamentTheme: "Tournament Theme",
+    selectTournamentForTheme: "Choose a tournament theme to enhance your match experience"
   },
   cs: {
     // Common
@@ -1867,7 +1875,11 @@ const translations: Record<Locale, Translations> = {
     // Enhanced bento grid translations
     secondServePointsWonPercent: "2. podání úspěšnost %",
     forcedErrorsLabel: "Vynucené chyby",
-    unforcedErrorsChart: "Graf nevynucených chyb"
+    unforcedErrorsChart: "Graf nevynucených chyb",
+    
+    // Tournament theming translations
+    tournamentTheme: "Téma turnaje",
+    selectTournamentForTheme: "Vyberte téma turnaje pro zlepšení zážitku ze zápasu"
   }
 }
 
