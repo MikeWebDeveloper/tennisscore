@@ -34,59 +34,67 @@ export function analyzeOpponentRecords(
   }>()
 
   matches.forEach(match => {
-    // Skip incomplete matches
-    if (match.status !== 'Completed' || !match.winner) return
+    // Skip incomplete matches or matches without proper player data
+    if (match.status !== 'Completed' || !match.winner || !match.playerOne || !match.playerTwo) return
 
     // Determine opponent(s) and if player won
     const opponents: Array<{ id: string; name: string; avatar?: string }> = []
     let playerWon = false
 
     // Handle singles matches
-    if (match.playerOne.$id === playerId) {
-      opponents.push({
-        id: match.playerTwo.$id,
-        name: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
-        avatar: match.playerTwo.profilePicture
-      })
-      playerWon = match.winner === 'player1'
-    } else if (match.playerTwo.$id === playerId) {
-      opponents.push({
-        id: match.playerOne.$id,
-        name: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-        avatar: match.playerOne.profilePicture
-      })
-      playerWon = match.winner === 'player2'
+    if (match.playerOne?.$id === playerId) {
+      if (match.playerTwo?.$id) {
+        opponents.push({
+          id: match.playerTwo.$id,
+          name: `${match.playerTwo.firstName || ''} ${match.playerTwo.lastName || ''}`.trim(),
+          avatar: match.playerTwo.profilePicture
+        })
+        playerWon = match.winner === 'player1'
+      }
+    } else if (match.playerTwo?.$id === playerId) {
+      if (match.playerOne?.$id) {
+        opponents.push({
+          id: match.playerOne.$id,
+          name: `${match.playerOne.firstName || ''} ${match.playerOne.lastName || ''}`.trim(),
+          avatar: match.playerOne.profilePicture
+        })
+        playerWon = match.winner === 'player2'
+      }
     }
     // Handle doubles matches
     else if (match.playerThree && match.playerFour) {
-      if (match.playerThree.$id === playerId) {
-        opponents.push(
-          {
-            id: match.playerOne.$id,
-            name: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-            avatar: match.playerOne.profilePicture
-          },
-          {
-            id: match.playerTwo.$id,
-            name: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
-            avatar: match.playerTwo.profilePicture
-          }
-        )
-        playerWon = match.winner === 'team2'
-      } else if (match.playerFour.$id === playerId) {
-        opponents.push(
-          {
-            id: match.playerOne.$id,
-            name: `${match.playerOne.firstName} ${match.playerOne.lastName}`,
-            avatar: match.playerOne.profilePicture
-          },
-          {
-            id: match.playerTwo.$id,
-            name: `${match.playerTwo.firstName} ${match.playerTwo.lastName}`,
-            avatar: match.playerTwo.profilePicture
-          }
-        )
-        playerWon = match.winner === 'team2'
+      if (match.playerThree?.$id === playerId) {
+        if (match.playerOne?.$id && match.playerTwo?.$id) {
+          opponents.push(
+            {
+              id: match.playerOne.$id,
+              name: `${match.playerOne.firstName || ''} ${match.playerOne.lastName || ''}`.trim(),
+              avatar: match.playerOne.profilePicture
+            },
+            {
+              id: match.playerTwo.$id,
+              name: `${match.playerTwo.firstName || ''} ${match.playerTwo.lastName || ''}`.trim(),
+              avatar: match.playerTwo.profilePicture
+            }
+          )
+          playerWon = match.winner === 'team2'
+        }
+      } else if (match.playerFour?.$id === playerId) {
+        if (match.playerOne?.$id && match.playerTwo?.$id) {
+          opponents.push(
+            {
+              id: match.playerOne.$id,
+              name: `${match.playerOne.firstName || ''} ${match.playerOne.lastName || ''}`.trim(),
+              avatar: match.playerOne.profilePicture
+            },
+            {
+              id: match.playerTwo.$id,
+              name: `${match.playerTwo.firstName || ''} ${match.playerTwo.lastName || ''}`.trim(),
+              avatar: match.playerTwo.profilePicture
+            }
+          )
+          playerWon = match.winner === 'team2'
+        }
       }
     }
 

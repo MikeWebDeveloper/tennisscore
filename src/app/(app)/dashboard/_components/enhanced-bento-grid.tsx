@@ -646,18 +646,20 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}
             opponentRecords={analyzeOpponentRecords(
               mainPlayer.$id, 
-              matches.map(match => ({
-                $id: match.$id,
-                playerOne: match.playerOne,
-                playerTwo: match.playerTwo,
-                playerThree: match.playerThree,
-                playerFour: match.playerFour,
-                winner: match.winnerId,
-                status: match.status,
-                finalScore: match.finalScore,
-                endTime: match.endTime,
-                createdAt: match.createdAt || match.matchDate
-              } as MatchData))
+              matches
+                .filter(match => match.playerOne && match.playerTwo) // Only include matches with valid player data
+                .map(match => ({
+                  $id: match.$id,
+                  playerOne: match.playerOne!,
+                  playerTwo: match.playerTwo!,
+                  playerThree: match.playerThree,
+                  playerFour: match.playerFour,
+                  winner: match.winnerId,
+                  status: match.status,
+                  finalScore: match.finalScore,
+                  endTime: match.endTime,
+                  createdAt: match.createdAt || match.matchDate
+                } as MatchData))
             )}
           />
         </motion.div>
