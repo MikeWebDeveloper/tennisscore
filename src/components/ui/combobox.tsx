@@ -103,7 +103,10 @@ export function Combobox({
                         setOpen(false)
                       }
                     }}
-                    className="text-sm py-1.5"
+                    className={cn(
+                      "text-sm py-1.5",
+                      (groupName === "Main Player" || groupName === "Hlavní hráč") && "text-primary font-medium" // Special styling for main player
+                    )}
                   >
                     <div className="flex items-center gap-2 flex-1">
                       {option.icon}

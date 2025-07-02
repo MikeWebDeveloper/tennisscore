@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, User, Plus } from "lucide-react"
+import { ArrowLeft, User, Plus, Star } from "lucide-react"
 import Link from "next/link"
 import { Player } from "@/lib/types"
 import { createMatch } from "@/lib/actions/matches"
@@ -171,25 +171,32 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         return nameA.localeCompare(nameB)
       })
       
-      // Add main player first (if exists and not excluded)
+      // Add main player first with special styling (if exists and not excluded)
       if (mainPlayer) {
         options.push({
           value: mainPlayer.$id,
           label: formatPlayerFromObject(mainPlayer),
-          group: t('trackedPlayers'),
-          icon: <PlayerAvatar player={mainPlayer} className="h-5 w-5" />,
+          group: t('mainPlayer'),
+          icon: (
+            <div className="flex items-center gap-1.5">
+              <PlayerAvatar player={mainPlayer} className="h-5 w-5" />
+              <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
+            </div>
+          ),
         })
       }
       
       // Add other players alphabetically
-      sortedOtherPlayers.forEach(player => {
-        options.push({
-          value: player.$id,
-          label: formatPlayerFromObject(player),
-          group: t('trackedPlayers'),
-          icon: <PlayerAvatar player={player} className="h-5 w-5" />,
+      if (sortedOtherPlayers.length > 0) {
+        sortedOtherPlayers.forEach(player => {
+          options.push({
+            value: player.$id,
+            label: formatPlayerFromObject(player),
+            group: t('trackedPlayers'),
+            icon: <PlayerAvatar player={player} className="h-5 w-5" />,
+          })
         })
-      })
+      }
     }
 
     return options
