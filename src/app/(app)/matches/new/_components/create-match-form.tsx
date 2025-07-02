@@ -24,8 +24,6 @@ import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { useUserStore } from "@/stores/userStore"
-import { TournamentSelector } from "@/components/ui/tournament-theme-provider"
-import { type GrandSlamTournament } from "@/lib/themes/grand-slam-themes"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -76,7 +74,6 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const [scoring, setScoring] = useState<"ad" | "no-ad">("ad")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb">("full")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "complex">("simple")
-  const [tournament, setTournament] = useState<GrandSlamTournament>('default')
   const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -317,22 +314,6 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   </Label>
                 </div>
               </RadioGroup>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Tournament Theme */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-medium mb-4">{t("tournamentTheme")}</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {t("selectTournamentForTheme")}
-              </p>
-              <TournamentSelector 
-                value={tournament} 
-                onChange={setTournament} 
-              />
             </CardContent>
           </Card>
         </motion.div>

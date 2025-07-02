@@ -39,7 +39,6 @@ import { MatchTimerDisplay } from "./MatchTimerDisplay"
 import { FlameIcon } from "@/components/ui/flame-icon"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
-import { TournamentThemeProvider, TournamentHeader } from "@/components/ui/tournament-theme-provider"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -970,9 +969,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   return (
-    <TournamentThemeProvider tournamentName='default'>
-      <TournamentHeader />
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Enhanced Header with More Space */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4">
@@ -1065,6 +1062,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             playerNames={playerNames}
             className="mx-auto max-w-md"
             compact={true}
+            maxPoints={10}
           />
         )}
 
@@ -1341,6 +1339,5 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         </DialogContent>
       </Dialog>
     </div>
-    </TournamentThemeProvider>
   )
 } 

@@ -434,7 +434,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               playerNames={playerNames}
               className="mx-auto max-w-md"
               compact={true}
-              maxPoints={8}
+              maxPoints={10}
             />
           </motion.div>
         )}
