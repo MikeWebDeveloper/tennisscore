@@ -315,9 +315,9 @@ export function ImageUpload({
         // Cropping interface
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
-            <h3 className="text-lg font-semibold mb-3 text-center">Crop Your Image</h3>
+            <h3 className="text-lg font-semibold mb-3 text-center">{t('cropYourImage')}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
-              Drag to position and resize the crop area to focus on your face
+              {t('uploadImageUpTo10MB')}
             </p>
             
             <div className="relative h-64 mb-4">
@@ -332,7 +332,7 @@ export function ImageUpload({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={imageRef}
-                  alt="Crop me"
+                  alt={t('cropMe')}
                   src={originalImageSrc!}
                   className="max-h-64 w-auto mx-auto"
                   onLoad={onImageLoad}
@@ -376,9 +376,9 @@ export function ImageUpload({
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-xs">
           {croppedImageSrc 
             ? (isExternalImage 
-                ? "Click the upload button to replace this image, or the X to remove it." 
-                : "Click the crop button to edit, upload button to replace, or X to remove.")
-            : "Upload an image up to 10MB. You'll be able to crop and position it after selection."
+                ? t('clickUploadToReplace')
+                : t('clickCropToEdit'))
+            : t('uploadImageUpTo10MB')
           }
         </p>
       )}

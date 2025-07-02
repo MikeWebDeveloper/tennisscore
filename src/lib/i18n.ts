@@ -588,6 +588,40 @@ export interface Translations {
   wonLabel: string
   avgDurationLabel: string
   winStreakMonthlyLabel: string
+  
+  // MainPlayerSetupPrompt translations
+  welcomeToTennisScorePrompt: string
+  getStartedPersonalized: string
+  helpShowRelevantStats: string
+  createPlayersHint: string
+  setMainPlayerHint: string
+  
+  // Extension conflict translations
+  browserExtensionDetected: string
+  browserExtensionMayInterfere: string
+  detectedExtensions: string
+  tryCleanup: string
+  
+  // Image upload translations
+  cropYourImage: string
+  clickUploadToReplace: string
+  clickCropToEdit: string
+  uploadImageUpTo10MB: string
+  
+  // Hydration error translations
+  hydrationError: string
+  applicationError: string
+  hydrationMismatch: string
+  commonCauses: string
+  browserSecurityExtensions: string
+  adBlockersModifying: string
+  browserDeveloperTools: string
+  errorDetails: string
+  
+  // Enhanced bento grid translations
+  secondServePointsWonPercent: string
+  forcedErrorsLabel: string
+  unforcedErrorsChart: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -1177,7 +1211,41 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Matches",
     wonLabel: "Won",
     avgDurationLabel: "Avg Duration",
-    winStreakMonthlyLabel: "Win Streak"
+    winStreakMonthlyLabel: "Win Streak",
+    
+    // MainPlayerSetupPrompt translations
+    welcomeToTennisScorePrompt: "Welcome to TennisScore",
+    getStartedPersonalized: "Get Started Personalized",
+    helpShowRelevantStats: "Help: Show Relevant Stats",
+    createPlayersHint: "Create Players",
+    setMainPlayerHint: "Set Main Player",
+    
+    // Extension conflict translations
+    browserExtensionDetected: "Browser Extension Detected",
+    browserExtensionMayInterfere: "Browser Extension May Interfere",
+    detectedExtensions: "Detected Extensions",
+    tryCleanup: "Try Cleanup",
+    
+    // Image upload translations
+    cropYourImage: "Crop Your Image",
+    clickUploadToReplace: "Click to Upload and Replace",
+    clickCropToEdit: "Click to Crop and Edit",
+    uploadImageUpTo10MB: "Upload Image Up to 10MB",
+    
+    // Hydration error translations
+    hydrationError: "Hydration Error",
+    applicationError: "Application Error",
+    hydrationMismatch: "Hydration Mismatch",
+    commonCauses: "Common Causes",
+    browserSecurityExtensions: "Browser Security Extensions",
+    adBlockersModifying: "Ad Blockers Modifying",
+    browserDeveloperTools: "Browser Developer Tools",
+    errorDetails: "Error Details",
+    
+    // Enhanced bento grid translations
+    secondServePointsWonPercent: "Second Serve Points Won %",
+    forcedErrorsLabel: "Forced Errors",
+    unforcedErrorsChart: "Unforced Errors Chart"
   },
   cs: {
     // Common
@@ -1765,7 +1833,41 @@ const translations: Record<Locale, Translations> = {
     matchesLabel: "Zápasy",
     wonLabel: "Vyhrané",
     avgDurationLabel: "Průměrná doba",
-    winStreakMonthlyLabel: "Vítězná série"
+    winStreakMonthlyLabel: "Vítězná série",
+    
+    // MainPlayerSetupPrompt translations
+    welcomeToTennisScorePrompt: "Vítejte v TennisScore! 🎾",
+    getStartedPersonalized: "Pro spuštění personalizovaného dashboardu si budete muset vybrat hlavního hráče.",
+    helpShowRelevantStats: "To nám pomůže zobrazovat relevantní statistiky a data zápasů.",
+    createPlayersHint: "💡 Můžete vytvořit hráče pro sebe, soupeře nebo studenty",
+    setMainPlayerHint: "⭐ Nastavte jednoho jako svého \"hlavního hráče\" pro zobrazení personalizovaných statistik",
+    
+    // Extension conflict translations
+    browserExtensionDetected: "Bylo zjištěno rozšíření prohlížeče",
+    browserExtensionMayInterfere: "Rozšíření prohlížeče může ovlivnit funkčnost aplikace.",
+    detectedExtensions: "Zjištěná rozšíření:",
+    tryCleanup: "Zkusit vyčistit",
+    
+    // Image upload translations
+    cropYourImage: "Oříznout obrázek",
+    clickUploadToReplace: "Klikněte na tlačítko nahrát pro výměnu tohoto obrázku, nebo na X pro odstranění.",
+    clickCropToEdit: "Klikněte na tlačítko oříznout pro úpravu, nahrát pro výměnu, nebo X pro odstranění.",
+    uploadImageUpTo10MB: "Nahrajte obrázek do 10MB. Po výběru ho budete moci oříznout a umístit.",
+    
+    // Hydration error translations
+    hydrationError: "Hydratační chyba",
+    applicationError: "Chyba aplikace",
+    hydrationMismatch: "Aplikace narazila na hydratační nesoulad. Často to způsobují rozšíření prohlížeče.",
+    commonCauses: "Běžné příčiny:",
+    browserSecurityExtensions: "• Bezpečnostní rozšíření prohlížeče (Bitdefender, atd.)",
+    adBlockersModifying: "• Blokátory reklam upravující obsah stránky",
+    browserDeveloperTools: "• Vývojářské nástroje prohlížeče",
+    errorDetails: "Detaily chyby",
+    
+    // Enhanced bento grid translations
+    secondServePointsWonPercent: "2. podání úspěšnost %",
+    forcedErrorsLabel: "Vynucené chyby",
+    unforcedErrorsChart: "Graf nevynucených chyb"
   }
 }
 

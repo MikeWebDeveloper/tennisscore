@@ -17,6 +17,7 @@ import {
 import { TrendingUp, Target } from "lucide-react"
 import { useMemo, useState, useEffect } from "react"
 import { Match, Player } from "@/lib/types"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface PerformanceChartsProps {
   matches: Match[]
@@ -25,6 +26,7 @@ interface PerformanceChartsProps {
 
 export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProps) {
   const [isClient, setIsClient] = useState(false)
+  const t = useTranslations()
 
   // Ensure this only runs on the client to prevent hydration mismatches
   useEffect(() => {
@@ -68,13 +70,13 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     if (completedMatches.length === 0) return []
 
     const errorBreakdown = [
-      { name: 'Unforced Errors', value: 25, fill: 'rgb(var(--foreground))' },
-      { name: 'Forced Errors', value: 20, fill: 'rgb(var(--muted-foreground))' },
+      { name: t('unforcedErrorsLabel'), value: 25, fill: 'rgb(var(--foreground))' },
+      { name: t('forcedErrorsLabel'), value: 20, fill: 'rgb(var(--muted-foreground))' },
       { name: 'Aces', value: 10, fill: 'rgb(var(--primary))' }
     ]
 
     return errorBreakdown
-  }, [matches, isClient])
+  }, [matches, isClient, t])
 
   // Recent form data
   const recentForm = useMemo(() => {

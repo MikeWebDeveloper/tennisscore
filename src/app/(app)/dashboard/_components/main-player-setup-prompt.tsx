@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Star, Users, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "@/hooks/use-translations"
 
 export function MainPlayerSetupPrompt() {
+  const t = useTranslations()
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,16 +25,16 @@ export function MainPlayerSetupPrompt() {
             </div>
           </div>
           <CardTitle className="text-xl text-slate-200">
-            Welcome to TennisScore! 🎾
+            {t("welcomeToTennisScorePrompt")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">
           <div className="space-y-2">
             <p className="text-slate-300">
-              To get started with your personalized dashboard, you&apos;ll need to select your main player.
+              {t("getStartedPersonalized")}
             </p>
             <p className="text-sm text-slate-400">
-              This helps us show you relevant statistics and match data.
+              {t("helpShowRelevantStats")}
             </p>
           </div>
           
@@ -39,15 +42,15 @@ export function MainPlayerSetupPrompt() {
             <Button asChild className="min-w-[140px]">
               <Link href="/players">
                 <Users className="h-4 w-4 mr-2" />
-                Manage Players
+                {t("managePlayers")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
           </div>
           
           <div className="text-xs text-slate-500 space-y-1">
-            <p>💡 You can create players for yourself, opponents, or students</p>
-            <p>⭐ Set one as your &quot;main player&quot; to see personalized stats</p>
+            <p>{t("createPlayersHint")}</p>
+            <p>{t("setMainPlayerHint")}</p>
           </div>
         </CardContent>
       </Card>

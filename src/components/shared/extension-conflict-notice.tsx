@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { detectInterferingExtensions, cleanupExtensionAttributes, type ExtensionDetection } from "@/lib/utils/browser-extension-detector"
+import { useTranslations } from "@/hooks/use-translations"
 
 export function ExtensionConflictNotice() {
   const [detection, setDetection] = useState<ExtensionDetection | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const t = useTranslations()
 
   useEffect(() => {
     setMounted(true)
@@ -54,7 +56,7 @@ export function ExtensionConflictNotice() {
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             <CardTitle className="text-sm text-amber-800 dark:text-amber-200">
-              Browser Extension Detected
+              {t("browserExtensionDetected")}
             </CardTitle>
           </div>
           <Button
@@ -67,14 +69,14 @@ export function ExtensionConflictNotice() {
           </Button>
         </div>
         <CardDescription className="text-amber-700 dark:text-amber-300">
-          Browser extensions may interfere with the app&apos;s functionality.
+          {t("browserExtensionMayInterfere")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
-              Detected Extensions:
+              {t("detectedExtensions")}
             </p>
             <div className="flex flex-wrap gap-1">
               {detection.detectedExtensions.map((ext, index) => (
@@ -93,7 +95,7 @@ export function ExtensionConflictNotice() {
 
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
-              Recommended Actions:
+              {t("recommendedActions")}
             </p>
             <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
               {detection.recommendedActions.map((action, index) => (
@@ -112,7 +114,7 @@ export function ExtensionConflictNotice() {
               onClick={handleCleanup}
               className="text-amber-700 border-amber-300 hover:bg-amber-100 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900"
             >
-              Try Cleanup
+              {t("tryCleanup")}
             </Button>
             <Button
               variant="ghost"
@@ -120,7 +122,7 @@ export function ExtensionConflictNotice() {
               onClick={handleDismiss}
               className="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200"
             >
-              Dismiss
+              {t("dismiss")}
             </Button>
           </div>
         </div>

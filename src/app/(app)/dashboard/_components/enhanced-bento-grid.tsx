@@ -11,7 +11,6 @@ import {
   Activity,
   Zap,
   Award,
-  BarChart3,
   Flame,
   Plus,
   UserPlus,
@@ -506,19 +505,17 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             />
             <StatCard 
               icon={Percent} 
-              label={"Second Serve Points Won %"}
-              value={`${stats.secondServePointsWonPercentage || 0}%`}
-              subtitle={`${(stats.secondServePointsWonPercentage / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
-              trend={stats.secondServePointsWonPercentage >= 50 ? "up" : "down"}
-              variant={stats.secondServePointsWonPercentage >= 60 ? "success" : stats.secondServePointsWonPercentage >= 45 ? "primary" : "warning"}
+              label={t("secondServePointsWonPercent")}
+              value={`${stats.secondServePointsWonPercentage}%`}
+              subtitle={t("defensiveHolds")}
+              variant="default"
             />
             <StatCard 
-              icon={BarChart3} 
-              label={"Forced Errors"}
+              icon={ArrowDownLeft} 
+              label={t("forcedErrorsLabel")}
               value={stats.totalForcedErrors}
-              subtitle={`${(stats.totalForcedErrors / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
-              trend={stats.totalForcedErrors >= 10 ? "up" : "neutral"}
-              variant={stats.totalForcedErrors >= 15 ? "success" : stats.totalForcedErrors >= 10 ? "primary" : "default"}
+              subtitle={t("unforcedErrorsDescription")}
+              variant="default"
             />
           </motion.div>
         </motion.div>
