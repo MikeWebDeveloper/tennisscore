@@ -23,6 +23,7 @@ import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { useUserStore } from "@/stores/userStore"
 
 interface CreateMatchFormProps {
   players: Player[]
@@ -53,6 +54,7 @@ const itemVariants = {
 export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const router = useRouter()
   const t = useTranslations()
+  const { mainPlayerId } = useUserStore()
   const [loading, setLoading] = useState(false)
   
   // Form state
@@ -155,15 +157,38 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
 
     // Add real players if they exist
     if (players.length > 0) {
-      players.forEach(player => {
-        if (!excludeIds.includes(player.$id)) {
-          options.push({
-            value: player.$id,
-            label: formatPlayerFromObject(player),
-            group: t('trackedPlayers'),
-            icon: <PlayerAvatar player={player} className="h-5 w-5" />,
-          })
-        }
+      // Filter out excluded players
+      const availablePlayers = players.filter(player => !excludeIds.includes(player.$id))
+      
+      // Separate main player and others
+      const mainPlayer = availablePlayers.find(player => player.$id === mainPlayerId)
+      const otherPlayers = availablePlayers.filter(player => player.$id !== mainPlayerId)
+      
+      // Sort other players alphabetically by full name
+      const sortedOtherPlayers = otherPlayers.sort((a, b) => {
+        const nameA = formatPlayerFromObject(a).toLowerCase()
+        const nameB = formatPlayerFromObject(b).toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      
+      // Add main player first (if exists and not excluded)
+      if (mainPlayer) {
+        options.push({
+          value: mainPlayer.$id,
+          label: formatPlayerFromObject(mainPlayer),
+          group: t('trackedPlayers'),
+          icon: <PlayerAvatar player={mainPlayer} className="h-5 w-5" />,
+        })
+      }
+      
+      // Add other players alphabetically
+      sortedOtherPlayers.forEach(player => {
+        options.push({
+          value: player.$id,
+          label: formatPlayerFromObject(player),
+          group: t('trackedPlayers'),
+          icon: <PlayerAvatar player={player} className="h-5 w-5" />,
+        })
       })
     }
 
