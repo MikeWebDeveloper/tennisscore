@@ -29,6 +29,8 @@ import { PerformanceCharts } from "./performance-charts"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/hooks/use-translations"
 import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
+import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
+import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -635,6 +637,31 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Nemesis & Bunny Stats */}
+      {mainPlayer && (
+        <motion.div variants={itemVariants}>
+          <NemesisBunnyStats
+            playerId={mainPlayer.$id}
+            playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}
+            opponentRecords={analyzeOpponentRecords(
+              mainPlayer.$id, 
+              matches.map(match => ({
+                $id: match.$id,
+                playerOne: match.playerOne,
+                playerTwo: match.playerTwo,
+                playerThree: match.playerThree,
+                playerFour: match.playerFour,
+                winner: match.winnerId,
+                status: match.status,
+                finalScore: match.finalScore,
+                endTime: match.endTime,
+                createdAt: match.createdAt || match.matchDate
+              } as MatchData))
+            )}
+          />
+        </motion.div>
+      )}
     </motion.div>
   )
 } 
