@@ -336,7 +336,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
           <Button variant="outline" asChild className="w-full h-11">
-            <Link href="/players/new">
+            <Link href="/players">
               <UserPlus className="h-4 w-4 mr-2" />
               {t("addPlayer")}
             </Link>
