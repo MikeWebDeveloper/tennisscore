@@ -160,9 +160,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       // Filter out excluded players
       const availablePlayers = players.filter(player => !excludeIds.includes(player.$id))
       
-      // Separate main player and others
-      const mainPlayer = availablePlayers.find(player => player.$id === mainPlayerId)
-      const otherPlayers = availablePlayers.filter(player => player.$id !== mainPlayerId)
+      // Find main player - check both store mainPlayerId and isMainPlayer flag
+      const mainPlayer = availablePlayers.find(player => 
+        player.$id === mainPlayerId || player.isMainPlayer === true
+      )
+      const otherPlayers = availablePlayers.filter(player => 
+        player.$id !== mainPlayer?.$id
+      )
       
       // Sort other players alphabetically by full name
       const sortedOtherPlayers = otherPlayers.sort((a, b) => {
