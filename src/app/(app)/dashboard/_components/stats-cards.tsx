@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { 
   Trophy, 
   Calendar, 
@@ -29,7 +30,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
       key: "matches",
       title: t("totalMatches"),
       icon: Calendar,
-      getValue: (stats: StatsCardsProps["stats"]) => stats.totalMatches,
+      value: stats.totalMatches,
+      isNumber: true,
       getSubtext: (stats: StatsCardsProps["stats"]) => 
         `${stats.inProgressMatches} ${t("inProgress")}, ${stats.completedMatches} ${t("completed")}`,
       className: "md:col-span-1",
@@ -39,7 +41,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       key: "winrate",
       title: t("winRate"),
       icon: Trophy,
-      getValue: (stats: StatsCardsProps["stats"]) => `${stats.winRate}%`,
+      value: stats.winRate,
+      suffix: "%",
+      isNumber: true,
       getSubtext: () => {
         if (stats.winRate >= 80) return t("excellent")
         if (stats.winRate >= 65) return t("good")
@@ -53,7 +57,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
       key: "players",
       title: t("players"),
       icon: Users,
-      getValue: (stats: StatsCardsProps["stats"]) => stats.totalPlayers,
+      value: stats.totalPlayers,
+      isNumber: true,
       getSubtext: () => `${stats.totalPlayers} ${t("playersCreated")}`,
       className: "md:col-span-1",
       color: "text-green-400"
@@ -62,10 +67,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
       key: "performance",
       title: t("performance"), 
       icon: TrendingUp,
-      getValue: () => {
-        const rating = getPerformanceRating(stats.winRate)
-        return rating
-      },
+      value: getPerformanceRating(stats.winRate),
+      isNumber: false,
       getSubtext: () => t("overallRating"),
       className: "md:col-span-1 relative",
       color: "text-purple-400",
@@ -124,7 +127,16 @@ export function StatsCards({ stats }: StatsCardsProps) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {card.getValue(stats)}
+                {card.isNumber ? (
+                  <AnimatedCounter
+                    value={typeof card.value === 'number' ? card.value : 0}
+                    suffix={card.suffix || ""}
+                    duration={1.2}
+                    delay={index * 0.1}
+                  />
+                ) : (
+                  card.value
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {card.getSubtext(stats)}

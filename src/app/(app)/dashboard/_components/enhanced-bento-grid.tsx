@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { 
   Trophy, 
   Calendar,
@@ -297,7 +298,22 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               {/* Value */}
               <div className="flex-1 flex items-center">
                 <p className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
-                  {value}
+                  {typeof value === 'number' ? (
+                    <AnimatedCounter
+                      value={value}
+                      duration={1.5}
+                      delay={0.3}
+                    />
+                  ) : typeof value === 'string' && value.includes('%') ? (
+                    <AnimatedCounter
+                      value={parseInt(value.replace('%', ''))}
+                      suffix="%"
+                      duration={1.5}
+                      delay={0.3}
+                    />
+                  ) : (
+                    value
+                  )}
                 </p>
               </div>
               
@@ -594,11 +610,15 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">{stats.thisMonthMatches}</div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  <AnimatedCounter value={stats.thisMonthMatches} duration={1.2} delay={0.2} />
+                </div>
                 <div className="text-xs text-muted-foreground">{t("matchesLabel")}</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{Math.round(stats.thisMonthMatches * stats.winRate / 100)}</div>
+                <div className="text-2xl font-bold text-green-600 mb-1">
+                  <AnimatedCounter value={Math.round(stats.thisMonthMatches * stats.winRate / 100)} duration={1.2} delay={0.4} />
+                </div>
                 <div className="text-xs text-muted-foreground">{t("wonLabel")}</div>
               </div>
               <div className="text-center">
@@ -606,7 +626,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                 <div className="text-xs text-muted-foreground">{t("avgDurationLabel")}</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">{stats.currentWinStreak}</div>
+                <div className="text-2xl font-bold text-purple-600 mb-1">
+                  <AnimatedCounter value={stats.currentWinStreak} duration={1.2} delay={0.6} />
+                </div>
                 <div className="text-xs text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
               </div>
             </div>
