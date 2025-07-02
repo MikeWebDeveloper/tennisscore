@@ -2,7 +2,10 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { TrendingUp, Minus } from "lucide-react"
+import { TrendingUp, Minus, VolumeX, Volume2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { playSound } from "@/lib/sounds"
 
 interface PointDetail {
   winner: 'p1' | 'p2'
@@ -15,16 +18,36 @@ interface MomentumBarProps {
   playerNames: { p1: string; p2: string }
   className?: string
   maxPoints?: number
+  compact?: boolean
 }
 
 export function MomentumBar({ 
   pointLog, 
   playerNames, 
   className = "", 
-  maxPoints = 12 
+  maxPoints = 12,
+  compact = false
 }: MomentumBarProps) {
+  const [isMuted, setIsMuted] = useState(true) // Start muted by default
+  const [lastPointCount, setLastPointCount] = useState(0)
+
   // Get the last N points for momentum calculation
   const recentPoints = pointLog.slice(-maxPoints)
+  
+  // Play sound effect when momentum shifts significantly
+  useEffect(() => {
+    if (recentPoints.length > lastPointCount && recentPoints.length >= 3 && !isMuted) {
+      const lastThree = recentPoints.slice(-3)
+      const p1Recent = lastThree.filter(p => p.winner === 'p1').length
+      const p2Recent = lastThree.filter(p => p.winner === 'p2').length
+      
+      // Play sound when someone gets momentum (wins 2+ of last 3 points)
+      if (p1Recent >= 2 || p2Recent >= 2) {
+        playSound('point-won')
+      }
+    }
+    setLastPointCount(recentPoints.length)
+  }, [recentPoints.length, lastPointCount, isMuted, recentPoints])
   
   if (recentPoints.length === 0) {
     return null
@@ -77,21 +100,50 @@ export function MomentumBar({
   }
 
   return (
-    <div className={cn("bg-card rounded-lg border p-3 space-y-3", className)}>
+    <div className={cn(
+      "bg-card rounded-lg border space-y-2", 
+      compact ? "p-2" : "p-3 space-y-3", 
+      className
+    )}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Match Momentum</span>
+          <span className={cn(
+            "font-medium text-muted-foreground",
+            compact ? "text-xs" : "text-sm"
+          )}>
+            {compact ? "Momentum" : "Match Momentum"}
+          </span>
           {getTrendIcon()}
         </div>
-        <span className="text-xs text-muted-foreground">
-          Last {recentPoints.length} points
-        </span>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMuted(!isMuted)}
+            className={cn(
+              "text-muted-foreground hover:text-foreground",
+              compact ? "h-5 w-5 p-0" : "h-6 w-6 p-0"
+            )}
+          >
+            {isMuted ? (
+              <VolumeX className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
+            ) : (
+              <Volume2 className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
+            )}
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            {compact ? `${recentPoints.length}pts` : `Last ${recentPoints.length} points`}
+          </span>
+        </div>
       </div>
 
       {/* Momentum Bar */}
-      <div className="space-y-2">
-        <div className="relative h-6 bg-muted rounded-full overflow-hidden">
+      <div className={cn(compact ? "space-y-1" : "space-y-2")}>
+        <div className={cn(
+          "relative bg-muted rounded-full overflow-hidden",
+          compact ? "h-3" : "h-6"
+        )}>
           {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-100 via-gray-100 to-red-100 dark:from-blue-950 dark:via-gray-800 dark:to-red-950" />
           
@@ -114,10 +166,13 @@ export function MomentumBar({
 
         {/* Point indicators */}
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+          <span className={cn(
+            "font-medium text-blue-600 dark:text-blue-400",
+            compact ? "text-xs" : "text-xs"
+          )}>
             {playerNames.p1.split(' ')[0]}
           </span>
-          <div className="flex items-center gap-0.5">
+          <div className={cn("flex items-center", compact ? "gap-0.5" : "gap-0.5")}>
             <AnimatePresence mode="popLayout">
               {recentPoints.map((point, index) => (
                 <motion.div
@@ -132,7 +187,8 @@ export function MomentumBar({
                     stiffness: 300
                   }}
                   className={cn(
-                    "w-2 h-2 rounded-full border",
+                    "rounded-full border",
+                    compact ? "w-1.5 h-1.5" : "w-2 h-2",
                     point.winner === 'p1' 
                       ? "bg-blue-500 border-blue-600" 
                       : "bg-red-500 border-red-600"
@@ -141,28 +197,33 @@ export function MomentumBar({
               ))}
             </AnimatePresence>
           </div>
-          <span className="text-xs font-medium text-red-600 dark:text-red-400">
+          <span className={cn(
+            "font-medium text-red-600 dark:text-red-400",
+            compact ? "text-xs" : "text-xs"
+          )}>
             {playerNames.p2.split(' ')[0]}
           </span>
         </div>
       </div>
 
-      {/* Momentum text */}
-      <div className="text-center">
-        <motion.p 
-          key={leadingPlayer}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cn(
-            "text-xs font-medium",
-            leadingPlayer === 'p1' ? "text-blue-600 dark:text-blue-400" :
-            leadingPlayer === 'p2' ? "text-red-600 dark:text-red-400" :
-            "text-muted-foreground"
-          )}
-        >
-          {getMomentumText()}
-        </motion.p>
-      </div>
+      {/* Momentum text - Hide in compact mode */}
+      {!compact && (
+        <div className="text-center">
+          <motion.p 
+            key={leadingPlayer}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+              "text-xs font-medium",
+              leadingPlayer === 'p1' ? "text-blue-600 dark:text-blue-400" :
+              leadingPlayer === 'p2' ? "text-red-600 dark:text-red-400" :
+              "text-muted-foreground"
+            )}
+          >
+            {getMomentumText()}
+          </motion.p>
+        </div>
+      )}
     </div>
   )
 } 

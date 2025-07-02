@@ -51,7 +51,7 @@ class SoundManager {
 
   private getDefaultSettings(): SoundSettings {
     return {
-      enabled: true,
+      enabled: false, // Start muted by default
       volume: 0.7,
       pointSounds: true,
       criticalPointSounds: true,

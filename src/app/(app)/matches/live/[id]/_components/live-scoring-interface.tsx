@@ -1064,6 +1064,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             pointLog={pointLog}
             playerNames={playerNames}
             className="mx-auto max-w-md"
+            compact={true}
           />
         )}
 

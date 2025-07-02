@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LiveScoreboard } from "@/components/shared/live-scoreboard"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "@/app/(app)/matches/live/[id]/_components/MatchTimerDisplay"
+import { MomentumBar } from "@/components/ui/momentum-bar"
 import { formatPlayerFromObject } from "@/lib/utils"
 
 type Score = import("@/stores/matchStore").Score
@@ -420,6 +421,23 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             isMatchComplete={match.status === "Completed"}
           />
         </motion.div>
+
+        {/* Match Momentum Bar - Compact version for public view */}
+        {pointLog.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <MomentumBar
+              pointLog={pointLog.map((point, index) => ({
+                winner: point.winner,
+                pointNumber: index + 1,
+                timestamp: point.timestamp || new Date().toISOString()
+              }))}
+              playerNames={playerNames}
+              className="mx-auto max-w-md"
+              compact={true}
+              maxPoints={8}
+            />
+          </motion.div>
+        )}
 
         {/* Match Details Tabs - Only Stats and Point-by-Point */}
         <motion.div variants={itemVariants}>
