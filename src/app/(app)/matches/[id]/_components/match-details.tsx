@@ -179,14 +179,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
   return (
     <div className="w-full">
-      {/* Tournament/League Badge */}
-      {match.tournamentName && (
-        <div className="flex justify-center mt-2 mb-1">
-          <Badge variant="secondary" className="bg-gradient-to-r from-blue-400 to-purple-500 text-white shadow-sm px-3 py-1 text-xs font-semibold rounded-full">
-            {match.tournamentName}
-          </Badge>
-        </div>
-      )}
+      {/* Tournament/League Badge - REMOVE for mobile */}
+      {/* Removed badge/button here */}
       {/* Mobile Header */}
       <div className="block md:hidden">
         <div className="w-full bg-background border-b">
@@ -213,15 +207,28 @@ export function MatchDetails({ match }: MatchDetailsProps) {
           <div className="px-4 pb-4">
             <div className="text-center space-y-3">
               <div className="space-y-2">
-                <h1 className="text-xl font-bold text-foreground leading-tight">
-                  {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"}
-                </h1>
-                <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
-                <h2 className="text-xl font-bold text-foreground leading-tight">
-                  {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"}
-                </h2>
+                {isDoubles ? (
+                  <>
+                    <h1 className="text-xl font-bold text-foreground leading-tight">
+                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"} / {match.playerThree ? formatPlayerFromObject(match.playerThree) : "Unknown Player"}
+                    </h1>
+                    <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
+                    <h2 className="text-xl font-bold text-foreground leading-tight">
+                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"} / {match.playerFour ? formatPlayerFromObject(match.playerFour) : "Unknown Player"}
+                    </h2>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-xl font-bold text-foreground leading-tight">
+                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"}
+                    </h1>
+                    <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
+                    <h2 className="text-xl font-bold text-foreground leading-tight">
+                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"}
+                    </h2>
+                  </>
+                )}
               </div>
-              
               {/* Match details */}
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center justify-center gap-2">
