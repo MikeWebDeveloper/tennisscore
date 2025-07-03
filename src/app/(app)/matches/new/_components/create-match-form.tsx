@@ -63,6 +63,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const [playerTwo, setPlayerTwo] = useState("")
   const [playerThree, setPlayerThree] = useState("")
   const [playerFour, setPlayerFour] = useState("")
+  const [tournamentName, setTournamentName] = useState("")
   
   // Anonymous player tracking
   const [playerOneAnonymous, setPlayerOneAnonymous] = useState(false)
@@ -95,6 +96,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         playerTwoId: getPlayerIdOrAnonymous(playerTwo, playerTwoAnonymous, t('player2')),
         playerThreeId: matchType === "doubles" ? getPlayerIdOrAnonymous(playerThree, playerThreeAnonymous, t('player3')) : undefined,
         playerFourId: matchType === "doubles" ? getPlayerIdOrAnonymous(playerFour, playerFourAnonymous, t('player4')) : undefined,
+        tournamentName: tournamentName.trim() || undefined,
         matchFormat: {
           sets: sets[0] as 1 | 3 | 5,
           gamesPerSet: 6,
@@ -113,6 +115,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         playerTwoId: validatedData.playerTwoId,
         playerThreeId: validatedData.playerThreeId,
         playerFourId: validatedData.playerFourId,
+        tournamentName: validatedData.tournamentName,
         matchFormat: validatedData.matchFormat,
       })
 
@@ -408,6 +411,26 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Tournament/League */}
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Label htmlFor="tournament-name">{t('tournamentLeague')}</Label>
+                <input
+                  id="tournament-name"
+                  type="text"
+                  value={tournamentName}
+                  onChange={(e) => setTournamentName(e.target.value)}
+                  placeholder={t('enterTournamentName')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <p className="text-xs text-muted-foreground">{t('tournamentOptional')}</p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

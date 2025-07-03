@@ -81,6 +81,11 @@ export interface Translations {
   failedToCreateMatch: string
   searchByTyping: string
   
+  // Tournament/League field
+  tournamentLeague: string
+  enterTournamentName: string
+  tournamentOptional: string
+  
   // Anonymous player options
   anonymousPlayer: string
   dontTrackStats: string
@@ -709,6 +714,11 @@ const translations: Record<Locale, Translations> = {
     matchCreatedSuccessfully: "Match Created Successfully",
     failedToCreateMatch: "Failed to Create Match",
       searchByTyping: "Search by Typing",
+    
+    // Tournament/League field
+    tournamentLeague: "Tournament/League",
+    enterTournamentName: "Enter tournament name",
+    tournamentOptional: "(Optional)",
   
   // Anonymous player options
   anonymousPlayer: "Anonymous Player",
@@ -1334,9 +1344,14 @@ const translations: Record<Locale, Translations> = {
     startMatch: "Začít zápas",
     matchCreatedSuccessfully: "Zápas vytvořen úspěšně",
     failedToCreateMatch: "Nepodařilo se vytvořit zápas",
-    searchByTyping: "Hledat při psaní",
+        searchByTyping: "Hledat při psaní",
     
-    // Anonymous player options
+    // Tournament/League field
+    tournamentLeague: "Turnaj/Liga",
+    enterTournamentName: "Zadejte název turnaje",
+    tournamentOptional: "(Volitelné)",
+  
+  // Anonymous player options
     anonymousPlayer: "Anonymní hráč",
     dontTrackStats: "Nesledovat statistiky",
     

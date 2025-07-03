@@ -101,6 +101,7 @@ interface LiveScoringInterfaceProps {
     startTime?: string
     endTime?: string
     setDurations?: number[]
+    tournamentName?: string
   }
 }
 
@@ -984,7 +985,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <ArrowLeft className="h-4 w-4" />
             </Button>
 
-            <h1 className="text-lg font-semibold">Live Match</h1>
+            <div className="flex items-center gap-2">
+              {match.tournamentName && (
+                <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2">
+                  {match.tournamentName}
+                </span>
+              )}
+              <h1 className="text-lg font-bold">Live Match</h1>
+            </div>
 
             <div className="flex items-center gap-2">
               {/* Breakpoint indicator in header */}

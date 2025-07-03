@@ -39,6 +39,7 @@ export interface Match extends Models.Document {
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
   detailLevel?: "points" | "simple" | "complex"
+  tournamentName?: string // Tournament/League name
   
   // Timing fields
   startTime?: string // ISO timestamp when first point is awarded

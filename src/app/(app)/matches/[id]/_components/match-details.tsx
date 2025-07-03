@@ -63,6 +63,7 @@ interface MatchDetailsProps {
     $createdAt: string
     $updatedAt: string
     $permissions: string[]
+    tournamentName?: string
   }
 }
 
@@ -178,6 +179,14 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
   return (
     <div className="w-full">
+      {/* Tournament/League Badge */}
+      {match.tournamentName && (
+        <div className="flex justify-center mt-2 mb-1">
+          <Badge variant="secondary" className="bg-gradient-to-r from-blue-400 to-purple-500 text-white shadow-sm px-3 py-1 text-xs font-semibold rounded-full">
+            {match.tournamentName}
+          </Badge>
+        </div>
+      )}
       {/* Mobile Header */}
       <div className="block md:hidden">
         <div className="w-full bg-background border-b">
@@ -219,7 +228,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   <Calendar className="h-4 w-4" />
                   <span>{formatDateTime(match.matchDate)}</span>
                 </div>
-                <div>{t('matchDetails')}</div>
+                {match.tournamentName && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">{t('tournamentLeague')}</span>
+                    <span className="text-sm font-medium">{match.tournamentName}</span>
+                  </div>
+                )}
               </div>
 
               {/* Continue match button for in-progress matches */}
@@ -401,7 +415,20 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         <div className="flex items-center justify-center gap-2 text-yellow-400">
                           <Trophy className="h-6 w-6" />
                           <span className="text-xl font-semibold">
-                            {formatPlayerFromObject(match.winner)} Wins!
+                            {(() => {
+                              if (isDoubles && match.winnerId) {
+                                // For doubles, determine which team won and display both players
+                                if (match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId) {
+                                  // Team 1 won
+                                  return `${getTeamName("team1")} Wins!`
+                                } else if (match.winnerId === match.playerTwoId || match.winnerId === match.playerFourId) {
+                                  // Team 2 won
+                                  return `${getTeamName("team2")} Wins!`
+                                }
+                              }
+                              // For singles or fallback
+                              return `${formatPlayerFromObject(match.winner)} Wins!`
+                            })()}
                           </span>
                         </div>
                       )}
@@ -486,6 +513,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <span className="text-sm text-muted-foreground">{t('date')}</span>
                           <span className="text-sm font-medium">{formatFullDate(match.matchDate)}</span>
                         </div>
+                        {match.tournamentName && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">{t('tournamentLeague')}</span>
+                            <span className="text-sm font-medium">{match.tournamentName}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">{t('duration')}</span>
                           <span className="text-sm font-medium">{matchDurationText}</span>

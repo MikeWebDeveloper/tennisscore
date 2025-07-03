@@ -138,6 +138,8 @@ interface PublicLiveMatchProps {
     startTime?: string | null
     endTime?: string | null
     setDurations?: number[]
+    tournamentName?: string
+    tournamentDescription?: string
   }
 }
 
@@ -355,71 +357,61 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         animate="show"
         className="relative z-10 p-3 sm:p-4 max-w-6xl mx-auto w-full space-y-3 sm:space-y-4"
       >
-        {/* Header */}
-        <motion.div variants={itemVariants} className="text-center pt-2 sm:pt-4">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
-              <h1 className="text-sm sm:text-xl md:text-2xl font-bold">Live Tennis</h1>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
-                <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {isSafariMobile ? "Refresh" : "Reload"}
-                </Button>
-              </div>
-
-              {/* Safari Mobile Help Text */}
-              {isSafariMobile && match.status === "In Progress" && connectionStatus.status !== "connected" && !(isVercelPreview) && (
-                <div className="text-xs text-yellow-200 bg-yellow-500/20 p-2 rounded-lg border border-yellow-500/30">
-                  💡 Safari mobile tip: If scores don&apos;t update automatically, tap &quot;Refresh&quot; to get the latest score
-                </div>
-              )}
-
-              {/* Vercel Preview Notice */}
-              {isVercelPreview && (
-                <div className="text-xs text-blue-200 bg-blue-500/20 p-2 rounded-lg border border-blue-500/30">
-                  🔄 Preview mode: Scores update automatically every 8-10 seconds. Production site has instant real-time updates.
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-            <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
-              {match.status === "In Progress" ? "Live" : "Completed"}
-            </Badge>
-            
-            {/* Connection Status - only show if match is in progress */}
-            {match.status === "In Progress" && (
-              <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>
-                {connectionStatus.status === "connected" ? (
-                  <>
-                    <Wifi className="w-3 h-3 mr-1" />
-                    <span className="hidden sm:inline">{connectionStatus.message}</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-3 h-3 mr-1" />
-                    <span className="hidden sm:inline">{connectionStatus.message}</span>
-                  </>
-                )}
-              </Badge>
+        {/* Header: Match internal live match style */}
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-between pt-2 sm:pt-4 w-full gap-2 flex-wrap"
+        >
+          {/* Left: Tournament badge (if any) + Live Tennis */}
+          <div className="flex items-center gap-2 min-w-0">
+            {match.tournamentName && (
+              <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2 truncate max-w-xs" title={match.tournamentName}>
+                {match.tournamentName}
+              </span>
             )}
+            <h1 className="text-lg font-bold text-white whitespace-nowrap">Live Tennis</h1>
           </div>
-          
-          {error && match.status === "In Progress" && (
-            <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 dark:bg-red-950/20 rounded border mx-auto">
-              Connection error: {error}
-            </div>
-          )}
+          {/* Right: Share & Reload Buttons */}
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+            <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              {isSafariMobile ? "Refresh" : "Reload"}
+            </Button>
+          </div>
         </motion.div>
+
+        {/* Status badges and connection info (unchanged) */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+          <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
+            {match.status === "In Progress" ? "Live" : "Completed"}
+          </Badge>
+          {/* Connection Status - only show if match is in progress */}
+          {match.status === "In Progress" && (
+            <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>
+              {connectionStatus.status === "connected" ? (
+                <>
+                  <Wifi className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">{connectionStatus.message}</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">{connectionStatus.message}</span>
+                </>
+              )}
+            </Badge>
+          )}
+        </div>
+        
+        {error && match.status === "In Progress" && (
+          <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 dark:bg-red-950/20 rounded border mx-auto">
+            Connection error: {error}
+          </div>
+        )}
 
         {/* Live Scoreboard - Remove wrapper motion and extra classes that might interfere */}
         <motion.div variants={itemVariants}>

@@ -108,7 +108,8 @@ export default async function MatchPage({
     playerThree: player3 || undefined,
     playerFour: player4 || undefined,
     winner: winner || undefined,
-    scoreParsed: score
+    scoreParsed: score,
+    tournamentName: match.tournamentName || undefined,
   }
 
   return <MatchDetails match={enhancedMatch} />

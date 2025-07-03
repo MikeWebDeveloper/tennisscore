@@ -16,6 +16,7 @@ export const createMatchSchema = z.object({
   playerTwoId: z.string().min(1, "Player 2 is required"),
   playerThreeId: z.string().optional(),
   playerFourId: z.string().optional(),
+  tournamentName: z.string().optional(),
   matchFormat: matchFormatSchema,
 }).refine(
   (data) => data.playerOneId !== data.playerTwoId,

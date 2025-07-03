@@ -73,13 +73,34 @@ export default async function MatchesPage() {
         : playersMap.get(match.playerFourId))
       : undefined
 
-    // Handle winner - check if it's anonymous
-    let winner: Player | null = null
+    // Handle winner - for doubles, determine winning team and format both names
+    let winnerName = ""
     if (match.winnerId) {
-      if (match.winnerId.startsWith('anonymous-')) {
-        winner = { ...getAnonymousPlayerName(match.winnerId), $id: match.winnerId } as Player
+      const isDoubles = match.playerThreeId && match.playerFourId
+      
+      if (isDoubles) {
+        // For doubles, determine which team won based on winnerId
+        // Team 1: playerOne & playerThree, Team 2: playerTwo & playerFour
+        if (match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId) {
+          // Team 1 won
+          const player1Name = playerOne ? formatPlayerFromObject(playerOne) : "Unknown Player"
+          const player3Name = playerThree ? formatPlayerFromObject(playerThree) : "Unknown Player"
+          winnerName = `${player1Name} / ${player3Name}`
+        } else if (match.winnerId === match.playerTwoId || match.winnerId === match.playerFourId) {
+          // Team 2 won
+          const player2Name = playerTwo ? formatPlayerFromObject(playerTwo) : "Unknown Player"
+          const player4Name = playerFour ? formatPlayerFromObject(playerFour) : "Unknown Player"
+          winnerName = `${player2Name} / ${player4Name}`
+        }
       } else {
-        winner = playersMap.get(match.winnerId) || null
+        // For singles, use the existing logic
+        let winner: Player | null = null
+        if (match.winnerId.startsWith('anonymous-')) {
+          winner = { ...getAnonymousPlayerName(match.winnerId), $id: match.winnerId } as Player
+        } else {
+          winner = playersMap.get(match.winnerId) || null
+        }
+        winnerName = winner ? formatPlayerFromObject(winner) : ""
       }
     }
 
@@ -110,7 +131,7 @@ export default async function MatchesPage() {
       playerTwoName: playerTwo ? formatPlayerFromObject(playerTwo) : "Unknown Player",
       playerThreeName: playerThree ? formatPlayerFromObject(playerThree) : undefined,
       playerFourName: playerFour ? formatPlayerFromObject(playerFour) : undefined,
-      winnerName: winner ? formatPlayerFromObject(winner) : "",
+      winnerName: winnerName,
       scoreParsed: scoreParsed,
       playerOne,
       playerTwo,

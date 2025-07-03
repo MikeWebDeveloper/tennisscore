@@ -117,7 +117,9 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       matchDate: match.matchDate,
       startTime: match.startTime || null,
       endTime: match.endTime || null,
-      setDurations: match.setDurations || []
+      setDurations: match.setDurations || [],
+      tournamentName: match.tournamentName || undefined,
+      tournamentDescription: match.tournamentDescription || undefined,
     }
 
     return <PublicLiveMatch match={matchData} />

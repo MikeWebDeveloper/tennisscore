@@ -12,6 +12,7 @@ export async function createMatch(matchData: {
   playerTwoId: string
   playerThreeId?: string
   playerFourId?: string
+  tournamentName?: string
   matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" }
 }) {
   const user = await getCurrentUser()
@@ -24,6 +25,7 @@ export async function createMatch(matchData: {
     playerTwoId,
     playerThreeId,
     playerFourId,
+    tournamentName,
     matchFormat,
   } = matchData
   const { detailLevel, ...restOfFormat } = matchFormat
@@ -46,6 +48,7 @@ export async function createMatch(matchData: {
       events: [],
       matchFormat: JSON.stringify(restOfFormat),
       detailLevel,
+      tournamentName: tournamentName || null,
       userId: user.$id,
     }
 
