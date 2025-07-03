@@ -175,14 +175,41 @@ export function useRealtimeMatch(matchId: string) {
         // Calculate time since last visibility change
         const timeSinceLastChange = now - lastVisibilityChangeRef.current
         
-        // For Safari mobile: Force refresh if hidden for more than 5 seconds (reduced from 10s)
-        // Safari aggressively suspends WebSocket connections
+        // Detect if we're on a Vercel preview URL
+        const isVercelPreview = typeof window !== 'undefined' && 
+          (window.location.hostname.includes('vercel.app') || 
+           window.location.hostname.includes('-git-'))
+        
+        // For Safari mobile on Vercel preview: More aggressive refresh (3s)
+        // Safari aggressively suspends WebSocket connections on preview URLs
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-        const forceRefreshThreshold = isSafari ? 5000 : 10000
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        
+        let forceRefreshThreshold = 10000 // Default 10s
+        if (isVercelPreview && isSafari && isMobile) {
+          forceRefreshThreshold = 3000 // Very aggressive on preview + Safari mobile
+        } else if (isVercelPreview && isSafari) {
+          forceRefreshThreshold = 5000 // Aggressive on preview + Safari desktop
+        } else if (isSafari) {
+          forceRefreshThreshold = 5000 // Safari-specific
+        }
+        
+        console.log(`🔍 Environment: Preview=${isVercelPreview}, Safari=${isSafari}, Mobile=${isMobile}, Threshold=${forceRefreshThreshold}ms`)
         
         if (timeSinceLastChange > forceRefreshThreshold) {
           console.log(`🔄 Page was hidden for >${forceRefreshThreshold/1000}s, refreshing data...`)
           fetchMatchData()
+          
+          // For Vercel preview URLs, also force reconnection
+          if (isVercelPreview && !isConnectingRef.current) {
+            console.log("🔌 Vercel preview detected - forcing reconnection...")
+            if (unsubscribeRef.current) {
+              unsubscribeRef.current()
+              unsubscribeRef.current = null
+            }
+            setConnected(false)
+            setRetryCount(0)
+          }
         }
         
         // If not connected and not already connecting, trigger reconnection
@@ -279,9 +306,20 @@ export function useRealtimeMatch(matchId: string) {
 
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    const isVercelPreview = typeof window !== 'undefined' && 
+      (window.location.hostname.includes('vercel.app') || 
+       window.location.hostname.includes('-git-'))
     
     // More frequent checks for Safari mobile (every 15 seconds instead of 30)
-    const checkInterval = (isSafari && isMobile) ? 15000 : 30000
+    // Even more frequent for Vercel preview URLs (every 10 seconds)
+    let checkInterval = 30000 // Default
+    if (isVercelPreview && isSafari && isMobile) {
+      checkInterval = 8000  // Very frequent for preview + Safari mobile
+    } else if (isVercelPreview) {
+      checkInterval = 10000 // Frequent for preview URLs
+    } else if (isSafari && isMobile) {
+      checkInterval = 15000 // Safari mobile
+    }
 
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
@@ -290,6 +328,12 @@ export function useRealtimeMatch(matchId: string) {
         // For Safari mobile, actively check if real-time is still working
         if (isSafari && isMobile) {
           console.log("🍎📱 Safari mobile heartbeat - checking data freshness")
+          fetchMatchData()
+        }
+        
+        // For Vercel preview URLs, use more aggressive polling as WebSocket fallback
+        if (isVercelPreview) {
+          console.log("🔄 Vercel preview polling fallback")
           fetchMatchData()
         }
       }

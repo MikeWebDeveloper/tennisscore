@@ -254,13 +254,26 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
     /iPhone|iPad|iPod/i.test(navigator.userAgent)
 
+  // Detect Vercel preview URL
+  const isVercelPreview = typeof window !== 'undefined' && 
+    (window.location.hostname.includes('vercel.app') || 
+     window.location.hostname.includes('-git-'))
+
   // Enhanced connection status for Safari mobile
   const getConnectionStatus = () => {
     if (!mounted) return { status: "connecting", message: "Loading..." }
+    
+    if (isVercelPreview) {
+      return { 
+        status: "preview", 
+        message: "Preview mode - scores update every 8-10 seconds" 
+      }
+    }
+    
     if (error) return { status: "error", message: `Connection Error: ${error}` }
     if (!connected && retryCount > 0) return { status: "reconnecting", message: `Reconnecting... (${retryCount}/3)` }
     if (!connected) return { status: "disconnected", message: isSafariMobile ? "Tap refresh if scores don't update" : "Connecting..." }
-    return { status: "connected", message: "Live Updates Active" }
+    return { status: "connected", message: "Live updates active" }
   }
 
   const connectionStatus = getConnectionStatus()
@@ -363,9 +376,16 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               </div>
 
               {/* Safari Mobile Help Text */}
-              {isSafariMobile && match.status === "In Progress" && connectionStatus.status !== "connected" && (
+              {isSafariMobile && match.status === "In Progress" && connectionStatus.status !== "connected" && !(isVercelPreview) && (
                 <div className="text-xs text-yellow-200 bg-yellow-500/20 p-2 rounded-lg border border-yellow-500/30">
                   💡 Safari mobile tip: If scores don&apos;t update automatically, tap &quot;Refresh&quot; to get the latest score
+                </div>
+              )}
+
+              {/* Vercel Preview Notice */}
+              {isVercelPreview && (
+                <div className="text-xs text-blue-200 bg-blue-500/20 p-2 rounded-lg border border-blue-500/30">
+                  🔄 Preview mode: Scores update automatically every 8-10 seconds. Production site has instant real-time updates.
                 </div>
               )}
             </div>

@@ -1,7 +1,7 @@
 // TennisScore Service Worker - Production Ready
-// Version: 1.3.3 - Safari Mobile Fixes
-const CACHE_NAME = 'tennisscore-v1.3.3'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.3'
+// Version: 1.3.4 - Vercel Preview URL Fixes
+const CACHE_NAME = 'tennisscore-v1.3.4'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.4'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -66,7 +66,7 @@ const BYPASS_PATTERNS = [
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.3...')
+  console.log('[SW] Installing service worker v1.3.4...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -505,7 +505,7 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.3' })
+      event.ports[0]?.postMessage({ version: '1.3.4' })
       break
       
     default:
