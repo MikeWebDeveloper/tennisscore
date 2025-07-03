@@ -237,11 +237,34 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     }
   }
 
-  const refreshMatch = () => {
-    window.location.reload()
+  // Calculate match stats
+  const matchStats = calculateMatchStats(pointLog)
+
+  // Manual refresh function for Safari mobile users
+  const refreshMatch = useCallback(() => {
+    console.log("🔄 Manual refresh triggered")
+    if (mounted) {
+      // Force fetch new data
+      window.location.reload()
+    }
+  }, [mounted])
+
+  // Detect Safari mobile for UI adjustments
+  const isSafariMobile = typeof navigator !== 'undefined' && 
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+    /iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+  // Enhanced connection status for Safari mobile
+  const getConnectionStatus = () => {
+    if (!mounted) return { status: "connecting", message: "Loading..." }
+    if (error) return { status: "error", message: `Connection Error: ${error}` }
+    if (!connected && retryCount > 0) return { status: "reconnecting", message: `Reconnecting... (${retryCount}/3)` }
+    if (!connected) return { status: "disconnected", message: isSafariMobile ? "Tap refresh if scores don't update" : "Connecting..." }
+    return { status: "connected", message: "Live Updates Active" }
   }
 
-  const matchStats = calculateMatchStats(pointLog)
+  const connectionStatus = getConnectionStatus()
+
   const hasPointData = pointLog.length > 0
   const playerNames = {
     p1: formatPlayerFromObject(match.playerOne),
@@ -327,24 +350,24 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               <h1 className="text-sm sm:text-xl md:text-2xl font-bold">Live Tennis</h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={refreshMatch}
-                className="h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
-              >
-                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={shareMatch}
-                className="h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
-              >
-                <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Share</span>
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+                <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {isSafariMobile ? "Refresh" : "Reload"}
+                </Button>
+              </div>
+
+              {/* Safari Mobile Help Text */}
+              {isSafariMobile && match.status === "In Progress" && connectionStatus.status !== "connected" && (
+                <div className="text-xs text-yellow-200 bg-yellow-500/20 p-2 rounded-lg border border-yellow-500/30">
+                  💡 Safari mobile tip: If scores don&apos;t update automatically, tap &quot;Refresh&quot; to get the latest score
+                </div>
+              )}
             </div>
           </div>
           
@@ -355,18 +378,16 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             
             {/* Connection Status - only show if match is in progress */}
             {match.status === "In Progress" && (
-              <Badge variant={connected ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}`}>
-                {connected ? (
+              <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>
+                {connectionStatus.status === "connected" ? (
                   <>
                     <Wifi className="w-3 h-3 mr-1" />
-                    <span className="hidden sm:inline">Connected</span>
-                    <span className="sm:hidden">●</span>
+                    <span className="hidden sm:inline">{connectionStatus.message}</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="w-3 h-3 mr-1" />
-                    <span className="hidden sm:inline">{retryCount > 0 ? `Retry ${retryCount}/3` : 'Connecting'}</span>
-                    <span className="sm:hidden">×</span>
+                    <span className="hidden sm:inline">{connectionStatus.message}</span>
                   </>
                 )}
               </Badge>

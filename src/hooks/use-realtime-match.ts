@@ -164,7 +164,7 @@ export function useRealtimeMatch(matchId: string) {
     }
   }, [matchId, retryCount, fetchMatchData])
 
-  // Enhanced visibility change handling
+  // Enhanced visibility change handling with Safari mobile fixes
   useEffect(() => {
     const handleVisibilityChange = () => {
       const now = Date.now()
@@ -175,9 +175,13 @@ export function useRealtimeMatch(matchId: string) {
         // Calculate time since last visibility change
         const timeSinceLastChange = now - lastVisibilityChangeRef.current
         
-        // If page was hidden for more than 10 seconds, force data refresh (reduced from 30s)
-        if (timeSinceLastChange > 10000) {
-          console.log("🔄 Page was hidden for >10s, refreshing data...")
+        // For Safari mobile: Force refresh if hidden for more than 5 seconds (reduced from 10s)
+        // Safari aggressively suspends WebSocket connections
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+        const forceRefreshThreshold = isSafari ? 5000 : 10000
+        
+        if (timeSinceLastChange > forceRefreshThreshold) {
+          console.log(`🔄 Page was hidden for >${forceRefreshThreshold/1000}s, refreshing data...`)
           fetchMatchData()
         }
         
@@ -192,40 +196,107 @@ export function useRealtimeMatch(matchId: string) {
       }
     }
 
+    // Safari-specific page lifecycle handling
+    const handlePageShow = (event: PageTransitionEvent) => {
+      console.log("📄 Page show event", { persisted: event.persisted })
+      if (event.persisted && matchId) {
+        // Page was restored from cache (Safari back/forward cache)
+        console.log("🔄 Page restored from cache, forcing refresh...")
+        fetchMatchData()
+        if (!connected && !isConnectingRef.current) {
+          setRetryCount(0)
+        }
+      }
+    }
+
+    const handlePageHide = () => {
+      console.log("📄 Page hide event")
+      lastVisibilityChangeRef.current = Date.now()
+    }
+
     // Initial timestamp
     lastVisibilityChangeRef.current = Date.now()
     
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('pagehide', handlePageHide)
     
-    // Also handle focus events for better mobile support
+    // Enhanced focus/blur handling for Safari mobile
     const handleFocus = () => {
-      if (matchId && !connected && !isConnectingRef.current) {
-        console.log("🎯 Window focused, checking connection...")
-        fetchMatchData()
+      console.log("🎯 Window focused")
+      if (matchId) {
+        // Always refresh on focus for Safari mobile to ensure fresh data
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+        if (isSafari) {
+          console.log("🍎 Safari detected, forcing refresh on focus")
+          fetchMatchData()
+        }
+        
+        if (!connected && !isConnectingRef.current) {
+          console.log("🔌 Not connected on focus, triggering reconnection...")
+          setRetryCount(0)
+        }
       }
+    }
+
+    const handleBlur = () => {
+      console.log("😶‍🌫️ Window blurred")
+      lastVisibilityChangeRef.current = Date.now()
     }
     
     window.addEventListener('focus', handleFocus)
+    window.addEventListener('blur', handleBlur)
+
+    // Safari-specific: Handle app state changes on iOS
+    const handleAppStateChange = () => {
+      console.log("📱 App state change detected")
+      if (document.visibilityState === 'visible' && matchId) {
+        fetchMatchData()
+        if (!connected && !isConnectingRef.current) {
+          setRetryCount(0)
+        }
+      }
+    }
+
+    // Listen for iOS-specific events
+    document.addEventListener('resume', handleAppStateChange)
+    document.addEventListener('online', handleAppStateChange)
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('pagehide', handlePageHide)
       window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('blur', handleBlur)
+      document.removeEventListener('resume', handleAppStateChange)
+      document.removeEventListener('online', handleAppStateChange)
     }
   }, [connected, matchId, fetchMatchData])
 
-  // Periodically check connection health (every 30 seconds)
+  // Periodically check connection health with Safari-specific heartbeat
   useEffect(() => {
     if (!matchId || !connected) return
+
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    
+    // More frequent checks for Safari mobile (every 15 seconds instead of 30)
+    const checkInterval = (isSafari && isMobile) ? 15000 : 30000
 
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         console.log("⏰ Periodic connection check")
-        // You could implement a ping mechanism here if needed
+        
+        // For Safari mobile, actively check if real-time is still working
+        if (isSafari && isMobile) {
+          console.log("🍎📱 Safari mobile heartbeat - checking data freshness")
+          fetchMatchData()
+        }
       }
-    }, 30000)
+    }, checkInterval)
 
     return () => clearInterval(interval)
-  }, [matchId, connected])
+  }, [matchId, connected, fetchMatchData])
 
   return { connected, lastUpdate, error, retryCount }
 } 

@@ -1,7 +1,7 @@
 // TennisScore Service Worker - Production Ready
-// Version: 1.3.2
-const CACHE_NAME = 'tennisscore-v1.3.2'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.2'
+// Version: 1.3.3 - Safari Mobile Fixes
+const CACHE_NAME = 'tennisscore-v1.3.3'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.3'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -66,7 +66,7 @@ const BYPASS_PATTERNS = [
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.2...')
+  console.log('[SW] Installing service worker v1.3.3...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -176,6 +176,21 @@ function isLiveMatchRoute(request) {
   return url.pathname.includes('/live/') || url.pathname.includes('/matches/live/')
 }
 
+// Helper: Check if this is Safari browser
+function isSafari() {
+  try {
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  } catch {
+    return false
+  }
+}
+
+// Helper: Check if this is a Vercel preview URL
+function isVercelPreview(request) {
+  const url = new URL(request.url)
+  return url.hostname.includes('vercel.app') || url.hostname.includes('-git-')
+}
+
 // Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event
@@ -229,20 +244,33 @@ async function handleRequest(request) {
 // Network-first with no-cache strategy for live matches
 async function networkFirstNoCache(request) {
   try {
+    const isPreview = isVercelPreview(request)
+    const safariUser = isSafari()
+    
+    // Enhanced cache control headers for Safari mobile and Vercel previews
+    const headers = {
+      ...request.headers,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    }
+    
+    // Add additional headers for Safari mobile on Vercel previews
+    if (safariUser && isPreview) {
+      headers['X-Safari-Mobile-Fix'] = 'true'
+      headers['Expires'] = '0'
+      headers['Last-Modified'] = new Date().toUTCString()
+    }
+    
     const response = await fetch(request, {
       method: 'GET',
-      headers: {
-        ...request.headers,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      },
+      headers,
       mode: 'cors',
       credentials: request.credentials,
       redirect: 'follow',
       cache: 'no-store'
     })
     
-    // Add cache-control headers to response
+    // Enhanced cache-control headers for response based on context
     const modifiedResponse = new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -252,6 +280,17 @@ async function networkFirstNoCache(request) {
     modifiedResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
     modifiedResponse.headers.set('Pragma', 'no-cache')
     modifiedResponse.headers.set('Expires', '0')
+    
+    // Additional Safari mobile headers
+    if (safariUser) {
+      modifiedResponse.headers.set('X-Safari-Cache-Fix', 'applied')
+      modifiedResponse.headers.set('Last-Modified', new Date().toUTCString())
+    }
+    
+    // Mark Vercel preview responses for debugging
+    if (isPreview) {
+      modifiedResponse.headers.set('X-Vercel-Preview', 'true')
+    }
     
     return modifiedResponse
   } catch (error) {
@@ -466,7 +505,7 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.2' })
+      event.ports[0]?.postMessage({ version: '1.3.3' })
       break
       
     default:
