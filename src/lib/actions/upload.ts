@@ -25,11 +25,18 @@ export async function uploadProfilePicture(formData: FormData) {
     return { error: `File size cannot exceed ${MAX_SIZE_MB}MB.` }
   }
 
+  // Log and check the bucket ID env var
+  const bucketId = process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID
+  console.log("[UPLOAD] APPWRITE_PROFILE_PICTURES_BUCKET_ID:", bucketId)
+  if (!bucketId) {
+    throw new Error("Missing APPWRITE_PROFILE_PICTURES_BUCKET_ID environment variable on server.")
+  }
+
   const { storage } = await createAdminClient()
 
   try {
     const uploadedFile = await storage.createFile(
-      process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID!,
+      bucketId,
       ID.unique(),
       file
     )
