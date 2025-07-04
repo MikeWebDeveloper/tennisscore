@@ -19,15 +19,14 @@ export function PlayerAvatar({ player, className }: PlayerAvatarProps) {
   
   if (player.profilePictureId) {
     const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
-    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID || 'profile-pictures-bucket-id'
+    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID
     const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
-    
-    // Debug log for production issues
-    if (typeof window !== 'undefined' && (!endpoint || !projectId || bucketId === 'profile-pictures-bucket-id')) {
+    if (typeof window !== 'undefined' && (!endpoint || !projectId || !bucketId)) {
       console.warn('Missing environment variables:', { endpoint, bucketId, projectId })
+      throw new Error('Missing required Appwrite environment variables for profile picture URL.')
     }
     
-    if (endpoint && projectId) {
+    if (endpoint && projectId && bucketId) {
       profilePictureUrl = `${endpoint}/storage/buckets/${bucketId}/files/${player.profilePictureId}/view?project=${projectId}`
     }
   }

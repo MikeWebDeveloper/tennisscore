@@ -125,7 +125,9 @@ export function formatDate(date: string | Date): string {
 export function getProfilePictureUrl(profilePictureId: string): string {
   const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
   const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
-  const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID || "profile-pictures"
-  
+  const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID
+  if (!endpoint || !projectId || !bucketId) {
+    throw new Error("Missing required Appwrite environment variables for profile picture URL.")
+  }
   return `${endpoint}/storage/buckets/${bucketId}/files/${profilePictureId}/view?project=${projectId}`
 }
