@@ -43,7 +43,10 @@ export function formatPlayerName(firstName: string, lastName: string, options: {
 export function formatPlayerFromObject(player: {
   firstName: string
   lastName: string
-}, options?: Parameters<typeof formatPlayerName>[2]): string {
+} | undefined | null, options?: Parameters<typeof formatPlayerName>[2]): string {
+  if (!player) {
+    return "Unknown Player"
+  }
   return formatPlayerName(player.firstName, player.lastName, options)
 }
 

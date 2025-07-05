@@ -25,6 +25,11 @@ export interface Match extends Models.Document {
   playerTwoId: string
   playerOne?: Player // Populated relationship (optional because it might not always be populated)
   playerTwo?: Player // Populated relationship (optional because it might not always be populated)
+  // Embedded player data for anonymous players
+  playerOneData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerTwoData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerThreeData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerFourData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
   matchDate: string
   matchFormat: string
   status: 'pending' | 'in-progress' | 'completed' | 'retired'

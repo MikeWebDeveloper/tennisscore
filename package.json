@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "setup:appwrite": "node scripts/setup-appwrite.js"
+    "setup:appwrite": "node scripts/setup-appwrite.js",
+    "investigate": "npx tsx scripts/investigate-match.ts",
+    "investigate:quick": "node scripts/quick-investigation.js",
+    "investigate:detailed": "node scripts/detailed-investigation.js",
+    "fix": "node scripts/fix-corrupted-matches.js",
+    "fix:all": "node scripts/fix-all-matches.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

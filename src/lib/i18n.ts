@@ -631,6 +631,37 @@ export interface Translations {
   // Tournament theming translations
   tournamentTheme: string
   selectTournamentForTheme: string
+  
+  // Wizard specific translations
+  next: string
+  chooseMatchFormat: string
+  oneVsOne: string
+  twoVsTwo: string
+  selectTwoPlayers: string
+  selectFourPlayers: string
+  addTournamentOptional: string
+  tournamentName: string
+  skipTournament: string
+  tournamentOptionalDescription: string
+  configureMatchSettings: string
+  traditionalScoring: string
+  fasterGameplay: string
+  traditionalFinalSet: string
+  quickerFinish: string
+  chooseTrackingLevel: string
+  detailLevelCanBeChanged: string
+  comingSoon: string
+  reviewMatch: string
+  confirmDetailsBeforeStart: string
+  tournament: string
+  casualMatch: string
+  detailLevel: string
+  readyToStart: string
+  clickStartToBeginMatch: string
+  review: string
+  step: string
+  creating: string
+  autoAdvancing: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -1263,7 +1294,38 @@ const translations: Record<Locale, Translations> = {
     
     // Tournament theming translations
     tournamentTheme: "Tournament Theme",
-    selectTournamentForTheme: "Choose a tournament theme to enhance your match experience"
+    selectTournamentForTheme: "Choose a tournament theme to enhance your match experience",
+    
+    // Wizard specific translations
+    next: "Next",
+    chooseMatchFormat: "Choose the format for your match",
+    oneVsOne: "One-on-one tennis match",
+    twoVsTwo: "Team tennis match with four players",
+    selectTwoPlayers: "Select the two players for this singles match",
+    selectFourPlayers: "Select four players for this doubles match",
+    addTournamentOptional: "Add tournament or league information (optional)",
+    tournamentName: "Tournament Name",
+    skipTournament: "Skip for now",
+    tournamentOptionalDescription: "Tournament information helps organize your matches and adds context to your statistics.",
+    configureMatchSettings: "Configure the match format and rules",
+    traditionalScoring: "Traditional advantage scoring",
+    fasterGameplay: "Faster no-advantage scoring",
+    traditionalFinalSet: "Play full final set",
+    quickerFinish: "Super tiebreak to 10",
+    chooseTrackingLevel: "Choose how much detail to track during the match",
+    detailLevelCanBeChanged: "You can change the detail level during the match if needed.",
+    comingSoon: "Coming Soon",
+    reviewMatch: "Review Match Details",
+    confirmDetailsBeforeStart: "Review all settings before starting your match",
+    tournament: "Tournament",
+    casualMatch: "Casual Match",
+    detailLevel: "Detail Level",
+    readyToStart: "Ready to start your match!",
+    clickStartToBeginMatch: "Click 'Start Match' to begin scoring.",
+    review: "Review",
+    step: "Step",
+    creating: "Creating...",
+    autoAdvancing: "Auto-advancing..."
   },
   cs: {
     // Common
@@ -1894,7 +1956,38 @@ const translations: Record<Locale, Translations> = {
     
     // Tournament theming translations
     tournamentTheme: "Téma turnaje",
-    selectTournamentForTheme: "Vyberte téma turnaje pro zlepšení zážitku ze zápasu"
+    selectTournamentForTheme: "Vyberte téma turnaje pro zlepšení zážitku ze zápasu",
+    
+    // Wizard specific translations
+    next: "Další",
+    chooseMatchFormat: "Vyberte formát vašeho zápasu",
+    oneVsOne: "Tenisový zápas jeden na jednoho",
+    twoVsTwo: "Týmový tenisový zápas se čtyřmi hráči",
+    selectTwoPlayers: "Vyberte dva hráče pro tento dvouhru",
+    selectFourPlayers: "Vyberte čtyři hráče pro tuto čtyřhru",
+    addTournamentOptional: "Přidejte informace o turnaji nebo lize (volitelné)",
+    tournamentName: "Název turnaje",
+    skipTournament: "Zatím přeskočit",
+    tournamentOptionalDescription: "Informace o turnaji pomáhají organizovat vaše zápasy a přidávají kontext vašim statistikám.",
+    configureMatchSettings: "Nastavte formát zápasu a pravidla",
+    traditionalScoring: "Tradiční hodnocení s výhodou",
+    fasterGameplay: "Rychlejší hodnocení bez výhody",
+    traditionalFinalSet: "Hrát celý finální set",
+    quickerFinish: "Super tiebreak na 10",
+    chooseTrackingLevel: "Vyberte, kolik detailů chcete během zápasu sledovat",
+    detailLevelCanBeChanged: "Úroveň detailů můžete během zápasu změnit podle potřeby.",
+    comingSoon: "Již brzy",
+    reviewMatch: "Zkontrolovat detaily zápasu",
+    confirmDetailsBeforeStart: "Zkontrolujte všechna nastavení před začátkem zápasu",
+    tournament: "Turnaj",
+    casualMatch: "Neformální zápas",
+    detailLevel: "Úroveň detailů",
+    readyToStart: "Připraveno zahájit váš zápas!",
+    clickStartToBeginMatch: "Klikněte na 'Zahájit zápas' pro začátek bodování.",
+    review: "Kontrola",
+    step: "Krok",
+    creating: "Vytváření...",
+    autoAdvancing: "Automatické pokračování..."
   }
 }
 
