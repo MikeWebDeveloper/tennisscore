@@ -678,4 +678,28 @@ function generateRealisticLastShot(pointOutcome: string): ShotType {
   return "forehand"
 }
 
+export async function updateMatchFormat(matchId: string, newFormat: MatchFormat): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    const { databases } = await createAdminClient()
+
+    await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId,
+      { matchFormat: JSON.stringify(newFormat) }
+    )
+
+    revalidatePath(`/matches/live/${matchId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating match format:", error)
+    return { success: false, error: "Failed to update match format." }
+  }
+}
+
  

@@ -3,95 +3,100 @@
 import { Users, User } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
 import { motion } from "framer-motion"
+import { useState } from "react"
 
 interface CompactMatchTypeStepProps {
-  value: "singles" | "doubles"
   onChange: (value: "singles" | "doubles") => void
 }
 
-export function CompactMatchTypeStep({ value, onChange }: CompactMatchTypeStepProps) {
+export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeStepProps & { onComplete: () => void }) {
   const t = useTranslations()
+  const [selected, setSelected] = useState<"singles" | "doubles" | null>(null)
+
+  const handleSelect = (val: "singles" | "doubles") => {
+    setSelected(val)
+    onChange(val)
+    setTimeout(() => {
+      onComplete()
+    }, 300)
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="p-2"
     >
-      <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">{t("matchType")}</h2>
-        <p className="text-sm text-muted-foreground">{t("chooseMatchFormat")}</p>
+      <div className="text-left mb-3">
+        <h2 className="text-base font-semibold">{t("matchType")}</h2>
+        <p className="text-xs text-muted-foreground">{t("chooseMatchFormat")}</p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {/* Singles Option */}
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onChange("singles")}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => handleSelect("singles")}
           className={`
-            p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200
-            ${value === "singles" 
-              ? 'border-primary bg-primary/5 shadow-lg' 
-              : 'border-border hover:border-primary/50 hover:bg-muted/50'
+            p-3 rounded-lg border cursor-pointer transition-all duration-200
+            ${selected === "singles" 
+              ? 'border-primary bg-primary/10' 
+              : 'border-border hover:border-primary/50'
             }
           `}
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className={`
-              p-3 rounded-full transition-colors
-              ${value === "singles" ? 'bg-primary text-primary-foreground' : 'bg-muted'}
+              p-1.5 rounded-md transition-colors
+              ${selected === "singles" ? 'bg-primary text-primary-foreground' : 'bg-muted'}
             `}>
-              <User className="h-6 w-6" />
+              <User className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <div className="text-lg font-semibold">{t('singles')}</div>
-              <div className="text-sm text-muted-foreground">{t('oneVsOne')}</div>
+              <div className="font-medium text-sm">{t('singles')}</div>
+              <div className="text-xs text-muted-foreground">{t('oneVsOne')}</div>
             </div>
-            {value === "singles" && (
+            {selected === "singles" && (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-6 h-6 bg-primary rounded-full flex items-center justify-center"
-              >
-                <div className="w-2 h-2 bg-primary-foreground rounded-full" />
-              </motion.div>
+                className="w-2 h-2 bg-primary rounded-full"
+              />
             )}
           </div>
         </motion.div>
 
         {/* Doubles Option */}
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onChange("doubles")}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => handleSelect("doubles")}
           className={`
-            p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200
-            ${value === "doubles" 
-              ? 'border-primary bg-primary/5 shadow-lg' 
-              : 'border-border hover:border-primary/50 hover:bg-muted/50'
+            p-3 rounded-lg border cursor-pointer transition-all duration-200
+            ${selected === "doubles" 
+              ? 'border-primary bg-primary/10' 
+              : 'border-border hover:border-primary/50'
             }
           `}
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className={`
-              p-3 rounded-full transition-colors
-              ${value === "doubles" ? 'bg-primary text-primary-foreground' : 'bg-muted'}
+              p-1.5 rounded-md transition-colors
+              ${selected === "doubles" ? 'bg-primary text-primary-foreground' : 'bg-muted'}
             `}>
-              <Users className="h-6 w-6" />
+              <Users className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <div className="text-lg font-semibold">{t('doubles')}</div>
-              <div className="text-sm text-muted-foreground">{t('twoVsTwo')}</div>
+              <div className="font-medium text-sm">{t('doubles')}</div>
+              <div className="text-xs text-muted-foreground">{t('twoVsTwo')}</div>
             </div>
-            {value === "doubles" && (
+            {selected === "doubles" && (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-6 h-6 bg-primary rounded-full flex items-center justify-center"
-              >
-                <div className="w-2 h-2 bg-primary-foreground rounded-full" />
-              </motion.div>
+                className="w-2 h-2 bg-primary rounded-full"
+              />
             )}
           </div>
         </motion.div>

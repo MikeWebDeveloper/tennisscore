@@ -1,16 +1,17 @@
 "use client"
 
-import { Settings, Clock, Zap } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
 import { motion } from "framer-motion"
+import { useRef, useEffect } from "react"
 
 interface CompactFormatStepProps {
-  sets: number[]
-  scoring: "ad" | "no-ad"
-  finalSet: "full" | "super-tb"
-  onSetsChange: (value: number[]) => void
+  sets: 1 | 3 | 5 | null
+  scoring: "ad" | "no-ad" | ""
+  finalSet: "full" | "super-tb" | ""
+  onSetsChange: (value: 1 | 3 | 5) => void
   onScoringChange: (value: "ad" | "no-ad") => void
   onFinalSetChange: (value: "full" | "super-tb") => void
+  onComplete: () => void
 }
 
 export function CompactFormatStep({
@@ -19,155 +20,141 @@ export function CompactFormatStep({
   finalSet,
   onSetsChange,
   onScoringChange,
-  onFinalSetChange
+  onFinalSetChange,
+  onComplete
 }: CompactFormatStepProps) {
   const t = useTranslations()
+  const advanceScheduledRef = useRef(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Check if all selections are made and schedule advance
+  useEffect(() => {
+    const allSelected = sets !== null && scoring !== "" && finalSet !== ""
+    
+    if (allSelected && !advanceScheduledRef.current) {
+      advanceScheduledRef.current = true
+      timeoutRef.current = setTimeout(() => {
+        onComplete()
+      }, 300)
+    }
+    
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [sets, scoring, finalSet, onComplete])
 
   const setOptions = [
-    { value: [1], label: t("bestOf1"), quick: true },
-    { value: [3], label: t("bestOf3"), default: true },
-    { value: [5], label: t("bestOf5"), long: true }
+    { value: 1, label: t("bestOf1") },
+    { value: 3, label: t("bestOf3") },
+    { value: 5, label: t("bestOf5") }
   ]
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="p-2"
     >
-      <div className="text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-4 rounded-full bg-primary/10">
-            <Settings className="h-8 w-8 text-primary" />
-          </div>
-        </div>
-        <h2 className="text-xl font-bold mb-2">{t("matchFormat")}</h2>
-        <p className="text-sm text-muted-foreground">{t("configureMatchSettings")}</p>
+      <div className="text-left mb-3">
+        <h2 className="text-base font-semibold">{t("matchFormat")}</h2>
+        <p className="text-xs text-muted-foreground">{t("selectMatchRules")}</p>
       </div>
 
-      {/* Sets Selection */}
       <div className="space-y-3">
-        <div className="text-sm font-medium text-center">{t("numberOfSets")}</div>
-        <div className="grid grid-cols-3 gap-2">
-          {setOptions.map((option) => (
+        {/* Sets Selection */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("numberOfSets")}</label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {setOptions.map((option) => (
+              <motion.button
+                key={option.value}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => onSetsChange(option.value as 1 | 3 | 5)}
+                className={`
+                  p-1.5 rounded-md border text-center transition-all duration-200
+                  ${sets === option.value
+                    ? 'border-primary bg-primary/10 text-primary font-semibold'
+                    : 'border-border hover:border-primary/50'
+                  }
+                `}
+              >
+                <div className="text-sm">{option.label}</div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Scoring System */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("scoringSystem")}</label>
+          <div className="grid grid-cols-2 gap-1.5">
             <motion.button
-              key={option.value[0]}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onSetsChange(option.value)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onScoringChange("ad")}
               className={`
-                p-3 rounded-xl border-2 text-center transition-all duration-200
-                ${sets[0] === option.value[0]
-                  ? 'border-primary bg-primary/10 text-primary'
+                p-1.5 rounded-md border transition-all duration-200
+                ${scoring === "ad"
+                  ? 'border-primary bg-primary/10 text-primary font-semibold'
                   : 'border-border hover:border-primary/50'
                 }
               `}
             >
-              <div className="text-sm font-medium">{option.label}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {option.quick && "Quick"}
-                {option.default && "Default"}
-                {option.long && "Long"}
-              </div>
+              <div className="text-sm">{t("advantage")}</div>
             </motion.button>
-          ))}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onScoringChange("no-ad")}
+              className={`
+                p-1.5 rounded-md border transition-all duration-200
+                ${scoring === "no-ad"
+                  ? 'border-primary bg-primary/10 text-primary font-semibold'
+                  : 'border-border hover:border-primary/50'
+                }
+              `}
+            >
+              <div className="text-sm">{t("noAdvantage")}</div>
+            </motion.button>
+          </div>
         </div>
-      </div>
 
-      {/* Scoring System */}
-      <div className="space-y-3">
-        <div className="text-sm font-medium text-center">{t("scoringSystem")}</div>
-        <div className="grid grid-cols-2 gap-3">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onScoringChange("ad")}
-            className={`
-              p-4 rounded-xl border-2 transition-all duration-200
-              ${scoring === "ad"
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50'
-              }
-            `}
-          >
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <div className="text-sm font-medium">{t("advantage")}</div>
-                <div className="text-xs text-muted-foreground">{t("traditionalScoring")}</div>
-              </div>
-            </div>
-          </motion.button>
+        {/* Final Set */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("finalSet")}</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onFinalSetChange("full")}
+              className={`
+                p-1.5 rounded-md border transition-all duration-200
+                ${finalSet === "full"
+                  ? 'border-primary bg-primary/10 text-primary font-semibold'
+                  : 'border-border hover:border-primary/50'
+                }
+              `}
+            >
+              <div className="text-sm">{t("fullSet")}</div>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onScoringChange("no-ad")}
-            className={`
-              p-4 rounded-xl border-2 transition-all duration-200
-              ${scoring === "no-ad"
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50'
-              }
-            `}
-          >
-            <div className="flex items-center space-x-3">
-              <Zap className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <div className="text-sm font-medium">{t("noAdvantage")}</div>
-                <div className="text-xs text-muted-foreground">{t("fasterGameplay")}</div>
-              </div>
-            </div>
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Final Set */}
-      <div className="space-y-3">
-        <div className="text-sm font-medium text-center">{t("finalSet")}</div>
-        <div className="grid grid-cols-2 gap-3">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onFinalSetChange("full")}
-            className={`
-              p-4 rounded-xl border-2 transition-all duration-200
-              ${finalSet === "full"
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50'
-              }
-            `}
-          >
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <div className="text-sm font-medium">{t("fullSet")}</div>
-                <div className="text-xs text-muted-foreground">{t("traditionalFinalSet")}</div>
-              </div>
-            </div>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onFinalSetChange("super-tb")}
-            className={`
-              p-4 rounded-xl border-2 transition-all duration-200
-              ${finalSet === "super-tb"
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50'
-              }
-            `}
-          >
-            <div className="flex items-center space-x-3">
-              <Zap className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <div className="text-sm font-medium">{t("superTiebreak")}</div>
-                <div className="text-xs text-muted-foreground">{t("quickerFinish")}</div>
-              </div>
-            </div>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onFinalSetChange("super-tb")}
+              className={`
+                p-1.5 rounded-md border transition-all duration-200
+                ${finalSet === "super-tb"
+                  ? 'border-primary bg-primary/10 text-primary font-semibold'
+                  : 'border-border hover:border-primary/50'
+                }
+              `}
+            >
+              <div className="text-sm">{t("superTiebreak")}</div>
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>

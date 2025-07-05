@@ -15,7 +15,8 @@ import {
   MessageSquare,
   Copy,
   Mail,
-  Activity
+  Activity,
+  Settings
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
@@ -39,6 +40,7 @@ import { MatchTimerDisplay } from "./MatchTimerDisplay"
 import { FlameIcon } from "@/components/ui/flame-icon"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
+import { MatchSettingsDialog } from "./match-settings-dialog"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -401,6 +403,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [isInGame, setIsInGame] = useState(false)
   const [isMatchInitialized, setIsMatchInitialized] = useState(false)
   const [startTime, setStartTime] = useState<string | null>(null)
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   
   const playerNames = {
     p1: formatPlayerFromObject(match.playerOne),
@@ -1010,6 +1013,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowSettingsDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('settings')}</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowShareDialog(true)}
                 className="flex items-center gap-2"
               >
@@ -1346,6 +1359,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Match Settings Dialog */}
+      <MatchSettingsDialog
+        isOpen={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+        match={match}
+      />
     </div>
   )
 } 

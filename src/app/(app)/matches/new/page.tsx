@@ -12,6 +12,8 @@ export default async function NewMatchPage() {
   const players = await getPlayersByUser()
 
   return (
-    <CompactMatchWizard players={players} />
+    <div className="w-full h-full grid place-items-center p-4">
+      <CompactMatchWizard players={players} />
+    </div>
   )
 } 

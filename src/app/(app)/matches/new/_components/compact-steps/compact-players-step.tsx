@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { User, Plus, Star, Check } from "lucide-react"
@@ -51,19 +51,39 @@ export function CompactPlayersStep({
   const t = useTranslations()
   const { mainPlayerId } = useUserStore()
   const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
+  const [autoAdvanceTriggered, setAutoAdvanceTriggered] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Check if form is complete and auto-advance
+  // Only trigger auto-advance after the last required selection is made
   useEffect(() => {
     const isComplete = matchType === "singles" 
       ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
       : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) && 
         (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
-    
-    if (isComplete) {
-      onComplete()
+
+    if (isComplete && !autoAdvanceTriggered) {
+      setAutoAdvanceTriggered(true)
+      timeoutRef.current = setTimeout(() => {
+        onComplete()
+      }, 300)
     }
-  }, [matchType, playerOne, playerTwo, playerThree, playerFour, 
-      playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, onComplete])
+    // Cleanup timeout if unmounting or changing
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, onComplete])
+
+  // Reset autoAdvanceTriggered if form becomes incomplete again
+  useEffect(() => {
+    const isComplete = matchType === "singles" 
+      ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
+      : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) && 
+        (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
+    if (!isComplete && autoAdvanceTriggered) {
+      setAutoAdvanceTriggered(false)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, autoAdvanceTriggered])
 
   const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
     const options: ComboboxOption[] = []
@@ -143,10 +163,10 @@ export function CompactPlayersStep({
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-3 p-4 rounded-xl border bg-card"
+      className="space-y-1.5"
     >
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">{label}</Label>
+        <Label className="text-xs font-medium">{label}</Label>
         <div className="flex items-center space-x-2">
           <Checkbox
             id={`${label.toLowerCase().replace(" ", "-")}-anonymous`}
@@ -172,12 +192,10 @@ export function CompactPlayersStep({
           emptyText={t('noPlayersFound')}
         />
       ) : (
-        <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {t('anonymousPlayer')} - {t('noTracking')}
-          </span>
-          <Check className="h-4 w-4 text-green-500 ml-auto" />
+        <div className="flex items-center gap-2 p-2.5 text-xs border rounded-md bg-muted/50 text-muted-foreground">
+          <User className="h-3 w-3" />
+          <span>{t('anonymousPlayer')}</span>
+          <Check className="h-3 w-3 text-green-500 ml-auto" />
         </div>
       )}
     </motion.div>
@@ -187,16 +205,16 @@ export function CompactPlayersStep({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-4"
+      className="p-2"
     >
-      <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">{t("players")}</h2>
-        <p className="text-sm text-muted-foreground">
+      <div className="text-left mb-3">
+        <h2 className="text-base font-semibold">{t("players")}</h2>
+        <p className="text-xs text-muted-foreground">
           {matchType === "singles" ? t("selectTwoPlayers") : t("selectFourPlayers")}
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {matchType === "singles" ? (
           <>
             {renderPlayerSelect(
@@ -220,7 +238,7 @@ export function CompactPlayersStep({
         ) : (
           <>
             <div className="text-center">
-              <div className="text-sm font-medium text-primary mb-2">{t("team1")}</div>
+              <div className="text-xs font-semibold text-primary mb-2 uppercase tracking-wider">{t("team1")}</div>
             </div>
             
             {renderPlayerSelect(
@@ -241,8 +259,8 @@ export function CompactPlayersStep({
               [playerOne, playerTwo, playerFour].filter(Boolean)
             )}
 
-            <div className="text-center">
-              <div className="text-sm font-medium text-destructive mb-2">{t("team2")}</div>
+            <div className="pt-2 text-center">
+              <div className="text-xs font-semibold text-primary mb-2 uppercase tracking-wider">{t("team2")}</div>
             </div>
             
             {renderPlayerSelect(
