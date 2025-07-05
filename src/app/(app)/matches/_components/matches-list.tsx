@@ -1,14 +1,17 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Eye, Users, Share2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Trophy, Eye, Users, Share2, Search, Filter } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 import { toast } from "sonner"
 import { useTranslations } from "@/hooks/use-translations"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface MatchesListProps {
   matches: Array<{
@@ -40,6 +43,24 @@ interface MatchesListProps {
 
 export function MatchesList({ matches }: MatchesListProps) {
   const t = useTranslations()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  
+  // Filter matches based on search and status
+  const filteredMatches = matches.filter(match => {
+    const searchLower = searchQuery.toLowerCase()
+    const matchesSearch = !searchQuery || 
+      match.playerOneName.toLowerCase().includes(searchLower) ||
+      match.playerTwoName.toLowerCase().includes(searchLower) ||
+      match.playerThreeName?.toLowerCase().includes(searchLower) ||
+      match.playerFourName?.toLowerCase().includes(searchLower) ||
+      match.winnerName?.toLowerCase().includes(searchLower)
+    
+    const matchesStatus = statusFilter === "all" || 
+      match.status.toLowerCase().replace(" ", "-") === statusFilter
+    
+    return matchesSearch && matchesStatus
+  })
   
   if (!matches || matches.length === 0) {
     return (
@@ -147,8 +168,48 @@ export function MatchesList({ matches }: MatchesListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      {matches.map((match) => (
+    <div className="space-y-4">
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search matches by player name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Results Count */}
+      {searchQuery || statusFilter !== "all" ? (
+        <p className="text-sm text-muted-foreground">
+          {filteredMatches.length} of {matches.length} matches
+        </p>
+      ) : null}
+
+      {/* Matches Grid */}
+      {filteredMatches.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">
+          {searchQuery || statusFilter !== "all" ? "No matches found matching your criteria" : t("noMatchesFound")}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredMatches.map((match) => (
         <Card key={match.$id} className={`hover:shadow-md transition-shadow ${getCardHeight(match)}`}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
@@ -219,7 +280,9 @@ export function MatchesList({ matches }: MatchesListProps) {
             </div>
           </CardContent>
         </Card>
-      ))}
+          ))}
+        </div>
+      )}
     </div>
   )
 } 

@@ -10,7 +10,8 @@ import { CreatePlayerDialog, CreatePlayerTrigger } from "./_components/create-pl
 import { EditPlayerDialog } from "./_components/edit-player-dialog"
 import { useTranslations } from "@/hooks/use-translations"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, ArrowUpAZ, ArrowDownZA } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowUpDown, ArrowUpAZ, ArrowDownZA, Search } from "lucide-react"
 
 interface PlayersClientProps {
   user: UserType
@@ -30,11 +31,24 @@ export function PlayersClient({ players }: PlayersClientProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const sortedPlayers = useMemo(() => {
-    if (sortOrder === 'none') return players
+  const sortedAndFilteredPlayers = useMemo(() => {
+    // First filter by search query
+    const filtered = players.filter(player => {
+      if (!searchQuery) return true
+      const searchLower = searchQuery.toLowerCase()
+      const playerName = formatPlayerFromObject(player).toLowerCase()
+      return playerName.includes(searchLower) ||
+        player.firstName.toLowerCase().includes(searchLower) ||
+        player.lastName.toLowerCase().includes(searchLower) ||
+        player.rating?.toLowerCase().includes(searchLower)
+    })
 
-    const sorted = [...players].sort((a, b) => {
+    // Then sort
+    if (sortOrder === 'none') return filtered
+
+    const sorted = [...filtered].sort((a, b) => {
       const nameA = formatPlayerFromObject(a).toLowerCase()
       const nameB = formatPlayerFromObject(b).toLowerCase()
       
@@ -46,7 +60,7 @@ export function PlayersClient({ players }: PlayersClientProps) {
     })
 
     return sorted
-  }, [players, sortOrder])
+  }, [players, sortOrder, searchQuery])
 
   const handleDeletePlayer = async (playerId: string) => {
     if (confirm(t("confirmDeletePlayer"))) {
@@ -110,14 +124,41 @@ export function PlayersClient({ players }: PlayersClientProps) {
           </div>
         </div>
 
+        {/* Search and Results */}
+        {players.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search players by name or rating..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {searchQuery && (
+              <p className="text-sm text-muted-foreground">
+                {sortedAndFilteredPlayers.length} of {players.length} players
+              </p>
+            )}
+          </div>
+        )}
+
         {players.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">{t("noPlayersYet")}</p>
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
           </div>
+        ) : sortedAndFilteredPlayers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">No players found matching your search</p>
+            <Button variant="outline" onClick={() => setSearchQuery("")}>
+              Clear Search
+            </Button>
+          </div>
         ) : (
           <PlayerList 
-            players={sortedPlayers}
+            players={sortedAndFilteredPlayers}
             onEditPlayer={setEditingPlayer}
             onDeletePlayer={handleDeletePlayer}
           />
