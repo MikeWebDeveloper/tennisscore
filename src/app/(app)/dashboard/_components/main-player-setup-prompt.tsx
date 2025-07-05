@@ -24,16 +24,16 @@ export function MainPlayerSetupPrompt() {
               <Star className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-xl text-slate-200">
+          <CardTitle className="text-xl text-gray-900 dark:text-slate-200">
             {t("welcomeToTennisScorePrompt")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">
           <div className="space-y-2">
-            <p className="text-slate-300">
+            <p className="text-gray-800 dark:text-slate-300">
               {t("getStartedPersonalized")}
             </p>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-gray-700 dark:text-slate-400">
               {t("helpShowRelevantStats")}
             </p>
           </div>
@@ -48,7 +48,7 @@ export function MainPlayerSetupPrompt() {
             </Button>
           </div>
           
-          <div className="text-xs text-slate-500 space-y-1">
+          <div className="text-xs text-gray-600 dark:text-slate-500 space-y-1">
             <p>{t("createPlayersHint")}</p>
             <p>{t("setMainPlayerHint")}</p>
           </div>

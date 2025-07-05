@@ -372,6 +372,7 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
 export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProps) {
   const t = useTranslations()
   const [isCreatePlayerOpen, setCreatePlayerOpen] = useState(false)
+  const [showAdvancedStats, setShowAdvancedStats] = useState(false)
   
   // Calculate comprehensive stats
   const stats = calculateEnhancedStats(matches, mainPlayer?.$id)
@@ -446,7 +447,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               {/* Header with icon and trend */}
               <div className="flex items-center justify-between mb-1 md:mb-2">
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{label}</p>
+                  <p className="text-xs md:text-sm text-gray-800 dark:text-muted-foreground font-medium truncate">{label}</p>
                   {getTrendIcon()}
                 </div>
                 <div className="p-1.5 md:p-2 lg:p-2.5 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2 flex-shrink-0">
@@ -456,7 +457,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               
               {/* Value */}
               <div className="flex-1 flex items-center">
-                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
+                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
                   {typeof value === 'number' ? (
                     <GSAPAnimatedCounter
                       value={value}
@@ -481,7 +482,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               {/* Subtitle */}
               {subtitle && (
                 <div className="mt-1">
-                  <p className="text-xs md:text-xs lg:text-sm text-muted-foreground/80 truncate leading-tight">
+                  <p className="text-xs md:text-xs lg:text-sm text-gray-700 dark:text-muted-foreground/80 truncate leading-tight">
                     {subtitle}
                   </p>
                 </div>
@@ -523,13 +524,23 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       </motion.div>
       <CreatePlayerDialog isOpen={isCreatePlayerOpen} onOpenChange={setCreatePlayerOpen} />
 
-      {/* 16+ Comprehensive Stats Cards - GSAP Powered */}
+      {/* Smart Dashboard - Show Key Metrics by Default */}
       <div data-dashboard-container className="space-y-6 md:space-y-8">
-        {/* Basic Performance */}
+        {/* Core Performance Metrics - Always Visible */}
         <div>
-          <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("performanceOverviewHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("performanceOverviewDescription")}</p>
+          <div className="mb-3 md:mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("performanceOverviewHeader")}</h3>
+              <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("performanceOverviewDescription")}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdvancedStats(!showAdvancedStats)}
+              className="ml-4"
+            >
+              {showAdvancedStats ? "Show Less" : "View More Stats"}
+            </Button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
@@ -574,11 +585,14 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           </div>
         </div>
 
-        {/* Serve Performance */}
-        <div>
+        {/* Advanced Stats - Conditionally Rendered */}
+        {showAdvancedStats && (
+          <>
+            {/* Serve Performance */}
+            <div>
           <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("serveStatisticsHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("serveStatisticsDescription")}</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("serveStatisticsHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("serveStatisticsDescription")}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
@@ -626,8 +640,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         {/* Return Game */}
         <div>
           <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("returnGameHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("returnGameDescription")}</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("returnGameHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("returnGameDescription")}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
@@ -676,8 +690,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         {/* Shot Making */}
         <div>
           <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("shotMakingHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("shotMakingDescription")}</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("shotMakingHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("shotMakingDescription")}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
@@ -724,7 +738,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         <div className="space-y-3 md:space-y-4 lg:space-y-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">Performance Insights</h3>
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-foreground">Performance Insights</h3>
             <Badge variant="outline" className="ml-auto text-xs">
               Advanced Analytics
             </Badge>
@@ -792,28 +806,30 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             )}
           </div>
         </div>
-      </div>
 
-      {/* Performance Charts */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-      >
-        <Card className="hover:shadow-md transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">{t("performanceOverview")}</h3>
-              <Badge variant="outline" className="text-xs">
-                {t("last30Days")}
-              </Badge>
-            </div>
-            <Suspense fallback={<ChartsSkeleton />}>
-              <PerformanceCharts matches={matches} mainPlayer={mainPlayer} />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </motion.div>
+            {/* Performance Charts */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <Card className="hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">{t("performanceOverview")}</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {t("last30Days")}
+                    </Badge>
+                  </div>
+                  <Suspense fallback={<ChartsSkeleton />}>
+                    <PerformanceCharts matches={matches} mainPlayer={mainPlayer} />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </>
+        )}
+      </div>
 
       {/* Recent Matches */}
       {recentMatches.length > 0 && (
@@ -849,7 +865,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                         <p className="text-sm font-medium">
                           {t("vs")} {match.playerTwoId === mainPlayer?.$id ? t("player1") : t("player2")}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-gray-700 dark:text-muted-foreground">
                           {new Date(match.matchDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -888,7 +904,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                     ease="elastic.out(1, 0.5)"
                   />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("matchesLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("matchesLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600 mb-1">
@@ -900,11 +916,11 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                     ease="power4.out"
                   />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("wonLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("wonLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600 mb-1">{stats.averageMatchDuration}</div>
-                <div className="text-xs text-muted-foreground">{t("avgDurationLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("avgDurationLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600 mb-1">
@@ -916,7 +932,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                     ease="bounce.out"
                   />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
               </div>
             </div>
           </CardContent>

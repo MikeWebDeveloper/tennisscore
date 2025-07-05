@@ -86,11 +86,11 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
               transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
               className="space-y-2"
             >
-              <p className="text-6xl font-bold text-primary font-mono">
+              <p className="text-6xl font-bold text-gray-900 dark:text-primary font-mono">
                 {stats.completedMatches > 0 ? `${stats.winRate}%` : "-"}
               </p>
-              <p className="text-lg font-semibold text-slate-200">Win Rate</p>
-              <p className="text-sm text-slate-400">
+              <p className="text-lg font-semibold text-gray-800 dark:text-slate-200">Win Rate</p>
+              <p className="text-sm text-gray-700 dark:text-slate-400">
                 {stats.completedMatches} completed matches
               </p>
             </motion.div>
@@ -110,13 +110,13 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                 </Badge>
               )}
             </div>
-            <p className="text-3xl font-bold text-slate-200 font-mono mb-1">
+            <p className="text-3xl font-bold text-gray-900 dark:text-slate-200 font-mono mb-1">
               {stats.totalMatches}
             </p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+            <p className="text-xs font-medium text-gray-700 dark:text-slate-500 uppercase tracking-wide mb-1">
               Total Matches
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-gray-600 dark:text-slate-400">
               {stats.inProgressMatches} in progress
             </p>
           </CardContent>
@@ -129,13 +129,13 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
             <div className="flex items-center justify-between mb-3">
               <Users className="h-5 w-5 text-green-400" />
             </div>
-            <p className="text-3xl font-bold text-slate-200 font-mono mb-1">
+            <p className="text-3xl font-bold text-gray-900 dark:text-slate-200 font-mono mb-1">
               {stats.totalPlayers}
             </p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+            <p className="text-xs font-medium text-gray-700 dark:text-slate-500 uppercase tracking-wide mb-1">
               Players
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-gray-600 dark:text-slate-400">
               Profiles created
             </p>
           </CardContent>
@@ -152,10 +152,10 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
         <Card className="h-full bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-primary/30 transition-all duration-300 group">
           <CardContent className="p-6 flex items-center justify-between h-full">
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-slate-200 group-hover:text-primary transition-colors">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-slate-200 group-hover:text-primary transition-colors">
                 Start New Match
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-700 dark:text-slate-400">
                 Begin scoring a live tennis match
               </p>
             </div>
@@ -177,9 +177,9 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-200">Recent Matches</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-slate-200">Recent Matches</CardTitle>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/matches" className="text-slate-400 hover:text-slate-200">
+                <Link href="/matches" className="text-gray-700 dark:text-slate-400 hover:text-slate-200">
                   View All
                 </Link>
               </Button>
@@ -188,8 +188,8 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
           <CardContent>
             {recentMatches.length === 0 ? (
               <div className="text-center py-8">
-                <Trophy className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500 mb-4">No matches yet</p>
+                <Trophy className="h-12 w-12 text-gray-600 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-gray-700 dark:text-slate-500 mb-4">No matches yet</p>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/matches/new">
                     <Play className="h-4 w-4 mr-2" />
@@ -208,8 +208,8 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                     className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-slate-600 transition-all"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-slate-200">Match vs Opponent</p>
-                      <p className="text-sm text-slate-400">
+                      <p className="font-medium text-gray-900 dark:text-slate-200">Match vs Opponent</p>
+                      <p className="text-sm text-gray-700 dark:text-slate-400">
                         {new Date(match.matchDate).toLocaleDateString()}
                       </p>
                     </div>
@@ -238,9 +238,9 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-200">Your Players</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-slate-200">Your Players</CardTitle>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/players" className="text-slate-400 hover:text-slate-200">
+                <Link href="/players" className="text-gray-700 dark:text-slate-400 hover:text-slate-200">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Player
                 </Link>
@@ -250,8 +250,8 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
           <CardContent>
             {players.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500 mb-4">No players created</p>
+                <Users className="h-12 w-12 text-gray-600 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-gray-700 dark:text-slate-500 mb-4">No players created</p>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/players">
                     <Plus className="h-4 w-4 mr-2" />
@@ -276,11 +276,11 @@ export function BentoGrid({ stats, matches, players }: BentoGridProps) {
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-200 truncate">
+                        <p className="font-medium text-gray-900 dark:text-slate-200 truncate">
                           {formatPlayerFromObject(player)}
                         </p>
                         {player.rating && (
-                          <p className="text-sm text-slate-400">Rating: {player.rating}</p>
+                          <p className="text-sm text-gray-700 dark:text-slate-400">Rating: {player.rating}</p>
                         )}
                       </div>
                     </div>
