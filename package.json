@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "setup:appwrite": "node scripts/setup-appwrite.js"
   },
   "dependencies": {
@@ -34,6 +35,7 @@
     "d3-shape": "^3.2.0",
     "dotenv": "^16.5.0",
     "framer-motion": "^12.0.0",
+    "gsap": "^3.13.0",
     "jose": "^5.2.4",
     "lucide-react": "^0.514.0",
     "next": "^15.0.0",

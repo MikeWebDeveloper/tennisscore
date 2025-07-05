@@ -51,6 +51,11 @@ const itemVariants = {
   }
 }
 
+// Utility to remove diacritics for search
+function normalizeDiacritics(str: string): string {
+  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+}
+
 export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const router = useRouter()
   const t = useTranslations()
@@ -180,9 +185,11 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       
       // Add main player first with special styling (if exists and not excluded)
       if (mainPlayer) {
+        const label = formatPlayerFromObject(mainPlayer)
+        const normalized = normalizeDiacritics(label)
         options.push({
-          value: mainPlayer.$id,
-          label: formatPlayerFromObject(mainPlayer),
+          value: `${mainPlayer.$id} ${normalized}`,
+          label: label,
           group: t('mainPlayer'),
           icon: (
             <div className="flex items-center gap-1.5">
@@ -196,9 +203,11 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       // Add other players alphabetically
       if (sortedOtherPlayers.length > 0) {
         sortedOtherPlayers.forEach(player => {
+          const label = formatPlayerFromObject(player)
+          const normalized = normalizeDiacritics(label)
           options.push({
-            value: player.$id,
-            label: formatPlayerFromObject(player),
+            value: `${player.$id} ${normalized}`,
+            label: label,
             group: t('trackedPlayers'),
             icon: <PlayerAvatar player={player} className="h-5 w-5" />,
           })

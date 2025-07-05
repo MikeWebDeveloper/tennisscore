@@ -131,3 +131,27 @@ export function getProfilePictureUrl(profilePictureId: string): string {
   }
   return `${endpoint}/storage/buckets/${bucketId}/files/${profilePictureId}/view?project=${projectId}`
 }
+
+/**
+ * Centralized error logging utility
+ * @param error - The error object to log
+ * @param context - Optional context string to help identify where the error occurred
+ */
+export function logError(error: Error | unknown, context?: string): void {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  const errorStack = error instanceof Error ? error.stack : undefined
+  
+  const timestamp = new Date().toISOString()
+  const contextPrefix = context ? `[${context}] ` : ''
+  
+  console.error(`${timestamp} - ${contextPrefix}Error:`, errorMessage)
+  
+  if (errorStack) {
+    console.error(`${timestamp} - ${contextPrefix}Stack:`, errorStack)
+  }
+  
+  // In development, also log additional error details
+  if (process.env.NODE_ENV === 'development') {
+    console.error(`${timestamp} - ${contextPrefix}Full Error Object:`, error)
+  }
+}
