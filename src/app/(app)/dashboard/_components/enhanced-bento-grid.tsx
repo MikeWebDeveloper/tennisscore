@@ -37,6 +37,7 @@ import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis
 import { CreatePlayerDialog } from "../../players/_components/create-player-dialog"
 import { useState } from "react"
 import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
+import { ChartSkeleton } from "@/components/ui/loading-skeletons"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -113,11 +114,9 @@ const buttonVariants = {
   }
 }
 
-// Skeleton components for loading states
+// Enhanced skeleton component for charts
 function ChartsSkeleton() {
-  return (
-    <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted/50" />
-  )
+  return <ChartSkeleton />
 }
 
 // Helper function to calculate matches in current month

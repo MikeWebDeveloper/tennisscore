@@ -12,6 +12,7 @@ import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 import { toast } from "sonner"
 import { useTranslations } from "@/hooks/use-translations"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MatchCardSkeleton } from "@/components/ui/loading-skeletons"
 
 interface MatchesListProps {
   matches: Array<{
@@ -45,6 +46,7 @@ export function MatchesList({ matches }: MatchesListProps) {
   const t = useTranslations()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [isFiltering, setIsFiltering] = useState(false)
   
   // Filter matches based on search and status
   const filteredMatches = matches.filter(match => {
@@ -61,6 +63,21 @@ export function MatchesList({ matches }: MatchesListProps) {
     
     return matchesSearch && matchesStatus
   })
+
+  // Handle search with loading state
+  const handleSearchChange = (value: string) => {
+    setIsFiltering(true)
+    setSearchQuery(value)
+    // Simulate filtering delay for better UX
+    setTimeout(() => setIsFiltering(false), 150)
+  }
+
+  // Handle filter with loading state  
+  const handleFilterChange = (value: string) => {
+    setIsFiltering(true)
+    setStatusFilter(value)
+    setTimeout(() => setIsFiltering(false), 150)
+  }
   
   if (!matches || matches.length === 0) {
     return (
@@ -176,13 +193,13 @@ export function MatchesList({ matches }: MatchesListProps) {
           <Input
             placeholder="Search matches by player name..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -203,7 +220,13 @@ export function MatchesList({ matches }: MatchesListProps) {
       ) : null}
 
       {/* Matches Grid */}
-      {filteredMatches.length === 0 ? (
+      {isFiltering ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <MatchCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredMatches.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">
           {searchQuery || statusFilter !== "all" ? "No matches found matching your criteria" : t("noMatchesFound")}
         </p>
