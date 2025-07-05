@@ -255,7 +255,13 @@ export function AppShell({ children, user }: AppShellProps) {
           </aside>
 
           {/* Main Content */}
-          <main className="ml-64 flex-1">
+          <main className="ml-64 flex-1" id="main-content" role="main">
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-3 py-2 rounded-md z-50"
+            >
+              Skip to main content
+            </a>
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
               <ExtensionConflictNotice />
               {children}
@@ -272,8 +278,9 @@ export function AppShell({ children, user }: AppShellProps) {
               size="sm"
               onClick={() => setSidebarOpen(true)}
               className="hover:bg-accent"
+              aria-label="Open navigation menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
             
             <div className="flex items-center space-x-2">
@@ -289,11 +296,12 @@ export function AppShell({ children, user }: AppShellProps) {
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <Moon className="h-4 w-4" aria-hidden="true" />
                 )}
               </Button>
               <Avatar className="h-8 w-8 border border-border">
@@ -416,7 +424,7 @@ export function AppShell({ children, user }: AppShellProps) {
           </AnimatePresence>
 
           {/* Mobile Main Content */}
-          <main className="pt-16">
+          <main className="pt-16" role="main" aria-label="Main content">
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
               <ExtensionConflictNotice />
               {children}

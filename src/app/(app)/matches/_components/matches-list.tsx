@@ -189,18 +189,20 @@ export function MatchesList({ matches }: MatchesListProps) {
       {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
           <Input
             placeholder="Search matches by player name..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
+            aria-label="Search matches by player name"
+            role="searchbox"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Select value={statusFilter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px]" aria-label="Filter matches by status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

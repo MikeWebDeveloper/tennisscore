@@ -446,11 +446,11 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               {/* Header with icon and trend */}
               <div className="flex items-center justify-between mb-1 md:mb-2">
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <p className="text-xs md:text-sm text-gray-800 dark:text-muted-foreground font-medium truncate">{label}</p>
+                  <h4 className="text-xs md:text-sm text-gray-800 dark:text-muted-foreground font-medium truncate">{label}</h4>
                   {getTrendIcon()}
                 </div>
                 <div className="p-1.5 md:p-2 lg:p-2.5 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2 flex-shrink-0">
-                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} />
+                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} aria-hidden="true" />
                 </div>
               </div>
               
@@ -537,6 +537,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               size="sm"
               onClick={() => setShowAdvancedStats(!showAdvancedStats)}
               className="ml-4"
+              aria-expanded={showAdvancedStats}
+              aria-controls="advanced-stats-section"
+              aria-label={showAdvancedStats ? "Hide advanced statistics" : "Show advanced statistics"}
             >
               {showAdvancedStats ? "Show Less" : "View More Stats"}
             </Button>
@@ -586,7 +589,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
 
         {/* Advanced Stats - Conditionally Rendered */}
         {showAdvancedStats && (
-          <>
+          <div id="advanced-stats-section" role="region" aria-label="Advanced performance statistics">
             {/* Serve Performance */}
             <div>
           <div className="mb-3 md:mb-4">
@@ -826,7 +829,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                 </CardContent>
               </Card>
             </motion.div>
-          </>
+          </div>
         )}
       </div>
 

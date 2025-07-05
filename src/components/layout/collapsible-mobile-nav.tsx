@@ -38,6 +38,8 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
     <motion.nav 
       initial={{ y: 0 }}
       className="fixed bottom-0 left-0 right-0 z-40"
+      role="navigation"
+      aria-label="Main navigation"
     >
       <div className="bg-card border-t border-border shadow-lg">
         {/* Core Navigation - Always Visible */}
@@ -60,8 +62,10 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                         ? "text-primary bg-primary/10" 
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     )}
+                    aria-current={isActive ? "page" : undefined}
+                    aria-label={`Navigate to ${item.label}`}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-5 w-5" aria-hidden="true" />
                     <span className="font-medium truncate">{item.label}</span>
                   </Link>
                 </motion.div>
@@ -77,9 +81,10 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                 href="/matches/new"
                 onClick={handleNavigation}
                 className="flex flex-col items-center space-y-1 px-2 py-2 text-xs text-foreground font-medium"
+                aria-label="Create new match"
               >
                 <div className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center shadow-sm transition-colors">
-                  <Plus className="h-4 w-4 text-primary-foreground" />
+                  <Plus className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
                 </div>
                 <span className="truncate">New</span>
               </Link>
@@ -99,12 +104,15 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                       ? "text-primary bg-primary/10" 
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
+                  aria-expanded={showMore}
+                  aria-controls="additional-navigation"
+                  aria-label={showMore ? "Hide additional navigation options" : "Show additional navigation options"}
                 >
                   <motion.div
                     animate={{ rotate: showMore ? 180 : 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   >
-                    <ChevronUp className="h-5 w-5" />
+                    <ChevronUp className="h-5 w-5" aria-hidden="true" />
                   </motion.div>
                   <span className="font-medium truncate">More</span>
                 </button>
@@ -122,6 +130,9 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
               animate={{ opacity: 1, height: "auto", transition: { delay: 0.1, duration: 0.3 } }}
               exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
               className="border-t border-border/50 px-4 py-3"
+              id="additional-navigation"
+              role="menu"
+              aria-label="Additional navigation options"
             >
               <div className="flex items-center justify-around">
                 {moreNavItems.map((item) => {
@@ -141,8 +152,11 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                             ? "text-primary bg-primary/10" 
                             : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         )}
+                        role="menuitem"
+                        aria-current={isActive ? "page" : undefined}
+                        aria-label={`Navigate to ${item.label}`}
                       >
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-5 w-5" aria-hidden="true" />
                         <span className="font-medium truncate">{item.label}</span>
                       </Link>
                     </motion.div>
