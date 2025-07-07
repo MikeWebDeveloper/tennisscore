@@ -7,7 +7,7 @@ export const matchFormatSchema = z.object({
   tiebreakAt: z.number().default(6),
   finalSetTiebreak: z.enum(["standard", "super", "none"]).default("standard"),
   noAd: z.boolean(),
-  detailLevel: z.enum(["points", "simple", "complex"]).default("simple"),
+  detailLevel: z.enum(["points", "simple", "complex", "detailed"]).default("simple"),
 })
 
 // Match creation schema

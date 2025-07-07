@@ -250,7 +250,7 @@ export function MatchStatsComponentSimple({
 }: { 
   stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
-  detailLevel: "points" | "simple" | "complex"
+  detailLevel: "points" | "simple" | "complex" | "detailed"
 }) {
   const t = useTranslations()
 
@@ -457,7 +457,7 @@ export function MatchStatsComponentSimpleFixed({
 }: { 
   stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
-  detailLevel: "points" | "simple" | "complex"
+  detailLevel: "points" | "simple" | "complex" | "detailed"
   pointLog?: PointDetail[]
 }) {
   const t = useTranslations()
@@ -576,7 +576,7 @@ export function MatchStatsComponentSimpleFixed({
       </Card>
       
       {/* Service Section */}
-      {(detailLevel === 'simple' || detailLevel === 'complex') && (
+      {(detailLevel === 'simple' || detailLevel === 'complex' || detailLevel === 'detailed') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">

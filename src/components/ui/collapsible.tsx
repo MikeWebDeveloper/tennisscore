@@ -24,10 +24,10 @@ export function Collapsible({ open: controlledOpen, onOpenChange, children }: Co
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           if (child.type === CollapsibleTrigger) {
-            return React.cloneElement(child as React.ReactElement<any>, { onToggle: () => handleOpenChange(!isOpen) })
+            return React.cloneElement(child as React.ReactElement<CollapsibleTriggerProps>, { onToggle: () => handleOpenChange(!isOpen) })
           }
           if (child.type === CollapsibleContent) {
-            return React.cloneElement(child as React.ReactElement<any>, { isOpen })
+            return React.cloneElement(child as React.ReactElement<CollapsibleContentProps>, { isOpen })
           }
         }
         return child

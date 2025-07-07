@@ -24,7 +24,7 @@ import { updateMatchScore } from "@/lib/actions/matches"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
-import { PointDetailSheet } from "./point-detail-sheet"
+import { UltraSimplePointLogger } from "./ultra-simple-point-logger"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
@@ -98,7 +98,7 @@ interface LiveScoringInterfaceProps {
     playerThree?: Player
     playerFour?: Player
     matchFormat: string
-    detailLevel?: "points" | "simple" | "complex"
+    detailLevel?: "points" | "simple" | "complex" | "detailed"
     score: string
     pointLog?: string[]
     status: string
@@ -1221,7 +1221,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }}
       />
 
-      <PointDetailSheet
+      <UltraSimplePointLogger
         open={showPointDetail}
         onOpenChange={setShowPointDetail}
         onSave={handlePointDetailSave}
@@ -1233,9 +1233,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           winner: pendingPointWinner || 'p1',
           server: currentServer || 'p1',
           serveType: serveType,
-                      isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
-            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
-            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
+          isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+          isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+          isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
           playerNames
         }}
       />

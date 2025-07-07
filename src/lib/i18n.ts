@@ -75,6 +75,8 @@ export interface Translations {
   acesDoubleFaultsWinnersErrors: string
   detailedStats: string
   shotPlacementRallyLength: string
+  proAnalytics: string
+  advancedProLevelTracking: string
   creatingMatch: string
   startMatch: string
   matchCreatedSuccessfully: string
@@ -410,6 +412,9 @@ export interface Translations {
   saveDetailedPoint: string
   whoWonThePoint: string
   howDidTheyWin: string
+  whatShotWasIt: string
+  courtSide: string
+  whichSideOfCourt: string
   recordPoint: string
   
   // Delete confirmation
@@ -751,6 +756,8 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Aces, Double Faults, Winners, Errors",
     detailedStats: "Detailed Stats",
     shotPlacementRallyLength: "Shot Placement, Rally Length",
+    proAnalytics: "Pro Analytics",
+    advancedProLevelTracking: "Advanced pro-level tracking & analytics",
     creatingMatch: "Creating match...",
     startMatch: "Start Match",
     matchCreatedSuccessfully: 'Match created successfully!',
@@ -1087,6 +1094,9 @@ export const translations = {
     saveDetailedPoint: "Save Detailed Point",
     whoWonThePoint: "Who won the point?",
     howDidTheyWin: "How did they win?",
+    whatShotWasIt: "What shot was it?",
+    courtSide: "Court Side",
+    whichSideOfCourt: "Which side of the court?",
     recordPoint: "Record Point",
 
     // Delete confirmation
@@ -1426,6 +1436,8 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Esa, dvojchyby, vítězné údery, chyby",
     detailedStats: "Detailní statistiky",
     shotPlacementRallyLength: "Umístění úderů, délka výměn",
+    proAnalytics: "Pro Analytika",
+    advancedProLevelTracking: "Pokročilé sledování a analytiky na profesionální úrovni",
     creatingMatch: "Vytváření zápasu...",
     startMatch: "Začít zápas",
     matchCreatedSuccessfully: 'Zápas úspěšně vytvořen!',
@@ -1762,6 +1774,9 @@ export const translations = {
     saveDetailedPoint: "Uložit detailní bod",
     whoWonThePoint: "Kdo vyhrál bod?",
     howDidTheyWin: "Jak vyhrál?",
+    whatShotWasIt: "Jaký to byl úder?",
+    courtSide: "Strana kurtu",
+    whichSideOfCourt: "Která strana kurtu?",
     recordPoint: "Zaznamenat bod",
     
     // Delete confirmation

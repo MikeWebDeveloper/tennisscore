@@ -58,7 +58,7 @@ export function PointDetailSheet({
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
   const [servePlacement, setServePlacement] = useState<"wide" | "body" | "t">("wide")
-  const [serveSpeed, setServeSpeed] = useState<string>("")
+  // Removed serve speed tracking as requested
   const [rallyLength, setRallyLength] = useState<string>("1")
   const [pointOutcome, setPointOutcome] = useState<PointOutcome>("winner")
   const [lastShotType, setLastShotType] = useState<ShotType>("serve")
@@ -123,7 +123,7 @@ export function PointDetailSheet({
       serveType,
       serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
       servePlacement,
-      serveSpeed: serveSpeed ? parseInt(serveSpeed) : undefined,
+      // Serve speed removed
       rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : parseInt(rallyLength) || 1,
       pointOutcome: outcome,
       lastShotType: outcome === 'ace' || outcome === 'double_fault' ? 'serve' : lastShotType,
@@ -145,7 +145,7 @@ export function PointDetailSheet({
       serveType,
       serveOutcome,
       servePlacement,
-      serveSpeed: serveSpeed ? parseInt(serveSpeed) : undefined,
+      // Serve speed removed
       rallyLength: parseInt(rallyLength) || 1,
       pointOutcome,
       lastShotType,
@@ -172,7 +172,7 @@ export function PointDetailSheet({
     setServeType("first")
     setServeOutcome("winner")
     setServePlacement("wide")
-    setServeSpeed("")
+    // Serve speed removed
     setRallyLength("1")
     setPointOutcome("winner")
     setLastShotType("serve")
@@ -364,19 +364,7 @@ export function PointDetailSheet({
                   </RadioGroup>
                 </div>
 
-                <div>
-                  <Label htmlFor="serve-speed" className="text-sm font-medium">
-                    {t('serveSpeed')} <span className="text-muted-foreground">{t('optional')}</span>
-                  </Label>
-                  <Input
-                    id="serve-speed"
-                    type="number"
-                    placeholder="120"
-                    value={serveSpeed}
-                    onChange={(e) => setServeSpeed(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
+                {/* Serve speed section removed as requested */}
               </div>
 
               <div>

@@ -43,7 +43,7 @@ export interface Match extends Models.Document {
   playerThree?: Player
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
-  detailLevel?: "points" | "simple" | "complex"
+  detailLevel?: "points" | "simple" | "complex" | "detailed"
   tournamentName?: string // Tournament/League name
   
   // Timing fields
@@ -60,7 +60,7 @@ export interface MatchFormat {
   tiebreakAt: number
   finalSetTiebreak?: 'standard' | 'super' | 'none'
   noAd: boolean
-  detailLevel?: "points" | "simple" | "complex"
+  detailLevel?: "points" | "simple" | "complex" | "detailed"
 }
 
 export interface Score {

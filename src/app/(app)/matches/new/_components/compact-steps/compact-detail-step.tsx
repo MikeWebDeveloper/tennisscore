@@ -1,13 +1,13 @@
 "use client"
 
-import { BarChart3, Zap, Target, Lock } from "lucide-react"
+import { BarChart3, Zap, Target, Lock, Microscope } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
 import { motion } from "framer-motion"
 
 interface CompactDetailStepProps {
-  value: "points" | "simple" | "complex" | ""
-  onChange: (value: "points" | "simple" | "complex") => void
-  onStartMatch: (detailLevel: "points" | "simple" | "complex") => Promise<void>
+  value: "points" | "simple" | "complex" | "detailed" | ""
+  onChange: (value: "points" | "simple" | "complex" | "detailed") => void
+  onStartMatch: (detailLevel: "points" | "simple" | "complex" | "detailed") => Promise<void>
   loading: boolean
 }
 
@@ -35,6 +35,13 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
       title: t("detailedStats"),
       description: t("shotPlacementRallyLength"),
       disabled: false
+    },
+    {
+      value: "detailed",
+      icon: Microscope,
+      title: t("proAnalytics"),
+      description: t("advancedProLevelTracking"),
+      disabled: true
     }
   ]
 
@@ -62,7 +69,7 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
               whileTap={!isDisabled ? { scale: 0.99 } : undefined}
               onClick={() => {
                 if (!isDisabled && !loading) {
-                  const selectedValue = option.value as "points" | "simple" | "complex"
+                  const selectedValue = option.value as "points" | "simple" | "complex" | "detailed"
                   onChange(selectedValue)
                   onStartMatch(selectedValue)
                 }
