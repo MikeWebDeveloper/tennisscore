@@ -134,13 +134,8 @@ export function UltraSimplePointLogger({
     }
   ]
 
+  // Shot types excluding serve (since serve winners should be classified as Ace)
   const winnerTypes = [
-    {
-      id: 'serve' as const,
-      label: t('serve'),
-      color: 'bg-gradient-to-r from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600',
-      textColor: 'text-white'
-    },
     {
       id: 'forehand' as const,
       label: t('forehand'),
