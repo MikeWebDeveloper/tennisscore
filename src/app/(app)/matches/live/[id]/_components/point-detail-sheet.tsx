@@ -22,6 +22,10 @@ import { Target, Zap, Trophy, AlertTriangle, ChevronDown, BarChart3 } from "luci
 import { useTranslations } from "@/hooks/use-translations"
 import { useMatchStore } from "@/stores/matchStore"
 import { Slider } from "@/components/ui/slider"
+import { AdvancedServeCollector } from "@/components/features/advanced-serve-collector"
+import { ReturnAnalyticsCollector } from "@/components/features/return-analytics-collector"
+import { InteractiveCourt } from "@/components/features/interactive-court"
+import { ServeStats, ReturnStats } from "@/lib/schemas/match"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -65,11 +69,9 @@ export function PointDetailSheet({
 
   // Enhanced statistics state (custom mode)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [serveSpeedValue, setServeSpeedValue] = useState([100])
-  const [serveSpin, setServeSpin] = useState<'flat' | 'slice' | 'kick' | 'twist'>('flat')
-  const [serveQuality, setServeQuality] = useState(5)
-  const [returnPlacement, setReturnPlacement] = useState<string>('')
-  const [returnQuality, setReturnQuality] = useState<'defensive' | 'neutral' | 'offensive'>('neutral')
+  const [serveStats, setServeStats] = useState<ServeStats | undefined>(undefined)
+  const [returnStats, setReturnStats] = useState<ReturnStats | undefined>(undefined)
+  const [courtPlacement, setCourtPlacement] = useState<string>('')
   const [rallyType, setRallyType] = useState<'baseline' | 'approach' | 'net' | 'defensive'>('baseline')
   const [pressureSituation, setPressureSituation] = useState(false)
 
@@ -155,16 +157,8 @@ export function PointDetailSheet({
       // Enhanced statistics
       ...(customMode.enabled && {
         loggingLevel: customMode.level.toString() as '1' | '2' | '3',
-        serveStats: pointContext.server === pointContext.winner ? {
-          speed: customMode.selectedCategories.includes('serve-speed') ? serveSpeedValue[0] : undefined,
-          placement: customMode.selectedCategories.includes('serve-placement') ? servePlacement as 'deuce-wide' | 'deuce-body' | 'deuce-t' | 'ad-wide' | 'ad-body' | 'ad-t' | 'center-wide' | 'center-body' | 'center-t' : undefined,
-          spin: customMode.selectedCategories.includes('serve-speed') ? serveSpin : undefined,
-          quality: customMode.level >= 2 ? serveQuality : undefined,
-        } : undefined,
-        returnStats: pointContext.server !== pointContext.winner ? {
-          quality: customMode.selectedCategories.includes('return-quality') ? returnQuality : undefined,
-          placement: returnPlacement || undefined,
-        } : undefined,
+        serveStats: pointContext.server === pointContext.winner ? serveStats : undefined,
+        returnStats: pointContext.server !== pointContext.winner ? returnStats : undefined,
         tacticalContext: {
           rallyType: customMode.selectedCategories.includes('rally-type') ? rallyType : undefined,
           pressureSituation: customMode.level >= 3 ? pressureSituation : undefined,
@@ -190,11 +184,9 @@ export function PointDetailSheet({
     setValidationError("")
     // Reset enhanced statistics
     setShowAdvanced(false)
-    setServeSpeedValue([100])
-    setServeSpin('flat')
-    setServeQuality(5)
-    setReturnPlacement('')
-    setReturnQuality('neutral')
+    setServeStats(undefined)
+    setReturnStats(undefined)
+    setCourtPlacement('')
     setRallyType('baseline')
     setPressureSituation(false)
   }
