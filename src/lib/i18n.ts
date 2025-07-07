@@ -1993,7 +1993,6 @@ export const translations = {
     addTournamentOptional: "Volitelně přidejte název turnaje nebo ligy.",
     tournamentName: "Název turnaje",
     skipTournament: "Přeskočit prozatím",
-    confirm: "Potvrdit",
     tournamentOptionalDescription: "Zadání názvu turnaje nebo ligy je volitelné. Můžete jej přidat později.",
     configureMatchSettings: "Nakonfigurujte nastavení zápasu.",
     traditionalScoring: "Tradiční tenisové bodování se shodou.",
