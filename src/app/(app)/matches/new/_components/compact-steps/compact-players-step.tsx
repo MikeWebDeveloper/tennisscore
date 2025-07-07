@@ -29,10 +29,6 @@ interface CompactPlayersStepProps {
   onComplete: () => void
 }
 
-function normalizeDiacritics(str: string): string {
-  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
-}
-
 export function CompactPlayersStep({
   matchType,
   players,
@@ -92,30 +88,27 @@ export function CompactPlayersStep({
       value: "create-new",
       label: t('createNewPlayer'),
       group: t('actions'),
-      icon: <Plus className="h-4 w-4 text-primary" />,
+      icon: <Plus className="h-4 w-4 text-primary" />, 
+      disabled: false,
     })
 
     if (players.length > 0) {
-      const availablePlayers = players.filter(player => !excludeIds.includes(player.$id))
-      
+      const availablePlayers = players
       const mainPlayer = availablePlayers.find(player => 
         player.$id === mainPlayerId || player.isMainPlayer === true
       )
       const otherPlayers = availablePlayers.filter(player => 
         player.$id !== mainPlayer?.$id
       )
-      
       const sortedOtherPlayers = otherPlayers.sort((a, b) => {
         const nameA = formatPlayerFromObject(a).toLowerCase()
         const nameB = formatPlayerFromObject(b).toLowerCase()
         return nameA.localeCompare(nameB)
       })
-      
       if (mainPlayer) {
         const label = formatPlayerFromObject(mainPlayer)
-        const normalized = normalizeDiacritics(label)
         options.push({
-          value: `${mainPlayer.$id} ${normalized}`,
+          value: mainPlayer.$id,
           label: label,
           group: t('mainPlayer'),
           icon: (
@@ -124,23 +117,22 @@ export function CompactPlayersStep({
               <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
             </div>
           ),
+          disabled: excludeIds.includes(mainPlayer.$id),
         })
       }
-      
       if (sortedOtherPlayers.length > 0) {
         sortedOtherPlayers.forEach(player => {
           const label = formatPlayerFromObject(player)
-          const normalized = normalizeDiacritics(label)
           options.push({
-            value: `${player.$id} ${normalized}`,
+            value: player.$id,
             label: label,
             group: t('trackedPlayers'),
-            icon: <PlayerAvatar player={player} className="h-5 w-5" />,
+            icon: <PlayerAvatar player={player} className="h-5 w-5" />, 
+            disabled: excludeIds.includes(player.$id),
           })
         })
       }
     }
-
     return options
   }
 
