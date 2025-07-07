@@ -415,6 +415,12 @@ export interface Translations {
   whatShotWasIt: string
   courtSide: string
   whichSideOfCourt: string
+  whereWasItServed: string
+  crossCourt: string
+  downTheLine: string
+  bodyShot: string
+  whereWasItHit: string
+  shotDirection: string
   recordPoint: string
   
   // Delete confirmation
@@ -1097,6 +1103,12 @@ export const translations = {
     whatShotWasIt: "What shot was it?",
     courtSide: "Court Side",
     whichSideOfCourt: "Which side of the court?",
+    whereWasItServed: "Where was it served?",
+    crossCourt: "Cross-court",
+    downTheLine: "Down the line",
+    bodyShot: "Body shot",
+    whereWasItHit: "Where was it hit?",
+    shotDirection: "Shot Direction",
     recordPoint: "Record Point",
 
     // Delete confirmation
@@ -1777,6 +1789,12 @@ export const translations = {
     whatShotWasIt: "Jaký to byl úder?",
     courtSide: "Strana kurtu",
     whichSideOfCourt: "Která strana kurtu?",
+    whereWasItServed: "Kam bylo podáno?",
+    crossCourt: "Křížem",
+    downTheLine: "Po lajně",
+    bodyShot: "Na tělo",
+    whereWasItHit: "Kam bylo zahráno?",
+    shotDirection: "Směr úderu",
     recordPoint: "Zaznamenat bod",
     
     // Delete confirmation

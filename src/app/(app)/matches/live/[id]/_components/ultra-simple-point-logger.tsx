@@ -36,29 +36,24 @@ export function UltraSimplePointLogger({
 }: UltraSimplePointLoggerProps) {
   const t = useTranslations()
   
-  // Flow state: 'outcome' -> 'winner-type' -> 'side' -> done
-  const [step, setStep] = useState<'outcome' | 'winner-type' | 'side'>('outcome')
+  // Flow state: 'outcome' -> 'serve-direction' (for ace/double fault) -> 'winner-type' -> 'shot-direction' -> 'side' -> done
+  const [step, setStep] = useState<'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'side'>('outcome')
   const [outcome, setOutcome] = useState<PointOutcome | null>(null)
   const [winnerType, setWinnerType] = useState<ShotType | null>(null)
+  const [serveDirection, setServeDirection] = useState<'wide' | 'body' | 't' | null>(null)
+  const [shotDirection, setShotDirection] = useState<'cross' | 'line' | 'body' | null>(null)
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ = serveDirection // Used in handleServeDirectionClick via setServeDirection
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const __ = shotDirection // Used in handleShotDirectionClick via setShotDirection
 
   const handleOutcomeClick = (selectedOutcome: PointOutcome) => {
     setOutcome(selectedOutcome)
     
-    // If it's ace or double fault, save immediately (1 click)
+    // If it's ace or double fault, go to serve direction
     if (selectedOutcome === 'ace' || selectedOutcome === 'double_fault') {
-      const pointDetail: Partial<PointDetail> = {
-        serveType: pointContext.serveType,
-        serveOutcome: selectedOutcome,
-        servePlacement: "t",
-        rallyLength: 1,
-        pointOutcome: selectedOutcome,
-        lastShotType: 'serve',
-        lastShotPlayer: pointContext.winner,
-        courtPosition: "deuce",
-      }
-      onSave(pointDetail)
-      onOpenChange(false)
-      resetState()
+      setStep('serve-direction')
       return
     }
     
@@ -66,8 +61,34 @@ export function UltraSimplePointLogger({
     setStep('winner-type')
   }
 
+  const handleServeDirectionClick = (direction: 'wide' | 'body' | 't') => {
+    setServeDirection(direction)
+    
+    // For ace/double fault, save immediately after serve direction
+    if (outcome === 'ace' || outcome === 'double_fault') {
+      const pointDetail: Partial<PointDetail> = {
+        serveType: pointContext.serveType,
+        serveOutcome: outcome,
+        servePlacement: direction,
+        rallyLength: 1,
+        pointOutcome: outcome,
+        lastShotType: 'serve',
+        lastShotPlayer: pointContext.winner,
+        courtPosition: "deuce",
+      }
+      onSave(pointDetail)
+      onOpenChange(false)
+      resetState()
+    }
+  }
+
   const handleWinnerTypeClick = (shotType: ShotType) => {
     setWinnerType(shotType)
+    setStep('shot-direction')
+  }
+
+  const handleShotDirectionClick = (direction: 'cross' | 'line' | 'body') => {
+    setShotDirection(direction)
     setStep('side')
   }
 
@@ -94,6 +115,8 @@ export function UltraSimplePointLogger({
     setStep('outcome')
     setOutcome(null)
     setWinnerType(null)
+    setServeDirection(null)
+    setShotDirection(null)
   }
 
   const outcomes = [
@@ -177,6 +200,48 @@ export function UltraSimplePointLogger({
     }
   ]
 
+  const serveDirections = [
+    {
+      id: 'wide' as const,
+      label: t('wide'),
+      color: 'bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600',
+      textColor: 'text-white'
+    },
+    {
+      id: 'body' as const,
+      label: t('body'),
+      color: 'bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600',
+      textColor: 'text-white'
+    },
+    {
+      id: 't' as const,
+      label: t('tDownTheMiddle'),
+      color: 'bg-gradient-to-r from-violet-400 to-purple-500 hover:from-violet-500 hover:to-purple-600',
+      textColor: 'text-white'
+    }
+  ]
+
+  const shotDirections = [
+    {
+      id: 'cross' as const,
+      label: t('crossCourt'),
+      color: 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600',
+      textColor: 'text-white'
+    },
+    {
+      id: 'line' as const,
+      label: t('downTheLine'),
+      color: 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600',
+      textColor: 'text-white'
+    },
+    {
+      id: 'body' as const,
+      label: t('bodyShot'),
+      color: 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600',
+      textColor: 'text-white'
+    }
+  ]
+
   const renderStep = () => {
     switch (step) {
       case 'outcome':
@@ -213,6 +278,38 @@ export function UltraSimplePointLogger({
           </div>
         )
 
+      case 'serve-direction':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold mb-2">{t('servePlacement')}</h3>
+              <p className="text-muted-foreground">{t('whereWasItServed')}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {serveDirections.map((direction) => (
+                <motion.div
+                  key={direction.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
+                      direction.color,
+                      direction.textColor
+                    )}
+                    onClick={() => handleServeDirectionClick(direction.id)}
+                  >
+                    {direction.label}
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+
       case 'winner-type':
         return (
           <div className="space-y-6">
@@ -238,6 +335,38 @@ export function UltraSimplePointLogger({
                     onClick={() => handleWinnerTypeClick(type.id)}
                   >
                     {type.label}
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 'shot-direction':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold mb-2">{t('shotDirection')}</h3>
+              <p className="text-muted-foreground">{t('whereWasItHit')}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {shotDirections.map((direction) => (
+                <motion.div
+                  key={direction.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
+                      direction.color,
+                      direction.textColor
+                    )}
+                    onClick={() => handleShotDirectionClick(direction.id)}
+                  >
+                    {direction.label}
                   </Button>
                 </motion.div>
               ))}
