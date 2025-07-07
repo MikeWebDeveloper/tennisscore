@@ -1463,7 +1463,7 @@ export const translations = {
     firstName: "Jméno",
     lastName: "Příjmení",
     yearOfBirth: "Rok narození",
-    rating: "Hodnocení (např. UTR, NTRP)",
+    rating: "Hodnocení (např. BH, rCŽ)",
     club: "Klub (volitelné)",
     playingHand: "Hrající ruka",
     left: "Levá",
