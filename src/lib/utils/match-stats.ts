@@ -1,4 +1,5 @@
 import { PointDetail, PlayerStats, Match } from "@/lib/types"
+import { EnhancedPointDetail } from "@/lib/schemas/match"
 
 export interface EnhancedMatchStats {
   totalPoints: number
@@ -24,6 +25,69 @@ export interface EnhancedMatchStats {
     saved: [number, number]        // Break points saved by each player
     conversionRate: [number, number] // Break point conversion percentage
   }
+}
+
+// Enhanced analytics interfaces
+export interface ServeAnalytics {
+  placement: {
+    distribution: Record<string, number>
+    successRate: Record<string, number>
+    averageSpeed: Record<string, number>
+  }
+  speed: {
+    average: number
+    max: number
+    min: number
+    distribution: { range: string; count: number }[]
+  }
+  spin: {
+    distribution: Record<string, number>
+    effectiveness: Record<string, number>
+  }
+  situational: {
+    breakPointPerformance: ServePerformance
+    setPointPerformance: ServePerformance
+    matchPointPerformance: ServePerformance
+  }
+}
+
+export interface ServePerformance {
+  attempts: number
+  made: number
+  percentage: number
+}
+
+export interface ReturnAnalytics {
+  placement: {
+    zones: Record<string, number>
+    successRate: Record<string, number>
+  }
+  quality: {
+    distribution: Record<string, number>
+    effectiveness: Record<string, number>
+  }
+  contextual: {
+    firstServeReturns: ReturnPerformance
+    secondServeReturns: ReturnPerformance
+    pressureReturns: ReturnPerformance
+  }
+}
+
+export interface ReturnPerformance {
+  attempts: number
+  successful: number
+  percentage: number
+}
+
+export interface AdvancedMatchStats extends EnhancedMatchStats {
+  serveAnalytics: ServeAnalytics
+  rallyAnalytics: {
+    typeDistribution: Record<string, number>
+    averageLength: number
+    typeSuccess: Record<string, number>
+  }
+  customStats: Record<string, unknown>
+  hasEnhancedData: boolean
 }
 
 export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats {
@@ -488,4 +552,235 @@ export function calculatePlayerWinStreak(matches: Match[], playerId: string): { 
   }
   if (currentStreak > maxStreak) maxStreak = currentStreak;
   return { current: currentStreak, max: maxStreak };
-} 
+}
+
+// Enhanced analytics calculation functions
+export function calculateAdvancedMatchStats(pointLog: (PointDetail | EnhancedPointDetail)[]): AdvancedMatchStats {
+  const baseStats = calculateMatchStats(pointLog as PointDetail[])
+  
+  // Check if we have enhanced data
+  const enhancedPoints = pointLog.filter(p => 
+    'loggingLevel' in p && p.loggingLevel && parseInt(p.loggingLevel) > 1
+  ) as EnhancedPointDetail[]
+  
+  const hasEnhancedData = enhancedPoints.length > 0
+  
+  const serveAnalytics = hasEnhancedData ? calculateServeAnalytics(enhancedPoints) : getEmptyServeAnalytics()
+  const rallyAnalytics = hasEnhancedData ? calculateRallyAnalytics(enhancedPoints) : getEmptyRallyAnalytics()
+  
+  return {
+    ...baseStats,
+    serveAnalytics,
+    rallyAnalytics,
+    customStats: {},
+    hasEnhancedData
+  }
+}
+
+function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics {
+  const servePoints = points.filter(p => p.serveStats)
+  
+  // Placement analysis
+  const placementDistribution: Record<string, number> = {}
+  const placementSuccess: Record<string, number> = {}
+  const placementSpeed: Record<string, number[]> = {}
+  
+  servePoints.forEach(point => {
+    if (point.serveStats?.placement) {
+      const placement = point.serveStats.placement
+      placementDistribution[placement] = (placementDistribution[placement] || 0) + 1
+      
+      // Track success (ace or serve winner)
+      if (point.outcome === 'ace' || point.outcome === 'winner') {
+        placementSuccess[placement] = (placementSuccess[placement] || 0) + 1
+      }
+      
+      // Track speed by placement
+      if (point.serveStats.speed) {
+        if (!placementSpeed[placement]) placementSpeed[placement] = []
+        placementSpeed[placement].push(point.serveStats.speed)
+      }
+    }
+  })
+  
+  // Calculate success rates and average speeds
+  const placementSuccessRate: Record<string, number> = {}
+  const placementAverageSpeed: Record<string, number> = {}
+  
+  Object.keys(placementDistribution).forEach(placement => {
+    placementSuccessRate[placement] = Math.round(
+      ((placementSuccess[placement] || 0) / placementDistribution[placement]) * 100
+    )
+    
+    if (placementSpeed[placement] && placementSpeed[placement].length > 0) {
+      placementAverageSpeed[placement] = Math.round(
+        placementSpeed[placement].reduce((a, b) => a + b, 0) / placementSpeed[placement].length
+      )
+    }
+  })
+  
+  // Speed analysis
+  const speeds = servePoints
+    .filter(p => p.serveStats?.speed)
+    .map(p => p.serveStats!.speed!)
+    
+  const speedStats = speeds.length > 0 ? {
+    average: Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length),
+    max: Math.max(...speeds),
+    min: Math.min(...speeds),
+    distribution: createSpeedDistribution(speeds)
+  } : {
+    average: 0,
+    max: 0,
+    min: 0,
+    distribution: []
+  }
+  
+  // Spin analysis
+  const spinDistribution: Record<string, number> = {}
+  const spinEffectiveness: Record<string, number> = {}
+  
+  servePoints.forEach(point => {
+    if (point.serveStats?.spin) {
+      const spin = point.serveStats.spin
+      spinDistribution[spin] = (spinDistribution[spin] || 0) + 1
+      
+      if (point.outcome === 'ace' || point.outcome === 'winner') {
+        spinEffectiveness[spin] = (spinEffectiveness[spin] || 0) + 1
+      }
+    }
+  })
+  
+  // Convert to percentages
+  Object.keys(spinDistribution).forEach(spin => {
+    spinEffectiveness[spin] = Math.round(
+      ((spinEffectiveness[spin] || 0) / spinDistribution[spin]) * 100
+    )
+  })
+  
+  // Situational analysis - using pressure situation as proxy for high-pressure scenarios
+  const situational = {
+    breakPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation),
+    setPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation),
+    matchPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation)
+  }
+  
+  return {
+    placement: {
+      distribution: placementDistribution,
+      successRate: placementSuccessRate,
+      averageSpeed: placementAverageSpeed
+    },
+    speed: speedStats,
+    spin: {
+      distribution: spinDistribution,
+      effectiveness: spinEffectiveness
+    },
+    situational
+  }
+}
+
+function calculateRallyAnalytics(points: EnhancedPointDetail[]): { typeDistribution: Record<string, number>; averageLength: number; typeSuccess: Record<string, number> } {
+  const rallyPoints = points.filter(p => p.tacticalContext?.rallyType)
+  
+  const typeDistribution: Record<string, number> = {}
+  const typeSuccess: Record<string, number> = {}
+  const rallyLengths: number[] = []
+  
+  rallyPoints.forEach(point => {
+    if (point.tacticalContext?.rallyType) {
+      const type = point.tacticalContext.rallyType
+      typeDistribution[type] = (typeDistribution[type] || 0) + 1
+      
+      if (point.outcome === 'winner') {
+        typeSuccess[type] = (typeSuccess[type] || 0) + 1
+      }
+    }
+    
+    if (point.rallyLength) {
+      rallyLengths.push(point.rallyLength)
+    }
+  })
+  
+  // Convert success to percentages
+  Object.keys(typeDistribution).forEach(type => {
+    typeSuccess[type] = Math.round(
+      ((typeSuccess[type] || 0) / typeDistribution[type]) * 100
+    )
+  })
+  
+  const averageLength = rallyLengths.length > 0 
+    ? rallyLengths.reduce((a, b) => a + b, 0) / rallyLengths.length
+    : 0
+  
+  return {
+    typeDistribution,
+    averageLength: Math.round(averageLength * 10) / 10, // One decimal place
+    typeSuccess
+  }
+}
+
+function calculateSituationalServePerformance(
+  servePoints: EnhancedPointDetail[], 
+  condition: (point: EnhancedPointDetail) => boolean | undefined
+): ServePerformance {
+  const situationalPoints = servePoints.filter(condition)
+  const attempts = situationalPoints.length
+  const made = situationalPoints.filter(p => 
+    p.outcome === 'ace' || p.outcome === 'winner'
+  ).length
+  
+  return {
+    attempts,
+    made,
+    percentage: attempts > 0 ? Math.round((made / attempts) * 100) : 0
+  }
+}
+
+function createSpeedDistribution(speeds: number[]): { range: string; count: number }[] {
+  const ranges = [
+    { min: 60, max: 79, label: '60-79 mph' },
+    { min: 80, max: 99, label: '80-99 mph' },
+    { min: 100, max: 119, label: '100-119 mph' },
+    { min: 120, max: 139, label: '120-139 mph' },
+    { min: 140, max: 160, label: '140+ mph' }
+  ]
+  
+  return ranges.map(range => ({
+    range: range.label,
+    count: speeds.filter(speed => speed >= range.min && speed <= range.max).length
+  }))
+}
+
+function getEmptyServeAnalytics(): ServeAnalytics {
+  return {
+    placement: {
+      distribution: {},
+      successRate: {},
+      averageSpeed: {}
+    },
+    speed: {
+      average: 0,
+      max: 0,
+      min: 0,
+      distribution: []
+    },
+    spin: {
+      distribution: {},
+      effectiveness: {}
+    },
+    situational: {
+      breakPointPerformance: { attempts: 0, made: 0, percentage: 0 },
+      setPointPerformance: { attempts: 0, made: 0, percentage: 0 },
+      matchPointPerformance: { attempts: 0, made: 0, percentage: 0 }
+    }
+  }
+}
+
+function getEmptyRallyAnalytics(): { typeDistribution: Record<string, number>; averageLength: number; typeSuccess: Record<string, number> } {
+  return {
+    typeDistribution: {},
+    averageLength: 0,
+    typeSuccess: {}
+  }
+}

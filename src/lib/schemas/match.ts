@@ -41,7 +41,31 @@ export const serveTypeSchema = z.enum([
   "second"
 ])
 
-// Point detail schema
+// Enhanced statistics schemas
+export const serveStatsSchema = z.object({
+  speed: z.number().optional(),
+  placement: z.enum(['deuce-wide', 'deuce-body', 'deuce-t', 'ad-wide', 'ad-body', 'ad-t', 'center-wide', 'center-body', 'center-t']).optional(),
+  spin: z.enum(['flat', 'slice', 'kick', 'twist']).optional(),
+  netClearance: z.number().optional(),
+  quality: z.number().min(1).max(10).optional()
+}).optional()
+
+export const returnStatsSchema = z.object({
+  placement: z.enum(['deuce-deep', 'center-deep', 'ad-deep', 'deuce-mid', 'center-mid', 'ad-mid', 'deuce-short', 'center-short', 'ad-short']).optional(),
+  depth: z.enum(['short', 'medium', 'deep']).optional(),
+  direction: z.enum(['cross', 'line', 'body']).optional(),
+  quality: z.enum(['defensive', 'neutral', 'offensive']).optional(),
+  type: z.enum(['block', 'swing', 'slice', 'defensive']).optional()
+}).optional()
+
+export const tacticalContextSchema = z.object({
+  rallyType: z.enum(['baseline', 'approach', 'net', 'defensive']).optional(),
+  approachShot: z.boolean().optional(),
+  netPosition: z.boolean().optional(),
+  pressureSituation: z.boolean().optional()
+}).optional()
+
+// Point detail schema with enhanced statistics
 export const pointDetailSchema = z.object({
   pointNumber: z.number().min(1),
   setNumber: z.number().min(1),
@@ -51,7 +75,13 @@ export const pointDetailSchema = z.object({
   outcome: pointOutcomeSchema,
   serveType: serveTypeSchema,
   rallyLength: z.number().min(0).default(0),
-  timestamp: z.string().datetime()
+  timestamp: z.string().datetime(),
+  // Enhanced statistics fields
+  serveStats: serveStatsSchema,
+  returnStats: returnStatsSchema,
+  tacticalContext: tacticalContextSchema,
+  loggingLevel: z.enum(['1', '2', '3']).default('1'),
+  customFields: z.record(z.any()).optional()
 })
 
 // Score schema
@@ -67,4 +97,8 @@ export type CreateMatchData = z.infer<typeof createMatchSchema>
 export type PointOutcome = z.infer<typeof pointOutcomeSchema>
 export type ServeType = z.infer<typeof serveTypeSchema>
 export type PointDetail = z.infer<typeof pointDetailSchema>
+export type EnhancedPointDetail = z.infer<typeof pointDetailSchema>
+export type ServeStats = z.infer<typeof serveStatsSchema>
+export type ReturnStats = z.infer<typeof returnStatsSchema>
+export type TacticalContext = z.infer<typeof tacticalContextSchema>
 export type Score = z.infer<typeof scoreSchema> 

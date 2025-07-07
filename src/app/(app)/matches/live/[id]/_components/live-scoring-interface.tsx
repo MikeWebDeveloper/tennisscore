@@ -16,7 +16,8 @@ import {
   Copy,
   Mail,
   Activity,
-  Settings
+  Settings,
+  BarChart3
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
@@ -41,6 +42,7 @@ import { FlameIcon } from "@/components/ui/flame-icon"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
+import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -404,6 +406,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [isMatchInitialized, setIsMatchInitialized] = useState(false)
   const [startTime, setStartTime] = useState<string | null>(null)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [showCustomModeDialog, setShowCustomModeDialog] = useState(false)
   
   const playerNames = {
     p1: formatPlayerFromObject(match.playerOne),
@@ -1013,6 +1016,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowCustomModeDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced Stats</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowSettingsDialog(true)}
                 className="flex items-center gap-2"
               >
@@ -1369,6 +1382,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         isOpen={showSettingsDialog}
         onOpenChange={setShowSettingsDialog}
         match={match}
+      />
+
+      {/* Custom Mode Dialog */}
+      <CustomModeDialog
+        open={showCustomModeDialog}
+        onOpenChange={setShowCustomModeDialog}
       />
     </div>
   )

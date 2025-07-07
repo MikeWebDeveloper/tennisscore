@@ -7,8 +7,9 @@ import { Target, Zap, Shield } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/hooks/use-translations"
 import { PointDetail } from "@/lib/types"
-import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { calculateMatchStats, calculateAdvancedMatchStats } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
 
 interface MatchStatsComponentProps {
   stats: MatchStats
@@ -461,6 +462,11 @@ export function MatchStatsComponentSimpleFixed({
 }) {
   const t = useTranslations()
   
+  // Calculate enhanced analytics if we have point log
+  const advancedStats = pointLog && pointLog.length > 0 
+    ? calculateAdvancedMatchStats(pointLog) 
+    : null
+  
   // Calculate per-set stats if we have point log
   const setStats: Record<number, import("@/lib/utils/match-stats").EnhancedMatchStats> = {}
   let setNumbers: number[] = []
@@ -660,17 +666,23 @@ export function MatchStatsComponentSimpleFixed({
     )
   }
 
+  // Calculate tab count including enhanced stats
+  const tabCount = setNumbers.length + 1 + (advancedStats?.hasEnhancedData ? 1 : 0)
+  
   // Render with tabs
   return (
     <div className="space-y-4">
       <Tabs defaultValue="match" className="w-full">
-        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${setNumbers.length + 1}, 1fr)` }}>
+        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabCount}, 1fr)` }}>
           <TabsTrigger value="match">{t('match')}</TabsTrigger>
           {setNumbers.map(setNumber => (
             <TabsTrigger key={setNumber} value={`set-${setNumber}`}>
               {t('set')} {setNumber}
             </TabsTrigger>
           ))}
+          {advancedStats?.hasEnhancedData && (
+            <TabsTrigger value="enhanced">Advanced</TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="match" className="mt-4">
@@ -682,6 +694,12 @@ export function MatchStatsComponentSimpleFixed({
             {renderStatsContent(setStats[setNumber])}
           </TabsContent>
         ))}
+        
+        {advancedStats?.hasEnhancedData && (
+          <TabsContent value="enhanced" className="mt-4">
+            <EnhancedStatsDisplay stats={advancedStats} />
+          </TabsContent>
+        )}
       </Tabs>
       
       {/* Player Names Footer */}

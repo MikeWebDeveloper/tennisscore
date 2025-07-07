@@ -8,6 +8,7 @@ import {
   calculateScoreFromPointLog,
   isBreakPoint
 } from '@/lib/utils/tennis-scoring'
+import { EnhancedPointDetail } from '@/lib/schemas/match'
 
 export interface MatchFormat {
   sets: 1 | 3 | 5
@@ -28,21 +29,10 @@ export interface Score {
   initialTiebreakServer?: 'p1' | 'p2';
 }
 
-export interface PointDetail {
+// Use enhanced point detail type from schema
+export interface PointDetail extends EnhancedPointDetail {
   id: string
-  timestamp: string
-  pointNumber: number
-  setNumber: number
-  gameNumber: number
   gameScore: string
-  winner: 'p1' | 'p2'
-  server: 'p1' | 'p2'
-  serveType: 'first' | 'second'
-  serveOutcome: 'ace' | 'winner' | 'unforced_error' | 'forced_error' | 'double_fault'
-  servePlacement?: 'wide' | 'body' | 't'
-  serveSpeed?: number
-  rallyLength: number
-  pointOutcome: 'ace' | 'winner' | 'unforced_error' | 'forced_error' | 'double_fault'
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
   lastShotPlayer: 'p1' | 'p2'
   isBreakPoint: boolean
@@ -78,6 +68,13 @@ export interface Match {
   userId: string
 }
 
+// Custom mode configuration interface
+export interface CustomModeConfig {
+  enabled: boolean
+  level: 1 | 2 | 3
+  selectedCategories: string[]
+}
+
 interface MatchState {
   // Current match being scored
   currentMatch: Match | null
@@ -108,6 +105,11 @@ interface MatchState {
   // Detailed logging mode
   detailedLoggingEnabled: boolean
   setDetailedLoggingEnabled: (enabled: boolean) => void
+  
+  // Custom mode for advanced statistics
+  customMode: CustomModeConfig
+  setCustomMode: (config: CustomModeConfig) => void
+  toggleCustomMode: () => void
   
   // Match events (comments, photos)
   events: Array<{ type: 'comment' | 'photo'; content: string; timestamp: string }>
@@ -215,6 +217,16 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   
   detailedLoggingEnabled: false,
   setDetailedLoggingEnabled: (enabled) => set({ detailedLoggingEnabled: enabled }),
+  
+  customMode: {
+    enabled: false,
+    level: 1,
+    selectedCategories: ['serve-placement', 'rally-type'],
+  },
+  setCustomMode: (config) => set({ customMode: config }),
+  toggleCustomMode: () => set((state) => ({
+    customMode: { ...state.customMode, enabled: !state.customMode.enabled }
+  })),
   
   events: [],
   addEvent: (event) => set((state) => ({
@@ -517,9 +529,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       isMatchWinning: isThisPointMatchWinning,
       isTiebreak: previousScore.isTiebreak,
       serveType: details.serveType || 'first',
-      serveOutcome: details.serveOutcome || 'winner',
+      outcome: details.outcome || 'winner',
       rallyLength: details.rallyLength || 1,
-      pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
+      loggingLevel: details.loggingLevel || '1',
       lastShotPlayer: winner,
     }
 
@@ -641,6 +653,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     isMatchComplete: false,
     winnerId: null,
     detailedLoggingEnabled: false,
+    customMode: {
+      enabled: false,
+      level: 1,
+      selectedCategories: ['serve-placement', 'rally-type'],
+    },
   }),
 }))
 

@@ -18,8 +18,10 @@ import {
   ShotType, 
   CourtPosition
 } from "@/lib/types"
-import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
+import { Target, Zap, Trophy, AlertTriangle, ChevronDown, BarChart3 } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
+import { useMatchStore } from "@/stores/matchStore"
+import { Slider } from "@/components/ui/slider"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -48,6 +50,7 @@ export function PointDetailSheet({
 }: PointDetailSheetProps) {
   // Translations hook must be at the top
   const t = useTranslations()
+  const { customMode } = useMatchStore()
   
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
@@ -59,6 +62,16 @@ export function PointDetailSheet({
   const [lastShotPlayer, setLastShotPlayer] = useState<"p1" | "p2">(pointContext.winner)
   const [courtPosition, setCourtPosition] = useState<CourtPosition>("deuce")
   const [notes, setNotes] = useState("")
+
+  // Enhanced statistics state (custom mode)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [serveSpeedValue, setServeSpeedValue] = useState([100])
+  const [serveSpin, setServeSpin] = useState<'flat' | 'slice' | 'kick' | 'twist'>('flat')
+  const [serveQuality, setServeQuality] = useState(5)
+  const [returnPlacement, setReturnPlacement] = useState<string>('')
+  const [returnQuality, setReturnQuality] = useState<'defensive' | 'neutral' | 'offensive'>('neutral')
+  const [rallyType, setRallyType] = useState<'baseline' | 'approach' | 'net' | 'defensive'>('baseline')
+  const [pressureSituation, setPressureSituation] = useState(false)
 
   // Validation state
   const [validationError, setValidationError] = useState<string>("")
@@ -139,6 +152,24 @@ export function PointDetailSheet({
       lastShotPlayer,
       courtPosition,
       notes: notes || undefined,
+      // Enhanced statistics
+      ...(customMode.enabled && {
+        loggingLevel: customMode.level.toString() as '1' | '2' | '3',
+        serveStats: pointContext.server === pointContext.winner ? {
+          speed: customMode.selectedCategories.includes('serve-speed') ? serveSpeedValue[0] : undefined,
+          placement: customMode.selectedCategories.includes('serve-placement') ? servePlacement as 'deuce-wide' | 'deuce-body' | 'deuce-t' | 'ad-wide' | 'ad-body' | 'ad-t' | 'center-wide' | 'center-body' | 'center-t' : undefined,
+          spin: customMode.selectedCategories.includes('serve-speed') ? serveSpin : undefined,
+          quality: customMode.level >= 2 ? serveQuality : undefined,
+        } : undefined,
+        returnStats: pointContext.server !== pointContext.winner ? {
+          quality: customMode.selectedCategories.includes('return-quality') ? returnQuality : undefined,
+          placement: returnPlacement || undefined,
+        } : undefined,
+        tacticalContext: {
+          rallyType: customMode.selectedCategories.includes('rally-type') ? rallyType : undefined,
+          pressureSituation: customMode.level >= 3 ? pressureSituation : undefined,
+        }
+      })
     }
 
     onSave(pointDetail)
@@ -157,6 +188,15 @@ export function PointDetailSheet({
     setCourtPosition("deuce")
     setNotes("")
     setValidationError("")
+    // Reset enhanced statistics
+    setShowAdvanced(false)
+    setServeSpeedValue([100])
+    setServeSpin('flat')
+    setServeQuality(5)
+    setReturnPlacement('')
+    setReturnQuality('neutral')
+    setRallyType('baseline')
+    setPressureSituation(false)
   }
 
   const getContextBadges = () => {
@@ -471,6 +511,218 @@ export function PointDetailSheet({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Custom Mode Enhanced Statistics */}
+          {customMode.enabled && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Advanced Statistics
+                  <Badge variant="outline">Level {customMode.level}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Quick Context Bar - Level 1 */}
+                {customMode.selectedCategories.includes('serve-placement') && pointContext.server === pointContext.winner && (
+                  <div>
+                    <Label className="text-sm font-medium">Serve Placement</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <Button 
+                        variant={servePlacement === 'wide' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setServePlacement('wide')}
+                      >
+                        Wide
+                      </Button>
+                      <Button 
+                        variant={servePlacement === 'body' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setServePlacement('body')}
+                      >
+                        Body
+                      </Button>
+                      <Button 
+                        variant={servePlacement === 't' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setServePlacement('t')}
+                      >
+                        T
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {customMode.selectedCategories.includes('rally-type') && (
+                  <div>
+                    <Label className="text-sm font-medium">Rally Type</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <Button 
+                        variant={rallyType === 'baseline' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setRallyType('baseline')}
+                      >
+                        Baseline
+                      </Button>
+                      <Button 
+                        variant={rallyType === 'net' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setRallyType('net')}
+                      >
+                        Net Play
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Level 2+ Features */}
+                {customMode.level >= 2 && (
+                  <>
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">More Details</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        className="flex items-center gap-1"
+                      >
+                        <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                        {showAdvanced ? 'Less' : 'More'}
+                      </Button>
+                    </div>
+
+                    {showAdvanced && (
+                      <div className="space-y-4 pt-4">
+                        {/* Serve Analytics - Level 2 */}
+                        {customMode.selectedCategories.includes('serve-speed') && pointContext.server === pointContext.winner && (
+                          <div>
+                            <Label className="text-sm font-medium">Serve Speed (mph)</Label>
+                            <div className="mt-2">
+                              <Slider
+                                value={serveSpeedValue}
+                                onValueChange={setServeSpeedValue}
+                                max={140}
+                                min={60}
+                                step={5}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                <span>60 mph</span>
+                                <span className="font-medium">{serveSpeedValue[0]} mph</span>
+                                <span>140 mph</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {customMode.selectedCategories.includes('serve-speed') && pointContext.server === pointContext.winner && (
+                          <div>
+                            <Label className="text-sm font-medium">Serve Spin</Label>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {['flat', 'slice', 'kick', 'twist'].map((spin) => (
+                                <Button
+                                  key={spin}
+                                  variant={serveSpin === spin ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setServeSpin(spin as typeof serveSpin)}
+                                  className="capitalize"
+                                >
+                                  {spin}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                                                 {/* Serve Quality - Level 2 */}
+                         {customMode.level >= 2 && pointContext.server === pointContext.winner && (
+                           <div>
+                             <Label className="text-sm font-medium">Serve Quality (1-10)</Label>
+                             <div className="mt-2">
+                               <Slider
+                                 value={[serveQuality]}
+                                 onValueChange={(value) => setServeQuality(value[0])}
+                                 max={10}
+                                 min={1}
+                                 step={1}
+                                 className="w-full"
+                               />
+                               <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                 <span>Poor (1)</span>
+                                 <span className="font-medium">{serveQuality}/10</span>
+                                 <span>Excellent (10)</span>
+                               </div>
+                             </div>
+                           </div>
+                         )}
+
+                         {/* Return Analytics - Level 2 */}
+                         {customMode.selectedCategories.includes('return-quality') && pointContext.server !== pointContext.winner && (
+                           <div>
+                             <Label className="text-sm font-medium">Return Quality</Label>
+                             <div className="grid grid-cols-3 gap-2 mt-2">
+                               {['defensive', 'neutral', 'offensive'].map((quality) => (
+                                 <Button
+                                   key={quality}
+                                   variant={returnQuality === quality ? 'default' : 'outline'}
+                                   size="sm"
+                                   onClick={() => setReturnQuality(quality as typeof returnQuality)}
+                                   className="capitalize"
+                                 >
+                                   {quality}
+                                 </Button>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+
+                         {/* Return Placement - Level 2 */}
+                         {customMode.level >= 2 && pointContext.server !== pointContext.winner && (
+                           <div>
+                             <Label className="text-sm font-medium">Return Placement</Label>
+                             <div className="grid grid-cols-3 gap-2 mt-2">
+                               {['deuce', 'center', 'ad'].map((placement) => (
+                                 <Button
+                                   key={placement}
+                                   variant={returnPlacement.includes(placement) ? 'default' : 'outline'}
+                                   size="sm"
+                                   onClick={() => setReturnPlacement(placement)}
+                                   className="capitalize"
+                                 >
+                                   {placement}
+                                 </Button>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+
+                        {/* Tactical Context - Level 3 */}
+                        {customMode.level >= 3 && customMode.selectedCategories.includes('tactical-context') && (
+                          <div>
+                            <Label className="text-sm font-medium">Pressure Situation</Label>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <input
+                                type="checkbox"
+                                id="pressure"
+                                checked={pressureSituation}
+                                onChange={(e) => setPressureSituation(e.target.checked)}
+                                className="rounded"
+                              />
+                              <label htmlFor="pressure" className="text-sm">
+                                High pressure point
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </SheetContent>
     </Sheet>
