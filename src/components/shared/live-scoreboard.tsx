@@ -23,6 +23,10 @@ interface LiveScoreboardProps {
   playerTwoRating?: string
   playerThreeRating?: string
   playerFourRating?: string
+  playerOneClub?: string
+  playerTwoClub?: string
+  playerThreeClub?: string
+  playerFourClub?: string
   score: Score
   currentServer?: "p1" | "p2" | null
   status?: string
@@ -50,6 +54,10 @@ export function LiveScoreboard({
   playerTwoRating,
   playerThreeRating,
   playerFourRating,
+  playerOneClub,
+  playerTwoClub,
+  playerThreeClub,
+  playerFourClub,
   score,
   currentServer,
   status = "In Progress",
@@ -193,26 +201,42 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="player-details-line">
-                  {playerOneYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      {playerOneYearOfBirth}
-                    </span>
-                  )}
-                  {playerOneRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerOneRating})
-                    </span>
-                  )}
-                  {isDoubles && playerThreeYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      / {playerThreeYearOfBirth}
-                    </span>
-                  )}
-                  {isDoubles && playerThreeRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerThreeRating})
-                    </span>
+                <div className="space-y-0.5">
+                  <div className="player-details-line">
+                    {playerOneYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        {playerOneYearOfBirth}
+                      </span>
+                    )}
+                    {playerOneRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerOneRating})
+                      </span>
+                    )}
+                    {isDoubles && playerThreeYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        / {playerThreeYearOfBirth}
+                      </span>
+                    )}
+                    {isDoubles && playerThreeRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerThreeRating})
+                      </span>
+                    )}
+                  </div>
+                  {(playerOneClub || (isDoubles && playerThreeClub)) && (
+                    <div className="player-details-line">
+                      {playerOneClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerOneClub}
+                        </span>
+                      )}
+                      {isDoubles && playerThreeClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerOneClub ? " / " : ""}{playerThreeClub}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -331,26 +355,42 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="player-details-line">
-                  {playerTwoYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      {playerTwoYearOfBirth}
-                    </span>
-                  )}
-                  {playerTwoRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerTwoRating})
-                    </span>
-                  )}
-                  {isDoubles && playerFourYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      / {playerFourYearOfBirth}
-                    </span>
-                  )}
-                  {isDoubles && playerFourRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerFourRating})
-                    </span>
+                <div className="space-y-0.5">
+                  <div className="player-details-line">
+                    {playerTwoYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        {playerTwoYearOfBirth}
+                      </span>
+                    )}
+                    {playerTwoRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerTwoRating})
+                      </span>
+                    )}
+                    {isDoubles && playerFourYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        / {playerFourYearOfBirth}
+                      </span>
+                    )}
+                    {isDoubles && playerFourRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerFourRating})
+                      </span>
+                    )}
+                  </div>
+                  {(playerTwoClub || (isDoubles && playerFourClub)) && (
+                    <div className="player-details-line">
+                      {playerTwoClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerTwoClub}
+                        </span>
+                      )}
+                      {isDoubles && playerFourClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerTwoClub ? " / " : ""}{playerFourClub}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

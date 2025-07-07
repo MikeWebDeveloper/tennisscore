@@ -1054,6 +1054,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerTwoRating={match.playerTwo.rating}
           playerThreeRating={match.playerThree?.rating}
           playerFourRating={match.playerFour?.rating}
+          playerOneClub={match.playerOne.club}
+          playerTwoClub={match.playerTwo.club}
+          playerThreeClub={match.playerThree?.club}
+          playerFourClub={match.playerFour?.club}
           score={score}
           currentServer={currentServer}
           status={match.status}

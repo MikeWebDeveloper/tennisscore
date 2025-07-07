@@ -199,7 +199,10 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
           <CompactTournamentStep
             value={tournamentName}
             onChange={setTournamentName}
-            onSkip={() => setTournamentName("")}
+            onSkip={() => {
+              setTournamentName("")
+              setCurrentStep(currentStep + 1)
+            }}
             onComplete={() => setCurrentStep(currentStep + 1)}
           />
         )

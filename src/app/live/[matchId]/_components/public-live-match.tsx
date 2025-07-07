@@ -434,6 +434,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoRating={match.playerTwo.rating}
             playerThreeRating={match.playerThree?.rating}
             playerFourRating={match.playerFour?.rating}
+            playerOneClub={match.playerOne.club}
+            playerTwoClub={match.playerTwo.club}
+            playerThreeClub={match.playerThree?.club}
+            playerFourClub={match.playerFour?.club}
             score={score}
             status={match.status}
             winnerId={match.winnerId}
