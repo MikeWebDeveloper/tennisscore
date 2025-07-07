@@ -53,7 +53,7 @@ export function DetailStep({ value, onChange }: DetailStepProps) {
       icon: Target,
       title: t("detailedStats"),
       description: t("shotPlacementRallyLength"),
-      disabled: true
+      disabled: false
     }
   ]
 

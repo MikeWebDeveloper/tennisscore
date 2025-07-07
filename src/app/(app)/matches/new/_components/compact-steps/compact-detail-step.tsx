@@ -34,7 +34,7 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
       icon: Target,
       title: t("detailedStats"),
       description: t("shotPlacementRallyLength"),
-      disabled: true
+      disabled: false
     }
   ]
 

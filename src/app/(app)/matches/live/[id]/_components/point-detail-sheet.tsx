@@ -21,7 +21,6 @@ import {
 import { Target, Zap, Trophy, AlertTriangle, ChevronDown, BarChart3 } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
 import { useMatchStore } from "@/stores/matchStore"
-import { Slider } from "@/components/ui/slider"
 import { AdvancedServeCollector } from "@/components/features/advanced-serve-collector"
 import { ReturnAnalyticsCollector } from "@/components/features/return-analytics-collector"
 import { InteractiveCourt } from "@/components/features/interactive-court"
@@ -71,7 +70,6 @@ export function PointDetailSheet({
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [serveStats, setServeStats] = useState<ServeStats | undefined>(undefined)
   const [returnStats, setReturnStats] = useState<ReturnStats | undefined>(undefined)
-  const [courtPlacement, setCourtPlacement] = useState<string>('')
   const [rallyType, setRallyType] = useState<'baseline' | 'approach' | 'net' | 'defensive'>('baseline')
   const [pressureSituation, setPressureSituation] = useState(false)
 
@@ -186,7 +184,6 @@ export function PointDetailSheet({
     setShowAdvanced(false)
     setServeStats(undefined)
     setReturnStats(undefined)
-    setCourtPlacement('')
     setRallyType('baseline')
     setPressureSituation(false)
   }
@@ -587,111 +584,48 @@ export function PointDetailSheet({
 
                     {showAdvanced && (
                       <div className="space-y-4 pt-4">
-                        {/* Serve Analytics - Level 2 */}
-                        {customMode.selectedCategories.includes('serve-speed') && pointContext.server === pointContext.winner && (
+                        {/* Advanced Serve Collector - Level 2+ */}
+                        {pointContext.server === pointContext.winner && (
+                          <AdvancedServeCollector
+                            onServeStats={setServeStats}
+                            isVisible={true}
+                          />
+                        )}
+
+                        {/* Return Analytics Collector - Level 2+ */}
+                        {pointContext.server !== pointContext.winner && (
+                          <ReturnAnalyticsCollector
+                            onReturnStats={setReturnStats}
+                            isVisible={true}
+                          />
+                        )}
+
+                        {/* Interactive Court - Level 3+ */}
+                        {customMode.level >= 3 && (
                           <div>
-                            <Label className="text-sm font-medium">Serve Speed (mph)</Label>
+                            <Label className="text-sm font-medium">Shot Placement</Label>
                             <div className="mt-2">
-                              <Slider
-                                value={serveSpeedValue}
-                                onValueChange={setServeSpeedValue}
-                                max={140}
-                                min={60}
-                                step={5}
-                                className="w-full"
+                              <InteractiveCourt
+                                mode={pointContext.server === pointContext.winner ? 'serve' : 'return'}
+                                onZoneSelect={(zone) => {
+                                  if (pointContext.server === pointContext.winner) {
+                                    setServeStats(prev => prev ? { ...prev, placement: zone as NonNullable<ServeStats>['placement'] } : { placement: zone as NonNullable<ServeStats>['placement'] })
+                                  } else {
+                                    setReturnStats(prev => prev ? { ...prev, placement: zone as NonNullable<ReturnStats>['placement'] } : { placement: zone as NonNullable<ReturnStats>['placement'] })
+                                  }
+                                }}
+                                selectedZone={
+                                  pointContext.server === pointContext.winner 
+                                    ? serveStats?.placement 
+                                    : returnStats?.placement
+                                }
                               />
-                              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                <span>60 mph</span>
-                                <span className="font-medium">{serveSpeedValue[0]} mph</span>
-                                <span>140 mph</span>
-                              </div>
                             </div>
                           </div>
                         )}
 
-                        {customMode.selectedCategories.includes('serve-speed') && pointContext.server === pointContext.winner && (
-                          <div>
-                            <Label className="text-sm font-medium">Serve Spin</Label>
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                              {['flat', 'slice', 'kick', 'twist'].map((spin) => (
-                                <Button
-                                  key={spin}
-                                  variant={serveSpin === spin ? 'default' : 'outline'}
-                                  size="sm"
-                                  onClick={() => setServeSpin(spin as typeof serveSpin)}
-                                  className="capitalize"
-                                >
-                                  {spin}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                                                 {/* Serve Quality - Level 2 */}
-                         {customMode.level >= 2 && pointContext.server === pointContext.winner && (
-                           <div>
-                             <Label className="text-sm font-medium">Serve Quality (1-10)</Label>
-                             <div className="mt-2">
-                               <Slider
-                                 value={[serveQuality]}
-                                 onValueChange={(value) => setServeQuality(value[0])}
-                                 max={10}
-                                 min={1}
-                                 step={1}
-                                 className="w-full"
-                               />
-                               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                 <span>Poor (1)</span>
-                                 <span className="font-medium">{serveQuality}/10</span>
-                                 <span>Excellent (10)</span>
-                               </div>
-                             </div>
-                           </div>
-                         )}
-
-                         {/* Return Analytics - Level 2 */}
-                         {customMode.selectedCategories.includes('return-quality') && pointContext.server !== pointContext.winner && (
-                           <div>
-                             <Label className="text-sm font-medium">Return Quality</Label>
-                             <div className="grid grid-cols-3 gap-2 mt-2">
-                               {['defensive', 'neutral', 'offensive'].map((quality) => (
-                                 <Button
-                                   key={quality}
-                                   variant={returnQuality === quality ? 'default' : 'outline'}
-                                   size="sm"
-                                   onClick={() => setReturnQuality(quality as typeof returnQuality)}
-                                   className="capitalize"
-                                 >
-                                   {quality}
-                                 </Button>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-
-                         {/* Return Placement - Level 2 */}
-                         {customMode.level >= 2 && pointContext.server !== pointContext.winner && (
-                           <div>
-                             <Label className="text-sm font-medium">Return Placement</Label>
-                             <div className="grid grid-cols-3 gap-2 mt-2">
-                               {['deuce', 'center', 'ad'].map((placement) => (
-                                 <Button
-                                   key={placement}
-                                   variant={returnPlacement.includes(placement) ? 'default' : 'outline'}
-                                   size="sm"
-                                   onClick={() => setReturnPlacement(placement)}
-                                   className="capitalize"
-                                 >
-                                   {placement}
-                                 </Button>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-
-                        {/* Tactical Context - Level 3 */}
-                        {customMode.level >= 3 && customMode.selectedCategories.includes('tactical-context') && (
+                        {/* Tactical Context - Level 3+ */}
+                        {customMode.level >= 3 && (
                           <div>
                             <Label className="text-sm font-medium">Pressure Situation</Label>
                             <div className="flex items-center space-x-2 mt-2">
@@ -702,9 +636,7 @@ export function PointDetailSheet({
                                 onChange={(e) => setPressureSituation(e.target.checked)}
                                 className="rounded"
                               />
-                              <label htmlFor="pressure" className="text-sm">
-                                High pressure point
-                              </label>
+                              <Label htmlFor="pressure" className="text-sm">High pressure point</Label>
                             </div>
                           </div>
                         )}

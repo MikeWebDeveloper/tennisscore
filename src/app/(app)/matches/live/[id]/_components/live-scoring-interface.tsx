@@ -423,7 +423,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   // Convert store point details to lib point details for stats calculation
   const convertedPointLog: LibPointDetail[] = pointLog.map(point => ({
     ...point,
-    lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType'])
+    lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType']),
+    serveOutcome: point.outcome || 'winner',
+    pointOutcome: point.outcome || 'winner'
   }))
   
   // Parse match format properly
@@ -715,8 +717,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       console.log('Points only mode - awarding point directly')
       const minimalPointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
-        pointOutcome: 'winner',
-        serveOutcome: 'winner',
+        outcome: 'winner',
         rallyLength: 1,
         lastShotType: 'serve',
       }
@@ -747,9 +748,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       setIsInGame(true)
 
       // Play appropriate sound effects
-      if (pointDetails?.pointOutcome === 'ace') {
+      if (pointDetails?.outcome === 'ace') {
         playSound('ace')
-      } else if (pointDetails?.pointOutcome === 'double_fault') {
+      } else if (pointDetails?.outcome === 'double_fault') {
         playSound('double-fault')
       } else if (result.isMatchComplete) {
         playSound('match-won')
@@ -830,13 +831,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     if (pendingPointWinner) {
       const storePointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
-        pointOutcome: outcome === 'winner' ? 'winner' : 
+        outcome: outcome === 'winner' ? 'winner' : 
                      outcome === 'ace' ? 'ace' :
                      outcome === 'forced_error' ? 'forced_error' :
                      outcome === 'unforced_error' ? 'unforced_error' :
                      'double_fault',
-        serveOutcome: outcome === 'ace' ? 'ace' : 
-                     outcome === 'double_fault' ? 'double_fault' : 'winner',
         rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 2,
         lastShotType: 'serve',
       }

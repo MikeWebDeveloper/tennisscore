@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, User, Plus, Star } from "lucide-react"
+import { ArrowLeft, User, Plus, Star, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { Player } from "@/lib/types"
 import { createMatch } from "@/lib/actions/matches"
@@ -17,6 +18,7 @@ import { toast } from "sonner"
 import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
 import { CreatePlayerDialog } from "../../../players/_components/create-player-dialog"
+import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 // Mobile spacer component to prevent content from being hidden behind bottom nav
 const MobileBottomNavSpacer = () => <div className="h-16 md:hidden" />
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
@@ -81,6 +83,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
   const [finalSet, setFinalSet] = useState<"full" | "super-tb">("full")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "complex">("simple")
   const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
+  const [showCustomModeDialog, setShowCustomModeDialog] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -223,6 +226,14 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
       setShowCreatePlayerDialog(true)
     } else {
       setter(value)
+    }
+  }
+
+  const handleDetailLevelChange = (value: "points" | "simple" | "complex") => {
+    setDetailLevel(value)
+    // Show Custom Mode dialog when complex is selected
+    if (value === "complex") {
+      setShowCustomModeDialog(true)
     }
   }
 
@@ -512,7 +523,7 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
           <Card>
             <CardContent className="p-6">
               <h3 className="font-medium mb-4">{t("scoringDetailLevel")}</h3>
-              <RadioGroup value={detailLevel} onValueChange={(value: "points" | "simple" | "complex") => setDetailLevel(value)}>
+              <RadioGroup value={detailLevel} onValueChange={handleDetailLevelChange}>
                 <div className="space-y-3">
                   <Label htmlFor="points" className="radio-option">
                     <RadioGroupItem value="points" id="points" />
@@ -528,11 +539,29 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
                       <div className="text-sm text-muted-foreground">{t("acesDoubleFaultsWinnersErrors")}</div>
                     </div>
                   </Label>
-                  <Label htmlFor="complex" className="radio-option-disabled">
-                    <RadioGroupItem value="complex" id="complex" disabled />
-                    <div>
-                      <div className="font-medium">{t("detailedStats")}</div>
+                  <Label htmlFor="complex" className="radio-option">
+                    <RadioGroupItem value="complex" id="complex" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{t("detailedStats")}</div>
+                        <Badge variant="secondary" className="text-xs">
+                          <BarChart3 className="h-3 w-3 mr-1" />
+                          Advanced
+                        </Badge>
+                      </div>
                       <div className="text-sm text-muted-foreground">{t("shotPlacementRallyLength")}</div>
+                      {detailLevel === "complex" && (
+                        <Button
+                          type="button"
+                          variant="outline" 
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => setShowCustomModeDialog(true)}
+                        >
+                          <BarChart3 className="h-4 w-4 mr-1" />
+                          Configure Advanced Stats
+                        </Button>
+                      )}
                     </div>
                   </Label>
                 </div>
@@ -558,6 +587,13 @@ export function CreateMatchForm({ players }: CreateMatchFormProps) {
         isOpen={showCreatePlayerDialog}
         onOpenChange={setShowCreatePlayerDialog}
       />
+
+      {/* Custom Mode Dialog */}
+      <CustomModeDialog
+        open={showCustomModeDialog}
+        onOpenChange={setShowCustomModeDialog}
+      />
+      
       <MobileBottomNavSpacer />
     </motion.div>
   )
