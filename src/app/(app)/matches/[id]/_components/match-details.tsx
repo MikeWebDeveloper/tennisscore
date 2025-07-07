@@ -67,6 +67,29 @@ interface MatchDetailsProps {
   }
 }
 
+// PlayerDetailsLine: shows year, rating, and club in scoreboard style
+function PlayerDetailsLine({ yearOfBirth, rating, club }: { yearOfBirth?: number; rating?: string; club?: string }) {
+  return (
+    <div className="space-y-0.5">
+      {(yearOfBirth || rating) && (
+        <div className="player-details-line flex gap-1">
+          {yearOfBirth && (
+            <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">{yearOfBirth}</span>
+          )}
+          {rating && (
+            <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">({rating})</span>
+          )}
+        </div>
+      )}
+      {club && (
+        <div className="player-details-line">
+          <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">{club}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
@@ -591,6 +614,24 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             <div className="font-semibold">
                               {getTeamName("team1")}
                             </div>
+                            {match.playerOne && (
+                              <PlayerDetailsLine
+                                yearOfBirth={match.playerOne.yearOfBirth}
+                                rating={match.playerOne.rating}
+                                club={match.playerOne.club}
+                              />
+                            )}
+                            {/* For doubles, show partner details */}
+                            {isDoubles && match.playerThree && (
+                              <div className="mt-1">
+                                <span className="text-xs text-muted-foreground">/</span>
+                                <PlayerDetailsLine
+                                  yearOfBirth={match.playerThree.yearOfBirth}
+                                  rating={match.playerThree.rating}
+                                  club={match.playerThree.club}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -605,6 +646,24 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             <div className="font-semibold">
                               {getTeamName("team2")}
                             </div>
+                            {match.playerTwo && (
+                              <PlayerDetailsLine
+                                yearOfBirth={match.playerTwo.yearOfBirth}
+                                rating={match.playerTwo.rating}
+                                club={match.playerTwo.club}
+                              />
+                            )}
+                            {/* For doubles, show partner details */}
+                            {isDoubles && match.playerFour && (
+                              <div className="mt-1">
+                                <span className="text-xs text-muted-foreground">/</span>
+                                <PlayerDetailsLine
+                                  yearOfBirth={match.playerFour.yearOfBirth}
+                                  rating={match.playerFour.rating}
+                                  club={match.playerFour.club}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
