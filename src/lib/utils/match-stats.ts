@@ -816,14 +816,28 @@ export function calculatePlayerWinStreak(matches: Match[], playerId: string): { 
   return { current: currentStreak, max: maxStreak };
 }
 
+// Type guard helpers
+function hasEnhancedField(point: PointDetail | EnhancedPointDetail, field: string): boolean {
+  return field in point && (point as Record<string, unknown>)[field] !== undefined
+}
+
 // Enhanced analytics calculation functions
 export function calculateAdvancedMatchStats(pointLog: (PointDetail | EnhancedPointDetail)[]): AdvancedMatchStats {
   const baseStats = calculateMatchStats(pointLog as PointDetail[])
   
-  // Check if we have enhanced data
-  const enhancedPoints = pointLog.filter(p => 
-    'loggingLevel' in p && p.loggingLevel && parseInt(p.loggingLevel) > 1
-  ) as EnhancedPointDetail[]
+  // Check if we have enhanced data - more flexible detection
+  const enhancedPoints = pointLog.filter(p => {
+    // Check for explicit logging level > 1
+    if ('loggingLevel' in p && p.loggingLevel && parseInt(p.loggingLevel) > 1) {
+      return true
+    }
+    // Or check for enhanced fields that indicate useful analytics data
+    return !!(hasEnhancedField(p, 'servePlacement') || hasEnhancedField(p, 'courtPosition') || 
+             hasEnhancedField(p, 'lastShotType') || 
+             ('serveStats' in p && p.serveStats) || 
+             ('returnStats' in p && p.returnStats) ||
+             ('tacticalContext' in p && p.tacticalContext))
+  }) as EnhancedPointDetail[]
   
   const hasEnhancedData = enhancedPoints.length > 0
   
@@ -840,7 +854,10 @@ export function calculateAdvancedMatchStats(pointLog: (PointDetail | EnhancedPoi
 }
 
 function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics {
-  const servePoints = points.filter(p => p.serveStats)
+  // Use either enhanced serveStats or basic servePlacement data
+  const servePoints = points.filter(p => 
+    p.serveStats || hasEnhancedField(p, 'servePlacement') || (hasEnhancedField(p, 'lastShotType') || p.serveType)
+  )
   
   // Placement analysis
   const placementDistribution: Record<string, number> = {}
@@ -848,17 +865,20 @@ function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics 
   const placementSpeed: Record<string, number[]> = {}
   
   servePoints.forEach(point => {
-    if (point.serveStats?.placement) {
-      const placement = point.serveStats.placement
+    // Get placement from either serveStats or basic servePlacement
+    const placement = point.serveStats?.placement || (point as Record<string, unknown>).servePlacement as string
+    
+    if (placement) {
       placementDistribution[placement] = (placementDistribution[placement] || 0) + 1
       
       // Track success (ace or serve winner)
-      if (point.outcome === 'ace' || point.outcome === 'winner') {
+      const pointOutcome = (point as Record<string, unknown>).pointOutcome as string
+      if (pointOutcome === 'ace' || pointOutcome === 'winner') {
         placementSuccess[placement] = (placementSuccess[placement] || 0) + 1
       }
       
-      // Track speed by placement
-      if (point.serveStats.speed) {
+      // Track speed by placement (only if available)
+      if (point.serveStats?.speed) {
         if (!placementSpeed[placement]) placementSpeed[placement] = []
         placementSpeed[placement].push(point.serveStats.speed)
       }
@@ -943,24 +963,42 @@ function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics 
 }
 
 function calculateRallyAnalytics(points: EnhancedPointDetail[]): { typeDistribution: Record<string, number>; averageLength: number; typeSuccess: Record<string, number> } {
-  const rallyPoints = points.filter(p => p.tacticalContext?.rallyType)
-  
+  // Work with basic rally data or enhanced tactical context
   const typeDistribution: Record<string, number> = {}
   const typeSuccess: Record<string, number> = {}
   const rallyLengths: number[] = []
   
-  rallyPoints.forEach(point => {
-    if (point.tacticalContext?.rallyType) {
-      const type = point.tacticalContext.rallyType
-      typeDistribution[type] = (typeDistribution[type] || 0) + 1
+  points.forEach(point => {
+    // Use tactical context if available, otherwise infer from basic data
+    let rallyType = point.tacticalContext?.rallyType
+    
+    // Infer rally type from basic data if not explicitly set
+    if (!rallyType) {
+      const rallyLength = (point as Record<string, unknown>).rallyLength as number
       
-      if (point.outcome === 'winner') {
-        typeSuccess[type] = (typeSuccess[type] || 0) + 1
+      if (rallyLength === 1) {
+        rallyType = 'baseline' // Short points are typically baseline
+      } else if (rallyLength && rallyLength <= 3) {
+        rallyType = 'baseline' // Short rallies
+      } else if (rallyLength && rallyLength >= 10) {
+        rallyType = 'defensive' // Long rallies tend to be defensive
+      } else {
+        rallyType = 'baseline' // Default baseline rally
       }
     }
     
-    if (point.rallyLength) {
-      rallyLengths.push(point.rallyLength)
+    if (rallyType) {
+      typeDistribution[rallyType] = (typeDistribution[rallyType] || 0) + 1
+      
+      const pointOutcome = (point as Record<string, unknown>).pointOutcome as string
+      if (pointOutcome === 'winner') {
+        typeSuccess[rallyType] = (typeSuccess[rallyType] || 0) + 1
+      }
+    }
+    
+    const rallyLength = (point as Record<string, unknown>).rallyLength as number
+    if (rallyLength) {
+      rallyLengths.push(rallyLength)
     }
   })
   

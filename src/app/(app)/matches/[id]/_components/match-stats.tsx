@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Player, MatchStats } from "@/lib/types"
@@ -10,6 +11,7 @@ import { PointDetail } from "@/lib/types"
 import { calculateMatchStats, calculateAdvancedMatchStats, calculateDetailedMatchStats } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
+import { StatsDrilldownDialog } from "./stats-drilldown-dialog"
 
 interface MatchStatsComponentProps {
   stats: MatchStats
@@ -39,13 +41,15 @@ function StatRow({
   value1, 
   value2, 
   format = "number",
-  showProgress = true 
+  showProgress = true,
+  onClick
 }: { 
   label: string
   value1: number
   value2: number
   format?: "number" | "percentage"
   showProgress?: boolean
+  onClick?: () => void
 }) {
   const total = value1 + value2
   const percentage1 = total > 0 ? (value1 / total) * 100 : 50
@@ -61,7 +65,8 @@ function StatRow({
   return (
     <motion.div 
       variants={itemVariants}
-      className="space-y-2"
+      className={`space-y-2 ${onClick ? 'cursor-pointer hover:bg-muted/50 rounded p-2 -m-2 transition-colors' : ''}`}
+      onClick={onClick}
     >
       <div className="flex items-center justify-between text-sm">
         <motion.span 
@@ -462,6 +467,17 @@ export function MatchStatsComponentSimpleFixed({
 }) {
   const t = useTranslations()
   
+  // State for drill-down dialog
+  const [drilldownOpen, setDrilldownOpen] = useState(false)
+  const [drilldownStat, setDrilldownStat] = useState<'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults' | null>(null)
+  
+  const handleStatClick = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults') => {
+    if (pointLog && pointLog.length > 0) {
+      setDrilldownStat(statType)
+      setDrilldownOpen(true)
+    }
+  }
+  
   // Calculate enhanced analytics if we have point log
   const advancedStats = pointLog && pointLog.length > 0 
     ? calculateAdvancedMatchStats(pointLog) 
@@ -543,7 +559,7 @@ export function MatchStatsComponentSimpleFixed({
               />
             </>
           ) : (
-            // Simple/Complex scoring: Show detailed stats
+            // Simple/Complex/Detailed scoring: Show all outcome stats
             <>
               <StatRow 
                 label={t('totalPoints')} 
@@ -553,34 +569,39 @@ export function MatchStatsComponentSimpleFixed({
               <StatRow 
                 label={t('winners')} 
                 value1={stats.winnersByPlayer[0]} 
-                value2={stats.winnersByPlayer[1]} 
+                value2={stats.winnersByPlayer[1]}
+                onClick={() => handleStatClick('winners')}
               />
               <StatRow 
                 label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
-                value2={stats.unforcedErrorsByPlayer[1]} 
+                value2={stats.unforcedErrorsByPlayer[1]}
+                onClick={() => handleStatClick('unforcedErrors')}
               />
               <StatRow 
                 label={t('forcedErrors')} 
                 value1={stats.forcedErrorsByPlayer[0]} 
-                value2={stats.forcedErrorsByPlayer[1]} 
+                value2={stats.forcedErrorsByPlayer[1]}
+                onClick={() => handleStatClick('forcedErrors')}
               />
               <StatRow 
                 label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
-                value2={stats.acesByPlayer[1]} 
+                value2={stats.acesByPlayer[1]}
+                onClick={() => handleStatClick('aces')}
               />
               <StatRow 
                 label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
-                value2={stats.doubleFaultsByPlayer[1]} 
+                value2={stats.doubleFaultsByPlayer[1]}
+                onClick={() => handleStatClick('doubleFaults')}
               />
             </>
           )}
         </CardContent>
       </Card>
       
-      {/* Service Section */}
+      {/* Service Section - Progressive detail levels */}
       {(detailLevel === 'simple' || detailLevel === 'complex' || detailLevel === 'detailed') && (
         <Card>
           <CardHeader className="pb-3">
@@ -590,31 +611,87 @@ export function MatchStatsComponentSimpleFixed({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {detailLevel === 'simple' ? (
+              // Simple: Just basic serve percentages
+              <>
+                <StatRow 
+                  label={t('firstServePercentage')} 
+                  value1={stats.firstServePercentageByPlayer[0]} 
+                  value2={stats.firstServePercentageByPlayer[1]}
+                  format="percentage"
+                />
+                <StatRow 
+                  label={t('servicePoints')} 
+                  value1={stats.servicePointsWonPercentageByPlayer[0]} 
+                  value2={stats.servicePointsWonPercentageByPlayer[1]}
+                  format="percentage"
+                />
+              </>
+            ) : (
+              // Complex/Detailed: Full service breakdown
+              <>
+                <StatRow 
+                  label={t('firstServePercentage')} 
+                  value1={stats.firstServePercentageByPlayer[0]} 
+                  value2={stats.firstServePercentageByPlayer[1]}
+                  format="percentage"
+                />
+                <StatRow 
+                  label={t('firstServePointsWonPercentage')} 
+                  value1={stats.firstServePointsWonByPlayer[0]} 
+                  value2={stats.firstServePointsWonByPlayer[1]}
+                  format="percentage"
+                />
+                <StatRow 
+                  label={t('secondServePointsWonPercentage')} 
+                  value1={Math.round(
+                    stats.secondServePointsPlayedByPlayer[0] > 0 
+                      ? (stats.secondServePointsWonByPlayer[0] / stats.secondServePointsPlayedByPlayer[0]) * 100 
+                      : 0
+                  )}
+                  value2={Math.round(
+                    stats.secondServePointsPlayedByPlayer[1] > 0 
+                      ? (stats.secondServePointsWonByPlayer[1] / stats.secondServePointsPlayedByPlayer[1]) * 100 
+                      : 0
+                  )}
+                  format="percentage"
+                />
+                <StatRow 
+                  label={t('totalServicePoints')} 
+                  value1={stats.servicePointsPlayedByPlayer[0]} 
+                  value2={stats.servicePointsPlayedByPlayer[1]} 
+                />
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Return Statistics - Only for Complex and Detailed */}
+      {(detailLevel === 'complex' || detailLevel === 'detailed') && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              {t('returnStatistics')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <StatRow 
-              label={t('firstServePercentage')} 
-              value1={stats.firstServePercentageByPlayer[0]} 
-              value2={stats.firstServePercentageByPlayer[1]}
+              label={t('receivingPoints')} 
+              value1={stats.receivingPointsWonPercentageByPlayer[0]} 
+              value2={stats.receivingPointsWonPercentageByPlayer[1]}
               format="percentage"
             />
             <StatRow 
-              label={t('firstServePointsWonPercentage')} 
-              value1={stats.firstServePointsWonByPlayer[0]} 
-              value2={stats.firstServePointsWonByPlayer[1]}
-              format="percentage"
+              label={t('totalReturnPoints')} 
+              value1={stats.receivingPointsPlayedByPlayer[0]} 
+              value2={stats.receivingPointsPlayedByPlayer[1]} 
             />
             <StatRow 
-              label={t('secondServePointsWonPercentage')} 
-              value1={Math.round(
-                stats.secondServePointsPlayedByPlayer[0] > 0 
-                  ? (stats.secondServePointsWonByPlayer[0] / stats.secondServePointsPlayedByPlayer[0]) * 100 
-                  : 0
-              )}
-              value2={Math.round(
-                stats.secondServePointsPlayedByPlayer[1] > 0 
-                  ? (stats.secondServePointsWonByPlayer[1] / stats.secondServePointsPlayedByPlayer[1]) * 100 
-                  : 0
-              )}
-              format="percentage"
+              label={t('returnPointsWon')} 
+              value1={stats.receivingPointsWonByPlayer[0]} 
+              value2={stats.receivingPointsWonByPlayer[1]} 
             />
           </CardContent>
         </Card>
@@ -858,6 +935,15 @@ export function MatchStatsComponentSimpleFixed({
           <div className="w-3 h-3 bg-red-500 rounded" />
         </span>
       </div>
+      
+      {/* Drill-down Dialog */}
+      <StatsDrilldownDialog
+        isOpen={drilldownOpen}
+        onClose={() => setDrilldownOpen(false)}
+        statType={drilldownStat}
+        playerNames={playerNames}
+        pointLog={pointLog || []}
+      />
     </div>
   )
 } 

@@ -39,8 +39,8 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
     {
       value: "detailed",
       icon: Microscope,
-      title: t("proAnalytics"),
-      description: t("advancedProLevelTracking"),
+      title: t("customAnalytics"),
+      description: t("userSelectableTracking"),
       disabled: true
     }
   ]

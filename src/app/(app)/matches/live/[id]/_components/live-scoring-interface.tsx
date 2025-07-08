@@ -424,8 +424,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const convertedPointLog: LibPointDetail[] = pointLog.map(point => ({
     ...point,
     lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType']),
-    serveOutcome: point.outcome || 'winner',
-    pointOutcome: point.outcome || 'winner'
+    serveOutcome: point.outcome,
+    pointOutcome: point.outcome
   }))
   
   // Parse match format properly

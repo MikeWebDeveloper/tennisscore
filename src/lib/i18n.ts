@@ -75,8 +75,8 @@ export interface Translations {
   acesDoubleFaultsWinnersErrors: string
   detailedStats: string
   shotPlacementRallyLength: string
-  proAnalytics: string
-  advancedProLevelTracking: string
+  customAnalytics: string
+  userSelectableTracking: string
   creatingMatch: string
   startMatch: string
   matchCreatedSuccessfully: string
@@ -349,7 +349,6 @@ export interface Translations {
   noPointDataAvailable: string
   statsWillAppear: string
   statsWillAppearDescription: string
-  pointsAndOutcomes: string
   serviceStatistics: string
   firstServeWin: string
   secondServeWin: string
@@ -436,6 +435,11 @@ export interface Translations {
   // Additional tennis terms
   forcedError: string
   unforcedError: string
+  pointsAndOutcomes: string
+  returnStatistics: string
+  totalServicePoints: string
+  totalReturnPoints: string
+  returnPointsWon: string
   
   // Detailed scoring terms
   detailedStatistics: string
@@ -762,8 +766,8 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Aces, Double Faults, Winners, Errors",
     detailedStats: "Detailed Stats",
     shotPlacementRallyLength: "Shot Placement, Rally Length",
-    proAnalytics: "Pro Analytics",
-    advancedProLevelTracking: "Advanced pro-level tracking & analytics",
+    customAnalytics: "Custom Analytics",
+    userSelectableTracking: "User-selectable tracking options & analytics",
     creatingMatch: "Creating match...",
     startMatch: "Start Match",
     matchCreatedSuccessfully: 'Match created successfully!',
@@ -1037,7 +1041,6 @@ export const translations = {
     noPointDataAvailable: "No point-by-point data available for this match.",
     statsWillAppear: "Statistics will appear here as the match progresses.",
     statsWillAppearDescription: "Complete points to see detailed match stats.",
-    pointsAndOutcomes: "Points & Outcomes",
     serviceStatistics: "Service Statistics",
     firstServeWin: "1st Serve Win %",
     secondServeWin: "2nd Serve Win %",
@@ -1124,6 +1127,11 @@ export const translations = {
     // Additional tennis terms
     forcedError: "Forced Error",
     unforcedError: "Unforced Error",
+    pointsAndOutcomes: "Points & Outcomes",
+    returnStatistics: "Return Statistics",
+    totalServicePoints: "Total Service Points",
+    totalReturnPoints: "Total Return Points",
+    returnPointsWon: "Return Points Won",
 
     // Detailed scoring terms
     detailedStatistics: "Detailed Statistics",
@@ -1448,8 +1456,8 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Esa, dvojchyby, vítězné údery, chyby",
     detailedStats: "Detailní statistiky",
     shotPlacementRallyLength: "Umístění úderů, délka výměn",
-    proAnalytics: "Pro Analytika",
-    advancedProLevelTracking: "Pokročilé sledování a analytiky na profesionální úrovni",
+    customAnalytics: "Vlastní analytika",
+    userSelectableTracking: "Uživatelem volitelné možnosti sledování a analytiky",
     creatingMatch: "Vytváření zápasu...",
     startMatch: "Začít zápas",
     matchCreatedSuccessfully: 'Zápas úspěšně vytvořen!',
@@ -1723,7 +1731,6 @@ export const translations = {
     noPointDataAvailable: "Pro tento zápas nejsou k dispozici žádná data bod po bodu.",
     statsWillAppear: "Statistiky se zde objeví v průběhu zápasu.",
     statsWillAppearDescription: "Dokončete body, abyste viděli podrobné statistiky zápasu.",
-    pointsAndOutcomes: "Body a výsledky",
     serviceStatistics: "Statistiky podání",
     firstServeWin: "% výhry 1. podání",
     secondServeWin: "% výhry 2. podání",
@@ -1810,6 +1817,11 @@ export const translations = {
     // Additional tennis terms
     forcedError: "Vynucená chyba",
     unforcedError: "Nevynucená chyba",
+    pointsAndOutcomes: "Body a výsledky",
+    returnStatistics: "Statistiky returnů",
+    totalServicePoints: "Celkem bodů na servisu",
+    totalReturnPoints: "Celkem bodů na returnu",
+    returnPointsWon: "Vyhráno bodů na returnu",
     
     // Detailed scoring terms
     detailedStatistics: "Detailní statistiky",
