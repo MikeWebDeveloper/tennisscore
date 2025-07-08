@@ -7,7 +7,23 @@ export const matchFormatSchema = z.object({
   tiebreakAt: z.number().default(6),
   finalSetTiebreak: z.enum(["standard", "super", "none"]).default("standard"),
   noAd: z.boolean(),
-  detailLevel: z.enum(["points", "simple", "complex", "detailed"]).default("simple"),
+  detailLevel: z.enum(["points", "simple", "detailed", "custom"]).default("simple"),
+  // Custom mode configuration
+  customModeConfig: z.object({
+    enabled: z.boolean().default(false),
+    categories: z.array(z.enum([
+      'serve-placement',
+      'serve-speed', 
+      'serve-spin',
+      'return-quality',
+      'return-placement',
+      'rally-type',
+      'shot-tracking',
+      'tactical-context',
+      'pressure-situations'
+    ])).default([]),
+    level: z.enum(['1', '2', '3']).default('1')
+  }).optional(),
 })
 
 // Match creation schema
@@ -65,24 +81,99 @@ export const tacticalContextSchema = z.object({
   pressureSituation: z.boolean().optional()
 }).optional()
 
-// Point detail schema with enhanced statistics
-export const pointDetailSchema = z.object({
+// Base point detail schema - common to all detail levels
+export const basePointDetailSchema = z.object({
+  // Core identification
+  id: z.string(),
+  timestamp: z.string().datetime(),
   pointNumber: z.number().min(1),
   setNumber: z.number().min(1),
   gameNumber: z.number().min(1),
+  gameScore: z.string(),
+  
+  // Point outcome
   winner: z.enum(["p1", "p2"]),
   server: z.enum(["p1", "p2"]),
-  outcome: pointOutcomeSchema,
-  serveType: serveTypeSchema,
-  rallyLength: z.number().min(0).default(0),
-  timestamp: z.string().datetime(),
-  // Enhanced statistics fields
-  serveStats: serveStatsSchema,
-  returnStats: returnStatsSchema,
-  tacticalContext: tacticalContextSchema,
-  loggingLevel: z.enum(['1', '2', '3']).default('1'),
-  customFields: z.record(z.any()).optional()
+  
+  // Context flags
+  isBreakPoint: z.boolean().default(false),
+  isSetPoint: z.boolean().default(false),
+  isMatchPoint: z.boolean().default(false),
+  isGameWinning: z.boolean().default(false),
+  isSetWinning: z.boolean().default(false),
+  isMatchWinning: z.boolean().default(false),
+  isTiebreak: z.boolean().default(false),
+  
+  // Data collection level
+  loggingLevel: z.enum(['points', 'simple', 'detailed', 'custom']).default('points'),
 })
+
+// Points-only mode schema - minimal data
+export const pointsOnlyDetailSchema = basePointDetailSchema.extend({
+  loggingLevel: z.literal('points'),
+  // No additional fields - just the base data
+})
+
+// Simple mode schema - adds point outcomes and serve types
+export const simplePointDetailSchema = basePointDetailSchema.extend({
+  loggingLevel: z.literal('simple'),
+  
+  // Serve information
+  serveType: serveTypeSchema,
+  
+  // Point outcome classification
+  pointOutcome: pointOutcomeSchema,
+  
+  // Estimated rally length
+  rallyLength: z.number().min(0).default(1),
+  
+  // Basic shot information
+  lastShotType: z.enum(['serve', 'forehand', 'backhand', 'volley', 'overhead']).optional(),
+  lastShotPlayer: z.enum(['p1', 'p2']).optional(),
+})
+
+// Detailed mode schema - adds positioning and enhanced data
+export const detailedPointDetailSchema = simplePointDetailSchema.extend({
+  loggingLevel: z.literal('detailed'),
+  
+  // Enhanced serve information
+  serveOutcome: pointOutcomeSchema.optional(),
+  servePlacement: z.enum(['wide', 'body', 't']).optional(),
+  
+  // Court positioning
+  courtPosition: z.enum(['deuce', 'ad']).optional(),
+  
+  // Shot direction
+  shotDirection: z.enum(['cross', 'line', 'body']).optional(),
+  
+  // More precise rally length
+  rallyLength: z.number().min(0).default(3),
+})
+
+// Custom mode schema - includes all advanced statistics
+export const customPointDetailSchema = detailedPointDetailSchema.extend({
+  loggingLevel: z.literal('custom'),
+  
+  // Advanced serve statistics
+  serveStats: serveStatsSchema,
+  
+  // Return statistics
+  returnStats: returnStatsSchema,
+  
+  // Tactical context
+  tacticalContext: tacticalContextSchema,
+  
+  // Custom fields for user-defined data
+  customFields: z.record(z.any()).optional(),
+})
+
+// Union type for all point detail schemas
+export const pointDetailSchema = z.discriminatedUnion('loggingLevel', [
+  pointsOnlyDetailSchema,
+  simplePointDetailSchema,
+  detailedPointDetailSchema,
+  customPointDetailSchema,
+])
 
 // Score schema
 export const scoreSchema = z.object({
@@ -96,8 +187,18 @@ export type MatchFormat = z.infer<typeof matchFormatSchema>
 export type CreateMatchData = z.infer<typeof createMatchSchema>
 export type PointOutcome = z.infer<typeof pointOutcomeSchema>
 export type ServeType = z.infer<typeof serveTypeSchema>
+// Export individual types
+export type BasePointDetail = z.infer<typeof basePointDetailSchema>
+export type PointsOnlyDetail = z.infer<typeof pointsOnlyDetailSchema>
+export type SimplePointDetail = z.infer<typeof simplePointDetailSchema>
+export type DetailedPointDetail = z.infer<typeof detailedPointDetailSchema>
+export type CustomPointDetail = z.infer<typeof customPointDetailSchema>
+
+// Main point detail type (discriminated union)
 export type PointDetail = z.infer<typeof pointDetailSchema>
-export type EnhancedPointDetail = z.infer<typeof pointDetailSchema>
+
+// Backward compatibility
+export type EnhancedPointDetail = CustomPointDetail
 export type ServeStats = z.infer<typeof serveStatsSchema>
 export type ReturnStats = z.infer<typeof returnStatsSchema>
 export type TacticalContext = z.infer<typeof tacticalContextSchema>

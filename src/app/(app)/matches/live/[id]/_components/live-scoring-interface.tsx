@@ -33,7 +33,7 @@ import { useTranslations } from "@/hooks/use-translations"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
-import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
@@ -98,7 +98,7 @@ interface LiveScoringInterfaceProps {
     playerThree?: Player
     playerFour?: Player
     matchFormat: string
-    detailLevel?: "points" | "simple" | "complex" | "detailed"
+    detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
     score: string
     pointLog?: string[]
     status: string
@@ -425,7 +425,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     ...point,
     lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType']),
     serveOutcome: point.outcome,
-    pointOutcome: point.outcome
+    // Preserve the original pointOutcome if it exists, otherwise use outcome
+    pointOutcome: point.pointOutcome || point.outcome
   }))
   
   // Parse match format properly
@@ -831,6 +832,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     if (pendingPointWinner) {
       const storePointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
+        pointOutcome: outcome,
         outcome: outcome === 'winner' ? 'winner' : 
                      outcome === 'ace' ? 'ace' :
                      outcome === 'forced_error' ? 'forced_error' :
@@ -838,6 +840,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                      'double_fault',
         rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 2,
         lastShotType: 'serve',
+        lastShotPlayer: outcome === 'ace' ? currentServer : 
+                        outcome === 'winner' ? pendingPointWinner :
+                        outcome === 'forced_error' ? (pendingPointWinner === 'p1' ? 'p2' : 'p1') :
+                        outcome === 'unforced_error' ? (pendingPointWinner === 'p1' ? 'p2' : 'p1') :
+                        currentServer, // double fault
+        loggingLevel: '1', // Simple mode
       }
       
       handleAwardPoint(pendingPointWinner, storePointDetail)
@@ -1160,7 +1168,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           
           <TabsContent value="stats" className="mt-4">
             <MatchStatsComponentSimpleFixed 
-              stats={calculateMatchStats(convertedPointLog)}
+              stats={calculateMatchStatsByLevel(convertedPointLog, detailLevel)}
               playerNames={{
                 p1: playerNames.p1,
                 p2: playerNames.p2

@@ -8,7 +8,7 @@ import { Target, Zap, Shield } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/hooks/use-translations"
 import { PointDetail } from "@/lib/types"
-import { calculateMatchStats, calculateAdvancedMatchStats, calculateDetailedMatchStats } from "@/lib/utils/match-stats"
+import { calculateAdvancedMatchStats, calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
 import { StatsDrilldownDialog } from "./stats-drilldown-dialog"
@@ -462,7 +462,7 @@ export function MatchStatsComponentSimpleFixed({
 }: { 
   stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
-  detailLevel: "points" | "simple" | "complex" | "detailed"
+  detailLevel: "points" | "simple" | "detailed" | "custom" | "complex"
   pointLog?: PointDetail[]
 }) {
   const t = useTranslations()
@@ -503,9 +503,9 @@ export function MatchStatsComponentSimpleFixed({
     
     setNumbers = Object.keys(pointsBySets).map(Number).sort((a, b) => a - b)
     
-    // Calculate stats for each set
+    // Calculate stats for each set using the appropriate detail level
     setNumbers.forEach(setNumber => {
-      setStats[setNumber] = calculateMatchStats(pointsBySets[setNumber])
+      setStats[setNumber] = calculateMatchStatsByLevel(pointsBySets[setNumber], detailLevel)
     })
   }
 
@@ -559,7 +559,7 @@ export function MatchStatsComponentSimpleFixed({
               />
             </>
           ) : (
-            // Simple/Complex/Detailed scoring: Show all outcome stats
+            // Simple/Detailed/Custom scoring: Show all outcome stats
             <>
               <StatRow 
                 label={t('totalPoints')} 
@@ -602,7 +602,7 @@ export function MatchStatsComponentSimpleFixed({
       </Card>
       
       {/* Service Section - Progressive detail levels */}
-      {(detailLevel === 'simple' || detailLevel === 'complex' || detailLevel === 'detailed') && (
+      {(detailLevel === 'simple' || detailLevel === 'detailed' || detailLevel === 'complex' || detailLevel === 'custom') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -628,7 +628,7 @@ export function MatchStatsComponentSimpleFixed({
                 />
               </>
             ) : (
-              // Complex/Detailed: Full service breakdown
+              // Detailed/Complex/Custom: Full service breakdown
               <>
                 <StatRow 
                   label={t('firstServePercentage')} 
