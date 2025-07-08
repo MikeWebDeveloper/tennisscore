@@ -79,6 +79,52 @@ export interface ReturnPerformance {
   percentage: number
 }
 
+export interface DetailedMatchStats extends EnhancedMatchStats {
+  serveDirectionStats: {
+    playerOne: ServeDirectionAnalysis
+    playerTwo: ServeDirectionAnalysis
+  }
+  shotDirectionStats: {
+    playerOne: ShotDirectionAnalysis
+    playerTwo: ShotDirectionAnalysis
+  }
+  contextualStats: {
+    pressurePointPerformance: PressurePointAnalysis
+    momentumAnalysis: MomentumAnalysis
+  }
+  hasDetailedData: boolean
+}
+
+export interface ServeDirectionAnalysis {
+  wide: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  body: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  t: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  totalAttempts: number
+  bestDirection: string
+  worstDirection: string
+}
+
+export interface ShotDirectionAnalysis {
+  crossCourt: { attempts: number; winners: number; errors: number }
+  downTheLine: { attempts: number; winners: number; errors: number }
+  body: { attempts: number; winners: number; errors: number }
+  totalShots: number
+  preferredDirection: string
+  winnerDirection: string
+}
+
+export interface PressurePointAnalysis {
+  breakPoints: { total: number; won: number; percentage: number }
+  setPoints: { total: number; won: number; percentage: number }
+  matchPoints: { total: number; won: number; percentage: number }
+}
+
+export interface MomentumAnalysis {
+  consecutivePoints: { longest: number; current: number }
+  comebackGames: number
+  clutchPerformance: number
+}
+
 export interface AdvancedMatchStats extends EnhancedMatchStats {
   serveAnalytics: ServeAnalytics
   rallyAnalytics: {
@@ -352,6 +398,222 @@ export function generatePointContext(
   const gameScore = getGameScoreDisplay(currentScore.points)
 
   return `Point ${pointNumber}: ${winnerName} wins. Score: ${setScores}, ${currentScore.games.join("-")} (${gameScore})`
+}
+
+export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMatchStats {
+  const baseStats = calculateMatchStats(pointLog)
+  
+  // Initialize detailed stats structure
+  const detailedStats: DetailedMatchStats = {
+    ...baseStats,
+    serveDirectionStats: {
+      playerOne: initializeServeDirectionAnalysis(),
+      playerTwo: initializeServeDirectionAnalysis()
+    },
+    shotDirectionStats: {
+      playerOne: initializeShotDirectionAnalysis(),
+      playerTwo: initializeShotDirectionAnalysis()
+    },
+    contextualStats: {
+      pressurePointPerformance: initializePressurePointAnalysis(),
+      momentumAnalysis: initializeMomentumAnalysis()
+    },
+    hasDetailedData: false
+  }
+
+  if (pointLog.length === 0) return detailedStats
+
+  let hasAnyDetailedData = false
+
+  // Process each point for detailed analysis
+  pointLog.forEach((point) => {
+    const isP1 = point.winner === 'p1'
+    const isP1Serving = point.server === 'p1'
+    const playerServeStats = isP1Serving ? detailedStats.serveDirectionStats.playerOne : detailedStats.serveDirectionStats.playerTwo
+    const playerShotStats = isP1 ? detailedStats.shotDirectionStats.playerOne : detailedStats.shotDirectionStats.playerTwo
+
+    // Analyze serve direction (for aces and double faults)
+    if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
+      hasAnyDetailedData = true
+      const direction = point.servePlacement as 'wide' | 'body' | 't'
+      
+      playerServeStats[direction].attempts++
+      playerServeStats.totalAttempts++
+      
+      if (point.pointOutcome === 'ace') {
+        playerServeStats[direction].successful++
+        playerServeStats[direction].aces++
+      } else if (point.pointOutcome === 'double_fault') {
+        playerServeStats[direction].doubleFaults++
+      }
+    }
+
+    // Analyze shot direction (for winners and errors) - check if we have the new shot direction data
+    if ((point.pointOutcome === 'winner' || point.pointOutcome === 'unforced_error' || point.pointOutcome === 'forced_error') && 
+        point.lastShotType && point.lastShotType !== 'serve') {
+      // For now, we'll analyze based on court position since we don't have shot direction in existing data
+      // In future points logged with new system, we'd use actual shot direction
+      hasAnyDetailedData = true
+      
+      const direction = inferShotDirection(point)
+      if (direction) {
+        playerShotStats[direction].attempts++
+        playerShotStats.totalShots++
+        
+        if (point.pointOutcome === 'winner') {
+          playerShotStats[direction].winners++
+        } else {
+          playerShotStats[direction].errors++
+        }
+      }
+    }
+
+    // Analyze pressure points
+    if (point.isBreakPoint || point.isSetPoint || point.isMatchPoint) {
+      hasAnyDetailedData = true
+      
+      if (point.isBreakPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.breakPoints.total++
+        if ((isP1Serving && isP1) || (!isP1Serving && !isP1)) {
+          detailedStats.contextualStats.pressurePointPerformance.breakPoints.won++
+        }
+      }
+      
+      if (point.isSetPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.setPoints.total++
+        if (isP1) {
+          detailedStats.contextualStats.pressurePointPerformance.setPoints.won++
+        }
+      }
+      
+      if (point.isMatchPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.matchPoints.total++
+        if (isP1) {
+          detailedStats.contextualStats.pressurePointPerformance.matchPoints.won++
+        }
+      }
+    }
+  })
+
+  // Calculate percentages and best/worst directions
+  calculateServeDirectionSummary(detailedStats.serveDirectionStats.playerOne)
+  calculateServeDirectionSummary(detailedStats.serveDirectionStats.playerTwo)
+  calculateShotDirectionSummary(detailedStats.shotDirectionStats.playerOne)
+  calculateShotDirectionSummary(detailedStats.shotDirectionStats.playerTwo)
+  calculatePressurePointPercentages(detailedStats.contextualStats.pressurePointPerformance)
+
+  detailedStats.hasDetailedData = hasAnyDetailedData
+  
+  return detailedStats
+}
+
+function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
+  return {
+    wide: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    body: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    t: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    totalAttempts: 0,
+    bestDirection: '',
+    worstDirection: ''
+  }
+}
+
+function initializeShotDirectionAnalysis(): ShotDirectionAnalysis {
+  return {
+    crossCourt: { attempts: 0, winners: 0, errors: 0 },
+    downTheLine: { attempts: 0, winners: 0, errors: 0 },
+    body: { attempts: 0, winners: 0, errors: 0 },
+    totalShots: 0,
+    preferredDirection: '',
+    winnerDirection: ''
+  }
+}
+
+function initializePressurePointAnalysis(): PressurePointAnalysis {
+  return {
+    breakPoints: { total: 0, won: 0, percentage: 0 },
+    setPoints: { total: 0, won: 0, percentage: 0 },
+    matchPoints: { total: 0, won: 0, percentage: 0 }
+  }
+}
+
+function initializeMomentumAnalysis(): MomentumAnalysis {
+  return {
+    consecutivePoints: { longest: 0, current: 0 },
+    comebackGames: 0,
+    clutchPerformance: 0
+  }
+}
+
+function inferShotDirection(point: PointDetail): 'crossCourt' | 'downTheLine' | 'body' | null {
+  // For now, use court position as a proxy for shot direction
+  // This is a placeholder until we get actual shot direction data from new point logger
+  if (point.courtPosition === 'deuce') {
+    return 'crossCourt' // Assume deuce side shots are more likely cross-court
+  } else if (point.courtPosition === 'ad') {
+    return 'downTheLine' // Assume ad side shots are more likely down the line
+  }
+  return 'body' // Default for other cases
+}
+
+function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
+  if (stats.totalAttempts === 0) return
+  
+  const directions = ['wide', 'body', 't'] as const
+  let bestDirection = ''
+  let worstDirection = ''
+  let bestSuccessRate = -1
+  let worstSuccessRate = 101
+  
+  directions.forEach(direction => {
+    if (stats[direction].attempts > 0) {
+      const successRate = (stats[direction].successful / stats[direction].attempts) * 100
+      if (successRate > bestSuccessRate) {
+        bestSuccessRate = successRate
+        bestDirection = direction
+      }
+      if (successRate < worstSuccessRate) {
+        worstSuccessRate = successRate
+        worstDirection = direction
+      }
+    }
+  })
+  
+  stats.bestDirection = bestDirection
+  stats.worstDirection = worstDirection
+}
+
+function calculateShotDirectionSummary(stats: ShotDirectionAnalysis) {
+  if (stats.totalShots === 0) return
+  
+  const directions = ['crossCourt', 'downTheLine', 'body'] as const
+  let preferredDirection = ''
+  let winnerDirection = ''
+  let mostUsed = 0
+  let mostWinners = 0
+  
+  directions.forEach(direction => {
+    if (stats[direction].attempts > mostUsed) {
+      mostUsed = stats[direction].attempts
+      preferredDirection = direction
+    }
+    if (stats[direction].winners > mostWinners) {
+      mostWinners = stats[direction].winners
+      winnerDirection = direction
+    }
+  })
+  
+  stats.preferredDirection = preferredDirection
+  stats.winnerDirection = winnerDirection
+}
+
+function calculatePressurePointPercentages(stats: PressurePointAnalysis) {
+  stats.breakPoints.percentage = stats.breakPoints.total > 0 ? 
+    Math.round((stats.breakPoints.won / stats.breakPoints.total) * 100) : 0
+  stats.setPoints.percentage = stats.setPoints.total > 0 ? 
+    Math.round((stats.setPoints.won / stats.setPoints.total) * 100) : 0
+  stats.matchPoints.percentage = stats.matchPoints.total > 0 ? 
+    Math.round((stats.matchPoints.won / stats.matchPoints.total) * 100) : 0
 }
 
 // --- AGGREGATION AND WIN STREAK LOGIC FOR DASHBOARD ---

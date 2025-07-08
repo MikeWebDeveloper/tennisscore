@@ -7,7 +7,7 @@ import { Target, Zap, Shield } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/hooks/use-translations"
 import { PointDetail } from "@/lib/types"
-import { calculateMatchStats, calculateAdvancedMatchStats } from "@/lib/utils/match-stats"
+import { calculateMatchStats, calculateAdvancedMatchStats, calculateDetailedMatchStats } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
 
@@ -466,6 +466,11 @@ export function MatchStatsComponentSimpleFixed({
   const advancedStats = pointLog && pointLog.length > 0 
     ? calculateAdvancedMatchStats(pointLog) 
     : null
+    
+  // Calculate detailed stats for detailed mode
+  const detailedStats = pointLog && pointLog.length > 0 && detailLevel === 'detailed'
+    ? calculateDetailedMatchStats(pointLog)
+    : null
   
   // Calculate per-set stats if we have point log
   const setStats: Record<number, import("@/lib/utils/match-stats").EnhancedMatchStats> = {}
@@ -643,6 +648,146 @@ export function MatchStatsComponentSimpleFixed({
             />
           </CardContent>
         </Card>
+      )}
+
+      {/* Detailed Mode Enhanced Statistics */}
+      {detailLevel === 'detailed' && detailedStats && detailedStats.hasDetailedData && (
+        <>
+          {/* Serve Direction Analysis */}
+          {(detailedStats.serveDirectionStats.playerOne.totalAttempts > 0 || detailedStats.serveDirectionStats.playerTwo.totalAttempts > 0) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Serve Direction Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm font-medium mb-2">Wide Serves</div>
+                <StatRow 
+                  label="Success Rate"
+                  value1={detailedStats.serveDirectionStats.playerOne.wide.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.wide.successful / detailedStats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.wide.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.wide.successful / detailedStats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}
+                  format="percentage"
+                />
+                <StatRow 
+                  label="Aces Wide"
+                  value1={detailedStats.serveDirectionStats.playerOne.wide.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.wide.aces}
+                />
+                
+                <div className="text-sm font-medium mb-2 mt-4">Body Serves</div>
+                <StatRow 
+                  label="Success Rate"
+                  value1={detailedStats.serveDirectionStats.playerOne.body.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.body.successful / detailedStats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.body.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.body.successful / detailedStats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}
+                  format="percentage"
+                />
+                <StatRow 
+                  label="Aces Body"
+                  value1={detailedStats.serveDirectionStats.playerOne.body.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.body.aces}
+                />
+
+                <div className="text-sm font-medium mb-2 mt-4">T Serves (Down Middle)</div>
+                <StatRow 
+                  label="Success Rate"
+                  value1={detailedStats.serveDirectionStats.playerOne.t.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.t.successful / detailedStats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.t.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.t.successful / detailedStats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}
+                  format="percentage"
+                />
+                <StatRow 
+                  label="Aces T"
+                  value1={detailedStats.serveDirectionStats.playerOne.t.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.t.aces}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Shot Direction Analysis */}
+          {(detailedStats.shotDirectionStats.playerOne.totalShots > 0 || detailedStats.shotDirectionStats.playerTwo.totalShots > 0) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Shot Direction Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <StatRow 
+                  label="Cross-court Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.crossCourt.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.crossCourt.winners}
+                />
+                <StatRow 
+                  label="Down-the-line Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.downTheLine.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.downTheLine.winners}
+                />
+                <StatRow 
+                  label="Body Shot Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.body.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.body.winners}
+                />
+                
+                <div className="text-sm font-medium mb-2 mt-4">Error Distribution</div>
+                <StatRow 
+                  label="Cross-court Errors"
+                  value1={detailedStats.shotDirectionStats.playerOne.crossCourt.errors}
+                  value2={detailedStats.shotDirectionStats.playerTwo.crossCourt.errors}
+                />
+                <StatRow 
+                  label="Down-the-line Errors"
+                  value1={detailedStats.shotDirectionStats.playerOne.downTheLine.errors}
+                  value2={detailedStats.shotDirectionStats.playerTwo.downTheLine.errors}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pressure Point Performance */}
+          {detailedStats.contextualStats.pressurePointPerformance.breakPoints.total > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Pressure Point Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <StatRow 
+                  label="Break Point Success"
+                  value1={detailedStats.contextualStats.pressurePointPerformance.breakPoints.percentage}
+                  value2={100 - detailedStats.contextualStats.pressurePointPerformance.breakPoints.percentage}
+                  format="percentage"
+                />
+                {detailedStats.contextualStats.pressurePointPerformance.setPoints.total > 0 && (
+                  <StatRow 
+                    label="Set Point Success"
+                    value1={detailedStats.contextualStats.pressurePointPerformance.setPoints.percentage}
+                    value2={100 - detailedStats.contextualStats.pressurePointPerformance.setPoints.percentage}
+                    format="percentage"
+                  />
+                )}
+                {detailedStats.contextualStats.pressurePointPerformance.matchPoints.total > 0 && (
+                  <StatRow 
+                    label="Match Point Success"
+                    value1={detailedStats.contextualStats.pressurePointPerformance.matchPoints.percentage}
+                    value2={100 - detailedStats.contextualStats.pressurePointPerformance.matchPoints.percentage}
+                    format="percentage"
+                  />
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </motion.div>
   )
