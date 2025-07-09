@@ -66,21 +66,21 @@ export function SimpleStatsPopup({
     {
       id: 'forced_error' as const,
       label: t('forcedError'),
-      description: t('opponentForcedIntoError'),
+      description: `Opponent was forced into an error`,
       disabled: false,
       color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
     },
     {
       id: 'unforced_error' as const,
       label: t('unforcedError'),
-      description: t('unforcedMistake'),
+      description: `Opponent made an unforced mistake`,
       disabled: false,
       color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
     },
     {
       id: 'double_fault' as const,
       label: t('doubleFaults'),
-      description: t('twoConsecutiveFaults'),
+      description: `Opponent served two consecutive faults`,
       disabled: isDoubleFaultDisabled,
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
     }
@@ -110,7 +110,7 @@ export function SimpleStatsPopup({
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+          <div className="text-sm font-medium text-muted-foreground">How did {winnerName} win this point?</div>
           
           <div className="grid grid-cols-1 gap-2">
             {outcomes.map((outcome) => (

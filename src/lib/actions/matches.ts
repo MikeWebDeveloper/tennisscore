@@ -545,7 +545,9 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       rallyLength: generateRealisticRallyLength(pointOutcome),
       pointOutcome,
       lastShotType: generateRealisticLastShot(pointOutcome),
-      lastShotPlayer: winner,
+      lastShotPlayer: pointOutcome === 'unforced_error' || pointOutcome === 'forced_error' || pointOutcome === 'double_fault' 
+        ? (winner === 'p1' ? 'p2' : 'p1') // Error: lastShotPlayer made the error and lost
+        : winner, // Winner or ace: lastShotPlayer won the point
       isBreakPoint: server !== gameWinner && isLastPoint,
       isSetPoint: isLastGameOfSet && isLastPoint,
       isMatchPoint: isLastGameOfMatch && isLastPoint,

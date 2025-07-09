@@ -74,8 +74,7 @@ export function UltraSimplePointLogger({
         pointOutcome: outcome,
         lastShotType: 'serve',
         lastShotPlayer: pointContext.server, // Ace/double fault is always by server
-        courtPosition: "deuce",
-        loggingLevel: '2', // Detailed mode
+        courtPosition: "deuce"
       }
       onSave(pointDetail)
       onOpenChange(false)
@@ -104,9 +103,7 @@ export function UltraSimplePointLogger({
       pointOutcome: outcome,
       lastShotType: winnerType,
       lastShotPlayer: outcome === 'ace' || outcome === 'double_fault' ? pointContext.server : pointContext.winner,
-      courtPosition: side,
-      shotDirection: shotDirection || 'cross', // Default to cross-court if not set
-      loggingLevel: '2', // Detailed mode
+      courtPosition: side
     }
     
     onSave(pointDetail)

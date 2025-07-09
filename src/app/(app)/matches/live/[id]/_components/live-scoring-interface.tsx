@@ -424,9 +424,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const convertedPointLog: LibPointDetail[] = pointLog.map(point => ({
     ...point,
     lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType']),
-    serveOutcome: point.outcome,
-    // Preserve the original pointOutcome if it exists, otherwise use outcome
-    pointOutcome: point.pointOutcome || point.outcome
+    serveOutcome: point.serveOutcome || point.pointOutcome,
+    // Preserve the original pointOutcome
+    pointOutcome: point.pointOutcome
   }))
   
   // Parse match format properly
@@ -718,7 +718,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       console.log('Points only mode - awarding point directly')
       const minimalPointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
-        outcome: 'winner',
+        pointOutcome: 'winner',
         rallyLength: 1,
         lastShotType: 'serve',
       }
@@ -749,9 +749,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       setIsInGame(true)
 
       // Play appropriate sound effects
-      if (pointDetails?.outcome === 'ace') {
+      if (pointDetails?.pointOutcome === 'ace') {
         playSound('ace')
-      } else if (pointDetails?.outcome === 'double_fault') {
+      } else if (pointDetails?.pointOutcome === 'double_fault') {
         playSound('double-fault')
       } else if (result.isMatchComplete) {
         playSound('match-won')
@@ -830,22 +830,29 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleSimpleStatsOutcome = (outcome: SimplePointOutcome) => {
     if (pendingPointWinner) {
+      let lastShotPlayer: "p1" | "p2";
+      
+      if (outcome === 'ace') {
+        lastShotPlayer = currentServer;
+      } else if (outcome === 'winner') {
+        lastShotPlayer = pendingPointWinner;
+      } else if (outcome === 'forced_error') {
+        lastShotPlayer = (pendingPointWinner === 'p1' ? 'p2' : 'p1');
+      } else if (outcome === 'unforced_error') {
+        lastShotPlayer = (pendingPointWinner === 'p1' ? 'p2' : 'p1');
+      } else { // double fault
+        lastShotPlayer = currentServer;
+      }
+
+      // Debug logging available for troubleshooting
+      // console.log('Point logged:', outcome, 'winner:', pendingPointWinner, 'lastShotPlayer:', lastShotPlayer);
+
       const storePointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
         pointOutcome: outcome,
-        outcome: outcome === 'winner' ? 'winner' : 
-                     outcome === 'ace' ? 'ace' :
-                     outcome === 'forced_error' ? 'forced_error' :
-                     outcome === 'unforced_error' ? 'unforced_error' :
-                     'double_fault',
         rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 2,
         lastShotType: 'serve',
-        lastShotPlayer: outcome === 'ace' ? currentServer : 
-                        outcome === 'winner' ? pendingPointWinner :
-                        outcome === 'forced_error' ? (pendingPointWinner === 'p1' ? 'p2' : 'p1') :
-                        outcome === 'unforced_error' ? (pendingPointWinner === 'p1' ? 'p2' : 'p1') :
-                        currentServer, // double fault
-        loggingLevel: '1', // Simple mode
+        lastShotPlayer: lastShotPlayer,
       }
       
       handleAwardPoint(pendingPointWinner, storePointDetail)

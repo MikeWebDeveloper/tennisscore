@@ -50,7 +50,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const [sets, setSets] = useState<1 | 3 | 5 | null>(null)
   const [scoring, setScoring] = useState<"ad" | "no-ad" | "">("")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">("")
-  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "custom" | "">("")
+  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "complex" | "">("")
 
   const totalSteps = 5
 
@@ -115,7 +115,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
     }
   }
 
-  const handleCreateMatch = async (finalDetailLevel: "points" | "simple" | "detailed" | "custom") => {
+  const handleCreateMatch = async (finalDetailLevel: "points" | "simple" | "detailed" | "complex") => {
     setLoading(true)
 
     if (!sets || !scoring || !finalSet) {

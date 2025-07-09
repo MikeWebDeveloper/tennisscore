@@ -7,7 +7,7 @@ export const matchFormatSchema = z.object({
   tiebreakAt: z.number().default(6),
   finalSetTiebreak: z.enum(["standard", "super", "none"]).default("standard"),
   noAd: z.boolean(),
-  detailLevel: z.enum(["points", "simple", "detailed", "custom"]).default("simple"),
+  detailLevel: z.enum(["points", "simple", "detailed", "complex"]).default("simple"),
   // Custom mode configuration
   customModeConfig: z.object({
     enabled: z.boolean().default(false),
@@ -105,7 +105,7 @@ export const basePointDetailSchema = z.object({
   isTiebreak: z.boolean().default(false),
   
   // Data collection level
-  loggingLevel: z.enum(['points', 'simple', 'detailed', 'custom']).default('points'),
+  loggingLevel: z.enum(['points', 'simple', 'detailed', 'complex']).default('points'),
 })
 
 // Points-only mode schema - minimal data
@@ -150,9 +150,9 @@ export const detailedPointDetailSchema = simplePointDetailSchema.extend({
   rallyLength: z.number().min(0).default(3),
 })
 
-// Custom mode schema - includes all advanced statistics
-export const customPointDetailSchema = detailedPointDetailSchema.extend({
-  loggingLevel: z.literal('custom'),
+// Complex mode schema - includes all advanced statistics  
+export const complexPointDetailSchema = detailedPointDetailSchema.extend({
+  loggingLevel: z.literal('complex'),
   
   // Advanced serve statistics
   serveStats: serveStatsSchema,
@@ -172,7 +172,7 @@ export const pointDetailSchema = z.discriminatedUnion('loggingLevel', [
   pointsOnlyDetailSchema,
   simplePointDetailSchema,
   detailedPointDetailSchema,
-  customPointDetailSchema,
+  complexPointDetailSchema,
 ])
 
 // Score schema
@@ -192,13 +192,13 @@ export type BasePointDetail = z.infer<typeof basePointDetailSchema>
 export type PointsOnlyDetail = z.infer<typeof pointsOnlyDetailSchema>
 export type SimplePointDetail = z.infer<typeof simplePointDetailSchema>
 export type DetailedPointDetail = z.infer<typeof detailedPointDetailSchema>
-export type CustomPointDetail = z.infer<typeof customPointDetailSchema>
+export type ComplexPointDetail = z.infer<typeof complexPointDetailSchema>
 
 // Main point detail type (discriminated union)
 export type PointDetail = z.infer<typeof pointDetailSchema>
 
 // Backward compatibility
-export type EnhancedPointDetail = CustomPointDetail
+export type EnhancedPointDetail = ComplexPointDetail
 export type ServeStats = z.infer<typeof serveStatsSchema>
 export type ReturnStats = z.infer<typeof returnStatsSchema>
 export type TacticalContext = z.infer<typeof tacticalContextSchema>

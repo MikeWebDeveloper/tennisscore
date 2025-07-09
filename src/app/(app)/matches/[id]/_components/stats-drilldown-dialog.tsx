@@ -72,9 +72,25 @@ export function StatsDrilldownDialog({
 
   const filteredPoints = getFilteredPoints()
 
-  // Group points by player
-  const player1Points = filteredPoints.filter(point => point.winner === 'p1')
-  const player2Points = filteredPoints.filter(point => point.winner === 'p2')
+  // Group points by player (correctly attributed)
+  const getPlayerPoints = (playerId: 'p1' | 'p2') => {
+    return filteredPoints.filter(point => {
+      // For errors, attribute to the player who made the error (lastShotPlayer)
+      if (statType === 'unforcedErrors' || statType === 'forcedErrors') {
+        // Fix buggy data: if lastShotPlayer equals winner for errors, correct it
+        let errorPlayer = point.lastShotPlayer;
+        if (errorPlayer === point.winner) {
+          errorPlayer = point.winner === 'p1' ? 'p2' : 'p1';
+        }
+        return errorPlayer === playerId;
+      }
+      // For winners, aces, double faults, attribute to the player who hit the shot
+      return point.winner === playerId;
+    });
+  };
+
+  const player1Points = getPlayerPoints('p1');
+  const player2Points = getPlayerPoints('p2');
 
   // Get breakdown by shot type (if available)
   const getShotTypeBreakdown = (points: PointDetail[]) => {

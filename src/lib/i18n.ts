@@ -75,7 +75,7 @@ export interface Translations {
   acesDoubleFaultsWinnersErrors: string
   detailedStats: string
   shotPlacementRallyLength: string
-  customAnalytics: string
+  complexAnalytics: string
   userSelectableTracking: string
   creatingMatch: string
   startMatch: string
@@ -766,7 +766,7 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Aces, Double Faults, Winners, Errors",
     detailedStats: "Detailed Stats",
     shotPlacementRallyLength: "Shot Placement, Rally Length",
-    customAnalytics: "Custom Analytics",
+    complexAnalytics: "Complex Analytics",
     userSelectableTracking: "User-selectable tracking options & analytics",
     creatingMatch: "Creating match...",
     startMatch: "Start Match",
@@ -1456,7 +1456,7 @@ export const translations = {
     acesDoubleFaultsWinnersErrors: "Esa, dvojchyby, vítězné údery, chyby",
     detailedStats: "Detailní statistiky",
     shotPlacementRallyLength: "Umístění úderů, délka výměn",
-    customAnalytics: "Vlastní analytika",
+    complexAnalytics: "Komplexní analytika",
     userSelectableTracking: "Uživatelem volitelné možnosti sledování a analytiky",
     creatingMatch: "Vytváření zápasu...",
     startMatch: "Začít zápas",

@@ -5,9 +5,9 @@ import { useTranslations } from "@/hooks/use-translations"
 import { motion } from "framer-motion"
 
 interface CompactDetailStepProps {
-  value: "points" | "simple" | "detailed" | "custom" | ""
-  onChange: (value: "points" | "simple" | "detailed" | "custom") => void
-  onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
+  value: "points" | "simple" | "detailed" | "complex" | ""
+  onChange: (value: "points" | "simple" | "detailed" | "complex") => void
+  onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "complex") => Promise<void>
   loading: boolean
 }
 
@@ -37,9 +37,9 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
       disabled: false
     },
     {
-      value: "custom",
+      value: "complex",
       icon: Microscope,
-      title: t("customAnalytics"),
+      title: t("complexAnalytics"),
       description: t("comingSoon"),
       disabled: true
     }

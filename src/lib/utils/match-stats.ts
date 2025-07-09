@@ -1,5 +1,5 @@
 import { PointDetail, PlayerStats, Match } from "@/lib/types"
-import { EnhancedPointDetail, PointsOnlyDetail, SimplePointDetail, DetailedPointDetail, CustomPointDetail } from "@/lib/schemas/match"
+import { EnhancedPointDetail, PointsOnlyDetail, SimplePointDetail, DetailedPointDetail, ComplexPointDetail } from "@/lib/schemas/match"
 
 export interface EnhancedMatchStats {
   totalPoints: number
@@ -208,12 +208,30 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       const winnerPlayer = point.lastShotPlayer || point.winner
       stats.winnersByPlayer[winnerPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'unforced_error') {
-      // Unforced error should be attributed to the player who made the error
-      const errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1')
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      // If the data shows lastShotPlayer = winner, it's wrong - fix it here
+      let errorPlayer = point.lastShotPlayer;
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy data: corrected error attribution
+      }
+      
+      // Debug logging can be enabled for troubleshooting
+      // console.log('Unforced error attributed to:', errorPlayer);
+      
       stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'forced_error') {
-      // Forced error should be attributed to the player who made the error
-      const errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1')
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy forced error data: corrected error attribution
+      }
+      
       stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     }
 
@@ -438,7 +456,20 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
     const isP1 = point.winner === 'p1'
     const isP1Serving = point.server === 'p1'
     const playerServeStats = isP1Serving ? detailedStats.serveDirectionStats.playerOne : detailedStats.serveDirectionStats.playerTwo
-    const playerShotStats = isP1 ? detailedStats.shotDirectionStats.playerOne : detailedStats.shotDirectionStats.playerTwo
+    
+    // For shot direction stats, we need to attribute to the correct player based on point type
+    let shotPlayer = point.winner; // Default for winners, aces
+    
+    // For errors, attribute to the player who made the error
+    if (point.pointOutcome === 'unforced_error' || point.pointOutcome === 'forced_error') {
+      shotPlayer = point.lastShotPlayer ?? point.winner;
+      // Fix buggy data: if lastShotPlayer equals winner for errors, correct it
+      if (shotPlayer === point.winner) {
+        shotPlayer = point.winner === 'p1' ? 'p2' : 'p1';
+      }
+    }
+    
+    const playerShotStats = shotPlayer === 'p1' ? detailedStats.shotDirectionStats.playerOne : detailedStats.shotDirectionStats.playerTwo
 
     // Analyze serve direction (for aces and double faults)
     if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
@@ -935,7 +966,7 @@ function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics 
       const spin = point.serveStats.spin
       spinDistribution[spin] = (spinDistribution[spin] || 0) + 1
       
-      if (point.outcome === 'ace' || point.outcome === 'winner') {
+      if (point.pointOutcome === 'ace' || point.pointOutcome === 'winner') {
         spinEffectiveness[spin] = (spinEffectiveness[spin] || 0) + 1
       }
     }
@@ -1035,7 +1066,7 @@ function calculateSituationalServePerformance(
   const situationalPoints = servePoints.filter(condition)
   const attempts = situationalPoints.length
   const made = situationalPoints.filter(p => 
-    p.outcome === 'ace' || p.outcome === 'winner'
+    p.pointOutcome === 'ace' || p.pointOutcome === 'winner'
   ).length
   
   return {
@@ -1224,10 +1255,26 @@ export function calculateSimpleStats(pointLog: SimplePointDetail[]): EnhancedMat
       const winnerPlayer = point.lastShotPlayer || point.winner
       stats.winnersByPlayer[winnerPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'unforced_error') {
-      const errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1')
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy unforced error data: corrected error attribution
+      }
+      
       stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'forced_error') {
-      const errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1')
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy forced error data: corrected error attribution
+      }
+      
       stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     }
 
@@ -1304,11 +1351,11 @@ export function calculateDetailedStats(pointLog: DetailedPointDetail[]): Enhance
   return stats
 }
 
-// Custom statistics - includes all advanced analytics
-export function calculateCustomStats(pointLog: CustomPointDetail[]): EnhancedMatchStats {
+// Complex statistics - includes all advanced analytics
+export function calculateComplexStats(pointLog: ComplexPointDetail[]): EnhancedMatchStats {
   const stats = calculateDetailedStats(pointLog as DetailedPointDetail[])
 
-  // Advanced analytics for custom mode can be added here
+  // Advanced analytics for complex mode can be added here
   // This would include serve speed analysis, return quality, tactical context, etc.
 
   return stats
@@ -1326,10 +1373,9 @@ export function calculateMatchStatsByLevel(pointLog: PointDetail[], detailLevel:
     case 'simple':
       return calculateSimpleStats(pointLog as SimplePointDetail[])
     case 'detailed':
-    case 'complex': // Backward compatibility - treat complex as detailed
       return calculateDetailedStats(pointLog as DetailedPointDetail[])
-    case 'custom':
-      return calculateCustomStats(pointLog as CustomPointDetail[])
+    case 'complex':
+      return calculateComplexStats(pointLog as ComplexPointDetail[])
     default:
       // Fallback to existing function for backward compatibility
       return calculateMatchStats(pointLog)

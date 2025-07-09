@@ -511,6 +511,24 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         '❌ No BP: No break opportunity'
     })
 
+    // Fix: Check both outcome and pointOutcome for error types
+    const outcomeToCheck = details.outcome || details.pointOutcome;
+    let correctedLastShotPlayer = details.lastShotPlayer;
+    
+    // If no lastShotPlayer provided, calculate it based on outcome
+    if (!correctedLastShotPlayer) {
+      if (outcomeToCheck === 'forced_error' || outcomeToCheck === 'unforced_error') {
+        // For errors, the lastShotPlayer should be the opponent (who made the error)
+        correctedLastShotPlayer = winner === 'p1' ? 'p2' : 'p1';
+      } else {
+        // For winners, aces, etc., the lastShotPlayer should be the winner
+        correctedLastShotPlayer = winner;
+      }
+    }
+    
+    // Debug logging available for troubleshooting
+    // console.log('Store: Corrected lastShotPlayer for', outcomeToCheck, 'from', details.lastShotPlayer, 'to', correctedLastShotPlayer);
+
     const pointDetail: PointDetail = {
       ...details,
       id: `point-${pointLog.length + 1}`,
@@ -532,7 +550,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       outcome: details.outcome || 'winner',
       rallyLength: details.rallyLength || 1,
       loggingLevel: details.loggingLevel || '1',
-      lastShotPlayer: winner,
+      lastShotPlayer: correctedLastShotPlayer,
     }
 
     const newPointLog = [...pointLog, pointDetail]
