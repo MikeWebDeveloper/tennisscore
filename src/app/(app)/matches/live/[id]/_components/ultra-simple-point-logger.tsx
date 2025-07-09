@@ -318,9 +318,9 @@ export function UltraSimplePointLogger({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-2">{t('servePlacement')}</h3>
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-lg font-semibold">
+              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
                 {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </div>
+              </span>
             </div>
             
             <div className="grid grid-cols-1 gap-4">
@@ -352,9 +352,9 @@ export function UltraSimplePointLogger({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-2">{t('lastShotType')}</h3>
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-lg font-semibold">
+              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
                 {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </div>
+              </span>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -386,9 +386,9 @@ export function UltraSimplePointLogger({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-2">{t('shotDirection')}</h3>
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-lg font-semibold">
+              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
                 {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </div>
+              </span>
             </div>
             
             <div className="grid grid-cols-1 gap-4">
@@ -420,9 +420,9 @@ export function UltraSimplePointLogger({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-2">{t('wasItReturn')}</h3>
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-lg font-semibold">
+              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
                 {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </div>
+              </span>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
