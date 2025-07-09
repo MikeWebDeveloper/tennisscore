@@ -11,7 +11,6 @@ import { PointDetail } from "@/lib/types"
 import { calculateAdvancedMatchStats, calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
-import { StatsDrilldownDialog } from "./stats-drilldown-dialog"
 
 interface MatchStatsComponentProps {
   stats: MatchStats
@@ -35,14 +34,16 @@ const itemVariants = {
   show: { opacity: 1, y: 0 }
 }
 
-// Stat row component
+// Expandable stat row component
 function StatRow({ 
   label, 
   value1, 
   value2, 
   format = "number",
   showProgress = true,
-  onClick
+  onClick,
+  isExpanded = false,
+  expandedContent
 }: { 
   label: string
   value1: number
@@ -50,6 +51,8 @@ function StatRow({
   format?: "number" | "percentage"
   showProgress?: boolean
   onClick?: () => void
+  isExpanded?: boolean
+  expandedContent?: React.ReactNode
 }) {
   const total = value1 + value2
   const percentage1 = total > 0 ? (value1 / total) * 100 : 50
@@ -65,44 +68,72 @@ function StatRow({
   return (
     <motion.div 
       variants={itemVariants}
-      className={`space-y-2 ${onClick ? 'cursor-pointer hover:bg-muted/50 rounded p-2 -m-2 transition-colors' : ''}`}
-      onClick={onClick}
+      className="space-y-2"
+      layout
     >
-      <div className="flex items-center justify-between text-sm">
-        <motion.span 
-          className="font-mono font-semibold"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 0.3 }}
-        >
-          {formatValue(value1)}
-        </motion.span>
-        <span className="text-xs text-muted-foreground uppercase tracking-wider">
-          {label}
-        </span>
-        <motion.span 
-          className="font-mono font-semibold"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 0.3 }}
-        >
-          {formatValue(value2)}
-        </motion.span>
-      </div>
-      {showProgress && (
-        <div className="flex gap-1 h-2">
-          <motion.div
-            className="bg-blue-500 rounded-l"
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage1}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
-          <motion.div
-            className="bg-red-500 rounded-r"
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage2}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
+      <motion.div 
+        className={`space-y-2 ${onClick ? 'cursor-pointer hover:bg-muted/50 rounded p-2 -m-2 transition-colors' : ''}`}
+        onClick={onClick}
+        layout
+      >
+        <div className="flex items-center justify-between text-sm">
+          <motion.span 
+            className="font-mono font-semibold"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
+          >
+            {formatValue(value1)}
+          </motion.span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">
+            {label}
+          </span>
+          <motion.span 
+            className="font-mono font-semibold"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
+          >
+            {formatValue(value2)}
+          </motion.span>
         </div>
-      )}
+        {showProgress && (
+          <div className="flex gap-1 h-2">
+            <motion.div
+              className="bg-blue-500 rounded-l"
+              initial={{ width: 0 }}
+              animate={{ width: `${percentage1}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+            <motion.div
+              className="bg-red-500 rounded-r"
+              initial={{ width: 0 }}
+              animate={{ width: `${percentage2}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
+        )}
+      </motion.div>
+      
+      {/* Expandable content */}
+      <motion.div
+        initial={false}
+        animate={{ 
+          height: isExpanded ? "auto" : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        {isExpanded && expandedContent && (
+          <motion.div
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.2, delay: 0.1 }}
+            className="mt-3 pl-4 border-l-2 border-muted space-y-2"
+          >
+            {expandedContent}
+          </motion.div>
+        )}
+      </motion.div>
     </motion.div>
   )
 }
@@ -467,15 +498,302 @@ export function MatchStatsComponentSimpleFixed({
 }) {
   const t = useTranslations()
   
-  // State for drill-down dialog
-  const [drilldownOpen, setDrilldownOpen] = useState(false)
-  const [drilldownStat, setDrilldownStat] = useState<'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults' | null>(null)
+  // State for expandable stats
+  const [expandedStat, setExpandedStat] = useState<'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults' | null>(null)
   
   const handleStatClick = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults') => {
     if (pointLog && pointLog.length > 0) {
-      setDrilldownStat(statType)
-      setDrilldownOpen(true)
+      setExpandedStat(expandedStat === statType ? null : statType)
     }
+  }
+
+  // Helper function to get points for a specific stat type
+  const getFilteredPoints = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults') => {
+    if (!pointLog) return []
+    
+    switch (statType) {
+      case 'winners':
+        return pointLog.filter(point => point.pointOutcome === 'winner')
+      case 'unforcedErrors':
+        return pointLog.filter(point => point.pointOutcome === 'unforced_error')
+      case 'forcedErrors':
+        return pointLog.filter(point => point.pointOutcome === 'forced_error')
+      case 'aces':
+        return pointLog.filter(point => point.pointOutcome === 'ace')
+      case 'doubleFaults':
+        return pointLog.filter(point => point.pointOutcome === 'double_fault')
+      default:
+        return []
+    }
+  }
+
+  // Helper function to get player points
+  const getPlayerPoints = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults', playerId: 'p1' | 'p2') => {
+    const filteredPoints = getFilteredPoints(statType)
+    return filteredPoints.filter(point => {
+      // For errors, attribute to the player who made the error
+      if (statType === 'unforcedErrors' || statType === 'forcedErrors') {
+        let errorPlayer = point.lastShotPlayer;
+        if (errorPlayer === point.winner) {
+          errorPlayer = point.winner === 'p1' ? 'p2' : 'p1';
+        }
+        return errorPlayer === playerId;
+      }
+      // For winners, aces, double faults, attribute to the player who won
+      return point.winner === playerId;
+    });
+  }
+
+  // Helper function to get shot type breakdown
+  const getShotTypeBreakdown = (points: PointDetail[]) => {
+    const breakdown: Record<string, number> = {}
+    points.forEach(point => {
+      if (point.lastShotType) {
+        breakdown[point.lastShotType] = (breakdown[point.lastShotType] || 0) + 1
+      }
+    })
+    return breakdown
+  }
+
+  // Helper function to get shot direction breakdown
+  const getShotDirectionBreakdown = (points: PointDetail[]) => {
+    const breakdown: Record<string, number> = {}
+    points.forEach(point => {
+      if (point.shotDirection) {
+        breakdown[point.shotDirection] = (breakdown[point.shotDirection] || 0) + 1
+      }
+    })
+    return breakdown
+  }
+
+  // Generate expandable content for a stat type
+  const generateExpandableContent = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults') => {
+    const player1Points = getPlayerPoints(statType, 'p1')
+    const player2Points = getPlayerPoints(statType, 'p2')
+    
+    const shotTypeTranslations: Record<string, string> = {
+      forehand: t('forehand'),
+      backhand: t('backhand'),
+      volley: t('volley'),
+      overhead: t('overhead'),
+      serve: t('serve'),
+      drop_shot: t('dropShot'),
+      lob: t('lob')
+    }
+
+    const shotDirectionTranslations: Record<string, string> = {
+      cross: t('crossCourt'),
+      line: t('downTheLine'),
+      body: t('bodyShot'),
+      long: t('long'),
+      wide: t('wide'),
+      net: t('net')
+    }
+
+    const servePlacementTranslations: Record<string, string> = {
+      wide: t('wide'),
+      body: t('bodyShot'),
+      t: t('tDownTheMiddle')
+    }
+
+    // Special handling for Aces and Double Faults
+    if (statType === 'aces' || statType === 'doubleFaults') {
+      // Get serve placement breakdown
+      const getServePlacementBreakdown = (points: PointDetail[]) => {
+        const breakdown: Record<string, number> = {}
+        points.forEach(point => {
+          if (point.servePlacement) {
+            breakdown[point.servePlacement] = (breakdown[point.servePlacement] || 0) + 1
+          }
+        })
+        return breakdown
+      }
+
+      const player1ServePlacement = getServePlacementBreakdown(player1Points)
+      const player2ServePlacement = getServePlacementBreakdown(player2Points)
+
+      return (
+        <div className="space-y-4">
+          {/* Serve Placement */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">{t('servePlacement')}</h4>
+            <div className="space-y-1">
+              {Object.entries(player1ServePlacement).map(([placement, count]) => (
+                <div key={placement} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">{count}</span>
+                  <span className="text-xs text-muted-foreground">{servePlacementTranslations[placement] || placement}</span>
+                  <span className="text-red-600">{player2ServePlacement[placement] || 0}</span>
+                </div>
+              ))}
+              {Object.entries(player2ServePlacement).map(([placement, count]) => {
+                if (player1ServePlacement[placement]) return null
+                return (
+                  <div key={placement} className="flex items-center justify-between text-sm">
+                    <span className="text-blue-600">0</span>
+                    <span className="text-xs text-muted-foreground">{servePlacementTranslations[placement] || placement}</span>
+                    <span className="text-red-600">{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Special handling for Winners - include return winners
+    if (statType === 'winners') {
+      const player1ShotTypes = getShotTypeBreakdown(player1Points)
+      const player2ShotTypes = getShotTypeBreakdown(player2Points)
+      
+      const player1ShotDirections = getShotDirectionBreakdown(player1Points)
+      const player2ShotDirections = getShotDirectionBreakdown(player2Points)
+
+      // Get return winner breakdown
+      const getReturnWinnerBreakdown = (points: PointDetail[]) => {
+        const breakdown: Record<string, number> = { regular: 0, return: 0 }
+        points.forEach(point => {
+          if (point.winnerType) {
+            breakdown[point.winnerType] = (breakdown[point.winnerType] || 0) + 1
+          } else {
+            // If no winnerType is specified, assume regular
+            breakdown.regular += 1
+          }
+        })
+        return breakdown
+      }
+
+      const player1ReturnWinners = getReturnWinnerBreakdown(player1Points)
+      const player2ReturnWinners = getReturnWinnerBreakdown(player2Points)
+
+      return (
+        <div className="space-y-4">
+          {/* Return Winners */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">{t('winnerType')}</h4>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-blue-600">{player1ReturnWinners.regular}</span>
+                <span className="text-xs text-muted-foreground">{t('regular')}</span>
+                <span className="text-red-600">{player2ReturnWinners.regular}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-blue-600">{player1ReturnWinners.return}</span>
+                <span className="text-xs text-muted-foreground">{t('return')}</span>
+                <span className="text-red-600">{player2ReturnWinners.return}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Shot Types */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
+            <div className="space-y-1">
+              {Object.entries(player1ShotTypes).map(([shotType, count]) => (
+                <div key={shotType} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">{count}</span>
+                  <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                  <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
+                </div>
+              ))}
+              {Object.entries(player2ShotTypes).map(([shotType, count]) => {
+                if (player1ShotTypes[shotType]) return null
+                return (
+                  <div key={shotType} className="flex items-center justify-between text-sm">
+                    <span className="text-blue-600">0</span>
+                    <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                    <span className="text-red-600">{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Shot Directions */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
+            <div className="space-y-1">
+              {Object.entries(player1ShotDirections).map(([direction, count]) => (
+                <div key={direction} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">{count}</span>
+                  <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                  <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
+                </div>
+              ))}
+              {Object.entries(player2ShotDirections).map(([direction, count]) => {
+                if (player1ShotDirections[direction]) return null
+                return (
+                  <div key={direction} className="flex items-center justify-between text-sm">
+                    <span className="text-blue-600">0</span>
+                    <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                    <span className="text-red-600">{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Default handling for other stats (unforcedErrors, forcedErrors)
+    const player1ShotTypes = getShotTypeBreakdown(player1Points)
+    const player2ShotTypes = getShotTypeBreakdown(player2Points)
+    
+    const player1ShotDirections = getShotDirectionBreakdown(player1Points)
+    const player2ShotDirections = getShotDirectionBreakdown(player2Points)
+
+    return (
+      <div className="space-y-4">
+        {/* Shot Types */}
+        <div>
+          <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
+          <div className="space-y-1">
+            {Object.entries(player1ShotTypes).map(([shotType, count]) => (
+              <div key={shotType} className="flex items-center justify-between text-sm">
+                <span className="text-blue-600">{count}</span>
+                <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
+              </div>
+            ))}
+            {Object.entries(player2ShotTypes).map(([shotType, count]) => {
+              if (player1ShotTypes[shotType]) return null
+              return (
+                <div key={shotType} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">0</span>
+                  <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                  <span className="text-red-600">{count}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Shot Directions */}
+        <div>
+          <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
+          <div className="space-y-1">
+            {Object.entries(player1ShotDirections).map(([direction, count]) => (
+              <div key={direction} className="flex items-center justify-between text-sm">
+                <span className="text-blue-600">{count}</span>
+                <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
+              </div>
+            ))}
+            {Object.entries(player2ShotDirections).map(([direction, count]) => {
+              if (player1ShotDirections[direction]) return null
+              return (
+                <div key={direction} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">0</span>
+                  <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                  <span className="text-red-600">{count}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
   }
   
   // Calculate enhanced analytics if we have point log
@@ -571,30 +889,40 @@ export function MatchStatsComponentSimpleFixed({
                 value1={stats.winnersByPlayer[0]} 
                 value2={stats.winnersByPlayer[1]}
                 onClick={() => handleStatClick('winners')}
+                isExpanded={expandedStat === 'winners'}
+                expandedContent={generateExpandableContent('winners')}
               />
               <StatRow 
                 label={t('unforcedErrors')} 
                 value1={stats.unforcedErrorsByPlayer[0]} 
                 value2={stats.unforcedErrorsByPlayer[1]}
                 onClick={() => handleStatClick('unforcedErrors')}
+                isExpanded={expandedStat === 'unforcedErrors'}
+                expandedContent={generateExpandableContent('unforcedErrors')}
               />
               <StatRow 
                 label={t('forcedErrors')} 
                 value1={stats.forcedErrorsByPlayer[0]} 
                 value2={stats.forcedErrorsByPlayer[1]}
                 onClick={() => handleStatClick('forcedErrors')}
+                isExpanded={expandedStat === 'forcedErrors'}
+                expandedContent={generateExpandableContent('forcedErrors')}
               />
               <StatRow 
                 label={t('aces')} 
                 value1={stats.acesByPlayer[0]} 
                 value2={stats.acesByPlayer[1]}
                 onClick={() => handleStatClick('aces')}
+                isExpanded={expandedStat === 'aces'}
+                expandedContent={generateExpandableContent('aces')}
               />
               <StatRow 
                 label={t('doubleFaults')} 
                 value1={stats.doubleFaultsByPlayer[0]} 
                 value2={stats.doubleFaultsByPlayer[1]}
                 onClick={() => handleStatClick('doubleFaults')}
+                isExpanded={expandedStat === 'doubleFaults'}
+                expandedContent={generateExpandableContent('doubleFaults')}
               />
             </>
           )}
@@ -755,34 +1083,34 @@ export function MatchStatsComponentSimpleFixed({
                   value2={detailedStats.serveDirectionStats.playerTwo.wide.aces}
                 />
                 
-                <div className="text-sm font-medium mb-2 mt-4">Body Serves</div>
+                <div className="text-sm font-medium mb-2 mt-4">Long Serves</div>
                 <StatRow 
                   label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.body.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.body.successful / detailedStats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.body.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.body.successful / detailedStats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}
+                  value1={detailedStats.serveDirectionStats.playerOne.long.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.long.successful / detailedStats.serveDirectionStats.playerOne.long.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.long.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.long.successful / detailedStats.serveDirectionStats.playerTwo.long.attempts) * 100) : 0}
                   format="percentage"
                 />
                 <StatRow 
-                  label="Aces Body"
-                  value1={detailedStats.serveDirectionStats.playerOne.body.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.body.aces}
+                  label="Aces Long"
+                  value1={detailedStats.serveDirectionStats.playerOne.long.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.long.aces}
                 />
 
-                <div className="text-sm font-medium mb-2 mt-4">T Serves (Down Middle)</div>
+                <div className="text-sm font-medium mb-2 mt-4">Net Serves</div>
                 <StatRow 
                   label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.t.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.t.successful / detailedStats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.t.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.t.successful / detailedStats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}
+                  value1={detailedStats.serveDirectionStats.playerOne.net.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.net.successful / detailedStats.serveDirectionStats.playerOne.net.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.net.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.net.successful / detailedStats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}
                   format="percentage"
                 />
                 <StatRow 
-                  label="Aces T"
-                  value1={detailedStats.serveDirectionStats.playerOne.t.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.t.aces}
+                  label="Aces Net"
+                  value1={detailedStats.serveDirectionStats.playerOne.net.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.net.aces}
                 />
               </CardContent>
             </Card>
@@ -799,31 +1127,36 @@ export function MatchStatsComponentSimpleFixed({
               </CardHeader>
               <CardContent className="space-y-4">
                 <StatRow 
-                  label="Cross-court Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.crossCourt.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.crossCourt.winners}
+                  label="Long Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.long.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.long.winners}
                 />
                 <StatRow 
-                  label="Down-the-line Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.downTheLine.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.downTheLine.winners}
+                  label="Wide Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.wide.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.wide.winners}
                 />
                 <StatRow 
-                  label="Body Shot Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.body.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.body.winners}
+                  label="Net Winners"
+                  value1={detailedStats.shotDirectionStats.playerOne.net.winners}
+                  value2={detailedStats.shotDirectionStats.playerTwo.net.winners}
                 />
                 
                 <div className="text-sm font-medium mb-2 mt-4">Error Distribution</div>
                 <StatRow 
-                  label="Cross-court Errors"
-                  value1={detailedStats.shotDirectionStats.playerOne.crossCourt.errors}
-                  value2={detailedStats.shotDirectionStats.playerTwo.crossCourt.errors}
+                  label="Long Errors"
+                  value1={detailedStats.shotDirectionStats.playerOne.long.errors}
+                  value2={detailedStats.shotDirectionStats.playerTwo.long.errors}
                 />
                 <StatRow 
-                  label="Down-the-line Errors"
-                  value1={detailedStats.shotDirectionStats.playerOne.downTheLine.errors}
-                  value2={detailedStats.shotDirectionStats.playerTwo.downTheLine.errors}
+                  label="Wide Errors"
+                  value1={detailedStats.shotDirectionStats.playerOne.wide.errors}
+                  value2={detailedStats.shotDirectionStats.playerTwo.wide.errors}
+                />
+                <StatRow 
+                  label="Net Errors"
+                  value1={detailedStats.shotDirectionStats.playerOne.net.errors}
+                  value2={detailedStats.shotDirectionStats.playerTwo.net.errors}
                 />
               </CardContent>
             </Card>
@@ -936,14 +1269,6 @@ export function MatchStatsComponentSimpleFixed({
         </span>
       </div>
       
-      {/* Drill-down Dialog */}
-      <StatsDrilldownDialog
-        isOpen={drilldownOpen}
-        onClose={() => setDrilldownOpen(false)}
-        statType={drilldownStat}
-        playerNames={playerNames}
-        pointLog={pointLog || []}
-      />
     </div>
   )
 } 
