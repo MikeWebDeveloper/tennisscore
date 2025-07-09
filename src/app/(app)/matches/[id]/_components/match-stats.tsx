@@ -589,7 +589,7 @@ export function MatchStatsComponentSimpleFixed({
       volley: t('volley'),
       overhead: t('overhead'),
       serve: t('serve'),
-      drop_shot: t('dropShot'),
+      dropShot: t('dropShot'),
       lob: t('lob')
     }
 
