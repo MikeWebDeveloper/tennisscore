@@ -43,6 +43,7 @@ import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
+import { LiveSetExportButton } from "@/components/features/match-export-dialog"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -1038,6 +1039,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Advanced Stats</span>
               </Button>
+              
+              {/* Export Button - Show after first set is completed */}
+              {score.sets.length > 0 && (
+                <LiveSetExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.playerOne.userId || '',
+                    playerOneId: match.playerOne.$id,
+                    playerTwoId: match.playerTwo.$id,
+                    matchDate: new Date().toISOString(),
+                    matchFormat: parsedMatchFormat,
+                    status: match.status as 'In Progress' | 'Completed',
+                    score,
+                    pointLog,
+                    startTime: match.startTime,
+                    endTime: match.endTime,
+                    setDurations: match.setDurations,
+                    events: []
+                  }}
+                  playerNames={[playerNames.p1, playerNames.p2]}
+                  setNumber={score.sets.length}
+                  className="hidden sm:flex"
+                />
+              )}
               
               <Button
                 variant="outline"

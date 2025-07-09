@@ -29,6 +29,7 @@ import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { FullMatchExportButton } from "@/components/features/match-export-dialog"
 
 interface MatchDetailsProps {
   match: {
@@ -94,6 +95,15 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations()
+  
+  // Parse match format
+  const parsedFormat = (() => {
+    try {
+      return JSON.parse(match.matchFormat)
+    } catch {
+      return { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard", finalSetTiebreakAt: 10 }
+    }
+  })()
 
   // Debug timing data
   console.log('Match timing data received:', {
@@ -215,15 +225,55 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <span>{t('backToMatches')}</span>
               </Link>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleShareMatch}
-              className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
-            >
-              <Share2 className="h-3 w-3" />
-              <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              {match.status === "Completed" && (
+                <FullMatchExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.userId,
+                    playerOneId: match.playerOneId,
+                    playerTwoId: match.playerTwoId,
+                    matchDate: match.matchDate,
+                    matchFormat: {
+                      sets: parsedFormat?.sets || 3,
+                      noAd: parsedFormat?.noAd || false,
+                      tiebreak: parsedFormat?.tiebreak !== false,
+                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
+                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
+                    },
+                    status: match.status as 'Completed',
+                    score: {
+                      sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],
+                      games: [match.scoreParsed?.games[0] || 0, match.scoreParsed?.games[1] || 0],
+                      points: [0, 0],
+                      isTiebreak: false,
+                      tiebreakPoints: [0, 0]
+                    },
+                    pointLog: [],
+                    startTime: undefined,
+                    endTime: undefined,
+                    setDurations: undefined,
+                    events: []
+                  }}
+                  playerNames={[
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                  ]}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs px-2 py-1 h-8"
+                />
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShareMatch}
+                className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
+              >
+                <Share2 className="h-3 w-3" />
+                <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
+              </Button>
+            </div>
           </div>
 
           {/* Player names section */}
@@ -299,6 +349,43 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {match.status === "Completed" && (
+                <FullMatchExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.userId,
+                    playerOneId: match.playerOneId,
+                    playerTwoId: match.playerTwoId,
+                    matchDate: match.matchDate,
+                    matchFormat: {
+                      sets: parsedFormat?.sets || 3,
+                      noAd: parsedFormat?.noAd || false,
+                      tiebreak: parsedFormat?.tiebreak !== false,
+                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
+                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
+                    },
+                    status: match.status as 'Completed',
+                    score: {
+                      sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],
+                      games: [match.scoreParsed?.games[0] || 0, match.scoreParsed?.games[1] || 0],
+                      points: [0, 0],
+                      isTiebreak: false,
+                      tiebreakPoints: [0, 0]
+                    },
+                    pointLog: [],
+                    startTime: undefined,
+                    endTime: undefined,
+                    setDurations: undefined,
+                    events: []
+                  }}
+                  playerNames={[
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                  ]}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
