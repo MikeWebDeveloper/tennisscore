@@ -8,7 +8,7 @@ import {
   calculateScoreFromPointLog,
   isBreakPoint
 } from '@/lib/utils/tennis-scoring'
-import { EnhancedPointDetail } from '@/lib/schemas/match'
+import { CourtPosition } from '@/lib/types'
 
 export interface MatchFormat {
   sets: 1 | 3 | 5
@@ -29,21 +29,35 @@ export interface Score {
   initialTiebreakServer?: 'p1' | 'p2';
 }
 
-// Use enhanced point detail type from schema
-export interface PointDetail extends EnhancedPointDetail {
+// Store point detail type - compatible with both schema and legacy types
+export interface PointDetail {
   id: string
+  timestamp: string
+  pointNumber: number
+  setNumber: number
+  gameNumber: number
   gameScore: string
-  lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
-  lastShotPlayer: 'p1' | 'p2'
+  winner: 'p1' | 'p2'
+  server: 'p1' | 'p2'
   isBreakPoint: boolean
   isSetPoint: boolean
   isMatchPoint: boolean
   isGameWinning: boolean
   isSetWinning: boolean
   isMatchWinning: boolean
+  isTiebreak: boolean
+  
+  // Optional enhanced fields
+  lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
+  lastShotPlayer?: 'p1' | 'p2'
   notes?: string
-  courtPosition?: 'deuce' | 'ad' | 'baseline' | 'net'
-  isTiebreak?: boolean
+  courtPosition?: CourtPosition
+  
+  // Additional fields for compatibility
+  serveType: 'first' | 'second'
+  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  rallyLength: number
 }
 
 export interface Match {
@@ -512,7 +526,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     })
 
     // Fix: Check both outcome and pointOutcome for error types
-    const outcomeToCheck = details.outcome || details.pointOutcome;
+    const outcomeToCheck = details.pointOutcome;
     let correctedLastShotPlayer = details.lastShotPlayer;
     
     // If no lastShotPlayer provided, calculate it based on outcome
@@ -545,11 +559,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       isGameWinning: isThisPointGameWinning,
       isSetWinning: isThisPointSetWinning,
       isMatchWinning: isThisPointMatchWinning,
-      isTiebreak: previousScore.isTiebreak,
+      isTiebreak: previousScore.isTiebreak || false,
       serveType: details.serveType || 'first',
-      outcome: details.outcome || 'winner',
+      pointOutcome: details.pointOutcome || 'winner',
       rallyLength: details.rallyLength || 1,
-      loggingLevel: details.loggingLevel || '1',
       lastShotPlayer: correctedLastShotPlayer,
     }
 

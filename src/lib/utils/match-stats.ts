@@ -1231,7 +1231,27 @@ export function calculatePointsOnlyStats(pointLog: PointsOnlyDetail[]): Enhanced
 
 // Simple statistics - includes point outcomes and serve types
 export function calculateSimpleStats(pointLog: SimplePointDetail[]): EnhancedMatchStats {
-  const stats = calculatePointsOnlyStats(pointLog as PointsOnlyDetail[])
+  // Map to points-only format for base calculation
+  const pointsOnlyData: PointsOnlyDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'points' as const
+  }))
+  
+  const stats = calculatePointsOnlyStats(pointsOnlyData)
 
   // Additional tracking for simple mode
   let p1FirstServeAttempts = 0
@@ -1342,7 +1362,32 @@ export function calculateSimpleStats(pointLog: SimplePointDetail[]): EnhancedMat
 
 // Detailed statistics - includes positioning and shot direction
 export function calculateDetailedStats(pointLog: DetailedPointDetail[]): EnhancedMatchStats {
-  const stats = calculateSimpleStats(pointLog as SimplePointDetail[])
+  // Map to simple format for base calculation
+  const simpleData: SimplePointDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'simple' as const,
+    serveType: point.serveType,
+    pointOutcome: point.pointOutcome,
+    rallyLength: point.rallyLength,
+    lastShotType: point.lastShotType,
+    lastShotPlayer: point.lastShotPlayer
+  }))
+  
+  const stats = calculateSimpleStats(simpleData)
 
   // Additional statistics for detailed mode can be added here
   // For now, it includes all simple stats plus the additional fields are available
@@ -1353,7 +1398,36 @@ export function calculateDetailedStats(pointLog: DetailedPointDetail[]): Enhance
 
 // Complex statistics - includes all advanced analytics
 export function calculateComplexStats(pointLog: ComplexPointDetail[]): EnhancedMatchStats {
-  const stats = calculateDetailedStats(pointLog as DetailedPointDetail[])
+  // Map to detailed format for base calculation
+  const detailedData: DetailedPointDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'detailed' as const,
+    serveType: point.serveType,
+    pointOutcome: point.pointOutcome,
+    rallyLength: point.rallyLength,
+    lastShotType: point.lastShotType,
+    lastShotPlayer: point.lastShotPlayer,
+    serveOutcome: point.serveOutcome,
+    servePlacement: point.servePlacement,
+    courtPosition: point.courtPosition,
+    shotDirection: point.shotDirection
+  }))
+  
+  const stats = calculateDetailedStats(detailedData)
 
   // Advanced analytics for complex mode can be added here
   // This would include serve speed analysis, return quality, tactical context, etc.
@@ -1369,13 +1443,13 @@ export function calculateMatchStatsByLevel(pointLog: PointDetail[], detailLevel:
 
   switch (detailLevel) {
     case 'points':
-      return calculatePointsOnlyStats(pointLog as PointsOnlyDetail[])
+      return calculatePointsOnlyStats(pointLog as unknown as PointsOnlyDetail[])
     case 'simple':
-      return calculateSimpleStats(pointLog as SimplePointDetail[])
+      return calculateSimpleStats(pointLog as unknown as SimplePointDetail[])
     case 'detailed':
-      return calculateDetailedStats(pointLog as DetailedPointDetail[])
+      return calculateDetailedStats(pointLog as unknown as DetailedPointDetail[])
     case 'complex':
-      return calculateComplexStats(pointLog as ComplexPointDetail[])
+      return calculateComplexStats(pointLog as unknown as ComplexPointDetail[])
     default:
       // Fallback to existing function for backward compatibility
       return calculateMatchStats(pointLog)
