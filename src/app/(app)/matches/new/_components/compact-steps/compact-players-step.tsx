@@ -67,7 +67,7 @@ export function CompactPlayersStep({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, onComplete])
+  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, onComplete, autoAdvanceTriggered, setAutoAdvanceTriggered])
 
   // Reset autoAdvanceTriggered if form becomes incomplete again
   useEffect(() => {
@@ -79,7 +79,7 @@ export function CompactPlayersStep({
       setAutoAdvanceTriggered(false)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, autoAdvanceTriggered])
+  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, autoAdvanceTriggered, setAutoAdvanceTriggered])
 
   const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
     const options: ComboboxOption[] = []

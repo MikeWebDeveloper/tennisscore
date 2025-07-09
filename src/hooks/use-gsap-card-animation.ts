@@ -19,9 +19,10 @@ export function useGSAPCardAnimation({
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
 
   useEffect(() => {
+    const currentTimeline = timelineRef.current
     // Clean up previous timeline
-    if (timelineRef.current) {
-      timelineRef.current.kill()
+    if (currentTimeline) {
+      currentTimeline.kill()
     }
 
     // Simple sequential animation start
@@ -44,8 +45,8 @@ export function useGSAPCardAnimation({
     startAnimations()
 
     return () => {
-      if (timelineRef.current) {
-        timelineRef.current.kill()
+      if (currentTimeline) {
+        currentTimeline.kill()
       }
     }
   }, [totalCards, staggerDelay, startDelay])
