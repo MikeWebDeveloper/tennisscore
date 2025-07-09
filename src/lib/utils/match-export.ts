@@ -425,12 +425,12 @@ export class MatchExporter {
         ['Wide', 
          `${stats.serveDirectionStats.playerOne.wide.attempts} (${stats.serveDirectionStats.playerOne.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.wide.successful / stats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}%)`,
          `${stats.serveDirectionStats.playerTwo.wide.attempts} (${stats.serveDirectionStats.playerTwo.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.wide.successful / stats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}%)`],
-        ['Body', 
-         `${stats.serveDirectionStats.playerOne.body.attempts} (${stats.serveDirectionStats.playerOne.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.body.successful / stats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.body.attempts} (${stats.serveDirectionStats.playerTwo.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.body.successful / stats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}%)`],
-        ['T (Center)', 
-         `${stats.serveDirectionStats.playerOne.t.attempts} (${stats.serveDirectionStats.playerOne.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.t.successful / stats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.t.attempts} (${stats.serveDirectionStats.playerTwo.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.t.successful / stats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}%)`]
+        ['Long', 
+         `${stats.serveDirectionStats.playerOne.long.attempts} (${stats.serveDirectionStats.playerOne.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.long.successful / stats.serveDirectionStats.playerOne.long.attempts) * 100) : 0}%)`,
+         `${stats.serveDirectionStats.playerTwo.long.attempts} (${stats.serveDirectionStats.playerTwo.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.long.successful / stats.serveDirectionStats.playerTwo.long.attempts) * 100) : 0}%)`],
+        ['Net', 
+         `${stats.serveDirectionStats.playerOne.net.attempts} (${stats.serveDirectionStats.playerOne.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.net.successful / stats.serveDirectionStats.playerOne.net.attempts) * 100) : 0}%)`,
+         `${stats.serveDirectionStats.playerTwo.net.attempts} (${stats.serveDirectionStats.playerTwo.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.net.successful / stats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}%)`]
       ]
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -523,15 +523,15 @@ export class MatchExporter {
 
       const shotData = [
         ['Direction', `${players[0].name} (W/E)`, `${players[1].name} (W/E)`],
-        ['Cross Court', 
-         `${stats.shotDirectionStats.playerOne.crossCourt.attempts} (${stats.shotDirectionStats.playerOne.crossCourt.winners}/${stats.shotDirectionStats.playerOne.crossCourt.errors})`,
-         `${stats.shotDirectionStats.playerTwo.crossCourt.attempts} (${stats.shotDirectionStats.playerTwo.crossCourt.winners}/${stats.shotDirectionStats.playerTwo.crossCourt.errors})`],
-        ['Down the Line', 
-         `${stats.shotDirectionStats.playerOne.downTheLine.attempts} (${stats.shotDirectionStats.playerOne.downTheLine.winners}/${stats.shotDirectionStats.playerOne.downTheLine.errors})`,
-         `${stats.shotDirectionStats.playerTwo.downTheLine.attempts} (${stats.shotDirectionStats.playerTwo.downTheLine.winners}/${stats.shotDirectionStats.playerTwo.downTheLine.errors})`],
-        ['Body Shots', 
-         `${stats.shotDirectionStats.playerOne.body.attempts} (${stats.shotDirectionStats.playerOne.body.winners}/${stats.shotDirectionStats.playerOne.body.errors})`,
-         `${stats.shotDirectionStats.playerTwo.body.attempts} (${stats.shotDirectionStats.playerTwo.body.winners}/${stats.shotDirectionStats.playerTwo.body.errors})`]
+        ['Long', 
+         `${stats.shotDirectionStats.playerOne.long.attempts} (${stats.shotDirectionStats.playerOne.long.winners}/${stats.shotDirectionStats.playerOne.long.errors})`,
+         `${stats.shotDirectionStats.playerTwo.long.attempts} (${stats.shotDirectionStats.playerTwo.long.winners}/${stats.shotDirectionStats.playerTwo.long.errors})`],
+        ['Wide', 
+         `${stats.shotDirectionStats.playerOne.wide.attempts} (${stats.shotDirectionStats.playerOne.wide.winners}/${stats.shotDirectionStats.playerOne.wide.errors})`,
+         `${stats.shotDirectionStats.playerTwo.wide.attempts} (${stats.shotDirectionStats.playerTwo.wide.winners}/${stats.shotDirectionStats.playerTwo.wide.errors})`],
+        ['Net', 
+         `${stats.shotDirectionStats.playerOne.net.attempts} (${stats.shotDirectionStats.playerOne.net.winners}/${stats.shotDirectionStats.playerOne.net.errors})`,
+         `${stats.shotDirectionStats.playerTwo.net.attempts} (${stats.shotDirectionStats.playerTwo.net.winners}/${stats.shotDirectionStats.playerTwo.net.errors})`]
       ]
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

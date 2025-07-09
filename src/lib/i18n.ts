@@ -36,6 +36,21 @@ export interface Translations {
   liveScoring: string
   matchCompleted: string
   winner: string
+  winnerType: string
+  winnerTypeHint: string
+  regular: string
+  return: string
+  pointDetails: string
+  shotDirection: string
+  crossCourt: string
+  downTheLine: string
+  bodyShot: string
+  howDidTheyWin: string
+  wasItReturn: string
+  shotTypes: string
+  shotDirections: string
+  dropShot: string
+  lob: string
   score: string
   sets: string
   games: string
@@ -410,16 +425,11 @@ export interface Translations {
   notesPlaceholder: string
   saveDetailedPoint: string
   whoWonThePoint: string
-  howDidTheyWin: string
   whatShotWasIt: string
   courtSide: string
   whichSideOfCourt: string
   whereWasItServed: string
-  crossCourt: string
-  downTheLine: string
-  bodyShot: string
   whereWasItHit: string
-  shotDirection: string
   recordPoint: string
   
   // Delete confirmation
@@ -447,6 +457,8 @@ export interface Translations {
   servePlacement: string
   wide: string
   body: string
+  long: string
+  net: string
   tDownTheMiddle: string
   serveSpeed: string
   ace: string
@@ -727,6 +739,21 @@ export const translations = {
     liveScoring: "Live Scoring",
     matchCompleted: "Match Completed",
     winner: "Winner",
+    winnerType: "Winner Type",
+    winnerTypeHint: "Specify if this is a regular winner or a return winner (won directly from service)",
+    regular: "Regular",
+    return: "Return",
+    pointDetails: "Point Details",
+    shotDirection: "Shot Direction",
+    crossCourt: "Cross Court",
+    downTheLine: "Down the Line",
+    bodyShot: "Body Shot",
+    howDidTheyWin: "How did they win?",
+    wasItReturn: "Was it return?",
+    shotTypes: "Shot Types",
+    shotDirections: "Shot Directions",
+    dropShot: "Drop Shot",
+    lob: "Lob",
     score: "Score",
     sets: "Sets",
     games: "Games",
@@ -1102,16 +1129,11 @@ export const translations = {
     notesPlaceholder: "e.g., Great backhand down the line",
     saveDetailedPoint: "Save Detailed Point",
     whoWonThePoint: "Who won the point?",
-    howDidTheyWin: "How did they win?",
     whatShotWasIt: "What shot was it?",
     courtSide: "Court Side",
     whichSideOfCourt: "Which side of the court?",
     whereWasItServed: "Where was it served?",
-    crossCourt: "Cross-court",
-    downTheLine: "Down the line",
-    bodyShot: "Body shot",
     whereWasItHit: "Where was it hit?",
-    shotDirection: "Shot Direction",
     recordPoint: "Record Point",
 
     // Delete confirmation
@@ -1139,6 +1161,8 @@ export const translations = {
     servePlacement: "Serve Placement",
     wide: "Wide",
     body: "Body",
+    long: "Long",
+    net: "Net",
     tDownTheMiddle: "T (Down the Middle)",
     serveSpeed: "Serve Speed (km/h)",
     ace: "Ace",
@@ -1417,6 +1441,21 @@ export const translations = {
     liveScoring: "Živé skórování",
     matchCompleted: "Zápas dokončen",
     winner: "Vítěz",
+    winnerType: "Typ vítězného úderu",
+    winnerTypeHint: "Upřesněte, zda se jedná o běžný vítězný úder nebo vítězný return (výhru přímo z podání)",
+    regular: "Běžný",
+    return: "Return",
+    pointDetails: "Podrobnosti bodu",
+    shotDirection: "Směr úderu",
+    crossCourt: "Diagonálně",
+    downTheLine: "Podél lajny",
+    bodyShot: "Na tělo",
+    howDidTheyWin: "Jak vyhráli?",
+    wasItReturn: "Byl to return?",
+    shotTypes: "Typy úderů",
+    shotDirections: "Směry úderů",
+    dropShot: "Krátký míč",
+    lob: "Lob",
     score: "Skóre",
     sets: "Sety",
     games: "Gemy",
@@ -1792,16 +1831,11 @@ export const translations = {
     notesPlaceholder: "např. Skvělý bekhend po lajně",
     saveDetailedPoint: "Uložit detailní bod",
     whoWonThePoint: "Kdo vyhrál bod?",
-    howDidTheyWin: "Jak vyhrál?",
     whatShotWasIt: "Jaký to byl úder?",
     courtSide: "Strana kurtu",
     whichSideOfCourt: "Která strana kurtu?",
     whereWasItServed: "Kam bylo podáno?",
-    crossCourt: "Křížem",
-    downTheLine: "Po lajně",
-    bodyShot: "Na tělo",
     whereWasItHit: "Kam bylo zahráno?",
-    shotDirection: "Směr úderu",
     recordPoint: "Zaznamenat bod",
     
     // Delete confirmation
@@ -1829,6 +1863,8 @@ export const translations = {
     servePlacement: "Umístění podání",
     wide: "Do strany",
     body: "Na tělo",
+    long: "Dlouhé",
+    net: "Do sítě",
     tDownTheMiddle: "Na téčko (středem)",
     serveSpeed: "Rychlost podání (km/h)",
     ace: "Eso",

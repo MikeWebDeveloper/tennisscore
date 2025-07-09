@@ -23,7 +23,7 @@ export function AdvancedServeCollector({
 }: AdvancedServeCollectorProps) {
   const [speed, setSpeed] = useState(initialData?.speed || 100)
   const [placement, setPlacement] = useState<NonNullable<ServeStats>['placement']>(
-    initialData?.placement || 'deuce-wide'
+    initialData?.placement || 'long'
   )
   const [spin, setSpin] = useState<NonNullable<ServeStats>['spin']>(
     initialData?.spin || 'flat'
@@ -61,15 +61,9 @@ export function AdvancedServeCollector({
   }
 
   const placementOptions = [
-    { value: 'deuce-wide', label: 'Wide', court: 'Deuce' },
-    { value: 'deuce-body', label: 'Body', court: 'Deuce' },
-    { value: 'deuce-t', label: 'T', court: 'Deuce' },
-    { value: 'ad-wide', label: 'Wide', court: 'Ad' },
-    { value: 'ad-body', label: 'Body', court: 'Ad' },
-    { value: 'ad-t', label: 'T', court: 'Ad' },
-    { value: 'center-wide', label: 'Wide', court: 'Center' },
-    { value: 'center-body', label: 'Body', court: 'Center' },
-    { value: 'center-t', label: 'T', court: 'Center' }
+    { value: 'long', label: 'Long', description: 'Deep serve' },
+    { value: 'wide', label: 'Wide', description: 'Wide serve' },
+    { value: 'net', label: 'Net', description: 'Net serve' }
   ] as const
 
   const spinOptions = [
@@ -124,28 +118,19 @@ export function AdvancedServeCollector({
             Serve Placement
           </Label>
           <div className="grid grid-cols-3 gap-3">
-            {/* Group by court side */}
-            {['Deuce', 'Center', 'Ad'].map(court => (
-              <div key={court} className="space-y-2">
-                <div className="text-xs font-medium text-center text-muted-foreground">
-                  {court}
-                </div>
-                <div className="space-y-1">
-                  {placementOptions
-                    .filter(option => option.court === court)
-                    .map(option => (
-                      <Button
-                        key={option.value}
-                        variant={placement === option.value ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setPlacement(option.value)}
-                        className="w-full text-xs"
-                      >
-                        {option.label}
-                      </Button>
-                    ))}
-                </div>
-              </div>
+            {placementOptions.map(option => (
+              <Button
+                key={option.value}
+                variant={placement === option.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPlacement(option.value)}
+                className="h-auto p-3 flex flex-col gap-1"
+              >
+                <span className="font-medium">{option.label}</span>
+                <span className="text-xs text-muted-foreground">
+                  {option.description}
+                </span>
+              </Button>
             ))}
           </div>
         </div>
@@ -223,9 +208,9 @@ export function AdvancedServeCollector({
         <div className="bg-muted/50 rounded-lg p-3">
           <div className="text-xs text-muted-foreground mb-1">Summary</div>
           <div className="text-sm">
-            <span className="font-medium">{speed} mph</span> {spin} serve to{' '}
+            <span className="font-medium">{speed} mph</span> {spin} serve{' '}
             <span className="font-medium">
-              {placementOptions.find(p => p.value === placement)?.court} {placementOptions.find(p => p.value === placement)?.label}
+              {placementOptions.find(p => p.value === placement)?.label}
             </span>
             {' '}({getQualityLabel(quality)} quality)
           </div>

@@ -27,7 +27,7 @@ export function ReturnAnalyticsCollector({
     initialData?.depth || 'deep'
   )
   const [direction, setDirection] = useState<NonNullable<ReturnStats>['direction']>(
-    initialData?.direction || 'cross'
+    initialData?.direction || 'long'
   )
   const [quality, setQuality] = useState<NonNullable<ReturnStats>['quality']>(
     initialData?.quality || 'neutral'
@@ -72,9 +72,9 @@ export function ReturnAnalyticsCollector({
   ] as const
 
   const directionOptions = [
-    { value: 'cross', label: 'Cross Court', icon: '↗', description: 'Diagonal return' },
-    { value: 'line', label: 'Down the Line', icon: '↑', description: 'Straight return' },
-    { value: 'body', label: 'Body', icon: '→', description: 'At opponent' }
+    { value: 'long', label: 'Long', icon: '↑', description: 'Deep return' },
+    { value: 'wide', label: 'Wide', icon: '↗', description: 'Wide return' },
+    { value: 'net', label: 'Net', icon: '→', description: 'Net return' }
   ] as const
 
   const qualityOptions = [

@@ -60,7 +60,7 @@ export const serveTypeSchema = z.enum([
 // Enhanced statistics schemas
 export const serveStatsSchema = z.object({
   speed: z.number().optional(),
-  placement: z.enum(['deuce-wide', 'deuce-body', 'deuce-t', 'ad-wide', 'ad-body', 'ad-t', 'center-wide', 'center-body', 'center-t']).optional(),
+  placement: z.enum(['long', 'wide', 'net']).optional(),
   spin: z.enum(['flat', 'slice', 'kick', 'twist']).optional(),
   netClearance: z.number().optional(),
   quality: z.number().min(1).max(10).optional()
@@ -69,7 +69,7 @@ export const serveStatsSchema = z.object({
 export const returnStatsSchema = z.object({
   placement: z.enum(['deuce-deep', 'center-deep', 'ad-deep', 'deuce-mid', 'center-mid', 'ad-mid', 'deuce-short', 'center-short', 'ad-short']).optional(),
   depth: z.enum(['short', 'medium', 'deep']).optional(),
-  direction: z.enum(['cross', 'line', 'body']).optional(),
+  direction: z.enum(['long', 'wide', 'net']).optional(),
   quality: z.enum(['defensive', 'neutral', 'offensive']).optional(),
   type: z.enum(['block', 'swing', 'slice', 'defensive']).optional()
 }).optional()
@@ -138,13 +138,10 @@ export const detailedPointDetailSchema = simplePointDetailSchema.extend({
   
   // Enhanced serve information
   serveOutcome: pointOutcomeSchema.optional(),
-  servePlacement: z.enum(['wide', 'body', 't']).optional(),
-  
-  // Court positioning
-  courtPosition: z.enum(['deuce', 'ad']).optional(),
+  servePlacement: z.enum(['long', 'wide', 'net']).optional(),
   
   // Shot direction
-  shotDirection: z.enum(['cross', 'line', 'body']).optional(),
+  shotDirection: z.enum(['long', 'wide', 'net']).optional(),
   
   // More precise rally length
   rallyLength: z.number().min(0).default(3),

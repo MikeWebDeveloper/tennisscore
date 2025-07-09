@@ -111,7 +111,7 @@ export interface PointDetail {
   // Serve Details
   serveType: ServeType
   serveOutcome: PointOutcome // What happened with the serve
-  servePlacement?: "wide" | "body" | "t" // Serve placement
+  servePlacement?: "long" | "wide" | "net" // Serve placement
   serveSpeed?: number // Optional serve speed
   
   // Rally Details
@@ -133,6 +133,8 @@ export interface PointDetail {
   notes?: string // Free text notes about the point
   courtPosition?: CourtPosition // Where the point was played
   atNet?: "p1" | "p2" | "both" // Which player was at the net
+  winnerType?: "regular" | "return" // Type of winner when receiving player wins
+  shotDirection?: "cross" | "line" | "body" | "long" | "wide" | "net" // Direction of the shot
 }
 
 export interface DetailedPointLog {

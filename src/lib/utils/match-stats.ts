@@ -96,18 +96,18 @@ export interface DetailedMatchStats extends EnhancedMatchStats {
 }
 
 export interface ServeDirectionAnalysis {
+  long: { attempts: number; successful: number; aces: number; doubleFaults: number }
   wide: { attempts: number; successful: number; aces: number; doubleFaults: number }
-  body: { attempts: number; successful: number; aces: number; doubleFaults: number }
-  t: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  net: { attempts: number; successful: number; aces: number; doubleFaults: number }
   totalAttempts: number
   bestDirection: string
   worstDirection: string
 }
 
 export interface ShotDirectionAnalysis {
-  crossCourt: { attempts: number; winners: number; errors: number }
-  downTheLine: { attempts: number; winners: number; errors: number }
-  body: { attempts: number; winners: number; errors: number }
+  long: { attempts: number; winners: number; errors: number }
+  wide: { attempts: number; winners: number; errors: number }
+  net: { attempts: number; winners: number; errors: number }
   totalShots: number
   preferredDirection: string
   winnerDirection: string
@@ -474,7 +474,7 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
     // Analyze serve direction (for aces and double faults)
     if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
       hasAnyDetailedData = true
-      const direction = point.servePlacement as 'wide' | 'body' | 't'
+      const direction = point.servePlacement as 'long' | 'wide' | 'net'
       
       playerServeStats[direction].attempts++
       playerServeStats.totalAttempts++
@@ -548,9 +548,9 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
 
 function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
   return {
+    long: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     wide: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
-    body: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
-    t: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    net: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     totalAttempts: 0,
     bestDirection: '',
     worstDirection: ''
@@ -559,9 +559,9 @@ function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
 
 function initializeShotDirectionAnalysis(): ShotDirectionAnalysis {
   return {
-    crossCourt: { attempts: 0, winners: 0, errors: 0 },
-    downTheLine: { attempts: 0, winners: 0, errors: 0 },
-    body: { attempts: 0, winners: 0, errors: 0 },
+    long: { attempts: 0, winners: 0, errors: 0 },
+    wide: { attempts: 0, winners: 0, errors: 0 },
+    net: { attempts: 0, winners: 0, errors: 0 },
     totalShots: 0,
     preferredDirection: '',
     winnerDirection: ''
@@ -584,21 +584,21 @@ function initializeMomentumAnalysis(): MomentumAnalysis {
   }
 }
 
-function inferShotDirection(point: PointDetail): 'crossCourt' | 'downTheLine' | 'body' | null {
+function inferShotDirection(point: PointDetail): 'long' | 'wide' | 'net' | null {
   // For now, use court position as a proxy for shot direction
   // This is a placeholder until we get actual shot direction data from new point logger
   if (point.courtPosition === 'deuce') {
-    return 'crossCourt' // Assume deuce side shots are more likely cross-court
+    return 'long' // Assume deuce side shots are more likely long
   } else if (point.courtPosition === 'ad') {
-    return 'downTheLine' // Assume ad side shots are more likely down the line
+    return 'wide' // Assume ad side shots are more likely wide
   }
-  return 'body' // Default for other cases
+  return 'net' // Default for other cases
 }
 
 function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
   if (stats.totalAttempts === 0) return
   
-  const directions = ['wide', 'body', 't'] as const
+  const directions = ['long', 'wide', 'net'] as const
   let bestDirection = ''
   let worstDirection = ''
   let bestSuccessRate = -1
@@ -625,7 +625,7 @@ function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
 function calculateShotDirectionSummary(stats: ShotDirectionAnalysis) {
   if (stats.totalShots === 0) return
   
-  const directions = ['crossCourt', 'downTheLine', 'body'] as const
+  const directions = ['long', 'wide', 'net'] as const
   let preferredDirection = ''
   let winnerDirection = ''
   let mostUsed = 0
@@ -1423,7 +1423,6 @@ export function calculateComplexStats(pointLog: ComplexPointDetail[]): EnhancedM
     lastShotPlayer: point.lastShotPlayer,
     serveOutcome: point.serveOutcome,
     servePlacement: point.servePlacement,
-    courtPosition: point.courtPosition,
     shotDirection: point.shotDirection
   }))
   
