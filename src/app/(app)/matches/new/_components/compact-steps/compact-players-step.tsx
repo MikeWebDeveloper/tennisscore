@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { User, Plus, Star, Check } from "lucide-react"
@@ -47,39 +47,29 @@ export function CompactPlayersStep({
   const t = useTranslations()
   const { mainPlayerId } = useUserStore()
   const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
-  const [autoAdvanceTriggered, setAutoAdvanceTriggered] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Only trigger auto-advance after the last required selection is made
+  // Logic to determine if all necessary players are selected
+  const isComplete = matchType === "singles"
+    ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
+    : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) &&
+      (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
+
+  // Effect for auto-advancing to the next step
   useEffect(() => {
-    const isComplete = matchType === "singles" 
-      ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
-      : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) && 
-        (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
-
-    if (isComplete && !autoAdvanceTriggered) {
-      setAutoAdvanceTriggered(true)
-      timeoutRef.current = setTimeout(() => {
+    let timeoutId: NodeJS.Timeout
+    if (isComplete) {
+      timeoutId = setTimeout(() => {
         onComplete()
       }, 300)
     }
-    // Cleanup timeout if unmounting or changing
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, onComplete, autoAdvanceTriggered, setAutoAdvanceTriggered])
 
-  // Reset autoAdvanceTriggered if form becomes incomplete again
-  useEffect(() => {
-    const isComplete = matchType === "singles" 
-      ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
-      : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) && 
-        (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
-    if (!isComplete && autoAdvanceTriggered) {
-      setAutoAdvanceTriggered(false)
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    return () => {
+      clearTimeout(timeoutId)
     }
-  }, [matchType, playerOne, playerTwo, playerThree, playerFour, playerOneAnonymous, playerTwoAnonymous, playerThreeAnonymous, playerFourAnonymous, autoAdvanceTriggered, setAutoAdvanceTriggered])
+  }, [
+    isComplete,
+    onComplete,
+  ])
 
   const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
     const options: ComboboxOption[] = []

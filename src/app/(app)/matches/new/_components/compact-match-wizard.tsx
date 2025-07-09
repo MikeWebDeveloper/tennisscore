@@ -12,6 +12,7 @@ import { createMatch } from "@/lib/actions/matches"
 import { toast } from "sonner"
 import { createMatchSchema, type CreateMatchData } from "@/lib/schemas/match"
 import { ZodError } from "zod"
+import { useCallback } from "react"
 
 // Compact step components
 import { CompactMatchTypeStep } from "./compact-steps/compact-match-type-step"
@@ -115,6 +116,10 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
     }
   }
 
+  const handlePlayersStepComplete = useCallback(() => {
+    setCurrentStep(currentStep + 1)
+  }, [currentStep])
+
   const handleCreateMatch = async (finalDetailLevel: "points" | "simple" | "detailed" | "complex") => {
     setLoading(true)
 
@@ -191,7 +196,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
             playerFourAnonymous={playerFourAnonymous}
             onPlayerChange={handlePlayerChange}
             onAnonymousChange={handleAnonymousChange}
-            onComplete={() => setCurrentStep(currentStep + 1)}
+            onComplete={handlePlayersStepComplete}
           />
         )
       case 3:
