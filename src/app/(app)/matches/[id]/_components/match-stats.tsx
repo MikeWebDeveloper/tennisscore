@@ -555,12 +555,24 @@ export function MatchStatsComponentSimpleFixed({
     return breakdown
   }
 
+  // Type predicate for PointDetail with shotDirection
+  function hasShotDirection(point: unknown): point is { shotDirection: string } {
+    return (
+      typeof point === 'object' &&
+      point !== null &&
+      'shotDirection' in point &&
+      typeof (point as { shotDirection: unknown }).shotDirection === 'string' &&
+      Boolean((point as { shotDirection: string }).shotDirection)
+    )
+  }
+
   // Helper function to get shot direction breakdown
-  const getShotDirectionBreakdown = (points: PointDetail[]) => {
+  const getShotDirectionBreakdown = (points: unknown[]) => {
     const breakdown: Record<string, number> = {}
     points.forEach(point => {
-      if (point.shotDirection) {
-        breakdown[point.shotDirection] = (breakdown[point.shotDirection] || 0) + 1
+      if (hasShotDirection(point)) {
+        const dir = point.shotDirection
+        breakdown[dir] = (breakdown[dir] || 0) + 1
       }
     })
     return breakdown
