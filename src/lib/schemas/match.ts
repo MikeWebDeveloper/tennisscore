@@ -138,7 +138,7 @@ export const detailedPointDetailSchema = simplePointDetailSchema.extend({
   
   // Enhanced serve information
   serveOutcome: pointOutcomeSchema.optional(),
-  servePlacement: z.enum(['long', 'wide', 'net']).optional(),
+  servePlacement: z.enum(['wide', 'body', 't']).optional(),
   
   // Shot direction
   shotDirection: z.enum(['long', 'wide', 'net']).optional(),

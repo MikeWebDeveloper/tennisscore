@@ -130,7 +130,7 @@ export function PlayersClient({ players }: PlayersClientProps) {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
               <Input
-                placeholder="Search players by name or rating..."
+                placeholder={t('searchPlayers')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"

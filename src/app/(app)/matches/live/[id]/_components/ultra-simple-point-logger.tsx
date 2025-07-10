@@ -40,7 +40,7 @@ export function UltraSimplePointLogger({
   const [step, setStep] = useState<'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'return-type'>('outcome')
   const [outcome, setOutcome] = useState<PointOutcome | null>(null)
   const [winnerType, setWinnerType] = useState<ShotType | null>(null)
-  const [serveDirection, setServeDirection] = useState<'long' | 'wide' | 'net' | null>(null)
+  const [serveDirection, setServeDirection] = useState<'wide' | 'body' | 't' | null>(null)
   const [shotDirection, setShotDirection] = useState<'cross' | 'line' | 'body' | 'long' | 'wide' | 'net' | null>(null)
   const [returnType, setReturnType] = useState<'regular' | 'return' | null>(null)
   
@@ -65,7 +65,7 @@ export function UltraSimplePointLogger({
     setStep('winner-type')
   }
 
-  const handleServeDirectionClick = (direction: 'long' | 'wide' | 'net') => {
+  const handleServeDirectionClick = (direction: 'wide' | 'body' | 't') => {
     setServeDirection(direction)
     
     // For ace/double fault, save immediately after serve direction
@@ -109,7 +109,7 @@ export function UltraSimplePointLogger({
     const pointDetail: Partial<PointDetail> = {
       serveType: pointContext.serveType,
       serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
-      servePlacement: "long", // Default serve placement
+      servePlacement: "wide", // Default serve placement
       rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 3,
       pointOutcome: outcome,
       lastShotType: winnerType,
@@ -209,20 +209,20 @@ export function UltraSimplePointLogger({
 
   const serveDirections = [
     {
-      id: 'long' as const,
-      label: t('long'),
-      color: 'bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600',
-      textColor: 'text-white'
-    },
-    {
       id: 'wide' as const,
       label: t('wide'),
       color: 'bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600',
       textColor: 'text-white'
     },
     {
-      id: 'net' as const,
-      label: t('net'),
+      id: 'body' as const,
+      label: t('body'),
+      color: 'bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600',
+      textColor: 'text-white'
+    },
+    {
+      id: 't' as const,
+      label: t('tDownTheMiddle'),
       color: 'bg-gradient-to-r from-violet-400 to-purple-500 hover:from-violet-500 hover:to-purple-600',
       textColor: 'text-white'
     }

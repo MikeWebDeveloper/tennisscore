@@ -14,6 +14,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Testing
 No specific test command defined in package.json - check for testing setup when implementing new features.
 
+#### Test Credentials
+For browser testing and debugging:
+- **Email**: michal.latal@yahoo.co.uk
+- **Password**: Mikemike88
+- **Development URL**: http://localhost:3000 (may vary if other Next.js servers are running)
+
 ## Architecture Overview
 
 ### Tech Stack

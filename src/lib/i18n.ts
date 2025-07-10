@@ -700,6 +700,10 @@ export interface Translations {
   // New translations
   createMatchError: string
   selectMatchRules: string
+  
+  // Search placeholders
+  searchPlayers: string
+  searchMatches: string
 }
 
 export const translations = {
@@ -1163,7 +1167,7 @@ export const translations = {
     body: "Body",
     long: "Long",
     net: "Net",
-    tDownTheMiddle: "T (Down the Middle)",
+    tDownTheMiddle: "T (Center)",
     serveSpeed: "Serve Speed (km/h)",
     ace: "Ace",
     doubleFault: "Double Fault",
@@ -1404,6 +1408,10 @@ export const translations = {
     // New translations
     createMatchError: "Failed to create match",
     selectMatchRules: "Select the rules for the match",
+    
+    // Search placeholders
+    searchPlayers: "Search players by name or rating...",
+    searchMatches: "Search matches by player name...",
   },
   cs: {
     // Common
@@ -1865,7 +1873,7 @@ export const translations = {
     body: "Na tělo",
     long: "Dlouhé",
     net: "Do sítě",
-    tDownTheMiddle: "Na téčko (středem)",
+    tDownTheMiddle: "T (střed)",
     serveSpeed: "Rychlost podání (km/h)",
     ace: "Eso",
     doubleFault: "Dvojchyba",
@@ -2106,6 +2114,10 @@ export const translations = {
     // New translations
     createMatchError: "Nepodařilo se vytvořit zápas",
     selectMatchRules: "Vyberte pravidla pro zápas",
+    
+    // Search placeholders
+    searchPlayers: "Hledat hráče podle jména nebo hodnocení...",
+    searchMatches: "Hledat zápasy podle jména hráče...",
   }
 }
 

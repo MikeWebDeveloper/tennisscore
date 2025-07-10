@@ -1095,34 +1095,34 @@ export function MatchStatsComponentSimpleFixed({
                   value2={detailedStats.serveDirectionStats.playerTwo.wide.aces}
                 />
                 
-                <div className="text-sm font-medium mb-2 mt-4">Long Serves</div>
+                <div className="text-sm font-medium mb-2 mt-4">Body Serves</div>
                 <StatRow 
                   label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.long.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.long.successful / detailedStats.serveDirectionStats.playerOne.long.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.long.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.long.successful / detailedStats.serveDirectionStats.playerTwo.long.attempts) * 100) : 0}
+                  value1={detailedStats.serveDirectionStats.playerOne.body.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.body.successful / detailedStats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.body.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.body.successful / detailedStats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}
                   format="percentage"
                 />
                 <StatRow 
-                  label="Aces Long"
-                  value1={detailedStats.serveDirectionStats.playerOne.long.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.long.aces}
+                  label="Aces Body"
+                  value1={detailedStats.serveDirectionStats.playerOne.body.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.body.aces}
                 />
 
-                <div className="text-sm font-medium mb-2 mt-4">Net Serves</div>
+                <div className="text-sm font-medium mb-2 mt-4">T Serves (Center)</div>
                 <StatRow 
                   label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.net.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.net.successful / detailedStats.serveDirectionStats.playerOne.net.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.net.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.net.successful / detailedStats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}
+                  value1={detailedStats.serveDirectionStats.playerOne.t.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerOne.t.successful / detailedStats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}
+                  value2={detailedStats.serveDirectionStats.playerTwo.t.attempts > 0 ? 
+                    Math.round((detailedStats.serveDirectionStats.playerTwo.t.successful / detailedStats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}
                   format="percentage"
                 />
                 <StatRow 
-                  label="Aces Net"
-                  value1={detailedStats.serveDirectionStats.playerOne.net.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.net.aces}
+                  label="Aces T"
+                  value1={detailedStats.serveDirectionStats.playerOne.t.aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo.t.aces}
                 />
               </CardContent>
             </Card>

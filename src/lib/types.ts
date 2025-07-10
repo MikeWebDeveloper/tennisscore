@@ -111,7 +111,7 @@ export interface PointDetail {
   // Serve Details
   serveType: ServeType
   serveOutcome: PointOutcome // What happened with the serve
-  servePlacement?: "long" | "wide" | "net" // Serve placement
+  servePlacement?: "wide" | "body" | "t" // Serve placement
   serveSpeed?: number // Optional serve speed
   
   // Rally Details

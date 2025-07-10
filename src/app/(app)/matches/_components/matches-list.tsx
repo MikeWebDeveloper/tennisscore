@@ -191,7 +191,7 @@ export function MatchesList({ matches }: MatchesListProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
           <Input
-            placeholder="Search matches by player name..."
+            placeholder={t('searchMatches')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"

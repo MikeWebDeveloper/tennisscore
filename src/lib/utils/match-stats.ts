@@ -96,9 +96,9 @@ export interface DetailedMatchStats extends EnhancedMatchStats {
 }
 
 export interface ServeDirectionAnalysis {
-  long: { attempts: number; successful: number; aces: number; doubleFaults: number }
   wide: { attempts: number; successful: number; aces: number; doubleFaults: number }
-  net: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  body: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  t: { attempts: number; successful: number; aces: number; doubleFaults: number }
   totalAttempts: number
   bestDirection: string
   worstDirection: string
@@ -474,7 +474,7 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
     // Analyze serve direction (for aces and double faults)
     if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
       hasAnyDetailedData = true
-      const direction = point.servePlacement as 'long' | 'wide' | 'net'
+      const direction = point.servePlacement as 'wide' | 'body' | 't'
       
       playerServeStats[direction].attempts++
       playerServeStats.totalAttempts++
@@ -548,9 +548,9 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
 
 function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
   return {
-    long: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     wide: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
-    net: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    body: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    t: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     totalAttempts: 0,
     bestDirection: '',
     worstDirection: ''
@@ -598,7 +598,7 @@ function inferShotDirection(point: PointDetail): 'long' | 'wide' | 'net' | null 
 function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
   if (stats.totalAttempts === 0) return
   
-  const directions = ['long', 'wide', 'net'] as const
+  const directions = ['wide', 'body', 't'] as const
   let bestDirection = ''
   let worstDirection = ''
   let bestSuccessRate = -1

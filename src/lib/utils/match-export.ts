@@ -496,12 +496,12 @@ export class MatchExporter {
         ['Wide Serves', 
          `${stats.serveDirectionStats.playerOne.wide.attempts} (${stats.serveDirectionStats.playerOne.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.wide.successful / stats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}%)`,
          `${stats.serveDirectionStats.playerTwo.wide.attempts} (${stats.serveDirectionStats.playerTwo.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.wide.successful / stats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}%)`],
-        ['Long Serves', 
-         `${stats.serveDirectionStats.playerOne.long.attempts} (${stats.serveDirectionStats.playerOne.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.long.successful / stats.serveDirectionStats.playerOne.long.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.long.attempts} (${stats.serveDirectionStats.playerTwo.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.long.successful / stats.serveDirectionStats.playerTwo.long.attempts) * 100) : 0}%)`],
-        ['Net Serves', 
-         `${stats.serveDirectionStats.playerOne.net.attempts} (${stats.serveDirectionStats.playerOne.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.net.successful / stats.serveDirectionStats.playerOne.net.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.net.attempts} (${stats.serveDirectionStats.playerTwo.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.net.successful / stats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}%)`],
+        ['Body Serves', 
+         `${stats.serveDirectionStats.playerOne.body.attempts} (${stats.serveDirectionStats.playerOne.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.body.successful / stats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}%)`,
+         `${stats.serveDirectionStats.playerTwo.body.attempts} (${stats.serveDirectionStats.playerTwo.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.body.successful / stats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}%)`],
+        ['T Serves (Center)', 
+         `${stats.serveDirectionStats.playerOne.t.attempts} (${stats.serveDirectionStats.playerOne.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.t.successful / stats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}%)`,
+         `${stats.serveDirectionStats.playerTwo.t.attempts} (${stats.serveDirectionStats.playerTwo.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.t.successful / stats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}%)`],
         ['Preferred Direction', stats.serveDirectionStats.playerOne.bestDirection || 'N/A', stats.serveDirectionStats.playerTwo.bestDirection || 'N/A']
       ]
 

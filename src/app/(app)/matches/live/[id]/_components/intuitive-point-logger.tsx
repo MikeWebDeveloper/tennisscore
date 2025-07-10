@@ -85,7 +85,7 @@ export function IntuitivePointLogger({
     const pointDetail: Partial<PointDetail> = {
       serveType: pointContext.serveType,
       serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
-      servePlacement: "long", // Default
+      servePlacement: "wide", // Default
       rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 1,
       pointOutcome: outcome,
       lastShotType: outcome === 'ace' || outcome === 'double_fault' ? 'serve' : 'forehand',

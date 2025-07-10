@@ -540,7 +540,7 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       server,
       serveType,
       serveOutcome,
-      servePlacement: ["long", "wide", "net"][Math.floor(Math.random() * 3)] as "long" | "wide" | "net",
+      servePlacement: ["wide", "body", "t"][Math.floor(Math.random() * 3)] as "wide" | "body" | "t",
       serveSpeed: Math.floor(Math.random() * 40) + 160, // 160-200 km/h
       rallyLength: generateRealisticRallyLength(pointOutcome),
       pointOutcome,

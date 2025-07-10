@@ -56,7 +56,7 @@ export function PointDetailSheet({
   
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
-  const [servePlacement, setServePlacement] = useState<"long" | "wide" | "net">("long")
+  const [servePlacement, setServePlacement] = useState<"wide" | "body" | "t">("wide")
   // Removed serve speed tracking as requested
   const [rallyLength, setRallyLength] = useState<string>("1")
   const [pointOutcome, setPointOutcome] = useState<PointOutcome>("winner")
@@ -188,7 +188,7 @@ export function PointDetailSheet({
   const resetForm = () => {
     setServeType("first")
     setServeOutcome("winner")
-    setServePlacement("long")
+    setServePlacement("wide")
     // Serve speed removed
     setRallyLength("1")
     setPointOutcome("winner")
@@ -360,7 +360,7 @@ export function PointDetailSheet({
                   <Label className="text-sm font-medium">{t('servePlacement')}</Label>
                   <RadioGroup 
                     value={servePlacement} 
-                    onValueChange={(value) => setServePlacement(value as "long" | "wide" | "net")}
+                    onValueChange={(value) => setServePlacement(value as "wide" | "body" | "t")}
                     className="mt-2"
                   >
                     <div className="flex items-center space-x-2">
@@ -569,11 +569,11 @@ export function PointDetailSheet({
                     <Label className="text-sm font-medium">Serve Placement</Label>
                     <div className="grid grid-cols-3 gap-2 mt-2">
                       <Button 
-                        variant={servePlacement === 'long' ? 'default' : 'outline'} 
+                        variant={servePlacement === 'body' ? 'default' : 'outline'} 
                         size="sm"
-                        onClick={() => setServePlacement('long')}
+                        onClick={() => setServePlacement('body')}
                       >
-                        Long
+                        Body
                       </Button>
                       <Button 
                         variant={servePlacement === 'wide' ? 'default' : 'outline'} 
@@ -583,11 +583,11 @@ export function PointDetailSheet({
                         Wide
                       </Button>
                       <Button 
-                        variant={servePlacement === 'net' ? 'default' : 'outline'} 
+                        variant={servePlacement === 't' ? 'default' : 'outline'} 
                         size="sm"
-                        onClick={() => setServePlacement('net')}
+                        onClick={() => setServePlacement('t')}
                       >
-                        Net
+                        T (Center)
                       </Button>
                     </div>
                   </div>
