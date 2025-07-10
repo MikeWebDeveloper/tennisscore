@@ -128,7 +128,13 @@ export function MatchExportDialog({
       sets: exportType === 'live_set' ? (setNumber ? 1 : 0) : completedSets,
       statistics: true,
       advanced: exportOptions.includeAdvancedStats,
-      pointByPoint: exportOptions.includePointByPoint
+      pointByPoint: exportOptions.includePointByPoint,
+      template: exportOptions.template,
+      sections: exportOptions.template === 'detailed' 
+        ? ['Match Overview', 'Core Statistics', 'Advanced Statistics', 'Tactical Analysis', 'Pressure Points', 'Set Analysis', 'Point-by-Point']
+        : exportOptions.template === 'professional'
+        ? ['Match Overview', 'Core Statistics', 'Advanced Statistics', 'Set Analysis', 'Point-by-Point']
+        : ['Match Overview', 'Core Statistics', 'Set Analysis']
     }
   }
 
@@ -200,21 +206,21 @@ export function MatchExportDialog({
                     <RadioGroupItem value="professional" id="professional" />
                     <Label htmlFor="professional" className="text-sm">Professional</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Clean, comprehensive format with all statistics
+                      Modern design with core statistics and set analysis
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="detailed" id="detailed" />
                     <Label htmlFor="detailed" className="text-sm">Detailed</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Professional + advanced analytics and patterns
+                      Complete analysis with serve patterns, tactical insights, pressure points
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="basic" id="basic" />
                     <Label htmlFor="basic" className="text-sm">Basic</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Simple format with essential statistics only
+                      Clean, minimalist format with key match statistics
                     </span>
                   </div>
                 </RadioGroup>
@@ -306,6 +312,21 @@ export function MatchExportDialog({
                       Advanced: {preview.advanced ? '✓' : '✗'}
                     </span>
                   </div>
+                </div>
+              </div>
+              
+              {/* Template Preview */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                <div className="flex items-center gap-2 text-gray-700 mb-2">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm font-medium">{preview.template.charAt(0).toUpperCase() + preview.template.slice(1)} Template Sections</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {preview.sections.map((section, index) => (
+                    <span key={index} className="text-xs bg-white px-2 py-1 rounded border text-gray-600">
+                      {section}
+                    </span>
+                  ))}
                 </div>
               </div>
               
@@ -424,7 +445,7 @@ export function FullMatchExportButton({
   size?: 'default' | 'sm' | 'lg'
   className?: string
 }) {
-  const canExport = match.pointLog && match.pointLog.length > 0
+  const canExport = (match.pointLog && match.pointLog.length > 0) || (match.score && match.score.sets && match.score.sets.length > 0)
 
   return (
     <MatchExportDialog

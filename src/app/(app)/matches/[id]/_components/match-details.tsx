@@ -249,7 +249,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                       isTiebreak: false,
                       tiebreakPoints: [0, 0]
                     },
-                    pointLog: [],
+                    pointLog: match.pointLog ? match.pointLog.map(pointStr => JSON.parse(pointStr)) : [],
                     startTime: undefined,
                     endTime: undefined,
                     setDurations: undefined,
@@ -372,7 +372,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                       isTiebreak: false,
                       tiebreakPoints: [0, 0]
                     },
-                    pointLog: [],
+                    pointLog: match.pointLog ? match.pointLog.map(pointStr => JSON.parse(pointStr)) : [],
                     startTime: undefined,
                     endTime: undefined,
                     setDurations: undefined,

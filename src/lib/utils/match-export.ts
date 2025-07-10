@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import { Match, MatchFormat, PointDetail as StorePointDetail } from '@/stores/matchStore'
 import { PointDetail } from '@/lib/types'
 import { calculateMatchStats, EnhancedMatchStats, calculateDetailedMatchStats, DetailedMatchStats } from '@/lib/utils/match-stats'
@@ -112,11 +112,25 @@ export class MatchExporter {
   private pageWidth: number
   private pageHeight: number
   private margin: number = 20
+  private contentWidth: number
+  private colors = {
+    primary: [39, 174, 96] as [number, number, number],     // Green
+    secondary: [52, 152, 219] as [number, number, number],   // Blue
+    accent: [155, 89, 182] as [number, number, number],      // Purple
+    dark: [44, 62, 80] as [number, number, number],          // Dark gray
+    light: [236, 240, 241] as [number, number, number],      // Light gray
+    text: [44, 62, 80] as [number, number, number],          // Dark text
+    header: [26, 188, 156] as [number, number, number],      // Teal
+    warning: [230, 126, 34] as [number, number, number],     // Orange
+    success: [39, 174, 96] as [number, number, number],      // Green
+    error: [231, 76, 60] as [number, number, number]         // Red
+  }
 
   constructor() {
     this.doc = new jsPDF('p', 'mm', 'a4')
     this.pageWidth = this.doc.internal.pageSize.getWidth()
     this.pageHeight = this.doc.internal.pageSize.getHeight()
+    this.contentWidth = this.pageWidth - (this.margin * 2)
   }
 
   async exportMatch(match: Match, playerNames: [string, string], options: ExportOptions): Promise<Blob> {
@@ -217,471 +231,479 @@ export class MatchExporter {
   }
 
   private generateProfessionalReport(data: MatchExportData): void {
-    this.addHeader(data.header)
-    this.addMatchSummary(data.summary)
-    this.addStatisticsTable(data.statistics, data.players)
+    this.addModernHeader(data.header, data.players, data.summary)
+    this.addMatchOverview(data.summary)
+    this.addCoreStatistics(data.statistics, data.players)
     
-    if (data.detailedStats?.hasDetailedData) {
-      this.addDetailedStatistics(data.detailedStats, data.players)
+    if (data.detailedStats?.hasDetailedData && data.options.includeAdvancedStats) {
+      this.addAdvancedStatistics(data.detailedStats, data.players)
     }
     
-    this.addSetBreakdowns(data.setBreakdowns)
+    this.addSetAnalysis(data.setBreakdowns)
     
     if (data.pointByPoint && data.options.includePointByPoint) {
-      this.addPointByPointSection(data.pointByPoint)
+      this.addPointByPointAnalysis(data.pointByPoint)
     }
     
     this.addFooter()
   }
 
   private generateDetailedReport(data: MatchExportData): void {
-    this.generateProfessionalReport(data)
-    // Add additional detailed analysis sections
+    this.addModernHeader(data.header, data.players, data.summary)
+    this.addMatchOverview(data.summary)
+    this.addCoreStatistics(data.statistics, data.players)
+    
     if (data.detailedStats?.hasDetailedData) {
-      this.addAdvancedAnalytics(data.detailedStats, data.players)
+      this.addAdvancedStatistics(data.detailedStats, data.players)
+      this.addTacticalAnalysis(data.detailedStats, data.players)
+      this.addPressurePointAnalysis(data.detailedStats)
     }
-  }
-
-  private generateBasicReport(data: MatchExportData): void {
-    this.addHeader(data.header)
-    this.addMatchSummary(data.summary)
-    this.addBasicStatistics(data.statistics, data.players)
-    this.addSetBreakdowns(data.setBreakdowns)
+    
+    this.addSetAnalysis(data.setBreakdowns)
+    
+    if (data.pointByPoint && data.options.includePointByPoint) {
+      this.addPointByPointAnalysis(data.pointByPoint)
+    }
+    
     this.addFooter()
   }
 
-  private addHeader(header: MatchReportHeader): void {
+  private generateBasicReport(data: MatchExportData): void {
+    this.addModernHeader(data.header, data.players, data.summary)
+    this.addMatchOverview(data.summary)
+    
+    // Simplified core statistics for basic template
+    this.addSectionHeader('MATCH STATISTICS')
+    const basicData = [
+      ['Statistic', data.players[0].name, data.players[1].name],
+      ['Total Points Won', data.statistics.totalPointsWonByPlayer[0].toString(), data.statistics.totalPointsWonByPlayer[1].toString()],
+      ['Service Win %', `${data.statistics.servicePointsWonPercentageByPlayer[0]}%`, `${data.statistics.servicePointsWonPercentageByPlayer[1]}%`],
+      ['Return Win %', `${data.statistics.receivingPointsWonPercentageByPlayer[0]}%`, `${data.statistics.receivingPointsWonPercentageByPlayer[1]}%`],
+      ['Break Points', `${data.statistics.breakPointsByPlayer.converted[0]}/${data.statistics.breakPointsByPlayer.faced[0]}`, `${data.statistics.breakPointsByPlayer.converted[1]}/${data.statistics.breakPointsByPlayer.faced[1]}`],
+      ['Aces', data.statistics.acesByPlayer[0].toString(), data.statistics.acesByPlayer[1].toString()],
+      ['Winners', data.statistics.winnersByPlayer[0].toString(), data.statistics.winnersByPlayer[1].toString()],
+      ['Unforced Errors', data.statistics.unforcedErrorsByPlayer[0].toString(), data.statistics.unforcedErrorsByPlayer[1].toString()]
+    ]
+    
+    this.addStyledTable(basicData, this.colors.primary)
+    
+    this.addSetAnalysis(data.setBreakdowns)
+    this.addFooter()
+  }
+
+  private addModernHeader(header: MatchReportHeader, players: [PlayerInfo, PlayerInfo], summary: MatchSummary): void {
+    // Header background
+    this.doc.setFillColor(...this.colors.header)
+    this.doc.rect(0, 0, this.pageWidth, 45, 'F')
+
     // Title
-    this.doc.setFontSize(24)
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(28)
     this.doc.setFont('helvetica', 'bold')
-    this.doc.text(header.title, this.pageWidth / 2, this.currentY, { align: 'center' })
-    this.currentY += 15
-
-    // Match details
+    this.doc.text('TENNIS MATCH REPORT', this.pageWidth / 2, 20, { align: 'center' })
+    
+    // Match date and format
     this.doc.setFontSize(12)
     this.doc.setFont('helvetica', 'normal')
-    this.doc.text(`${header.matchDate} • ${header.format}`, this.pageWidth / 2, this.currentY, { align: 'center' })
-    this.currentY += 8
-
+    this.doc.text(`${header.matchDate} • ${header.format}`, this.pageWidth / 2, 32, { align: 'center' })
+    
     if (header.tournament) {
-      this.doc.text(header.tournament, this.pageWidth / 2, this.currentY, { align: 'center' })
-      this.currentY += 8
+      this.doc.text(header.tournament, this.pageWidth / 2, 40, { align: 'center' })
     }
 
-    // Add separator line
-    this.doc.setLineWidth(0.5)
-    this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-    this.currentY += 15
-  }
+    this.currentY = 55
 
-  private addMatchSummary(summary: MatchSummary): void {
-    // Winner section
-    this.doc.setFontSize(16)
+    // Player vs Player section
+    this.doc.setTextColor(...this.colors.text)
+    this.doc.setFontSize(20)
     this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Winner:', this.margin, this.currentY)
-    this.doc.text(summary.winner.name, this.margin + 30, this.currentY)
-    this.currentY += 10
-
-    // Final score
-    this.doc.setFontSize(14)
-    this.doc.text('Final Score:', this.margin, this.currentY)
-    this.doc.text(summary.finalScore, this.margin + 35, this.currentY)
-    this.currentY += 10
-
-    // Match duration
-    this.doc.setFontSize(12)
-    this.doc.setFont('helvetica', 'normal')
-    this.doc.text(`Duration: ${summary.matchDuration}`, this.margin, this.currentY)
-    this.doc.text(`Total Points: ${summary.totalPoints}`, this.margin + 60, this.currentY)
+    const vsText = `${players[0].name} vs ${players[1].name}`
+    this.doc.text(vsText, this.pageWidth / 2, this.currentY, { align: 'center' })
     this.currentY += 15
 
-    // Key moments
-    if (summary.keyMoments.length > 0) {
-      this.doc.setFontSize(12)
+    // Winner and score - prominent display
+    if (summary.winner) {
+      this.doc.setFillColor(...this.colors.success)
+      this.doc.roundedRect(this.margin, this.currentY - 5, this.contentWidth, 25, 3, 3, 'F')
+      
+      this.doc.setTextColor(255, 255, 255)
+      this.doc.setFontSize(16)
       this.doc.setFont('helvetica', 'bold')
-      this.doc.text('Key Moments:', this.margin, this.currentY)
-      this.currentY += 8
-
+      this.doc.text(`Winner: ${summary.winner.name}`, this.pageWidth / 2, this.currentY + 8, { align: 'center' })
+      
+      this.doc.setFontSize(14)
       this.doc.setFont('helvetica', 'normal')
-      summary.keyMoments.forEach(moment => {
-        this.doc.text(`• ${moment}`, this.margin + 5, this.currentY)
-        this.currentY += 6
-      })
+      this.doc.text(`Final Score: ${summary.finalScore}`, this.pageWidth / 2, this.currentY + 18, { align: 'center' })
+      
+      this.currentY += 35
     }
 
     this.currentY += 10
   }
 
-  private addStatisticsTable(stats: EnhancedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
+  private addMatchOverview(summary: MatchSummary): void {
+    this.addSectionHeader('MATCH OVERVIEW')
+    
+    // Overview cards in a grid
+    const cardWidth = (this.contentWidth - 10) / 3
+    const cardHeight = 20
+    const cardSpacing = 5
+    
+    // Duration card
+    this.doc.setFillColor(...this.colors.light)
+    this.doc.roundedRect(this.margin, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
+    this.doc.setTextColor(...this.colors.text)
+    this.doc.setFontSize(10)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.text('DURATION', this.margin + 2, this.currentY + 6)
     this.doc.setFontSize(14)
     this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Match Statistics', this.margin, this.currentY)
-    this.currentY += 10
+    this.doc.text(summary.matchDuration, this.margin + 2, this.currentY + 15)
+    
+    // Total points card
+    this.doc.setFillColor(...this.colors.light)
+    this.doc.roundedRect(this.margin + cardWidth + cardSpacing, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
+    this.doc.setFontSize(10)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.text('TOTAL POINTS', this.margin + cardWidth + cardSpacing + 2, this.currentY + 6)
+    this.doc.setFontSize(14)
+    this.doc.setFont('helvetica', 'bold')
+    this.doc.text(summary.totalPoints.toString(), this.margin + cardWidth + cardSpacing + 2, this.currentY + 15)
+    
+    // Sets played card
+    this.doc.setFillColor(...this.colors.light)
+    this.doc.roundedRect(this.margin + (cardWidth + cardSpacing) * 2, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
+    this.doc.setFontSize(10)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.text('SETS PLAYED', this.margin + (cardWidth + cardSpacing) * 2 + 2, this.currentY + 6)
+    this.doc.setFontSize(14)
+    this.doc.setFont('helvetica', 'bold')
+    const setsPlayed = summary.finalScore.split(',').length
+    this.doc.text(setsPlayed.toString(), this.margin + (cardWidth + cardSpacing) * 2 + 2, this.currentY + 15)
+    
+    this.currentY += cardHeight + 15
 
-    const tableData = [
-      ['Statistic', players[0].name, players[1].name],
-      ['Total Points Won', stats.totalPointsWonByPlayer[0].toString(), stats.totalPointsWonByPlayer[1].toString()],
-      ['Service Points Won', `${stats.servicePointsWonByPlayer[0]} (${stats.servicePointsWonPercentageByPlayer[0]}%)`, 
-       `${stats.servicePointsWonByPlayer[1]} (${stats.servicePointsWonPercentageByPlayer[1]}%)`],
+    // Key moments section
+    if (summary.keyMoments.length > 0) {
+      this.addSubsectionHeader('Key Moments')
+      
+      summary.keyMoments.slice(0, 8).forEach((moment, index) => {
+        this.doc.setFillColor(...this.colors.light)
+        this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 8, 1, 1, 'F')
+        
+        this.doc.setTextColor(...this.colors.text)
+        this.doc.setFontSize(9)
+        this.doc.setFont('helvetica', 'normal')
+        this.doc.text(`${index + 1}. ${moment}`, this.margin + 3, this.currentY + 5)
+        this.currentY += 10
+      })
+      
+      this.currentY += 5
+    }
+
+    this.currentY += 10
+  }
+
+  private addCoreStatistics(stats: EnhancedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
+    this.addSectionHeader('CORE STATISTICS')
+
+    // Service Statistics
+    this.addSubsectionHeader('Service Performance')
+    const serviceData = [
+      ['Metric', players[0].name, players[1].name],
+      ['Service Points Won', `${stats.servicePointsWonByPlayer[0]}/${stats.servicePointsPlayedByPlayer[0]}`, `${stats.servicePointsWonByPlayer[1]}/${stats.servicePointsPlayedByPlayer[1]}`],
+      ['Service Win %', `${stats.servicePointsWonPercentageByPlayer[0]}%`, `${stats.servicePointsWonPercentageByPlayer[1]}%`],
       ['First Serve %', `${stats.firstServePercentageByPlayer[0]}%`, `${stats.firstServePercentageByPlayer[1]}%`],
       ['First Serve Points Won', `${stats.firstServePointsWonByPlayer[0]}%`, `${stats.firstServePointsWonByPlayer[1]}%`],
       ['Aces', stats.acesByPlayer[0].toString(), stats.acesByPlayer[1].toString()],
-      ['Double Faults', stats.doubleFaultsByPlayer[0].toString(), stats.doubleFaultsByPlayer[1].toString()],
+      ['Double Faults', stats.doubleFaultsByPlayer[0].toString(), stats.doubleFaultsByPlayer[1].toString()]
+    ]
+
+    this.addStyledTable(serviceData, this.colors.secondary)
+
+    // Return Statistics
+    this.addSubsectionHeader('Return Performance')
+    const returnData = [
+      ['Metric', players[0].name, players[1].name],
+      ['Return Points Won', `${stats.receivingPointsWonByPlayer[0]}/${stats.receivingPointsPlayedByPlayer[0]}`, `${stats.receivingPointsWonByPlayer[1]}/${stats.receivingPointsPlayedByPlayer[1]}`],
+      ['Return Win %', `${stats.receivingPointsWonPercentageByPlayer[0]}%`, `${stats.receivingPointsWonPercentageByPlayer[1]}%`],
+      ['Break Points Converted', `${stats.breakPointsByPlayer.converted[0]}/${stats.breakPointsByPlayer.faced[0]}`, `${stats.breakPointsByPlayer.converted[1]}/${stats.breakPointsByPlayer.faced[1]}`],
+      ['Break Point %', `${stats.breakPointsByPlayer.conversionRate[0]}%`, `${stats.breakPointsByPlayer.conversionRate[1]}%`]
+    ]
+
+    this.addStyledTable(returnData, this.colors.accent)
+
+    // Shot Statistics
+    this.addSubsectionHeader('Shot Statistics')
+    const shotData = [
+      ['Metric', players[0].name, players[1].name],
+      ['Total Points Won', stats.totalPointsWonByPlayer[0].toString(), stats.totalPointsWonByPlayer[1].toString()],
       ['Winners', stats.winnersByPlayer[0].toString(), stats.winnersByPlayer[1].toString()],
       ['Unforced Errors', stats.unforcedErrorsByPlayer[0].toString(), stats.unforcedErrorsByPlayer[1].toString()],
-      ['Break Points Won', `${stats.breakPointsByPlayer.converted[0]}/${stats.breakPointsByPlayer.faced[0]} (${stats.breakPointsByPlayer.conversionRate[0]}%)`,
-       `${stats.breakPointsByPlayer.converted[1]}/${stats.breakPointsByPlayer.faced[1]} (${stats.breakPointsByPlayer.conversionRate[1]}%)`]
+      ['Forced Errors', stats.forcedErrorsByPlayer[0].toString(), stats.forcedErrorsByPlayer[1].toString()],
+      ['Winner/UE Ratio', `${(stats.winnersByPlayer[0] / Math.max(stats.unforcedErrorsByPlayer[0], 1)).toFixed(2)}`, `${(stats.winnersByPlayer[1] / Math.max(stats.unforcedErrorsByPlayer[1], 1)).toFixed(2)}`]
     ]
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-      head: [tableData[0]],
-      body: tableData.slice(1),
+    this.addStyledTable(shotData, this.colors.success)
+  }
+
+  private addStyledTable(data: string[][], headerColor: [number, number, number]): void {
+    autoTable(this.doc, {
+      head: [data[0]],
+      body: data.slice(1),
       startY: this.currentY,
       styles: {
-        fontSize: 10,
-        cellPadding: 4,
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1
+        fontSize: 9,
+        cellPadding: 6,
+        lineColor: [230, 230, 230],
+        lineWidth: 0.5,
+        textColor: this.colors.text
       },
       headStyles: {
-        fillColor: [40, 40, 40],
+        fillColor: headerColor,
         textColor: [255, 255, 255],
-        fontStyle: 'bold'
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250]
       },
       columnStyles: {
-        0: { cellWidth: 50, fontStyle: 'bold' },
-        1: { cellWidth: 50, halign: 'center' },
-        2: { cellWidth: 50, halign: 'center' }
+        0: { cellWidth: 55, fontStyle: 'bold', halign: 'left' },
+        1: { cellWidth: 55, halign: 'center' },
+        2: { cellWidth: 55, halign: 'center' }
       },
-      margin: { left: this.margin, right: this.margin }
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: [200, 200, 200],
+      tableLineWidth: 0.5
     })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.currentY = (this.doc as any).lastAutoTable.finalY + 15
   }
 
-  private addBasicStatistics(stats: EnhancedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
-    this.doc.setFontSize(14)
-    this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Basic Statistics', this.margin, this.currentY)
-    this.currentY += 10
-
-    const tableData = [
-      ['Statistic', players[0].name, players[1].name],
-      ['Total Points Won', stats.totalPointsWonByPlayer[0].toString(), stats.totalPointsWonByPlayer[1].toString()],
-      ['Service Points Won', `${stats.servicePointsWonPercentageByPlayer[0]}%`, `${stats.servicePointsWonPercentageByPlayer[1]}%`],
-      ['Return Points Won', `${stats.receivingPointsWonPercentageByPlayer[0]}%`, `${stats.receivingPointsWonPercentageByPlayer[1]}%`],
-      ['Break Points Converted', `${stats.breakPointsByPlayer.conversionRate[0]}%`, `${stats.breakPointsByPlayer.conversionRate[1]}%`]
-    ]
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-      head: [tableData[0]],
-      body: tableData.slice(1),
-      startY: this.currentY,
-      styles: {
-        fontSize: 10,
-        cellPadding: 4,
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1
-      },
-      headStyles: {
-        fillColor: [40, 40, 40],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      columnStyles: {
-        0: { cellWidth: 60, fontStyle: 'bold' },
-        1: { cellWidth: 50, halign: 'center' },
-        2: { cellWidth: 50, halign: 'center' }
-      },
-      margin: { left: this.margin, right: this.margin }
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 15
-  }
-
-  private addDetailedStatistics(stats: DetailedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
+  private addAdvancedStatistics(stats: DetailedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
     if (!stats.hasDetailedData) return
 
-    this.checkPageBreak(60)
-
-    this.doc.setFontSize(14)
-    this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Detailed Analysis', this.margin, this.currentY)
-    this.currentY += 15
+    this.addSectionHeader('ADVANCED STATISTICS')
 
     // Serve Direction Analysis
     if (stats.serveDirectionStats.playerOne.totalAttempts > 0 || stats.serveDirectionStats.playerTwo.totalAttempts > 0) {
-      this.doc.setFontSize(12)
-      this.doc.setFont('helvetica', 'bold')
-      this.doc.text('Serve Direction Analysis', this.margin, this.currentY)
-      this.currentY += 10
+      this.addSubsectionHeader('Serve Direction Analysis')
 
       const serveData = [
-        ['Direction', `${players[0].name} (Success Rate)`, `${players[1].name} (Success Rate)`],
-        ['Wide', 
+        ['Direction', `${players[0].name}`, `${players[1].name}`],
+        ['Wide Serves', 
          `${stats.serveDirectionStats.playerOne.wide.attempts} (${stats.serveDirectionStats.playerOne.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.wide.successful / stats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}%)`,
          `${stats.serveDirectionStats.playerTwo.wide.attempts} (${stats.serveDirectionStats.playerTwo.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.wide.successful / stats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}%)`],
-        ['Long', 
+        ['Long Serves', 
          `${stats.serveDirectionStats.playerOne.long.attempts} (${stats.serveDirectionStats.playerOne.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.long.successful / stats.serveDirectionStats.playerOne.long.attempts) * 100) : 0}%)`,
          `${stats.serveDirectionStats.playerTwo.long.attempts} (${stats.serveDirectionStats.playerTwo.long.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.long.successful / stats.serveDirectionStats.playerTwo.long.attempts) * 100) : 0}%)`],
-        ['Net', 
+        ['Net Serves', 
          `${stats.serveDirectionStats.playerOne.net.attempts} (${stats.serveDirectionStats.playerOne.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.net.successful / stats.serveDirectionStats.playerOne.net.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.net.attempts} (${stats.serveDirectionStats.playerTwo.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.net.successful / stats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}%)`]
+         `${stats.serveDirectionStats.playerTwo.net.attempts} (${stats.serveDirectionStats.playerTwo.net.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.net.successful / stats.serveDirectionStats.playerTwo.net.attempts) * 100) : 0}%)`],
+        ['Preferred Direction', stats.serveDirectionStats.playerOne.bestDirection || 'N/A', stats.serveDirectionStats.playerTwo.bestDirection || 'N/A']
       ]
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-        head: [serveData[0]],
-        body: serveData.slice(1),
-        startY: this.currentY,
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [60, 60, 60],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 40, fontStyle: 'bold' },
-          1: { cellWidth: 50, halign: 'center' },
-          2: { cellWidth: 50, halign: 'center' }
-        },
-        margin: { left: this.margin, right: this.margin }
-      })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+      this.addStyledTable(serveData, this.colors.warning)
     }
+  }
 
-    // Pressure Point Performance
+  private addTacticalAnalysis(stats: DetailedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
+    this.addSubsectionHeader('Tactical Analysis')
+
+    // Shot direction patterns
+    if (stats.shotDirectionStats.playerOne.totalShots > 0 || stats.shotDirectionStats.playerTwo.totalShots > 0) {
+      const shotData = [
+        ['Shot Pattern', `${players[0].name}`, `${players[1].name}`],
+        ['Long Shots', 
+         `${stats.shotDirectionStats.playerOne.long.attempts} (W:${stats.shotDirectionStats.playerOne.long.winners}/E:${stats.shotDirectionStats.playerOne.long.errors})`,
+         `${stats.shotDirectionStats.playerTwo.long.attempts} (W:${stats.shotDirectionStats.playerTwo.long.winners}/E:${stats.shotDirectionStats.playerTwo.long.errors})`],
+        ['Wide Shots', 
+         `${stats.shotDirectionStats.playerOne.wide.attempts} (W:${stats.shotDirectionStats.playerOne.wide.winners}/E:${stats.shotDirectionStats.playerOne.wide.errors})`,
+         `${stats.shotDirectionStats.playerTwo.wide.attempts} (W:${stats.shotDirectionStats.playerTwo.wide.winners}/E:${stats.shotDirectionStats.playerTwo.wide.errors})`],
+        ['Net Shots', 
+         `${stats.shotDirectionStats.playerOne.net.attempts} (W:${stats.shotDirectionStats.playerOne.net.winners}/E:${stats.shotDirectionStats.playerOne.net.errors})`,
+         `${stats.shotDirectionStats.playerTwo.net.attempts} (W:${stats.shotDirectionStats.playerTwo.net.winners}/E:${stats.shotDirectionStats.playerTwo.net.errors})`],
+        ['Preferred Shot', stats.shotDirectionStats.playerOne.preferredDirection || 'N/A', stats.shotDirectionStats.playerTwo.preferredDirection || 'N/A']
+      ]
+
+      this.addStyledTable(shotData, this.colors.accent)
+    }
+  }
+
+  private addPressurePointAnalysis(stats: DetailedMatchStats): void {
     const pressureStats = stats.contextualStats.pressurePointPerformance
     if (pressureStats.breakPoints.total > 0 || pressureStats.setPoints.total > 0) {
-      this.doc.setFontSize(12)
-      this.doc.setFont('helvetica', 'bold')
-      this.doc.text('Pressure Point Performance', this.margin, this.currentY)
-      this.currentY += 10
+      this.addSubsectionHeader('Pressure Point Performance')
 
       const pressureData = [
-        ['Situation', 'Total', 'Won', 'Success Rate'],
-        ['Break Points', pressureStats.breakPoints.total.toString(), pressureStats.breakPoints.won.toString(), `${pressureStats.breakPoints.percentage}%`],
-        ['Set Points', pressureStats.setPoints.total.toString(), pressureStats.setPoints.won.toString(), `${pressureStats.setPoints.percentage}%`],
-        ['Match Points', pressureStats.matchPoints.total.toString(), pressureStats.matchPoints.won.toString(), `${pressureStats.matchPoints.percentage}%`]
+        ['Critical Situation', 'Total Opportunities', 'Converted', 'Success Rate'],
+        ['Break Point Opportunities', pressureStats.breakPoints.total.toString(), pressureStats.breakPoints.won.toString(), `${pressureStats.breakPoints.percentage}%`],
+        ['Set Point Opportunities', pressureStats.setPoints.total.toString(), pressureStats.setPoints.won.toString(), `${pressureStats.setPoints.percentage}%`],
+        ['Match Point Opportunities', pressureStats.matchPoints.total.toString(), pressureStats.matchPoints.won.toString(), `${pressureStats.matchPoints.percentage}%`]
       ]
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-        head: [pressureData[0]],
-        body: pressureData.slice(1),
-        startY: this.currentY,
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [60, 60, 60],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 40, fontStyle: 'bold' },
-          1: { cellWidth: 25, halign: 'center' },
-          2: { cellWidth: 25, halign: 'center' },
-          3: { cellWidth: 30, halign: 'center' }
-        },
-        margin: { left: this.margin, right: this.margin }
-      })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+      this.addStyledTable(pressureData, this.colors.error)
     }
   }
 
-  private addAdvancedAnalytics(stats: DetailedMatchStats, players: [PlayerInfo, PlayerInfo]): void {
-    this.checkPageBreak(40)
 
-    this.doc.setFontSize(14)
-    this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Advanced Analytics', this.margin, this.currentY)
-    this.currentY += 15
+  private addSetAnalysis(setBreakdowns: SetBreakdown[]): void {
+    this.addSectionHeader('SET-BY-SET ANALYSIS')
 
-    // Shot direction analysis
-    if (stats.shotDirectionStats.playerOne.totalShots > 0 || stats.shotDirectionStats.playerTwo.totalShots > 0) {
-      this.doc.setFontSize(12)
+    setBreakdowns.forEach((setData, index) => {
+      this.checkPageBreak(60)
+      
+      // Set header with score
+      this.doc.setFillColor(...this.colors.light)
+      this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 15, 2, 2, 'F')
+      
+      this.doc.setTextColor(...this.colors.text)
+      this.doc.setFontSize(14)
       this.doc.setFont('helvetica', 'bold')
-      this.doc.text('Shot Direction Patterns', this.margin, this.currentY)
-      this.currentY += 10
+      this.doc.text(`SET ${setData.setNumber}`, this.margin + 5, this.currentY + 10)
+      
+      this.doc.setFontSize(12)
+      this.doc.text(`${setData.score[0]} - ${setData.score[1]}`, this.margin + 60, this.currentY + 10)
+      
+      this.doc.setFontSize(10)
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.text(`Duration: ${setData.duration}`, this.pageWidth - this.margin - 40, this.currentY + 10, { align: 'right' })
+      
+      this.currentY += 25
 
-      const shotData = [
-        ['Direction', `${players[0].name} (W/E)`, `${players[1].name} (W/E)`],
-        ['Long', 
-         `${stats.shotDirectionStats.playerOne.long.attempts} (${stats.shotDirectionStats.playerOne.long.winners}/${stats.shotDirectionStats.playerOne.long.errors})`,
-         `${stats.shotDirectionStats.playerTwo.long.attempts} (${stats.shotDirectionStats.playerTwo.long.winners}/${stats.shotDirectionStats.playerTwo.long.errors})`],
-        ['Wide', 
-         `${stats.shotDirectionStats.playerOne.wide.attempts} (${stats.shotDirectionStats.playerOne.wide.winners}/${stats.shotDirectionStats.playerOne.wide.errors})`,
-         `${stats.shotDirectionStats.playerTwo.wide.attempts} (${stats.shotDirectionStats.playerTwo.wide.winners}/${stats.shotDirectionStats.playerTwo.wide.errors})`],
-        ['Net', 
-         `${stats.shotDirectionStats.playerOne.net.attempts} (${stats.shotDirectionStats.playerOne.net.winners}/${stats.shotDirectionStats.playerOne.net.errors})`,
-         `${stats.shotDirectionStats.playerTwo.net.attempts} (${stats.shotDirectionStats.playerTwo.net.winners}/${stats.shotDirectionStats.playerTwo.net.errors})`]
+      // Set statistics summary
+      const setStatsData = [
+        ['Statistic', 'Player 1', 'Player 2'],
+        ['First Serve %', `${setData.keyStats.firstServePercentage[0]}%`, `${setData.keyStats.firstServePercentage[1]}%`],
+        ['Aces', setData.keyStats.aces[0].toString(), setData.keyStats.aces[1].toString()],
+        ['Double Faults', setData.keyStats.doubleFaults[0].toString(), setData.keyStats.doubleFaults[1].toString()],
+        ['Winners', setData.keyStats.winners[0].toString(), setData.keyStats.winners[1].toString()],
+        ['Unforced Errors', setData.keyStats.unforcedErrors[0].toString(), setData.keyStats.unforcedErrors[1].toString()],
+        ['Break Points', `${setData.keyStats.breakPoints.converted[0]}/${setData.keyStats.breakPoints.faced[0]}`, `${setData.keyStats.breakPoints.converted[1]}/${setData.keyStats.breakPoints.faced[1]}`]
       ]
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-        head: [shotData[0]],
-        body: shotData.slice(1),
-        startY: this.currentY,
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [60, 60, 60],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 40, fontStyle: 'bold' },
-          1: { cellWidth: 50, halign: 'center' },
-          2: { cellWidth: 50, halign: 'center' }
-        },
-        margin: { left: this.margin, right: this.margin }
-      })
+      this.addStyledTable(setStatsData, this.colors.primary)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 15
-    }
-  }
+      // Game progression (only for first 2 sets to save space)
+      if (index < 2 && setData.gameBreakdown.length > 0) {
+        this.addSubsectionHeader('Game Progression')
+        
+        const gameData = setData.gameBreakdown.slice(0, 12).map(game => [
+          game.gameNumber.toString(),
+          game.winner === 'p1' ? 'P1' : 'P2',
+          game.score,
+          game.isBreak ? '🔥 BREAK' : 'Hold'
+        ])
 
-  private addSetBreakdowns(setBreakdowns: SetBreakdown[]): void {
-    this.checkPageBreak(40)
-
-    this.doc.setFontSize(14)
-    this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Set-by-Set Breakdown', this.margin, this.currentY)
-    this.currentY += 15
-
-    setBreakdowns.forEach(setData => {
-      this.doc.setFontSize(12)
-      this.doc.setFont('helvetica', 'bold')
-      this.doc.text(`Set ${setData.setNumber}: ${setData.score[0]}-${setData.score[1]} (${setData.duration})`, this.margin, this.currentY)
+        this.addStyledTable([
+          ['Game #', 'Winner', 'Final Score', 'Result'],
+          ...gameData
+        ], this.colors.secondary)
+      }
+      
       this.currentY += 10
-
-      // Game-by-game breakdown
-      const gameData = setData.gameBreakdown.map(game => [
-        game.gameNumber.toString(),
-        game.winner === 'p1' ? 'Player 1' : 'Player 2',
-        game.score,
-        game.isBreak ? 'Break' : 'Hold'
-      ])
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-        head: [['Game', 'Winner', 'Score', 'Type']],
-        body: gameData,
-        startY: this.currentY,
-        styles: {
-          fontSize: 8,
-          cellPadding: 2,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [80, 80, 80],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 20, halign: 'center' },
-          1: { cellWidth: 40, halign: 'center' },
-          2: { cellWidth: 30, halign: 'center' },
-          3: { cellWidth: 30, halign: 'center' }
-        },
-        margin: { left: this.margin, right: this.margin }
-      })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10
     })
   }
 
-  private addPointByPointSection(pointByPoint: PointSummary[]): void {
-    this.checkPageBreak(40)
+  private addPointByPointAnalysis(pointByPoint: PointSummary[]): void {
+    this.addSectionHeader('POINT-BY-POINT ANALYSIS')
 
-    this.doc.setFontSize(14)
-    this.doc.setFont('helvetica', 'bold')
-    this.doc.text('Point-by-Point Log', this.margin, this.currentY)
-    this.currentY += 15
-
-    // Group points by set
-    const pointsBySet = pointByPoint.reduce((acc, point) => {
-      const setNum = Math.floor((point.pointNumber - 1) / 100) + 1 // Rough estimation
-      if (!acc[setNum]) acc[setNum] = []
-      acc[setNum].push(point)
-      return acc
-    }, {} as Record<number, PointSummary[]>)
-
-    Object.entries(pointsBySet).forEach(([setNum, points]) => {
-      this.doc.setFontSize(12)
-      this.doc.setFont('helvetica', 'bold')
-      this.doc.text(`Set ${setNum} Points`, this.margin, this.currentY)
-      this.currentY += 10
-
-      const pointData = points.slice(0, 20).map(point => [
+    // Key points summary first
+    this.addSubsectionHeader('Critical Points Summary')
+    const criticalPoints = pointByPoint.filter(p => p.isBreakPoint || p.isSetPoint || p.isMatchPoint)
+    
+    if (criticalPoints.length > 0) {
+      const criticalData = criticalPoints.slice(0, 15).map(point => [
         point.pointNumber.toString(),
         point.gameScore,
         point.server,
         point.winner,
-        point.pointType,
-        point.isBreakPoint ? 'BP' : (point.isSetPoint ? 'SP' : (point.isMatchPoint ? 'MP' : ''))
+        point.isMatchPoint ? '🏆 MP' : point.isSetPoint ? '🎆 SP' : '🔥 BP',
+        point.description.slice(0, 30) + (point.description.length > 30 ? '...' : '')
       ])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(this.doc as any).autoTable({
-        head: [['Point', 'Game Score', 'Server', 'Winner', 'Type', 'Context']],
-        body: pointData,
-        startY: this.currentY,
-        styles: {
-          fontSize: 8,
-          cellPadding: 2,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [100, 100, 100],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 15, halign: 'center' },
-          1: { cellWidth: 20, halign: 'center' },
-          2: { cellWidth: 25, halign: 'center' },
-          3: { cellWidth: 25, halign: 'center' },
-          4: { cellWidth: 30, halign: 'center' },
-          5: { cellWidth: 15, halign: 'center' }
-        },
-        margin: { left: this.margin, right: this.margin }
-      })
+      this.addStyledTable([
+        ['Point #', 'Score', 'Server', 'Winner', 'Type', 'Description'],
+        ...criticalData
+      ], this.colors.error)
+    }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10
-    })
+    // Detailed point log (first 50 points)
+    this.addSubsectionHeader('Detailed Point Log')
+    const detailedPoints = pointByPoint.slice(0, 50).map(point => [
+      point.pointNumber.toString(),
+      point.gameScore,
+      point.server.slice(0, 8),
+      point.winner.slice(0, 8),
+      point.pointType,
+      (point.isBreakPoint ? 'BP ' : '') + (point.isSetPoint ? 'SP ' : '') + (point.isMatchPoint ? 'MP' : '')
+    ])
+
+    // Split into chunks to avoid overly long tables
+    const chunkSize = 25
+    for (let i = 0; i < detailedPoints.length; i += chunkSize) {
+      const chunk = detailedPoints.slice(i, i + chunkSize)
+      const startPoint = i + 1
+      const endPoint = Math.min(i + chunkSize, detailedPoints.length)
+      
+      this.doc.setTextColor(...this.colors.dark)
+      this.doc.setFontSize(10)
+      this.doc.setFont('helvetica', 'bold')
+      this.doc.text(`Points ${startPoint}-${endPoint}`, this.margin, this.currentY)
+      this.currentY += 8
+
+      this.addStyledTable([
+        ['Point', 'Score', 'Server', 'Winner', 'Type', 'Context'],
+        ...chunk
+      ], this.colors.dark)
+      
+      if (i + chunkSize < detailedPoints.length) {
+        this.currentY += 5
+      }
+    }
+  }
+
+  private addSectionHeader(title: string): void {
+    this.checkPageBreak(25)
+    
+    this.doc.setFillColor(...this.colors.primary)
+    this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 12, 2, 2, 'F')
+    
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(14)
+    this.doc.setFont('helvetica', 'bold')
+    this.doc.text(title, this.margin + 5, this.currentY + 8)
+    
+    this.currentY += 20
+  }
+
+  private addSubsectionHeader(title: string): void {
+    this.doc.setTextColor(...this.colors.dark)
+    this.doc.setFontSize(12)
+    this.doc.setFont('helvetica', 'bold')
+    this.doc.text(title, this.margin, this.currentY)
+    
+    // Add underline
+    this.doc.setDrawColor(...this.colors.secondary)
+    this.doc.setLineWidth(0.5)
+    this.doc.line(this.margin, this.currentY + 2, this.margin + 40, this.currentY + 2)
+    
+    this.currentY += 12
   }
 
   private addFooter(): void {
-    this.doc.setFontSize(10)
+    // Add a subtle footer
+    this.doc.setTextColor(...this.colors.light)
+    this.doc.setFontSize(8)
     this.doc.setFont('helvetica', 'normal')
     this.doc.text('Generated by TennisScore App', this.pageWidth / 2, this.pageHeight - 10, { align: 'center' })
+    
+    // Add page number on first page
+    this.doc.setTextColor(...this.colors.light)
+    this.doc.setFontSize(8)
+    this.doc.text('Page 1', this.pageWidth - this.margin, this.pageHeight - 10, { align: 'right' })
   }
 
   private checkPageBreak(requiredSpace: number): void {
