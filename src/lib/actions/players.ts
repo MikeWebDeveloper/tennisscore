@@ -105,7 +105,11 @@ export async function getPlayersByUser(): Promise<Player[]> {
     const response = await databases.listDocuments<Player>(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      [Query.equal("userId", user.$id), Query.orderDesc("$createdAt")]
+      [
+        Query.equal("userId", user.$id), 
+        Query.orderDesc("$createdAt"),
+        Query.limit(1000) // Set high limit to get all players
+      ]
     )
 
     const playersWithPictures = response.documents.map(player => {
@@ -136,7 +140,11 @@ export async function getMainPlayer(): Promise<Player | null> {
       databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
+        [
+          Query.equal("userId", user.$id), 
+          Query.equal("isMainPlayer", true),
+          Query.limit(1) // We only need one main player
+        ]
       )
     )
     
@@ -238,33 +246,36 @@ export async function updatePlayer(playerId: string, formData: FormData) {
 
 export async function getPlayersByIds(playerIds: string[]): Promise<Record<string, Player>> {
   try {
+    if (!playerIds || playerIds.length === 0) {
+      return {}
+    }
+
     const { databases } = await createAdminClient()
-    
     const players: Record<string, Player> = {}
     
-    // Fetch all players that match the IDs
-    for (const playerId of playerIds) {
+    // Filter out invalid IDs (anonymous players, empty strings, etc.)
+    const validPlayerIds = playerIds.filter(id => 
+      id && 
+      typeof id === 'string' && 
+      id.trim() !== '' && 
+      !id.startsWith('anonymous-') &&
+      id.length > 10 // Appwrite IDs are typically longer
+    )
+    
+    // Fetch all players that match the valid IDs  
+    for (const playerId of validPlayerIds) {
       try {
-        const player = await databases.getDocument(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-          playerId
+        const player = await withRetry(() =>
+          databases.getDocument(
+            process.env.APPWRITE_DATABASE_ID!,
+            process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+            playerId
+          )
         )
         players[playerId] = player as unknown as Player
       } catch (error) {
         console.error(`Error fetching player ${playerId}:`, error)
-        // Create a fallback player name
-        players[playerId] = {
-          $id: playerId,
-          firstName: `Player`,
-          lastName: playerId.slice(-4),
-          userId: '',
-          $createdAt: '',
-          $updatedAt: '',
-          $permissions: [],
-          $databaseId: '',
-          $collectionId: ''
-        } as Player
+        // Don't create fallback entries - let formatPlayerFromObject handle null properly
       }
     }
     
