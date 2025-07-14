@@ -158,32 +158,21 @@ export function isSetPoint(
   currentSets: number[][] = []
 ): { isSetPoint: boolean; player: "p1" | "p2" | null } {
   const targetGames = format.shortSets ? 4 : 6
-  
   // Check if this is the final set
   const setsNeededToWin = Math.ceil(format.sets / 2)
   const p1SetsWon = currentSets.filter(set => set[0] > set[1]).length
   const p2SetsWon = currentSets.filter(set => set[1] > set[0]).length
-  const isFinalSet = (p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1)
-  
+  // Treat first set as match if format.sets === 1
+  const isFinalSet = (format.sets === 1) || (p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1)
   if (isTiebreak) {
     const tiebreakTarget = (isFinalSet && format.finalSetTiebreak === "super") ? (format.finalSetTiebreakAt || 10) : 7
-    // Debug log for test diagnosis
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[isSetPoint tiebreak debug]', { p1Points, p2Points, tiebreakTarget,
-        cond1: p2Points >= tiebreakTarget - 1,
-        cond2: (p2Points + 1) >= tiebreakTarget,
-        cond3: (p2Points + 1) - p1Points >= 2
-      })
-    }
     // Set point in tiebreak - only if player can win with next point
-    // For p1
     if (
       p1Points >= tiebreakTarget - 1 &&
       (p1Points + 1) >= tiebreakTarget && (p1Points + 1) - p2Points >= 2
     ) {
       return { isSetPoint: true, player: "p1" }
     }
-    // For p2
     if (
       p2Points >= tiebreakTarget - 1 &&
       (p2Points + 1) >= tiebreakTarget && (p2Points + 1) - p1Points >= 2
@@ -192,16 +181,13 @@ export function isSetPoint(
     }
     return { isSetPoint: false, player: null }
   }
-  
   // Regular game - check if winning this game would win the set
   const wouldP1WinSet = (p1Games >= targetGames - 1 && p1Games >= p2Games) || 
                         (p1Games === targetGames && p2Games < targetGames)
   const wouldP2WinSet = (p2Games >= targetGames - 1 && p2Games >= p1Games) || 
                         (p2Games === targetGames && p1Games < targetGames)
-  
   // Determine who has game point - use exact conditions
   let gamePointPlayer: "p1" | "p2" | null = null
-  
   if (format.noAd) {
     // No-ad: player wins at 4 points if ahead or tied
     if (p1Points === 3 && p1Points >= p2Points) gamePointPlayer = "p1"
@@ -213,16 +199,13 @@ export function isSetPoint(
     else if (p1Points >= 4 && p2Points >= 3 && p1Points === p2Points + 1) gamePointPlayer = "p1" // AD-40
     else if (p2Points >= 4 && p1Points >= 3 && p2Points === p1Points + 1) gamePointPlayer = "p2" // 40-AD
   }
-  
   if (!gamePointPlayer) return { isSetPoint: false, player: null }
-  
   if (gamePointPlayer === "p1" && wouldP1WinSet) {
     return { isSetPoint: true, player: "p1" }
   }
   if (gamePointPlayer === "p2" && wouldP2WinSet) {
     return { isSetPoint: true, player: "p2" }
   }
-  
   return { isSetPoint: false, player: null }
 }
 
@@ -235,21 +218,17 @@ export function isMatchPoint(
   format: MatchFormat,
   isTiebreak: boolean = false
 ): { isMatchPoint: boolean; player: "p1" | "p2" | null } {
+  // Treat first set as match if format.sets === 1
   const setsNeededToWin = Math.ceil(format.sets / 2)
   const p1SetsWon = currentSets.filter(set => set[0] > set[1]).length
   const p2SetsWon = currentSets.filter(set => set[1] > set[0]).length
-  
-  // Check if either player is one set away from winning
-  const p1OneSetAway = p1SetsWon === setsNeededToWin - 1
-  const p2OneSetAway = p2SetsWon === setsNeededToWin - 1
-  
+  const p1OneSetAway = (format.sets === 1) || p1SetsWon === setsNeededToWin - 1
+  const p2OneSetAway = (format.sets === 1) || p2SetsWon === setsNeededToWin - 1
   if (!p1OneSetAway && !p2OneSetAway) {
     return { isMatchPoint: false, player: null }
   }
-  
   // Check if current situation is also a set point
   const setPointStatus = isSetPoint(p1Games, p2Games, p1Points, p2Points, format, isTiebreak, currentSets)
-  
   if (setPointStatus.isSetPoint) {
     if (setPointStatus.player === "p1" && p1OneSetAway) {
       return { isMatchPoint: true, player: "p1" }
@@ -258,7 +237,6 @@ export function isMatchPoint(
       return { isMatchPoint: true, player: "p2" }
     }
   }
-  
   return { isMatchPoint: false, player: null }
 }
 
