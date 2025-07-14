@@ -510,6 +510,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                   <PointByPointView
                     pointLog={pointLog}
                     playerNames={playerNames}
+                    playerObjects={{
+                      p1: match.playerOne,
+                      p2: match.playerTwo,
+                      ...(match.playerThree ? { p3: match.playerThree } : {}),
+                      ...(match.playerFour ? { p4: match.playerFour } : {})
+                    }}
                   />
                 </CardContent>
               </Card>

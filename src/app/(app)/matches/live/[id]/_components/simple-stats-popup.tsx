@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "@/hooks/use-translations"
 
@@ -34,7 +35,7 @@ export function SimpleStatsPopup({
   onSave, 
   pointContext 
 }: SimpleStatsPopupProps) {
-  const { winner, server, serveType } = pointContext
+  const { winner, server, serveType, playerNames } = pointContext
   const t = useTranslations()
   
   // Conditional logic for disabled buttons
@@ -49,60 +50,95 @@ export function SimpleStatsPopup({
 
   const outcomes = [
     {
-      id: 'ace' as const,
-      label: t('aces'),
-      disabled: isAceDisabled,
-      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
-    },
-    {
       id: 'winner' as const,
       label: t('winner'),
+      description: t('cleanWinner'),
       disabled: false,
       color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
     },
     {
+      id: 'ace' as const,
+      label: t('aces'),
+      description: t('unreturnableServe'),
+      disabled: isAceDisabled,
+      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
+    },
+    {
       id: 'forced_error' as const,
       label: t('forcedError'),
+      description: t('opponentForcedIntoError'),
       disabled: false,
       color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
     },
     {
       id: 'unforced_error' as const,
       label: t('unforcedError'),
+      description: t('unforcedMistake'),
       disabled: false,
       color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
     },
     {
       id: 'double_fault' as const,
       label: t('doubleFaults'),
+      description: t('twoConsecutiveFaults'),
       disabled: isDoubleFaultDisabled,
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
     }
   ]
 
+  const winnerName = winner === 'p1' ? playerNames.p1 : playerNames.p2
+  const serverName = server === 'p1' ? playerNames.p1 : playerNames.p2
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="sr-only">{t('selectHowPointEnded')}</DialogTitle>
+          <DialogTitle className="text-center">
+            {t('point')} #{pointContext.pointNumber} {t('details')}
+          </DialogTitle>
+          <div className="text-center text-sm text-muted-foreground space-y-1">
+            <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
+            <p>
+              <Badge variant="outline" className="mr-2">
+{winnerName} {t('winsPoint')}
+              </Badge>
+              <Badge variant="secondary">
+{serverName} {t('serving')} ({serveType})
+              </Badge>
+            </p>
+          </div>
         </DialogHeader>
-        <div className="grid grid-cols-1 gap-3 p-6">
-          {outcomes
-            .filter(outcome => !outcome.disabled)
-            .map((outcome) => (
+        
+        <div className="space-y-4">
+          <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+          
+          <div className="grid grid-cols-1 gap-2">
+            {outcomes.map((outcome) => (
               <Button
                 key={outcome.id}
                 variant="outline"
                 size="lg"
+                disabled={outcome.disabled}
                 className={cn(
-                  "h-12 justify-center text-base font-medium transition-all",
-                  outcome.color
+                  "h-auto p-4 flex flex-col items-start text-left transition-all",
+                  !outcome.disabled && outcome.color,
+                  outcome.disabled && "opacity-50 cursor-not-allowed"
                 )}
-                onClick={() => handleOutcomeClick(outcome.id)}
+                onClick={() => !outcome.disabled && handleOutcomeClick(outcome.id)}
               >
-                {outcome.label}
+                <div className="font-medium">{outcome.label}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {outcome.description}
+                  {outcome.disabled && (
+                    <span className="text-red-500 ml-2">
+                      {outcome.id === 'ace' && t('serverMustWinForAce')}
+                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
+                    </span>
+                  )}
+                </div>
               </Button>
             ))}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

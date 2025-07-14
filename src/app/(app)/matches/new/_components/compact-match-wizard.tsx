@@ -276,7 +276,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
         <div className="w-full max-w-md mt-4 md:mt-0 md:flex-1 md:flex md:flex-col md:justify-center">
           <div ref={containerRef} className="w-full">
             {renderStepContent()}
-            {currentStep > 1 && currentStep < totalSteps && (
+            {currentStep > 1 && (
               <div className="flex justify-start mt-4">
                 <Button
                   variant="ghost"

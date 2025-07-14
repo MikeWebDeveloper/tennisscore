@@ -15,15 +15,11 @@ import {
   PointDetail, 
   ServeType, 
   PointOutcome, 
-  ShotType
+  ShotType, 
+  CourtPosition
 } from "@/lib/types"
-import { Target, Zap, Trophy, AlertTriangle, ChevronDown, BarChart3 } from "lucide-react"
+import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
 import { useTranslations } from "@/hooks/use-translations"
-import { useMatchStore } from "@/stores/matchStore"
-import { AdvancedServeCollector } from "@/components/features/advanced-serve-collector"
-import { ReturnAnalyticsCollector } from "@/components/features/return-analytics-collector"
-import { InteractiveCourt } from "@/components/features/interactive-court"
-import { ServeStats, ReturnStats } from "@/lib/schemas/match"
 
 interface PointDetailSheetProps {
   open: boolean
@@ -52,26 +48,17 @@ export function PointDetailSheet({
 }: PointDetailSheetProps) {
   // Translations hook must be at the top
   const t = useTranslations()
-  const { customMode } = useMatchStore()
   
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")
   const [servePlacement, setServePlacement] = useState<"wide" | "body" | "t">("wide")
-  // Removed serve speed tracking as requested
+  const [serveSpeed, setServeSpeed] = useState<string>("")
   const [rallyLength, setRallyLength] = useState<string>("1")
   const [pointOutcome, setPointOutcome] = useState<PointOutcome>("winner")
   const [lastShotType, setLastShotType] = useState<ShotType>("serve")
   const [lastShotPlayer, setLastShotPlayer] = useState<"p1" | "p2">(pointContext.winner)
-  const [winnerType, setWinnerType] = useState<"regular" | "return">("regular")
-  const [shotDirection, setShotDirection] = useState<"cross" | "line" | "body" | "long" | "wide" | "net">("cross")
+  const [courtPosition, setCourtPosition] = useState<CourtPosition>("deuce")
   const [notes, setNotes] = useState("")
-
-  // Enhanced statistics state (custom mode)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [serveStats, setServeStats] = useState<ServeStats | undefined>(undefined)
-  const [returnStats, setReturnStats] = useState<ReturnStats | undefined>(undefined)
-  const [rallyType, setRallyType] = useState<'baseline' | 'approach' | 'net' | 'defensive'>('baseline')
-  const [pressureSituation, setPressureSituation] = useState(false)
 
   // Validation state
   const [validationError, setValidationError] = useState<string>("")
@@ -106,7 +93,7 @@ export function PointDetailSheet({
     setValidationError(error)
   }, [pointOutcome, pointContext.serveType, pointContext.winner, pointContext.server, lastShotType, t])
 
-  // Auto-correct winner for certain outcomes and reset shot direction
+  // Auto-correct winner for certain outcomes
   useEffect(() => {
     if (pointOutcome === "double_fault") {
       // Auto-set winner to receiving player for double faults
@@ -116,13 +103,6 @@ export function PointDetailSheet({
       // Auto-set winner to serving player for aces
       setLastShotPlayer(pointContext.server)
     }
-    
-    // Reset shot direction based on point outcome
-    if (pointOutcome === "winner") {
-      setShotDirection("cross")
-    } else if (pointOutcome === "unforced_error" || pointOutcome === "forced_error") {
-      setShotDirection("long")
-    }
   }, [pointOutcome, pointContext.server])
 
   const handleDirectSave = (outcome: PointOutcome) => {
@@ -130,18 +110,13 @@ export function PointDetailSheet({
       serveType,
       serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
       servePlacement,
-      // Serve speed removed
+      serveSpeed: serveSpeed ? parseInt(serveSpeed) : undefined,
       rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : parseInt(rallyLength) || 1,
       pointOutcome: outcome,
       lastShotType: outcome === 'ace' || outcome === 'double_fault' ? 'serve' : lastShotType,
       lastShotPlayer: pointContext.winner,
+      courtPosition,
       notes: notes || undefined,
-      ...(outcome === 'winner' && pointContext.winner !== pointContext.server && {
-        winnerType
-      }),
-      ...(outcome !== 'ace' && outcome !== 'double_fault' && {
-        shotDirection
-      })
     }
 
     onSave(pointDetail)
@@ -157,28 +132,13 @@ export function PointDetailSheet({
       serveType,
       serveOutcome,
       servePlacement,
-      // Serve speed removed
+      serveSpeed: serveSpeed ? parseInt(serveSpeed) : undefined,
       rallyLength: parseInt(rallyLength) || 1,
       pointOutcome,
       lastShotType,
       lastShotPlayer,
+      courtPosition,
       notes: notes || undefined,
-      ...(pointOutcome === 'winner' && pointContext.winner !== pointContext.server && {
-        winnerType
-      }),
-      ...(pointOutcome !== 'ace' && pointOutcome !== 'double_fault' && {
-        shotDirection
-      }),
-      // Enhanced statistics
-      ...(customMode.enabled && {
-        loggingLevel: customMode.level.toString() as '1' | '2' | '3',
-        serveStats: pointContext.server === pointContext.winner ? serveStats : undefined,
-        returnStats: pointContext.server !== pointContext.winner ? returnStats : undefined,
-        tacticalContext: {
-          rallyType: customMode.selectedCategories.includes('rally-type') ? rallyType : undefined,
-          pressureSituation: customMode.level >= 3 ? pressureSituation : undefined,
-        }
-      })
     }
 
     onSave(pointDetail)
@@ -189,21 +149,14 @@ export function PointDetailSheet({
     setServeType("first")
     setServeOutcome("winner")
     setServePlacement("wide")
-    // Serve speed removed
+    setServeSpeed("")
     setRallyLength("1")
     setPointOutcome("winner")
     setLastShotType("serve")
     setLastShotPlayer(pointContext.winner)
-    setWinnerType("regular")
-    setShotDirection("cross")
+    setCourtPosition("deuce")
     setNotes("")
     setValidationError("")
-    // Reset enhanced statistics
-    setShowAdvanced(false)
-    setServeStats(undefined)
-    setReturnStats(undefined)
-    setRallyType('baseline')
-    setPressureSituation(false)
   }
 
   const getContextBadges = () => {
@@ -231,7 +184,7 @@ export function PointDetailSheet({
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
         <SheetHeader className="pb-4">
           <SheetTitle className="flex items-center gap-2">
-            {t('pointDetails')}
+            {t('point')} #{pointContext.pointNumber} {t('details')}
             <div className="flex gap-1">
               {getContextBadges().map((badge, index) => {
                 const Icon = badge.icon
@@ -244,6 +197,9 @@ export function PointDetailSheet({
               })}
             </div>
           </SheetTitle>
+          <div className="text-sm text-muted-foreground">
+            {t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore} • {pointContext.playerNames[pointContext.winner]} {t('wins')}
+          </div>
         </SheetHeader>
 
         <div className="space-y-6">
@@ -461,73 +417,6 @@ export function PointDetailSheet({
                 </div>
               )}
 
-              {pointOutcome === "winner" && pointContext.winner !== pointContext.server && (
-                <div>
-                  <Label className="text-sm font-medium">{t('wasItReturn')}</Label>
-                  <RadioGroup 
-                    value={winnerType} 
-                    onValueChange={(value) => setWinnerType(value as "regular" | "return")}
-                    className="flex gap-6 mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="regular" id="regular-winner" />
-                      <Label htmlFor="regular-winner">{t('regular')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="return" id="return-winner" />
-                      <Label htmlFor="return-winner">{t('return')}</Label>
-                    </div>
-                  </RadioGroup>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('winnerTypeHint')}
-                  </p>
-                </div>
-              )}
-
-              {pointOutcome !== "ace" && pointOutcome !== "double_fault" && (
-                <div>
-                  <Label className="text-sm font-medium">{t('shotDirection')}</Label>
-                  <RadioGroup 
-                    value={shotDirection} 
-                    onValueChange={(value) => setShotDirection(value as "cross" | "line" | "body" | "long" | "wide" | "net")}
-                    className="mt-2 grid grid-cols-3 gap-2"
-                  >
-                    {pointOutcome === "winner" && (
-                      <>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="cross" id="cross-court" />
-                          <Label htmlFor="cross-court">{t('crossCourt')}</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="line" id="down-line" />
-                          <Label htmlFor="down-line">{t('downTheLine')}</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="body" id="body-shot" />
-                          <Label htmlFor="body-shot">{t('bodyShot')}</Label>
-                        </div>
-                      </>
-                    )}
-                    {(pointOutcome === "unforced_error" || pointOutcome === "forced_error") && (
-                      <>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="long" id="long-shot" />
-                          <Label htmlFor="long-shot">{t('long')}</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="wide" id="wide-shot" />
-                          <Label htmlFor="wide-shot">{t('wide')}</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="net" id="net-shot" />
-                          <Label htmlFor="net-shot">{t('net')}</Label>
-                        </div>
-                      </>
-                    )}
-                  </RadioGroup>
-                </div>
-              )}
-
               <div>
                 <Label htmlFor="notes" className="text-sm font-medium">
                   {t('notes')} <span className="text-muted-foreground">{t('optional')}</span>
@@ -553,151 +442,7 @@ export function PointDetailSheet({
           </Card>
 
           {/* Custom Mode Enhanced Statistics */}
-          {customMode.enabled && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Advanced Statistics
-                  <Badge variant="outline">Level {customMode.level}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Quick Context Bar - Level 1 */}
-                {customMode.selectedCategories.includes('serve-placement') && pointContext.server === pointContext.winner && (
-                  <div>
-                    <Label className="text-sm font-medium">Serve Placement</Label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                      <Button 
-                        variant={servePlacement === 'body' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => setServePlacement('body')}
-                      >
-                        Body
-                      </Button>
-                      <Button 
-                        variant={servePlacement === 'wide' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => setServePlacement('wide')}
-                      >
-                        Wide
-                      </Button>
-                      <Button 
-                        variant={servePlacement === 't' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => setServePlacement('t')}
-                      >
-                        T (Center)
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {customMode.selectedCategories.includes('rally-type') && (
-                  <div>
-                    <Label className="text-sm font-medium">Rally Type</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      <Button 
-                        variant={rallyType === 'baseline' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => setRallyType('baseline')}
-                      >
-                        Baseline
-                      </Button>
-                      <Button 
-                        variant={rallyType === 'net' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => setRallyType('net')}
-                      >
-                        Net Play
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Level 2+ Features */}
-                {customMode.level >= 2 && (
-                  <>
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">More Details</Label>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="flex items-center gap-1"
-                      >
-                        <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                        {showAdvanced ? 'Less' : 'More'}
-                      </Button>
-                    </div>
-
-                    {showAdvanced && (
-                      <div className="space-y-4 pt-4">
-                        {/* Advanced Serve Collector - Level 2+ */}
-                        {pointContext.server === pointContext.winner && (
-                          <AdvancedServeCollector
-                            onServeStats={setServeStats}
-                            isVisible={true}
-                          />
-                        )}
-
-                        {/* Return Analytics Collector - Level 2+ */}
-                        {pointContext.server !== pointContext.winner && (
-                          <ReturnAnalyticsCollector
-                            onReturnStats={setReturnStats}
-                            isVisible={true}
-                          />
-                        )}
-
-                        {/* Interactive Court - Level 3+ */}
-                        {customMode.level >= 3 && (
-                          <div>
-                            <Label className="text-sm font-medium">Shot Placement</Label>
-                            <div className="mt-2">
-                              <InteractiveCourt
-                                mode={pointContext.server === pointContext.winner ? 'serve' : 'return'}
-                                onZoneSelect={(zone) => {
-                                  if (pointContext.server === pointContext.winner) {
-                                    setServeStats(prev => prev ? { ...prev, placement: zone as NonNullable<ServeStats>['placement'] } : { placement: zone as NonNullable<ServeStats>['placement'] })
-                                  } else {
-                                    setReturnStats(prev => prev ? { ...prev, placement: zone as NonNullable<ReturnStats>['placement'] } : { placement: zone as NonNullable<ReturnStats>['placement'] })
-                                  }
-                                }}
-                                selectedZone={
-                                  pointContext.server === pointContext.winner 
-                                    ? serveStats?.placement 
-                                    : returnStats?.placement
-                                }
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Tactical Context - Level 3+ */}
-                        {customMode.level >= 3 && (
-                          <div>
-                            <Label className="text-sm font-medium">Pressure Situation</Label>
-                            <div className="flex items-center space-x-2 mt-2">
-                              <input
-                                type="checkbox"
-                                id="pressure"
-                                checked={pressureSituation}
-                                onChange={(e) => setPressureSituation(e.target.checked)}
-                                className="rounded"
-                              />
-                              <Label htmlFor="pressure" className="text-sm">High pressure point</Label>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          {/* Removed as per edit hint */}
         </div>
       </SheetContent>
     </Sheet>

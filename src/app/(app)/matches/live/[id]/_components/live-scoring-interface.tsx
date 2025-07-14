@@ -1031,14 +1031,20 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 </motion.div>
               )}
               
+              {/* Advanced Stats button is visible but disabled (coming soon) */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowCustomModeDialog(true)}
-                className="flex items-center gap-2"
+                disabled
+                className="flex items-center gap-2 opacity-50 cursor-not-allowed relative"
+                title="Coming soon"
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Advanced Stats</span>
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-xs text-muted-foreground border ml-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Coming soon
+                </span>
               </Button>
               
               {/* Export Button - Show after first set is completed */}
