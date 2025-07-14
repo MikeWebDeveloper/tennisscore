@@ -1,8 +1,8 @@
-import { getMatchesByUser } from "@/lib/actions/matches"
+import { getMatchesByUserPaginated } from "@/lib/actions/matches"
 import { getPlayersByUser } from "@/lib/actions/players"
 import { Match, Player } from "@/lib/types"
 import { formatPlayerFromObject } from "@/lib/utils"
-import { MatchesPageClient, EnhancedMatch } from "./matches-page-client"
+import { PaginatedMatchesClient, EnhancedMatch } from "./paginated-matches-client"
 
 // Helper function to get anonymous player display name
 function getAnonymousPlayerName(playerId: string): { firstName: string; lastName: string } {
@@ -24,16 +24,20 @@ export default async function MatchesPage() {
   let matches: Match[] = []
   let players: Player[] = []
   let hasError = false
+  let total = 0
+  let hasMore = false
 
   try {
     // Try to fetch data with error handling
     const [matchesResult, playersResult] = await Promise.allSettled([
-      getMatchesByUser(),
+      getMatchesByUserPaginated({ limit: 15, offset: 0 }),
       getPlayersByUser()
     ])
 
     if (matchesResult.status === 'fulfilled') {
-      matches = matchesResult.value
+      matches = matchesResult.value.matches
+      total = matchesResult.value.total
+      hasMore = matchesResult.value.hasMore
     } else {
       console.error("Failed to fetch matches:", matchesResult.reason)
       hasError = true
@@ -141,6 +145,12 @@ export default async function MatchesPage() {
   })
 
   return (
-    <MatchesPageClient matches={enhancedMatches} hasError={hasError} />
+    <PaginatedMatchesClient 
+      initialMatches={enhancedMatches} 
+      initialTotal={total}
+      initialHasMore={hasMore}
+      players={players}
+      hasError={hasError} 
+    />
   )
 } 

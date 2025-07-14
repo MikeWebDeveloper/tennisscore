@@ -6,6 +6,8 @@ import { PointDetail } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { useTranslations } from "@/hooks/use-translations"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { isBreakPoint, isSetPoint, isMatchPoint } from "@/lib/utils/tennis-scoring"
+import { MatchFormat } from "@/stores/matchStore"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -166,34 +168,118 @@ export function PointByPointView({ pointLog, playerNames }: PointByPointViewProp
                     
                                       <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
                         {(() => {
+                          // Reconstruct the score context for each point
+                          // We'll walk through the point log up to this point to get the correct games, points, sets, tiebreak status, etc.
                           return pointsInGame
                          .filter(point => !point.isGameWinning)
                          .map((point) => {
-                           // For break point detection, we need the score BEFORE this point was played
-                           // We can reconstruct this by looking at the previous point or calculating backwards
-                           
-                           let isCurrentlyBreakPoint = false
-                           
-                           if (point.gameScore) {
-                             // The gameScore field contains the score AFTER this point
-                             // For break point detection, we need to check if this point's stored isBreakPoint is correct
-                             // or use the stored value since break points are calculated correctly when the point is logged
-                             isCurrentlyBreakPoint = point.isBreakPoint || false
+                           // Find all points up to and including this one
+                           const pointIdx = pointLog.findIndex(p => p.id === point.id)
+                           const logUpToThisPoint = pointLog.slice(0, pointIdx + 1)
+
+                           // Calculate current set and game context
+                           const setNumber = point.setNumber
+                           const gameNumber = point.gameNumber
+                           const setPoints = logUpToThisPoint.filter(p => p.setNumber === setNumber)
+                           const gamePoints = setPoints.filter(p => p.gameNumber === gameNumber)
+
+                           // Calculate games won in this set so far
+                           let p1Games = 0, p2Games = 0
+                           setPoints.forEach(p => {
+                             if (p.isGameWinning) {
+                               if (p.winner === 'p1') p1Games++
+                               else p2Games++
+                             }
+                           })
+
+                           // Calculate points in this game so far
+                           let p1Points = 0, p2Points = 0
+                           gamePoints.forEach(p => {
+                             if (p.winner === 'p1') p1Points++
+                             else p2Points++
+                           })
+
+                           // Determine if tiebreak
+                           // If isTiebreak is not present, infer from gameScore or context
+                           // Type guard for isTiebreak property
+                           const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
+                           const isTiebreak = gamePoints.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
+                           let tiebreakPoints = [0, 0]
+                           if (isTiebreak) {
+                             tiebreakPoints = [0, 0]
+                             gamePoints.forEach(p => {
+                               if (p.winner === 'p1') tiebreakPoints[0]++
+                               else tiebreakPoints[1]++
+                             })
                            }
-                           
+
+                           // Reconstruct sets array for helpers
+                           // Only include fully completed sets (exclude current set)
+                           const setsArr: number[][] = []
+                           for (let s = 1; s < setNumber; s++) {
+                             const setPts = pointLog.filter(p => p.setNumber === s)
+                             let s1 = 0, s2 = 0
+                             setPts.forEach(p => {
+                               if (p.isGameWinning) {
+                                 if (p.winner === 'p1') s1++
+                                 else s2++
+                               }
+                             })
+                             setsArr.push([s1, s2])
+                           }
+
+                           // Get match format (assume from first point)
+                           // If matchFormat is not present in point, fallback to default
+                           const matchFormat: MatchFormat = (pointLog[0] as (PointDetail & { matchFormat?: MatchFormat }))?.matchFormat || { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard" }
+
+                           // Use helpers to determine BP/SP/MP
+                           let isBP = false, isSP = false, isMP = false
+                           if (!isTiebreak) {
+                             // Only check BP in regular games
+                             const server = point.server
+                             const serverPoints = server === 'p1' ? p1Points : p2Points
+                             const returnerPoints = server === 'p1' ? p2Points : p1Points
+                             isBP = isBreakPoint(serverPoints, returnerPoints, matchFormat.noAd)
+                           }
+                           // Set point
+                           const setPointRes = isSetPoint(
+                             p1Games, p2Games,
+                             isTiebreak ? tiebreakPoints[0] : p1Points,
+                             isTiebreak ? tiebreakPoints[1] : p2Points,
+                             matchFormat,
+                             isTiebreak,
+                             setsArr
+                           )
+                           isSP = setPointRes.isSetPoint && setPointRes.player === point.winner
+                           // Match point
+                           const matchPointRes = isMatchPoint(
+                             p1Games, p2Games,
+                             isTiebreak ? tiebreakPoints[0] : p1Points,
+                             isTiebreak ? tiebreakPoints[1] : p2Points,
+                             setsArr,
+                             matchFormat,
+                             isTiebreak
+                           )
+                           isMP = matchPointRes.isMatchPoint && matchPointRes.player === point.winner
+
+                           // Only show one badge per point: MP > SP > BP
+                           let badge: { label: string; className: string } | null = null
+                           if (isMP) {
+                             badge = { label: 'MP', className: 'text-xs p-1 bg-red-600 text-white hover:bg-red-700' }
+                           } else if (isSP) {
+                             badge = { label: 'SP', className: 'text-xs p-1 bg-blue-500 text-white hover:bg-blue-600' }
+                           } else if (isBP) {
+                             badge = { label: 'BP', className: 'text-xs p-1 bg-orange-500 text-white hover:bg-orange-600' }
+                           }
+
                            return (
                              <div key={point.id} className="inline-flex items-center gap-1">
                                <span className="text-xs">
                                  {point.gameScore.replace(/-/g, ':')}
                                </span>
-                               {/* Priority system: MP > SP > BP (only show highest priority badge) */}
-                               {point.isMatchPoint ? (
-                                 <Badge className="text-xs p-1 bg-red-600 text-white hover:bg-red-700">{t('matchPoint')}</Badge>
-                               ) : point.isSetPoint ? (
-                                 <Badge className="text-xs p-1 bg-blue-500 text-white hover:bg-blue-600">{t('setPoint')}</Badge>
-                               ) : isCurrentlyBreakPoint ? (
-                                 <Badge className="text-xs p-1 bg-orange-500 text-white hover:bg-orange-600">{t('breakPoint')}</Badge>
-                               ) : null}
+                               {badge && (
+                                 <Badge className={badge.className}>{badge.label}</Badge>
+                               )}
                              </div>
                            )
                          })

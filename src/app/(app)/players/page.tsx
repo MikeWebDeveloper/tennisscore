@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
-import { getPlayersByUser } from "@/lib/actions/players"
-import { PlayersClient } from "./players-client"
+import { getPlayersByUserPaginated } from "@/lib/actions/players"
+import { PaginatedPlayersClient } from "./paginated-players-client"
 
 export default async function PlayersPage() {
   const user = await getCurrentUser()
@@ -10,7 +10,17 @@ export default async function PlayersPage() {
     redirect("/login")
   }
 
-  const players = await getPlayersByUser().catch(() => [])
+  const result = await getPlayersByUserPaginated({ 
+    limit: 20, 
+    offset: 0, 
+    sortBy: 'mainFirst'
+  }).catch(() => ({ players: [], total: 0, hasMore: false }))
 
-  return <PlayersClient user={user} players={players} />
+  return (
+    <PaginatedPlayersClient 
+      initialPlayers={result.players}
+      initialTotal={result.total}
+      initialHasMore={result.hasMore}
+    />
+  )
 } 

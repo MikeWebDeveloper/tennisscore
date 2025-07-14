@@ -127,6 +127,244 @@ export async function getPlayersByUser(): Promise<Player[]> {
   }
 }
 
+export interface PaginatedPlayersResult {
+  players: Player[]
+  total: number
+  hasMore: boolean
+}
+
+export async function getPlayersByUserPaginated(options: {
+  limit?: number
+  offset?: number
+  sortBy?: 'name' | 'recent' | 'mainFirst'
+  searchQuery?: string
+} = {}): Promise<PaginatedPlayersResult> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { players: [], total: 0, hasMore: false }
+    }
+
+    const { databases } = await createAdminClient()
+    const { limit = 20, offset = 0, sortBy = 'mainFirst', searchQuery } = options
+
+    // If there's a search query, handle it differently
+    if (searchQuery && searchQuery.trim()) {
+      return await searchPlayersWithQuery(user.$id, searchQuery.trim(), limit, offset, sortBy)
+    }
+
+    // For mainFirst sorting, always include main player on first page
+    if (sortBy === 'mainFirst' && offset === 0) {
+      return await getPlayersMainFirst(user.$id, limit)
+    }
+
+    // Build base query for regular pagination
+    const queries = [Query.equal("userId", user.$id)]
+    
+    // Add sorting
+    switch (sortBy) {
+      case 'name':
+        queries.push(Query.orderAsc("firstName"))
+        break
+      case 'recent':
+        queries.push(Query.orderDesc("$createdAt"))
+        break
+      case 'mainFirst':
+        // For subsequent pages with mainFirst, exclude main player and adjust offset
+        queries.push(Query.orderDesc("$createdAt"))
+        break
+      default:
+        queries.push(Query.orderDesc("$createdAt"))
+    }
+
+    // Add pagination
+    if (sortBy === 'mainFirst' && offset > 0) {
+      // For mainFirst with offset > 0, we need to account for main player being on first page
+      queries.push(Query.limit(limit))
+      queries.push(Query.offset(offset - 1)) // Adjust offset since main player takes one slot on first page
+    } else {
+      queries.push(Query.limit(limit))
+      queries.push(Query.offset(offset))
+    }
+
+    const response = await databases.listDocuments<Player>(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      queries
+    )
+
+    // Get total count for pagination info
+    const totalResponse = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [Query.equal("userId", user.$id)]
+      )
+    )
+
+    let players = response.documents.map(player => {
+      if (player.profilePictureId) {
+        const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+        return { ...player, profilePictureUrl: url }
+      }
+      return player
+    }) as Player[]
+
+    // For mainFirst subsequent pages, filter out main player if it appears
+    if (sortBy === 'mainFirst' && offset > 0) {
+      players = players.filter(player => !player.isMainPlayer)
+    }
+
+    const total = totalResponse.total
+    const hasMore = (offset + limit) < total
+
+    return { players, total, hasMore }
+  } catch (error) {
+    console.error("Error fetching paginated players:", error)
+    return { players: [], total: 0, hasMore: false }
+  }
+}
+
+// Helper function to get players with main player first on first page
+async function getPlayersMainFirst(userId: string, limit: number): Promise<PaginatedPlayersResult> {
+  const { databases } = await createAdminClient()
+  
+  // First, get the main player
+  const mainPlayerResponse = await databases.listDocuments<Player>(
+    process.env.APPWRITE_DATABASE_ID!,
+    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    [Query.equal("userId", userId), Query.equal("isMainPlayer", true), Query.limit(1)]
+  )
+
+  // Then get other players (excluding main player)
+  const otherPlayersResponse = await databases.listDocuments<Player>(
+    process.env.APPWRITE_DATABASE_ID!,
+    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    [
+      Query.equal("userId", userId), 
+      Query.equal("isMainPlayer", false),
+      Query.orderDesc("$createdAt"),
+      Query.limit(limit - (mainPlayerResponse.documents.length > 0 ? 1 : 0))
+    ]
+  )
+
+  // Get total count
+  const totalResponse = await withRetry(() =>
+    databases.listDocuments(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      [Query.equal("userId", userId)]
+    )
+  )
+
+  // Combine players with main player first
+  const allPlayers = [...mainPlayerResponse.documents, ...otherPlayersResponse.documents]
+  
+  const players = allPlayers.map(player => {
+    if (player.profilePictureId) {
+      const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+      return { ...player, profilePictureUrl: url }
+    }
+    return player
+  }) as Player[]
+
+  const total = totalResponse.total
+  const hasMore = limit < total
+
+  return { players, total, hasMore }
+}
+
+// Helper function to search players with server-side filtering
+async function searchPlayersWithQuery(
+  userId: string, 
+  searchQuery: string, 
+  limit: number, 
+  offset: number, 
+  sortBy: string
+): Promise<PaginatedPlayersResult> {
+  const { databases } = await createAdminClient()
+  
+  // Get all players for the user (we need to do client-side filtering for diacritic search)
+  const allPlayersResponse = await databases.listDocuments<Player>(
+    process.env.APPWRITE_DATABASE_ID!,
+    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    [Query.equal("userId", userId), Query.limit(1000)]
+  )
+
+  // Apply client-side search filtering with diacritic normalization
+  const normalizedSearch = searchQuery
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+
+  const filteredPlayers = allPlayersResponse.documents.filter(player => {
+    const playerName = `${player.firstName} ${player.lastName}`
+    const normalizedPlayerName = playerName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+    
+    const normalizedFirstName = player.firstName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+    
+    const normalizedLastName = player.lastName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+    
+    const normalizedRating = player.rating ? player.rating
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase() : ""
+
+    return normalizedPlayerName.includes(normalizedSearch) ||
+           normalizedFirstName.includes(normalizedSearch) ||
+           normalizedLastName.includes(normalizedSearch) ||
+           normalizedRating.includes(normalizedSearch)
+  })
+
+  // Apply sorting
+  let sortedPlayers = [...filteredPlayers]
+  switch (sortBy) {
+    case 'name':
+      sortedPlayers.sort((a, b) => {
+        const nameA = `${a.firstName} ${a.lastName}`.toLowerCase()
+        const nameB = `${b.firstName} ${b.lastName}`.toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      break
+    case 'mainFirst':
+      // Put main player first, then sort by creation date
+      const mainPlayer = sortedPlayers.find(p => p.isMainPlayer)
+      const others = sortedPlayers.filter(p => !p.isMainPlayer)
+        .sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime())
+      sortedPlayers = mainPlayer ? [mainPlayer, ...others] : others
+      break
+    case 'recent':
+    default:
+      sortedPlayers.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime())
+      break
+  }
+
+  // Apply pagination to filtered and sorted results
+  const paginatedPlayers = sortedPlayers.slice(offset, offset + limit)
+
+  const players = paginatedPlayers.map(player => {
+    if (player.profilePictureId) {
+      const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+      return { ...player, profilePictureUrl: url }
+    }
+    return player
+  }) as Player[]
+
+  const total = filteredPlayers.length
+  const hasMore = (offset + limit) < total
+
+  return { players, total, hasMore }
+}
+
 export async function getMainPlayer(): Promise<Player | null> {
   try {
     const user = await getCurrentUser()

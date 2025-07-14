@@ -136,6 +136,17 @@ export function getProfilePictureUrl(profilePictureId: string): string {
 }
 
 /**
+ * Normalizes text for diacritic-insensitive search
+ * Removes diacritics and converts to lowercase
+ */
+export function normalizeTextForSearch(text: string): string {
+  return text
+    .normalize("NFD") // Decompose characters with diacritics
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritic marks
+    .toLowerCase()
+}
+
+/**
  * Centralized error logging utility
  * @param error - The error object to log
  * @param context - Optional context string to help identify where the error occurred

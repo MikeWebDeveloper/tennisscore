@@ -444,7 +444,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
-            matchFormat={match.matchFormatParsed}
+            matchFormat={{
+              noAd: match.matchFormatParsed.noAd,
+              sets: match.matchFormatParsed.sets as 1 | 3 | 5,
+              tiebreak: match.matchFormatParsed.finalSetTiebreak !== "none",
+              finalSetTiebreak: match.matchFormatParsed.finalSetTiebreak || "standard"
+            }}
           />
         </motion.div>
 

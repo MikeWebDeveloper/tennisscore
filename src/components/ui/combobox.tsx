@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, normalizeTextForSearch } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -95,7 +95,7 @@ export function Combobox({
                 {groupOptions.map((option) => (
                   <CommandItem
                     key={option.value}
-                    value={`${option.label} ${option.value}`} // Include both for better search
+                    value={`${normalizeTextForSearch(option.label)} ${normalizeTextForSearch(option.value)} ${option.label} ${option.value}`} // Include normalized and original for diacritic-insensitive search
                     disabled={option.disabled}
                     onSelect={() => {
                       if (!option.disabled) {
