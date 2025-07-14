@@ -29,6 +29,7 @@ import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/hooks/use-translations"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { FullMatchExportButton } from "@/components/features/match-export-dialog"
 
 interface MatchDetailsProps {
   match: {
@@ -67,10 +68,42 @@ interface MatchDetailsProps {
   }
 }
 
+// PlayerDetailsLine: shows year, rating, and club in scoreboard style
+function PlayerDetailsLine({ yearOfBirth, rating, club }: { yearOfBirth?: number; rating?: string; club?: string }) {
+  return (
+    <div className="space-y-0.5">
+      {(yearOfBirth || rating) && (
+        <div className="player-details-line flex gap-1">
+          {yearOfBirth && (
+            <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">{yearOfBirth}</span>
+          )}
+          {rating && (
+            <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">({rating})</span>
+          )}
+        </div>
+      )}
+      {club && (
+        <div className="player-details-line">
+          <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">{club}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations()
+  
+  // Parse match format
+  const parsedFormat = (() => {
+    try {
+      return JSON.parse(match.matchFormat)
+    } catch {
+      return { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard", finalSetTiebreakAt: 10 }
+    }
+  })()
 
   // Debug timing data
   console.log('Match timing data received:', {
@@ -192,15 +225,55 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <span>{t('backToMatches')}</span>
               </Link>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleShareMatch}
-              className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
-            >
-              <Share2 className="h-3 w-3" />
-              <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              {match.status === "Completed" && (
+                <FullMatchExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.userId,
+                    playerOneId: match.playerOneId,
+                    playerTwoId: match.playerTwoId,
+                    matchDate: match.matchDate,
+                    matchFormat: {
+                      sets: parsedFormat?.sets || 3,
+                      noAd: parsedFormat?.noAd || false,
+                      tiebreak: parsedFormat?.tiebreak !== false,
+                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
+                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
+                    },
+                    status: match.status as 'Completed',
+                    score: {
+                      sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],
+                      games: [match.scoreParsed?.games[0] || 0, match.scoreParsed?.games[1] || 0],
+                      points: [0, 0],
+                      isTiebreak: false,
+                      tiebreakPoints: [0, 0]
+                    },
+                    pointLog: match.pointLog ? match.pointLog.map(pointStr => JSON.parse(pointStr)) : [],
+                    startTime: undefined,
+                    endTime: undefined,
+                    setDurations: undefined,
+                    events: []
+                  }}
+                  playerNames={[
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                  ]}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs px-2 py-1 h-8"
+                />
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShareMatch}
+                className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
+              >
+                <Share2 className="h-3 w-3" />
+                <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
+              </Button>
+            </div>
           </div>
 
           {/* Player names section */}
@@ -276,6 +349,43 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {match.status === "Completed" && (
+                <FullMatchExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.userId,
+                    playerOneId: match.playerOneId,
+                    playerTwoId: match.playerTwoId,
+                    matchDate: match.matchDate,
+                    matchFormat: {
+                      sets: parsedFormat?.sets || 3,
+                      noAd: parsedFormat?.noAd || false,
+                      tiebreak: parsedFormat?.tiebreak !== false,
+                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
+                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
+                    },
+                    status: match.status as 'Completed',
+                    score: {
+                      sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],
+                      games: [match.scoreParsed?.games[0] || 0, match.scoreParsed?.games[1] || 0],
+                      points: [0, 0],
+                      isTiebreak: false,
+                      tiebreakPoints: [0, 0]
+                    },
+                    pointLog: match.pointLog ? match.pointLog.map(pointStr => JSON.parse(pointStr)) : [],
+                    startTime: undefined,
+                    endTime: undefined,
+                    setDurations: undefined,
+                    events: []
+                  }}
+                  playerNames={[
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                  ]}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -591,6 +701,24 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             <div className="font-semibold">
                               {getTeamName("team1")}
                             </div>
+                            {match.playerOne && (
+                              <PlayerDetailsLine
+                                yearOfBirth={match.playerOne.yearOfBirth}
+                                rating={match.playerOne.rating}
+                                club={match.playerOne.club}
+                              />
+                            )}
+                            {/* For doubles, show partner details */}
+                            {isDoubles && match.playerThree && (
+                              <div className="mt-1">
+                                <span className="text-xs text-muted-foreground">/</span>
+                                <PlayerDetailsLine
+                                  yearOfBirth={match.playerThree.yearOfBirth}
+                                  rating={match.playerThree.rating}
+                                  club={match.playerThree.club}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -605,6 +733,24 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             <div className="font-semibold">
                               {getTeamName("team2")}
                             </div>
+                            {match.playerTwo && (
+                              <PlayerDetailsLine
+                                yearOfBirth={match.playerTwo.yearOfBirth}
+                                rating={match.playerTwo.rating}
+                                club={match.playerTwo.club}
+                              />
+                            )}
+                            {/* For doubles, show partner details */}
+                            {isDoubles && match.playerFour && (
+                              <div className="mt-1">
+                                <span className="text-xs text-muted-foreground">/</span>
+                                <PlayerDetailsLine
+                                  yearOfBirth={match.playerFour.yearOfBirth}
+                                  rating={match.playerFour.rating}
+                                  club={match.playerFour.club}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -684,7 +830,17 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PointByPointView pointLog={pointDetails} />
+                  <PointByPointView 
+                    pointLog={pointDetails}
+                    playerObjects={Object.assign(
+                      {
+                        p1: match.playerOne ? match.playerOne : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] },
+                        p2: match.playerTwo ? match.playerTwo : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] }
+                      },
+                      match.playerThree ? { p3: match.playerThree } : {},
+                      match.playerFour ? { p4: match.playerFour } : {}
+                    )}
+                  />
                 </CardContent>
               </Card>
             )

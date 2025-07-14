@@ -4,7 +4,8 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
+import { GSAPAnimatedCounter } from "@/components/ui/gsap-animated-counter"
+import { GSAPInteractiveCard } from "@/components/ui/gsap-interactive-card"
 import { 
   Trophy, 
   Calendar,
@@ -33,6 +34,10 @@ import { useTranslations } from "@/hooks/use-translations"
 import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
 import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
 import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
+import { CreatePlayerDialog } from "../../players/_components/create-player-dialog"
+import { useState } from "react"
+import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
+import { ChartSkeleton } from "@/components/ui/loading-skeletons"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -85,35 +90,18 @@ interface EnhancedStats {
   totalPlayingTime: string
 }
 
-// Animation variants
+// Enhanced Animation variants with slower, more deliberate timing
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.2
+      duration: 0.6,
+      ease: "easeOut"
     }
   }
 }
 
-const itemVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 20,
-    scale: 0.95
-  },
-  show: { 
-    opacity: 1, 
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30
-    }
-  }
-}
 
 const buttonVariants = {
   hover: { 
@@ -126,11 +114,9 @@ const buttonVariants = {
   }
 }
 
-// Skeleton components for loading states
+// Enhanced skeleton component for charts
 function ChartsSkeleton() {
-  return (
-    <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted/50" />
-  )
+  return <ChartSkeleton />
 }
 
 // Helper function to calculate matches in current month
@@ -384,16 +370,28 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
 
 export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProps) {
   const t = useTranslations()
+  const [isCreatePlayerOpen, setCreatePlayerOpen] = useState(false)
+  const [showAdvancedStats, setShowAdvancedStats] = useState(false)
   
   // Calculate comprehensive stats
   const stats = calculateEnhancedStats(matches, mainPlayer?.$id)
+  
+  // Calculate total number of cards dynamically
+  const totalCardsCount = 16 + (stats.bestTimeOfDay ? 1 : 0) + (stats.forehandBackhandRatio > 0 ? 1 : 0)
+  
+  // GSAP-powered unified animation for all cards
+  const cardAnimation = useGSAPCardAnimation({
+    totalCards: totalCardsCount,
+    staggerDelay: 400, // Faster, smoother sequential animation
+    startDelay: 0.5
+  })
 
   // Recent matches for quick access
   const recentMatches = matches
     .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
     .slice(0, 3)
 
-  // Enhanced stat card component with animations and better styling
+  // GSAP-powered stat card component with unique animations per type
   const StatCard = ({ 
     icon: Icon, 
     label, 
@@ -401,7 +399,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
     subtitle,
     trend,
     className = "",
-    variant = "default"
+    variant = "default",
+    cardIndex,
+    cardType = "performance"
   }: {
     icon: LucideIcon
     label: string
@@ -410,21 +410,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
     trend?: "up" | "down" | "neutral"
     className?: string
     variant?: "default" | "primary" | "success" | "warning" | "danger"
+    cardIndex: number
+    cardType?: "performance" | "serve" | "return" | "shotmaking" | "insights"
   }) => {
-    const getVariantClasses = () => {
-      switch (variant) {
-        case "primary":
-          return "border-primary/20 hover:border-primary/40 bg-primary/5"
-        case "success":
-          return "border-green-500/20 hover:border-green-500/40 bg-green-500/5"
-        case "warning":
-          return "border-yellow-500/20 hover:border-yellow-500/40 bg-yellow-500/5"
-        case "danger":
-          return "border-red-500/20 hover:border-red-500/40 bg-red-500/5"
-        default:
-          return "border-border hover:border-border/80"
-      }
-    }
 
     const getTrendIcon = () => {
       if (trend === "up") return <ArrowUpRight className="h-3 w-3 text-green-500" />
@@ -448,36 +436,41 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
     }
 
     return (
-      <motion.div variants={itemVariants} className={className}>
-        <Card className={`h-24 md:h-32 lg:h-36 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group ${getVariantClasses()}`}>
+      <GSAPInteractiveCard 
+        variant={variant}
+        cardType={cardType}
+        className={className}
+      >
           <CardContent className="p-3 md:p-4 lg:p-6 h-full">
             <div className="flex flex-col h-full justify-between">
               {/* Header with icon and trend */}
               <div className="flex items-center justify-between mb-1 md:mb-2">
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{label}</p>
+                  <h4 className="text-xs md:text-sm text-gray-800 dark:text-muted-foreground font-medium truncate">{label}</h4>
                   {getTrendIcon()}
                 </div>
                 <div className="p-1.5 md:p-2 lg:p-2.5 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2 flex-shrink-0">
-                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} />
+                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} aria-hidden="true" />
                 </div>
               </div>
               
               {/* Value */}
               <div className="flex-1 flex items-center">
-                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
+                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
                   {typeof value === 'number' ? (
-                    <AnimatedCounter
+                    <GSAPAnimatedCounter
                       value={value}
-                      duration={1.5}
-                      delay={0.3}
+                      duration={1.8}
+                      delay={cardAnimation.getDelay(cardIndex)}
+                      shouldAnimate={cardAnimation.shouldAnimate(cardIndex)}
                     />
                   ) : typeof value === 'string' && value.includes('%') ? (
-                    <AnimatedCounter
+                    <GSAPAnimatedCounter
                       value={parseInt(value.replace('%', ''))}
                       suffix="%"
-                      duration={1.5}
-                      delay={0.3}
+                      duration={1.8}
+                      delay={cardAnimation.getDelay(cardIndex)}
+                      shouldAnimate={cardAnimation.shouldAnimate(cardIndex)}
                     />
                   ) : (
                     value
@@ -488,15 +481,14 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               {/* Subtitle */}
               {subtitle && (
                 <div className="mt-1">
-                  <p className="text-xs md:text-xs lg:text-sm text-muted-foreground/80 truncate leading-tight">
+                  <p className="text-xs md:text-xs lg:text-sm text-gray-700 dark:text-muted-foreground/80 truncate leading-tight">
                     {subtitle}
                   </p>
                 </div>
               )}
             </div>
           </CardContent>
-        </Card>
-      </motion.div>
+      </GSAPInteractiveCard>
     )
   }
 
@@ -508,7 +500,12 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       className="p-4 space-y-6"
     >
       {/* Quick Actions */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="flex flex-col sm:flex-row gap-3"
+      >
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
           <Button asChild className="w-full h-11 font-medium shadow-sm">
             <Link href="/matches/new">
@@ -518,27 +515,36 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           </Button>
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-          <Button variant="outline" asChild className="w-full h-11">
-            <Link href="/players">
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t("addPlayer")}
-            </Link>
+          <Button variant="outline" className="w-full h-11" onClick={() => setCreatePlayerOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {t("addPlayer")}
           </Button>
         </motion.div>
       </motion.div>
+      <CreatePlayerDialog isOpen={isCreatePlayerOpen} onOpenChange={setCreatePlayerOpen} />
 
-      {/* 16 Comprehensive Stats Cards */}
-      <div className="space-y-6 md:space-y-8">
-        {/* Basic Performance */}
-        <motion.div variants={itemVariants}>
-          <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("performanceOverviewHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("performanceOverviewDescription")}</p>
+      {/* Smart Dashboard - Show Key Metrics by Default */}
+      <div data-dashboard-container className="space-y-6 md:space-y-8">
+        {/* Core Performance Metrics - Always Visible */}
+        <div>
+          <div className="mb-3 md:mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("performanceOverviewHeader")}</h3>
+              <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("performanceOverviewDescription")}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdvancedStats(!showAdvancedStats)}
+              className="ml-4"
+              aria-expanded={showAdvancedStats}
+              aria-controls="advanced-stats-section"
+              aria-label={showAdvancedStats ? "Hide advanced statistics" : "Show advanced statistics"}
+            >
+              {showAdvancedStats ? "Show Less" : "View More Stats"}
+            </Button>
           </div>
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
               icon={Trophy} 
               label={t("matchesWon")} 
@@ -546,6 +552,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={`${t("ofTotal")} ${stats.totalMatches}`}
               trend={stats.winRate > 50 ? "up" : "neutral"}
               variant={stats.winRate >= 70 ? "success" : stats.winRate >= 50 ? "primary" : "default"}
+              cardIndex={0}
+              cardType="performance"
             />
             <StatCard 
               icon={Percent} 
@@ -554,6 +562,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={stats.winRate >= 70 ? t("qualityExcellent") : stats.winRate >= 50 ? t("qualityGood") : t("qualityWorkNeeded")}
               trend={stats.winRate > 50 ? "up" : "down"}
               variant={stats.winRate >= 70 ? "success" : stats.winRate >= 50 ? "primary" : "warning"}
+              cardIndex={1}
+              cardType="performance"
             />
             <StatCard 
               icon={Calendar} 
@@ -561,6 +571,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={stats.totalMatches}
               subtitle={`${stats.thisMonthMatches} ${t("completedDescription")}`}
               variant="default"
+              cardIndex={2}
+              cardType="performance"
             />
             <StatCard 
               icon={Flame} 
@@ -569,26 +581,30 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={`${t("best")}: ${stats.longestWinStreak}`}
               trend={stats.currentWinStreak > 0 ? "up" : "neutral"}
               variant={stats.currentWinStreak >= 3 ? "success" : "default"}
+              cardIndex={3}
+              cardType="performance"
             />
-          </motion.div>
-        </motion.div>
-
-        {/* Serve Performance */}
-        <motion.div variants={itemVariants}>
-          <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("serveStatisticsHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("serveStatisticsDescription")}</p>
           </div>
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
-          >
+        </div>
+
+        {/* Advanced Stats - Conditionally Rendered */}
+        {showAdvancedStats && (
+          <div id="advanced-stats-section" role="region" aria-label="Advanced performance statistics">
+            {/* Serve Performance */}
+            <div>
+          <div className="mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("serveStatisticsHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("serveStatisticsDescription")}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
               icon={Zap} 
               label={t("acesLabel")} 
               value={stats.totalAces}
               subtitle={`${(stats.totalAces / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               variant={(stats.totalAces / Math.max(stats.totalMatches, 1)) >= 5 ? "success" : (stats.totalAces / Math.max(stats.totalMatches, 1)) >= 2 ? "primary" : "default"}
+              cardIndex={4}
+              cardType="serve"
             />
             <StatCard 
               icon={Target} 
@@ -597,6 +613,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={stats.firstServePercentage >= 65 ? t("qualityExcellent") : stats.firstServePercentage >= 55 ? t("qualityGood") : t("qualityWorkNeeded")}
               trend={stats.firstServePercentage >= 60 ? "up" : "down"}
               variant={stats.firstServePercentage >= 65 ? "success" : stats.firstServePercentage >= 55 ? "primary" : "warning"}
+              cardIndex={5}
+              cardType="serve"
             />
             <StatCard 
               icon={Activity} 
@@ -605,6 +623,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("pointsWonServing")}
               trend={stats.servicePointsWon >= 60 ? "up" : "down"}
               variant={stats.servicePointsWon >= 70 ? "success" : stats.servicePointsWon >= 60 ? "primary" : "warning"}
+              cardIndex={6}
+              cardType="serve"
             />
             <StatCard 
               icon={RotateCcw} 
@@ -613,20 +633,19 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={`${(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               trend={(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 2 ? "up" : "down"}
               variant={(stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 1 ? "success" : (stats.totalDoubleFaults / Math.max(stats.totalMatches, 1)) <= 3 ? "primary" : "danger"}
+              cardIndex={7}
+              cardType="serve"
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Return Game */}
-        <motion.div variants={itemVariants}>
+        <div>
           <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("returnGameHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("returnGameDescription")}</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("returnGameHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("returnGameDescription")}</p>
           </div>
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
               icon={ArrowUpRight} 
               label={t("breakPointsWonLabel")} 
@@ -634,6 +653,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("opportunitiesConverted")}
               trend={stats.breakPointConversionRate >= 40 ? "up" : "down"}
               variant={stats.breakPointConversionRate >= 50 ? "success" : stats.breakPointConversionRate >= 30 ? "primary" : "warning"}
+              cardIndex={8}
+              cardType="return"
             />
             <StatCard 
               icon={CircleArrowDown} 
@@ -642,6 +663,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("pointsWonReturning")}
               trend={stats.firstReturnWinPercentage >= 35 ? "up" : "down"}
               variant={stats.firstReturnWinPercentage >= 40 ? "success" : stats.firstReturnWinPercentage >= 30 ? "primary" : "warning"}
+              cardIndex={9}
+              cardType="return"
             />
             <StatCard 
               icon={Shield} 
@@ -650,6 +673,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("defensiveHolds")}
               trend={stats.breakPointsSaved >= stats.breakPointsFaced * 0.6 ? "up" : "down"}
               variant={stats.breakPointsSaved >= stats.breakPointsFaced * 0.7 ? "success" : "primary"}
+              cardIndex={10}
+              cardType="return"
             />
             <StatCard 
               icon={Target} 
@@ -658,26 +683,27 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("qualityImproving")}
               trend={stats.firstReturnPercentage >= 50 ? "up" : "down"}
               variant={stats.firstReturnPercentage >= 60 ? "success" : stats.firstReturnPercentage >= 45 ? "primary" : "warning"}
+              cardIndex={11}
+              cardType="return"
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Shot Making */}
-        <motion.div variants={itemVariants}>
+        <div>
           <div className="mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t("shotMakingHeader")}</h3>
-            <p className="text-sm text-muted-foreground">{t("shotMakingDescription")}</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-foreground mb-1">{t("shotMakingHeader")}</h3>
+            <p className="text-sm text-gray-700 dark:text-muted-foreground">{t("shotMakingDescription")}</p>
           </div>
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
               icon={Award} 
               label={t("winnersLabel")} 
               value={stats.totalWinners}
               subtitle={`${(stats.totalWinners / Math.max(stats.totalMatches, 1)).toFixed(1)}/match`}
               variant={stats.winnersPerMatch >= 15 ? "success" : stats.winnersPerMatch >= 10 ? "primary" : "default"}
+              cardIndex={12}
+              cardType="shotmaking"
             />
             <StatCard 
               icon={CircleArrowDown} 
@@ -686,6 +712,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle={t("unforcedErrorsDescription")}
               trend={stats.winnerToErrorRatio >= 1 ? "up" : "down"}
               variant={stats.winnerToErrorRatio >= 1.2 ? "success" : stats.winnerToErrorRatio >= 0.8 ? "primary" : "warning"}
+              cardIndex={13}
+              cardType="shotmaking"
             />
             <StatCard 
               icon={Percent} 
@@ -693,6 +721,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={`${stats.secondServePointsWonPercentage}%`}
               subtitle={t("defensiveHolds")}
               variant="default"
+              cardIndex={14}
+              cardType="shotmaking"
             />
             <StatCard 
               icon={ArrowDownLeft} 
@@ -700,24 +730,23 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={stats.totalForcedErrors}
               subtitle={t("unforcedErrorsDescription")}
               variant="default"
+              cardIndex={15}
+              cardType="shotmaking"
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
         
         {/* Performance Insights Section */}
-        <motion.div variants={itemVariants} className="space-y-3 md:space-y-4 lg:space-y-6">
-          <motion.div variants={itemVariants} className="flex items-center gap-2">
+        <div className="space-y-3 md:space-y-4 lg:space-y-6">
+          <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">Performance Insights</h3>
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-foreground">Performance Insights</h3>
             <Badge variant="outline" className="ml-auto text-xs">
               Advanced Analytics
             </Badge>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             <StatCard 
               icon={Flame} 
               label="Recent Form" 
@@ -725,6 +754,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               subtitle="Last 5 matches"
               trend={stats.recentForm >= 60 ? "up" : "down"}
               variant={stats.recentForm >= 80 ? "success" : stats.recentForm >= 60 ? "primary" : "warning"}
+              cardIndex={16}
+              cardType="insights"
             />
             <StatCard 
               icon={Calendar} 
@@ -732,6 +763,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={stats.thisMonthMatches}
               subtitle="Matches played"
               variant={stats.thisMonthMatches >= 5 ? "success" : stats.thisMonthMatches >= 3 ? "primary" : "default"}
+              cardIndex={17}
+              cardType="insights"
             />
             <StatCard 
               icon={Timer} 
@@ -739,6 +772,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={stats.totalPlayingTime}
               subtitle="Total playing time"
               variant="primary"
+              cardIndex={18}
+              cardType="insights"
             />
             {stats.bestTimeOfDay && (
               <StatCard 
@@ -747,6 +782,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                 value={stats.bestTimeOfDay}
                 subtitle="Best playing time"
                 variant="success"
+                cardIndex={19}
+                cardType="insights"
               />
             )}
             <StatCard 
@@ -755,6 +792,8 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               value={stats.averageMatchDuration}
               subtitle="Per match"
               variant="default"
+              cardIndex={stats.bestTimeOfDay ? 20 : 19}
+              cardType="insights"
             />
             {stats.forehandBackhandRatio > 0 && (
               <StatCard 
@@ -763,32 +802,44 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                 value={`${stats.forehandBackhandRatio}:1`}
                 subtitle="Forehand preference"
                 variant={stats.forehandBackhandRatio >= 2 ? "primary" : "default"}
+                cardIndex={stats.bestTimeOfDay ? 21 : 20}
+                cardType="insights"
               />
             )}
-          </motion.div>
-        </motion.div>
-      </div>
+          </div>
+        </div>
 
-      {/* Performance Charts */}
-      <motion.div variants={itemVariants}>
-        <Card className="hover:shadow-md transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">{t("performanceOverview")}</h3>
-              <Badge variant="outline" className="text-xs">
-                {t("last30Days")}
-              </Badge>
-            </div>
-            <Suspense fallback={<ChartsSkeleton />}>
-              <PerformanceCharts matches={matches} mainPlayer={mainPlayer} />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </motion.div>
+            {/* Performance Charts */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <Card className="hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">{t("performanceOverview")}</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {t("last30Days")}
+                    </Badge>
+                  </div>
+                  <Suspense fallback={<ChartsSkeleton />}>
+                    <PerformanceCharts matches={matches} mainPlayer={mainPlayer} />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </div>
 
       {/* Recent Matches */}
       {recentMatches.length > 0 && (
-        <motion.div variants={itemVariants}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+        >
           <Card className="hover:shadow-md transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -816,7 +867,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                         <p className="text-sm font-medium">
                           {t("vs")} {match.playerTwoId === mainPlayer?.$id ? t("player1") : t("player2")}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-gray-700 dark:text-muted-foreground">
                           {new Date(match.matchDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -833,7 +884,11 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       )}
 
       {/* Monthly Progress Card */}
-      <motion.div variants={itemVariants}>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.6 }}
+      >
         <Card className="hover:shadow-md transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -843,25 +898,43 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary mb-1">
-                  <AnimatedCounter value={stats.thisMonthMatches} duration={1.2} delay={0.2} />
+                  <GSAPAnimatedCounter 
+                    value={stats.thisMonthMatches} 
+                    duration={2.0} 
+                    delay={12.0} // Start after main cards complete
+                    shouldAnimate={cardAnimation.hasTriggered}
+                    ease="elastic.out(1, 0.5)"
+                  />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("matchesLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("matchesLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600 mb-1">
-                  <AnimatedCounter value={Math.round(stats.thisMonthMatches * stats.winRate / 100)} duration={1.2} delay={0.4} />
+                  <GSAPAnimatedCounter 
+                    value={Math.round(stats.thisMonthMatches * stats.winRate / 100)} 
+                    duration={2.0} 
+                    delay={12.5}
+                    shouldAnimate={cardAnimation.hasTriggered}
+                    ease="power4.out"
+                  />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("wonLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("wonLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600 mb-1">{stats.averageMatchDuration}</div>
-                <div className="text-xs text-muted-foreground">{t("avgDurationLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("avgDurationLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600 mb-1">
-                  <AnimatedCounter value={stats.currentWinStreak} duration={1.2} delay={0.6} />
+                  <GSAPAnimatedCounter 
+                    value={stats.currentWinStreak} 
+                    duration={2.0} 
+                    delay={13.0}
+                    shouldAnimate={cardAnimation.hasTriggered}
+                    ease="bounce.out"
+                  />
                 </div>
-                <div className="text-xs text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
+                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
               </div>
             </div>
           </CardContent>
@@ -870,7 +943,11 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
 
       {/* Nemesis & Bunny Stats */}
       {mainPlayer && (
-        <motion.div variants={itemVariants}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 0.6 }}
+        >
           <NemesisBunnyStats
             playerId={mainPlayer.$id}
             playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}

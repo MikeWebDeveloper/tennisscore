@@ -13,7 +13,7 @@ export async function createMatch(matchData: {
   playerThreeId?: string
   playerFourId?: string
   tournamentName?: string
-  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" }
+  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" | "detailed" }
 }) {
   const user = await getCurrentUser()
   if (!user) {
@@ -217,7 +217,11 @@ export async function getMatchesByUser(): Promise<Match[]> {
       databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-        [Query.equal("userId", user.$id)]
+        [
+          Query.equal("userId", user.$id),
+          Query.orderDesc("$createdAt"),
+          Query.limit(1000) // Keep high limit for backward compatibility
+        ]
       )
     )
 
@@ -225,6 +229,86 @@ export async function getMatchesByUser(): Promise<Match[]> {
   } catch (error) {
     console.error("Error fetching matches:", error)
     return []
+  }
+}
+
+export interface PaginatedMatchesResult {
+  matches: Match[]
+  total: number
+  hasMore: boolean
+}
+
+export async function getMatchesByUserPaginated(options: {
+  limit?: number
+  offset?: number
+  dateFilter?: 'all' | 'thisMonth' | 'last3Months' | 'thisYear'
+} = {}): Promise<PaginatedMatchesResult> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { matches: [], total: 0, hasMore: false }
+    }
+
+    const { databases } = await createAdminClient()
+    const { limit = 15, offset = 0, dateFilter = 'all' } = options
+
+    // Build query with filters
+    const queries = [Query.equal("userId", user.$id)]
+    
+    // Add date filtering
+    if (dateFilter !== 'all') {
+      const now = new Date()
+      let filterDate: Date
+      
+      switch (dateFilter) {
+        case 'thisMonth':
+          filterDate = new Date(now.getFullYear(), now.getMonth(), 1)
+          break
+        case 'last3Months':
+          filterDate = new Date(now.getFullYear(), now.getMonth() - 3, 1)
+          break
+        case 'thisYear':
+          filterDate = new Date(now.getFullYear(), 0, 1)
+          break
+        default:
+          filterDate = new Date(0) // No filter
+      }
+      
+      if (filterDate.getTime() > 0) {
+        queries.push(Query.greaterThanEqual("matchDate", filterDate.toISOString()))
+      }
+    }
+
+    // Add ordering and pagination
+    queries.push(Query.orderDesc("matchDate"))
+    queries.push(Query.limit(limit))
+    queries.push(Query.offset(offset))
+
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        queries
+      )
+    )
+
+    // Get total count for pagination info
+    const totalResponse = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        [Query.equal("userId", user.$id)]
+      )
+    )
+
+    const matches = response.documents as unknown as Match[]
+    const total = totalResponse.total
+    const hasMore = (offset + limit) < total
+
+    return { matches, total, hasMore }
+  } catch (error) {
+    console.error("Error fetching paginated matches:", error)
+    return { matches: [], total: 0, hasMore: false }
   }
 }
 
@@ -545,7 +629,9 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       rallyLength: generateRealisticRallyLength(pointOutcome),
       pointOutcome,
       lastShotType: generateRealisticLastShot(pointOutcome),
-      lastShotPlayer: winner,
+      lastShotPlayer: pointOutcome === 'unforced_error' || pointOutcome === 'forced_error' || pointOutcome === 'double_fault' 
+        ? (winner === 'p1' ? 'p2' : 'p1') // Error: lastShotPlayer made the error and lost
+        : winner, // Winner or ace: lastShotPlayer won the point
       isBreakPoint: server !== gameWinner && isLastPoint,
       isSetPoint: isLastGameOfSet && isLastPoint,
       isMatchPoint: isLastGameOfMatch && isLastPoint,
@@ -676,6 +762,30 @@ function generateRealisticLastShot(pointOutcome: string): ShotType {
   }
   
   return "forehand"
+}
+
+export async function updateMatchFormat(matchId: string, newFormat: MatchFormat): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    const { databases } = await createAdminClient()
+
+    await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId,
+      { matchFormat: JSON.stringify(newFormat) }
+    )
+
+    revalidatePath(`/matches/live/${matchId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating match format:", error)
+    return { success: false, error: "Failed to update match format." }
+  }
 }
 
  

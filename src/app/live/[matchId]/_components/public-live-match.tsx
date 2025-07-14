@@ -434,13 +434,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoRating={match.playerTwo.rating}
             playerThreeRating={match.playerThree?.rating}
             playerFourRating={match.playerFour?.rating}
+            playerOneClub={match.playerOne.club}
+            playerTwoClub={match.playerTwo.club}
+            playerThreeClub={match.playerThree?.club}
+            playerFourClub={match.playerFour?.club}
             score={score}
             status={match.status}
             winnerId={match.winnerId}
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
-            matchFormat={match.matchFormatParsed}
+            matchFormat={{
+              noAd: match.matchFormatParsed.noAd,
+              sets: match.matchFormatParsed.sets as 1 | 3 | 5,
+              tiebreak: match.matchFormatParsed.finalSetTiebreak !== "none",
+              finalSetTiebreak: match.matchFormatParsed.finalSetTiebreak || "standard"
+            }}
           />
         </motion.div>
 
@@ -501,6 +510,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                   <PointByPointView
                     pointLog={pointLog}
                     playerNames={playerNames}
+                    playerObjects={{
+                      p1: match.playerOne,
+                      p2: match.playerTwo,
+                      ...(match.playerThree ? { p3: match.playerThree } : {}),
+                      ...(match.playerFour ? { p4: match.playerFour } : {})
+                    }}
                   />
                 </CardContent>
               </Card>

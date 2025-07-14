@@ -93,12 +93,12 @@ export default function DashboardClient({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Star className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100">
               {t('welcomeBack')}, {firstName}
             </h1>
           </div>
         </div>
-        <p className="text-lg text-slate-400">
+        <p className="text-lg text-gray-700 dark:text-slate-400">
           {t('dashboardSubtitle')}
         </p>
       </motion.div>
@@ -116,7 +116,7 @@ export default function DashboardClient({
         transition={{ duration: 0.4, delay: 0.6 }}
         className="text-center py-4 md:py-8"
       >
-        <p className="text-xs md:text-sm text-slate-500">
+        <p className="text-xs md:text-sm text-gray-600 dark:text-slate-500">
           {t('readyToElevate')}
         </p>
       </motion.div>

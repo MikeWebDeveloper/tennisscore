@@ -26,79 +26,61 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       matchId
     )
 
-    // Handle new anonymous player logic: check for embedded player data first
-    let playerOne, playerTwo, playerThree, playerFour
+    // Handle player data: prefer embedded data, fallback to database lookup
     
-    if (match.playerOneData) {
-      playerOne = match.playerOneData
-    } else if (match.playerOneId && !match.playerOneId.startsWith('anonymous-')) {
-      playerOne = await databases.getDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        match.playerOneId
-      )
-    } else {
-      // Fallback for missing data or anonymous players
-      playerOne = { 
+    // Helper function to get player data with robust fallback
+    const getPlayerData = async (playerId: string, playerNumber: string) => {
+      // For anonymous players, create fallback immediately
+      if (playerId?.startsWith('anonymous-')) {
+        console.log(`🤖 Creating anonymous player ${playerNumber}`)
+        return { 
+          firstName: "Player", 
+          lastName: playerNumber,
+          $id: playerId
+        }
+      }
+      
+      // For real players, try database lookup
+      if (playerId) {
+        try {
+          const player = await databases.getDocument(
+            process.env.APPWRITE_DATABASE_ID!,
+            process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+            playerId
+          )
+          console.log(`✅ Successfully fetched player ${playerNumber}: ${player.firstName} ${player.lastName}`)
+          return player
+        } catch (error) {
+          console.error(`❌ Failed to fetch player ${playerNumber} (${playerId}):`, error)
+          // Create a more informative fallback
+          return { 
+            firstName: "Unknown", 
+            lastName: "Player",
+            $id: playerId
+          }
+        }
+      }
+      
+      // Final fallback
+      return { 
         firstName: "Player", 
-        lastName: "1",
-        $id: match.playerOneId || "anonymous-1"
+        lastName: playerNumber,
+        $id: playerId || `anonymous-${playerNumber}`
       }
     }
     
-    if (match.playerTwoData) {
-      playerTwo = match.playerTwoData
-    } else if (match.playerTwoId && !match.playerTwoId.startsWith('anonymous-')) {
-      playerTwo = await databases.getDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        match.playerTwoId
-      )
-    } else {
-      // Fallback for missing data or anonymous players
-      playerTwo = { 
-        firstName: "Player", 
-        lastName: "2",
-        $id: match.playerTwoId || "anonymous-2"
-      }
-    }
-
+    // Fetch all players using the helper function
+    const playerOne = await getPlayerData(match.playerOneId, "1")
+    const playerTwo = await getPlayerData(match.playerTwoId, "2")
+    
     // Fetch doubles players if they exist
-    if (match.playerThreeId) {
-      if (match.playerThreeData) {
-        playerThree = match.playerThreeData
-      } else if (!match.playerThreeId.startsWith('anonymous-')) {
-        playerThree = await databases.getDocument(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-          match.playerThreeId
-        )
-      } else {
-        playerThree = { 
-          firstName: "Player", 
-          lastName: "3",
-          $id: match.playerThreeId
-        }
-      }
-    }
-
-    if (match.playerFourId) {
-      if (match.playerFourData) {
-        playerFour = match.playerFourData
-      } else if (!match.playerFourId.startsWith('anonymous-')) {
-        playerFour = await databases.getDocument(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-          match.playerFourId
-        )
-      } else {
-        playerFour = { 
-          firstName: "Player", 
-          lastName: "4",
-          $id: match.playerFourId
-        }
-      }
-    }
+    const playerThree = match.playerThreeId 
+      ? await getPlayerData(match.playerThreeId, "3")
+      : null
+    
+    const playerFour = match.playerFourId 
+      ? await getPlayerData(match.playerFourId, "4")
+      : null
 
     // Parse the match data
     const matchData = {

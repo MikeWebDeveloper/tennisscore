@@ -1,4 +1,5 @@
 import { PointDetail, PlayerStats, Match } from "@/lib/types"
+import { EnhancedPointDetail, PointsOnlyDetail, SimplePointDetail, DetailedPointDetail, ComplexPointDetail } from "@/lib/schemas/match"
 
 export interface EnhancedMatchStats {
   totalPoints: number
@@ -24,6 +25,115 @@ export interface EnhancedMatchStats {
     saved: [number, number]        // Break points saved by each player
     conversionRate: [number, number] // Break point conversion percentage
   }
+}
+
+// Enhanced analytics interfaces
+export interface ServeAnalytics {
+  placement: {
+    distribution: Record<string, number>
+    successRate: Record<string, number>
+    averageSpeed: Record<string, number>
+  }
+  speed: {
+    average: number
+    max: number
+    min: number
+    distribution: { range: string; count: number }[]
+  }
+  spin: {
+    distribution: Record<string, number>
+    effectiveness: Record<string, number>
+  }
+  situational: {
+    breakPointPerformance: ServePerformance
+    setPointPerformance: ServePerformance
+    matchPointPerformance: ServePerformance
+  }
+}
+
+export interface ServePerformance {
+  attempts: number
+  made: number
+  percentage: number
+}
+
+export interface ReturnAnalytics {
+  placement: {
+    zones: Record<string, number>
+    successRate: Record<string, number>
+  }
+  quality: {
+    distribution: Record<string, number>
+    effectiveness: Record<string, number>
+  }
+  contextual: {
+    firstServeReturns: ReturnPerformance
+    secondServeReturns: ReturnPerformance
+    pressureReturns: ReturnPerformance
+  }
+}
+
+export interface ReturnPerformance {
+  attempts: number
+  successful: number
+  percentage: number
+}
+
+export interface DetailedMatchStats extends EnhancedMatchStats {
+  serveDirectionStats: {
+    playerOne: ServeDirectionAnalysis
+    playerTwo: ServeDirectionAnalysis
+  }
+  shotDirectionStats: {
+    playerOne: ShotDirectionAnalysis
+    playerTwo: ShotDirectionAnalysis
+  }
+  contextualStats: {
+    pressurePointPerformance: PressurePointAnalysis
+    momentumAnalysis: MomentumAnalysis
+  }
+  hasDetailedData: boolean
+}
+
+export interface ServeDirectionAnalysis {
+  wide: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  body: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  t: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  totalAttempts: number
+  bestDirection: string
+  worstDirection: string
+}
+
+export interface ShotDirectionAnalysis {
+  long: { attempts: number; winners: number; errors: number }
+  wide: { attempts: number; winners: number; errors: number }
+  net: { attempts: number; winners: number; errors: number }
+  totalShots: number
+  preferredDirection: string
+  winnerDirection: string
+}
+
+export interface PressurePointAnalysis {
+  breakPoints: { total: number; won: number; percentage: number }
+  setPoints: { total: number; won: number; percentage: number }
+  matchPoints: { total: number; won: number; percentage: number }
+}
+
+export interface MomentumAnalysis {
+  consecutivePoints: { longest: number; current: number }
+  comebackGames: number
+  clutchPerformance: number
+}
+
+export interface AdvancedMatchStats extends EnhancedMatchStats {
+  serveAnalytics: ServeAnalytics
+  rallyAnalytics: {
+    typeDistribution: Record<string, number>
+    averageLength: number
+    typeSuccess: Record<string, number>
+  }
+  customStats: Record<string, unknown>
+  hasEnhancedData: boolean
 }
 
 export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats {
@@ -92,19 +202,45 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       }
     }
 
-    // Count winners and errors
+    // Count winners and errors - use lastShotPlayer for proper attribution
     if (point.pointOutcome === 'winner') {
-      stats.winnersByPlayer[isP1 ? 0 : 1]++
+      // Winner should be attributed to the player who hit the winning shot
+      const winnerPlayer = point.lastShotPlayer || point.winner
+      stats.winnersByPlayer[winnerPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'unforced_error') {
-      stats.unforcedErrorsByPlayer[isP1 ? 1 : 0]++
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      // If the data shows lastShotPlayer = winner, it's wrong - fix it here
+      let errorPlayer = point.lastShotPlayer;
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy data: corrected error attribution
+      }
+      
+      // Debug logging can be enabled for troubleshooting
+      // console.log('Unforced error attributed to:', errorPlayer);
+      
+      stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     } else if (point.pointOutcome === 'forced_error') {
-      stats.forcedErrorsByPlayer[isP1 ? 1 : 0]++
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy forced error data: corrected error attribution
+      }
+      
+      stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     }
 
-    // Count aces and double faults
+    // Count aces and double faults - use server for proper attribution
     if (point.pointOutcome === 'ace') {
-      stats.acesByPlayer[isP1 ? 0 : 1]++
+      // Ace should always be attributed to the server
+      stats.acesByPlayer[isP1Serving ? 0 : 1]++
     } else if (point.pointOutcome === 'double_fault') {
+      // Double fault should always be attributed to the server
       stats.doubleFaultsByPlayer[isP1Serving ? 0 : 1]++
     }
 
@@ -288,6 +424,235 @@ export function generatePointContext(
   const gameScore = getGameScoreDisplay(currentScore.points)
 
   return `Point ${pointNumber}: ${winnerName} wins. Score: ${setScores}, ${currentScore.games.join("-")} (${gameScore})`
+}
+
+export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMatchStats {
+  const baseStats = calculateMatchStats(pointLog)
+  
+  // Initialize detailed stats structure
+  const detailedStats: DetailedMatchStats = {
+    ...baseStats,
+    serveDirectionStats: {
+      playerOne: initializeServeDirectionAnalysis(),
+      playerTwo: initializeServeDirectionAnalysis()
+    },
+    shotDirectionStats: {
+      playerOne: initializeShotDirectionAnalysis(),
+      playerTwo: initializeShotDirectionAnalysis()
+    },
+    contextualStats: {
+      pressurePointPerformance: initializePressurePointAnalysis(),
+      momentumAnalysis: initializeMomentumAnalysis()
+    },
+    hasDetailedData: false
+  }
+
+  if (pointLog.length === 0) return detailedStats
+
+  let hasAnyDetailedData = false
+
+  // Process each point for detailed analysis
+  pointLog.forEach((point) => {
+    const isP1 = point.winner === 'p1'
+    const isP1Serving = point.server === 'p1'
+    const playerServeStats = isP1Serving ? detailedStats.serveDirectionStats.playerOne : detailedStats.serveDirectionStats.playerTwo
+    
+    // For shot direction stats, we need to attribute to the correct player based on point type
+    let shotPlayer = point.winner; // Default for winners, aces
+    
+    // For errors, attribute to the player who made the error
+    if (point.pointOutcome === 'unforced_error' || point.pointOutcome === 'forced_error') {
+      shotPlayer = point.lastShotPlayer ?? point.winner;
+      // Fix buggy data: if lastShotPlayer equals winner for errors, correct it
+      if (shotPlayer === point.winner) {
+        shotPlayer = point.winner === 'p1' ? 'p2' : 'p1';
+      }
+    }
+    
+    const playerShotStats = shotPlayer === 'p1' ? detailedStats.shotDirectionStats.playerOne : detailedStats.shotDirectionStats.playerTwo
+
+    // Analyze serve direction (for aces and double faults)
+    if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
+      hasAnyDetailedData = true
+      const direction = point.servePlacement as 'wide' | 'body' | 't'
+      
+      playerServeStats[direction].attempts++
+      playerServeStats.totalAttempts++
+      
+      if (point.pointOutcome === 'ace') {
+        playerServeStats[direction].successful++
+        playerServeStats[direction].aces++
+      } else if (point.pointOutcome === 'double_fault') {
+        playerServeStats[direction].doubleFaults++
+      }
+    }
+
+    // Analyze shot direction (for winners and errors) - check if we have the new shot direction data
+    if ((point.pointOutcome === 'winner' || point.pointOutcome === 'unforced_error' || point.pointOutcome === 'forced_error') && 
+        point.lastShotType && point.lastShotType !== 'serve') {
+      // For now, we'll analyze based on court position since we don't have shot direction in existing data
+      // In future points logged with new system, we'd use actual shot direction
+      hasAnyDetailedData = true
+      
+      const direction = inferShotDirection(point)
+      if (direction) {
+        playerShotStats[direction].attempts++
+        playerShotStats.totalShots++
+        
+        if (point.pointOutcome === 'winner') {
+          playerShotStats[direction].winners++
+        } else {
+          playerShotStats[direction].errors++
+        }
+      }
+    }
+
+    // Analyze pressure points
+    if (point.isBreakPoint || point.isSetPoint || point.isMatchPoint) {
+      hasAnyDetailedData = true
+      
+      if (point.isBreakPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.breakPoints.total++
+        if ((isP1Serving && isP1) || (!isP1Serving && !isP1)) {
+          detailedStats.contextualStats.pressurePointPerformance.breakPoints.won++
+        }
+      }
+      
+      if (point.isSetPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.setPoints.total++
+        if (isP1) {
+          detailedStats.contextualStats.pressurePointPerformance.setPoints.won++
+        }
+      }
+      
+      if (point.isMatchPoint) {
+        detailedStats.contextualStats.pressurePointPerformance.matchPoints.total++
+        if (isP1) {
+          detailedStats.contextualStats.pressurePointPerformance.matchPoints.won++
+        }
+      }
+    }
+  })
+
+  // Calculate percentages and best/worst directions
+  calculateServeDirectionSummary(detailedStats.serveDirectionStats.playerOne)
+  calculateServeDirectionSummary(detailedStats.serveDirectionStats.playerTwo)
+  calculateShotDirectionSummary(detailedStats.shotDirectionStats.playerOne)
+  calculateShotDirectionSummary(detailedStats.shotDirectionStats.playerTwo)
+  calculatePressurePointPercentages(detailedStats.contextualStats.pressurePointPerformance)
+
+  detailedStats.hasDetailedData = hasAnyDetailedData
+  
+  return detailedStats
+}
+
+function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
+  return {
+    wide: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    body: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    t: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    totalAttempts: 0,
+    bestDirection: '',
+    worstDirection: ''
+  }
+}
+
+function initializeShotDirectionAnalysis(): ShotDirectionAnalysis {
+  return {
+    long: { attempts: 0, winners: 0, errors: 0 },
+    wide: { attempts: 0, winners: 0, errors: 0 },
+    net: { attempts: 0, winners: 0, errors: 0 },
+    totalShots: 0,
+    preferredDirection: '',
+    winnerDirection: ''
+  }
+}
+
+function initializePressurePointAnalysis(): PressurePointAnalysis {
+  return {
+    breakPoints: { total: 0, won: 0, percentage: 0 },
+    setPoints: { total: 0, won: 0, percentage: 0 },
+    matchPoints: { total: 0, won: 0, percentage: 0 }
+  }
+}
+
+function initializeMomentumAnalysis(): MomentumAnalysis {
+  return {
+    consecutivePoints: { longest: 0, current: 0 },
+    comebackGames: 0,
+    clutchPerformance: 0
+  }
+}
+
+function inferShotDirection(point: PointDetail): 'long' | 'wide' | 'net' | null {
+  // For now, use court position as a proxy for shot direction
+  // This is a placeholder until we get actual shot direction data from new point logger
+  if (point.courtPosition === 'deuce') {
+    return 'long' // Assume deuce side shots are more likely long
+  } else if (point.courtPosition === 'ad') {
+    return 'wide' // Assume ad side shots are more likely wide
+  }
+  return 'net' // Default for other cases
+}
+
+function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
+  if (stats.totalAttempts === 0) return
+  
+  const directions = ['wide', 'body', 't'] as const
+  let bestDirection = ''
+  let worstDirection = ''
+  let bestSuccessRate = -1
+  let worstSuccessRate = 101
+  
+  directions.forEach(direction => {
+    if (stats[direction].attempts > 0) {
+      const successRate = (stats[direction].successful / stats[direction].attempts) * 100
+      if (successRate > bestSuccessRate) {
+        bestSuccessRate = successRate
+        bestDirection = direction
+      }
+      if (successRate < worstSuccessRate) {
+        worstSuccessRate = successRate
+        worstDirection = direction
+      }
+    }
+  })
+  
+  stats.bestDirection = bestDirection
+  stats.worstDirection = worstDirection
+}
+
+function calculateShotDirectionSummary(stats: ShotDirectionAnalysis) {
+  if (stats.totalShots === 0) return
+  
+  const directions = ['long', 'wide', 'net'] as const
+  let preferredDirection = ''
+  let winnerDirection = ''
+  let mostUsed = 0
+  let mostWinners = 0
+  
+  directions.forEach(direction => {
+    if (stats[direction].attempts > mostUsed) {
+      mostUsed = stats[direction].attempts
+      preferredDirection = direction
+    }
+    if (stats[direction].winners > mostWinners) {
+      mostWinners = stats[direction].winners
+      winnerDirection = direction
+    }
+  })
+  
+  stats.preferredDirection = preferredDirection
+  stats.winnerDirection = winnerDirection
+}
+
+function calculatePressurePointPercentages(stats: PressurePointAnalysis) {
+  stats.breakPoints.percentage = stats.breakPoints.total > 0 ? 
+    Math.round((stats.breakPoints.won / stats.breakPoints.total) * 100) : 0
+  stats.setPoints.percentage = stats.setPoints.total > 0 ? 
+    Math.round((stats.setPoints.won / stats.setPoints.total) * 100) : 0
+  stats.matchPoints.percentage = stats.matchPoints.total > 0 ? 
+    Math.round((stats.matchPoints.won / stats.matchPoints.total) * 100) : 0
 }
 
 // --- AGGREGATION AND WIN STREAK LOGIC FOR DASHBOARD ---
@@ -488,4 +853,604 @@ export function calculatePlayerWinStreak(matches: Match[], playerId: string): { 
   }
   if (currentStreak > maxStreak) maxStreak = currentStreak;
   return { current: currentStreak, max: maxStreak };
-} 
+}
+
+// Type guard helpers
+function hasEnhancedField(point: PointDetail | EnhancedPointDetail, field: string): boolean {
+  return field in point && (point as Record<string, unknown>)[field] !== undefined
+}
+
+// Enhanced analytics calculation functions
+export function calculateAdvancedMatchStats(pointLog: (PointDetail | EnhancedPointDetail)[]): AdvancedMatchStats {
+  const baseStats = calculateMatchStats(pointLog as PointDetail[])
+  
+  // Check if we have enhanced data - more flexible detection
+  const enhancedPoints = pointLog.filter(p => {
+    // Check for explicit logging level > 1
+    if ('loggingLevel' in p && p.loggingLevel && parseInt(p.loggingLevel) > 1) {
+      return true
+    }
+    // Or check for enhanced fields that indicate useful analytics data
+    return !!(hasEnhancedField(p, 'servePlacement') || hasEnhancedField(p, 'courtPosition') || 
+             hasEnhancedField(p, 'lastShotType') || 
+             ('serveStats' in p && p.serveStats) || 
+             ('returnStats' in p && p.returnStats) ||
+             ('tacticalContext' in p && p.tacticalContext))
+  }) as EnhancedPointDetail[]
+  
+  const hasEnhancedData = enhancedPoints.length > 0
+  
+  const serveAnalytics = hasEnhancedData ? calculateServeAnalytics(enhancedPoints) : getEmptyServeAnalytics()
+  const rallyAnalytics = hasEnhancedData ? calculateRallyAnalytics(enhancedPoints) : getEmptyRallyAnalytics()
+  
+  return {
+    ...baseStats,
+    serveAnalytics,
+    rallyAnalytics,
+    customStats: {},
+    hasEnhancedData
+  }
+}
+
+function calculateServeAnalytics(points: EnhancedPointDetail[]): ServeAnalytics {
+  // Use either enhanced serveStats or basic servePlacement data
+  const servePoints = points.filter(p => 
+    p.serveStats || hasEnhancedField(p, 'servePlacement') || (hasEnhancedField(p, 'lastShotType') || p.serveType)
+  )
+  
+  // Placement analysis
+  const placementDistribution: Record<string, number> = {}
+  const placementSuccess: Record<string, number> = {}
+  const placementSpeed: Record<string, number[]> = {}
+  
+  servePoints.forEach(point => {
+    // Get placement from either serveStats or basic servePlacement
+    const placement = point.serveStats?.placement || (point as Record<string, unknown>).servePlacement as string
+    
+    if (placement) {
+      placementDistribution[placement] = (placementDistribution[placement] || 0) + 1
+      
+      // Track success (ace or serve winner)
+      const pointOutcome = (point as Record<string, unknown>).pointOutcome as string
+      if (pointOutcome === 'ace' || pointOutcome === 'winner') {
+        placementSuccess[placement] = (placementSuccess[placement] || 0) + 1
+      }
+      
+      // Track speed by placement (only if available)
+      if (point.serveStats?.speed) {
+        if (!placementSpeed[placement]) placementSpeed[placement] = []
+        placementSpeed[placement].push(point.serveStats.speed)
+      }
+    }
+  })
+  
+  // Calculate success rates and average speeds
+  const placementSuccessRate: Record<string, number> = {}
+  const placementAverageSpeed: Record<string, number> = {}
+  
+  Object.keys(placementDistribution).forEach(placement => {
+    placementSuccessRate[placement] = Math.round(
+      ((placementSuccess[placement] || 0) / placementDistribution[placement]) * 100
+    )
+    
+    if (placementSpeed[placement] && placementSpeed[placement].length > 0) {
+      placementAverageSpeed[placement] = Math.round(
+        placementSpeed[placement].reduce((a, b) => a + b, 0) / placementSpeed[placement].length
+      )
+    }
+  })
+  
+  // Speed analysis
+  const speeds = servePoints
+    .filter(p => p.serveStats?.speed)
+    .map(p => p.serveStats!.speed!)
+    
+  const speedStats = speeds.length > 0 ? {
+    average: Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length),
+    max: Math.max(...speeds),
+    min: Math.min(...speeds),
+    distribution: createSpeedDistribution(speeds)
+  } : {
+    average: 0,
+    max: 0,
+    min: 0,
+    distribution: []
+  }
+  
+  // Spin analysis
+  const spinDistribution: Record<string, number> = {}
+  const spinEffectiveness: Record<string, number> = {}
+  
+  servePoints.forEach(point => {
+    if (point.serveStats?.spin) {
+      const spin = point.serveStats.spin
+      spinDistribution[spin] = (spinDistribution[spin] || 0) + 1
+      
+      if (point.pointOutcome === 'ace' || point.pointOutcome === 'winner') {
+        spinEffectiveness[spin] = (spinEffectiveness[spin] || 0) + 1
+      }
+    }
+  })
+  
+  // Convert to percentages
+  Object.keys(spinDistribution).forEach(spin => {
+    spinEffectiveness[spin] = Math.round(
+      ((spinEffectiveness[spin] || 0) / spinDistribution[spin]) * 100
+    )
+  })
+  
+  // Situational analysis - using pressure situation as proxy for high-pressure scenarios
+  const situational = {
+    breakPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation),
+    setPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation),
+    matchPointPerformance: calculateSituationalServePerformance(servePoints, p => p.tacticalContext?.pressureSituation)
+  }
+  
+  return {
+    placement: {
+      distribution: placementDistribution,
+      successRate: placementSuccessRate,
+      averageSpeed: placementAverageSpeed
+    },
+    speed: speedStats,
+    spin: {
+      distribution: spinDistribution,
+      effectiveness: spinEffectiveness
+    },
+    situational
+  }
+}
+
+function calculateRallyAnalytics(points: EnhancedPointDetail[]): { typeDistribution: Record<string, number>; averageLength: number; typeSuccess: Record<string, number> } {
+  // Work with basic rally data or enhanced tactical context
+  const typeDistribution: Record<string, number> = {}
+  const typeSuccess: Record<string, number> = {}
+  const rallyLengths: number[] = []
+  
+  points.forEach(point => {
+    // Use tactical context if available, otherwise infer from basic data
+    let rallyType = point.tacticalContext?.rallyType
+    
+    // Infer rally type from basic data if not explicitly set
+    if (!rallyType) {
+      const rallyLength = (point as Record<string, unknown>).rallyLength as number
+      
+      if (rallyLength === 1) {
+        rallyType = 'baseline' // Short points are typically baseline
+      } else if (rallyLength && rallyLength <= 3) {
+        rallyType = 'baseline' // Short rallies
+      } else if (rallyLength && rallyLength >= 10) {
+        rallyType = 'defensive' // Long rallies tend to be defensive
+      } else {
+        rallyType = 'baseline' // Default baseline rally
+      }
+    }
+    
+    if (rallyType) {
+      typeDistribution[rallyType] = (typeDistribution[rallyType] || 0) + 1
+      
+      const pointOutcome = (point as Record<string, unknown>).pointOutcome as string
+      if (pointOutcome === 'winner') {
+        typeSuccess[rallyType] = (typeSuccess[rallyType] || 0) + 1
+      }
+    }
+    
+    const rallyLength = (point as Record<string, unknown>).rallyLength as number
+    if (rallyLength) {
+      rallyLengths.push(rallyLength)
+    }
+  })
+  
+  // Convert success to percentages
+  Object.keys(typeDistribution).forEach(type => {
+    typeSuccess[type] = Math.round(
+      ((typeSuccess[type] || 0) / typeDistribution[type]) * 100
+    )
+  })
+  
+  const averageLength = rallyLengths.length > 0 
+    ? rallyLengths.reduce((a, b) => a + b, 0) / rallyLengths.length
+    : 0
+  
+  return {
+    typeDistribution,
+    averageLength: Math.round(averageLength * 10) / 10, // One decimal place
+    typeSuccess
+  }
+}
+
+function calculateSituationalServePerformance(
+  servePoints: EnhancedPointDetail[], 
+  condition: (point: EnhancedPointDetail) => boolean | undefined
+): ServePerformance {
+  const situationalPoints = servePoints.filter(condition)
+  const attempts = situationalPoints.length
+  const made = situationalPoints.filter(p => 
+    p.pointOutcome === 'ace' || p.pointOutcome === 'winner'
+  ).length
+  
+  return {
+    attempts,
+    made,
+    percentage: attempts > 0 ? Math.round((made / attempts) * 100) : 0
+  }
+}
+
+function createSpeedDistribution(speeds: number[]): { range: string; count: number }[] {
+  const ranges = [
+    { min: 60, max: 79, label: '60-79 mph' },
+    { min: 80, max: 99, label: '80-99 mph' },
+    { min: 100, max: 119, label: '100-119 mph' },
+    { min: 120, max: 139, label: '120-139 mph' },
+    { min: 140, max: 160, label: '140+ mph' }
+  ]
+  
+  return ranges.map(range => ({
+    range: range.label,
+    count: speeds.filter(speed => speed >= range.min && speed <= range.max).length
+  }))
+}
+
+function getEmptyServeAnalytics(): ServeAnalytics {
+  return {
+    placement: {
+      distribution: {},
+      successRate: {},
+      averageSpeed: {}
+    },
+    speed: {
+      average: 0,
+      max: 0,
+      min: 0,
+      distribution: []
+    },
+    spin: {
+      distribution: {},
+      effectiveness: {}
+    },
+    situational: {
+      breakPointPerformance: { attempts: 0, made: 0, percentage: 0 },
+      setPointPerformance: { attempts: 0, made: 0, percentage: 0 },
+      matchPointPerformance: { attempts: 0, made: 0, percentage: 0 }
+    }
+  }
+}
+
+function getEmptyRallyAnalytics(): { typeDistribution: Record<string, number>; averageLength: number; typeSuccess: Record<string, number> } {
+  return {
+    typeDistribution: {},
+    averageLength: 0,
+    typeSuccess: {}
+  }
+}
+
+// Points-only statistics - only basic service and receiving stats
+export function calculatePointsOnlyStats(pointLog: PointsOnlyDetail[]): EnhancedMatchStats {
+  const stats: EnhancedMatchStats = {
+    totalPoints: pointLog.length,
+    totalPointsWonByPlayer: [0, 0],
+    servicePointsWonByPlayer: [0, 0],
+    servicePointsPlayedByPlayer: [0, 0],
+    servicePointsWonPercentageByPlayer: [0, 0],
+    receivingPointsWonByPlayer: [0, 0],
+    receivingPointsPlayedByPlayer: [0, 0],
+    receivingPointsWonPercentageByPlayer: [0, 0],
+    // These are not available in points-only mode
+    winnersByPlayer: [0, 0],
+    unforcedErrorsByPlayer: [0, 0],
+    forcedErrorsByPlayer: [0, 0],
+    acesByPlayer: [0, 0],
+    doubleFaultsByPlayer: [0, 0],
+    firstServePercentageByPlayer: [0, 0],
+    firstServePointsWonByPlayer: [0, 0],
+    secondServePointsPlayedByPlayer: [0, 0],
+    secondServePointsWonByPlayer: [0, 0],
+    breakPointsByPlayer: {
+      faced: [0, 0],
+      converted: [0, 0],
+      saved: [0, 0],
+      conversionRate: [0, 0]
+    }
+  }
+
+  pointLog.forEach(point => {
+    const isP1 = point.winner === 'p1'
+    const isP1Serving = point.server === 'p1'
+
+    // Total points won
+    stats.totalPointsWonByPlayer[isP1 ? 0 : 1]++
+
+    // Service points
+    if (isP1Serving) {
+      stats.servicePointsPlayedByPlayer[0]++
+      if (isP1) {
+        stats.servicePointsWonByPlayer[0]++
+      }
+    } else {
+      stats.servicePointsPlayedByPlayer[1]++
+      if (!isP1) {
+        stats.servicePointsWonByPlayer[1]++
+      }
+    }
+
+    // Receiving points
+    if (!isP1Serving) {
+      stats.receivingPointsPlayedByPlayer[0]++
+      if (isP1) {
+        stats.receivingPointsWonByPlayer[0]++
+      }
+    } else {
+      stats.receivingPointsPlayedByPlayer[1]++
+      if (!isP1) {
+        stats.receivingPointsWonByPlayer[1]++
+      }
+    }
+
+    // Break points
+    if (point.isBreakPoint) {
+      if (isP1Serving) {
+        stats.breakPointsByPlayer.faced[0]++
+        if (isP1) {
+          stats.breakPointsByPlayer.saved[0]++
+        } else {
+          stats.breakPointsByPlayer.converted[1]++
+        }
+      } else {
+        stats.breakPointsByPlayer.faced[1]++
+        if (!isP1) {
+          stats.breakPointsByPlayer.saved[1]++
+        } else {
+          stats.breakPointsByPlayer.converted[0]++
+        }
+      }
+    }
+  })
+
+  // Calculate percentages
+  stats.servicePointsWonPercentageByPlayer = [
+    stats.servicePointsPlayedByPlayer[0] > 0 ? Math.round((stats.servicePointsWonByPlayer[0] / stats.servicePointsPlayedByPlayer[0]) * 100) : 0,
+    stats.servicePointsPlayedByPlayer[1] > 0 ? Math.round((stats.servicePointsWonByPlayer[1] / stats.servicePointsPlayedByPlayer[1]) * 100) : 0
+  ]
+
+  stats.receivingPointsWonPercentageByPlayer = [
+    stats.receivingPointsPlayedByPlayer[0] > 0 ? Math.round((stats.receivingPointsWonByPlayer[0] / stats.receivingPointsPlayedByPlayer[0]) * 100) : 0,
+    stats.receivingPointsPlayedByPlayer[1] > 0 ? Math.round((stats.receivingPointsWonByPlayer[1] / stats.receivingPointsPlayedByPlayer[1]) * 100) : 0
+  ]
+
+  // Calculate break point conversion rates
+  const p1BreakPointOpportunities = pointLog.filter(p => p.isBreakPoint && p.server === 'p2').length
+  const p2BreakPointOpportunities = pointLog.filter(p => p.isBreakPoint && p.server === 'p1').length
+  
+  stats.breakPointsByPlayer.conversionRate = [
+    p1BreakPointOpportunities > 0 ? Math.round((stats.breakPointsByPlayer.converted[0] / p1BreakPointOpportunities) * 100) : 0,
+    p2BreakPointOpportunities > 0 ? Math.round((stats.breakPointsByPlayer.converted[1] / p2BreakPointOpportunities) * 100) : 0
+  ]
+
+  return stats
+}
+
+// Simple statistics - includes point outcomes and serve types
+export function calculateSimpleStats(pointLog: SimplePointDetail[]): EnhancedMatchStats {
+  // Map to points-only format for base calculation
+  const pointsOnlyData: PointsOnlyDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'points' as const
+  }))
+  
+  const stats = calculatePointsOnlyStats(pointsOnlyData)
+
+  // Additional tracking for simple mode
+  let p1FirstServeAttempts = 0
+  let p1FirstServesMade = 0
+  let p1FirstServePointsWon = 0
+  let p1SecondServeAttempts = 0
+  let p1SecondServePointsWon = 0
+
+  let p2FirstServeAttempts = 0
+  let p2FirstServesMade = 0
+  let p2FirstServePointsWon = 0
+  let p2SecondServeAttempts = 0
+  let p2SecondServePointsWon = 0
+
+  pointLog.forEach(point => {
+    const isP1 = point.winner === 'p1'
+    const isP1Serving = point.server === 'p1'
+
+    // Point outcomes
+    if (point.pointOutcome === 'winner') {
+      const winnerPlayer = point.lastShotPlayer || point.winner
+      stats.winnersByPlayer[winnerPlayer === 'p1' ? 0 : 1]++
+    } else if (point.pointOutcome === 'unforced_error') {
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy unforced error data: corrected error attribution
+      }
+      
+      stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
+    } else if (point.pointOutcome === 'forced_error') {
+      // CRITICAL FIX: For errors, the error player should be the LOSER, not the winner
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for an error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Error should go to the opponent
+        // Fixed buggy forced error data: corrected error attribution
+      }
+      
+      stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
+    }
+
+    // Aces and double faults
+    if (point.pointOutcome === 'ace') {
+      stats.acesByPlayer[isP1Serving ? 0 : 1]++
+    } else if (point.pointOutcome === 'double_fault') {
+      stats.doubleFaultsByPlayer[isP1Serving ? 0 : 1]++
+    }
+
+    // Serve statistics
+    if (isP1Serving) {
+      if (point.serveType === 'first') {
+        p1FirstServeAttempts++
+        if (point.pointOutcome !== 'double_fault') {
+          p1FirstServesMade++
+          if (isP1) {
+            p1FirstServePointsWon++
+          }
+        }
+      } else if (point.serveType === 'second') {
+        // A second serve means the first serve was a fault
+        p1FirstServeAttempts++  // Implied first serve fault
+        p1SecondServeAttempts++
+        if (isP1) {
+          p1SecondServePointsWon++
+        }
+      }
+    } else {
+      if (point.serveType === 'first') {
+        p2FirstServeAttempts++
+        if (point.pointOutcome !== 'double_fault') {
+          p2FirstServesMade++
+          if (!isP1) {
+            p2FirstServePointsWon++
+          }
+        }
+      } else if (point.serveType === 'second') {
+        // A second serve means the first serve was a fault
+        p2FirstServeAttempts++  // Implied first serve fault
+        p2SecondServeAttempts++
+        if (!isP1) {
+          p2SecondServePointsWon++
+        }
+      }
+    }
+  })
+
+  // Update serve statistics
+  stats.firstServePercentageByPlayer = [
+    p1FirstServeAttempts > 0 ? Math.round((p1FirstServesMade / p1FirstServeAttempts) * 100) : 0,
+    p2FirstServeAttempts > 0 ? Math.round((p2FirstServesMade / p2FirstServeAttempts) * 100) : 0
+  ]
+
+  stats.firstServePointsWonByPlayer = [
+    p1FirstServesMade > 0 ? Math.round((p1FirstServePointsWon / p1FirstServesMade) * 100) : 0,
+    p2FirstServesMade > 0 ? Math.round((p2FirstServePointsWon / p2FirstServesMade) * 100) : 0
+  ]
+
+  stats.secondServePointsPlayedByPlayer = [p1SecondServeAttempts, p2SecondServeAttempts]
+  stats.secondServePointsWonByPlayer = [p1SecondServePointsWon, p2SecondServePointsWon]
+
+  return stats
+}
+
+// Detailed statistics - includes positioning and shot direction
+export function calculateDetailedStats(pointLog: DetailedPointDetail[]): EnhancedMatchStats {
+  // Map to simple format for base calculation
+  const simpleData: SimplePointDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'simple' as const,
+    serveType: point.serveType,
+    pointOutcome: point.pointOutcome,
+    rallyLength: point.rallyLength,
+    lastShotType: point.lastShotType,
+    lastShotPlayer: point.lastShotPlayer
+  }))
+  
+  const stats = calculateSimpleStats(simpleData)
+
+  // Additional statistics for detailed mode can be added here
+  // For now, it includes all simple stats plus the additional fields are available
+  // for more granular analysis in components
+
+  return stats
+}
+
+// Complex statistics - includes all advanced analytics
+export function calculateComplexStats(pointLog: ComplexPointDetail[]): EnhancedMatchStats {
+  // Map to detailed format for base calculation
+  const detailedData: DetailedPointDetail[] = pointLog.map(point => ({
+    id: point.id,
+    timestamp: point.timestamp,
+    pointNumber: point.pointNumber,
+    setNumber: point.setNumber,
+    gameNumber: point.gameNumber,
+    gameScore: point.gameScore,
+    winner: point.winner,
+    server: point.server,
+    isBreakPoint: point.isBreakPoint,
+    isSetPoint: point.isSetPoint,
+    isMatchPoint: point.isMatchPoint,
+    isGameWinning: point.isGameWinning,
+    isSetWinning: point.isSetWinning,
+    isMatchWinning: point.isMatchWinning,
+    isTiebreak: point.isTiebreak,
+    loggingLevel: 'detailed' as const,
+    serveType: point.serveType,
+    pointOutcome: point.pointOutcome,
+    rallyLength: point.rallyLength,
+    lastShotType: point.lastShotType,
+    lastShotPlayer: point.lastShotPlayer,
+    serveOutcome: point.serveOutcome,
+    servePlacement: point.servePlacement,
+    shotDirection: point.shotDirection
+  }))
+  
+  const stats = calculateDetailedStats(detailedData)
+
+  // Advanced analytics for complex mode can be added here
+  // This would include serve speed analysis, return quality, tactical context, etc.
+
+  return stats
+}
+
+// Main function that routes to appropriate calculator based on detail level
+export function calculateMatchStatsByLevel(pointLog: PointDetail[], detailLevel: string): EnhancedMatchStats {
+  if (pointLog.length === 0) {
+    return calculatePointsOnlyStats([])
+  }
+
+  switch (detailLevel) {
+    case 'points':
+      return calculatePointsOnlyStats(pointLog as unknown as PointsOnlyDetail[])
+    case 'simple':
+      return calculateSimpleStats(pointLog as unknown as SimplePointDetail[])
+    case 'detailed':
+      return calculateDetailedStats(pointLog as unknown as DetailedPointDetail[])
+    case 'complex':
+      return calculateComplexStats(pointLog as unknown as ComplexPointDetail[])
+    default:
+      // Fallback to existing function for backward compatibility
+      return calculateMatchStats(pointLog)
+  }
+}

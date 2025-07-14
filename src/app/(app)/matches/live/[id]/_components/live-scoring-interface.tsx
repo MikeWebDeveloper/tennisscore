@@ -15,14 +15,16 @@ import {
   MessageSquare,
   Copy,
   Mail,
-  Activity
+  Activity,
+  Settings,
+  BarChart3
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
-import { PointDetailSheet } from "./point-detail-sheet"
+import { UltraSimplePointLogger } from "./ultra-simple-point-logger"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
@@ -31,7 +33,7 @@ import { useTranslations } from "@/hooks/use-translations"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
-import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
@@ -39,6 +41,9 @@ import { MatchTimerDisplay } from "./MatchTimerDisplay"
 import { FlameIcon } from "@/components/ui/flame-icon"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
+import { MatchSettingsDialog } from "./match-settings-dialog"
+import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
+import { LiveSetExportButton } from "@/components/features/match-export-dialog"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -94,7 +99,7 @@ interface LiveScoringInterfaceProps {
     playerThree?: Player
     playerFour?: Player
     matchFormat: string
-    detailLevel?: "points" | "simple" | "complex"
+    detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
     score: string
     pointLog?: string[]
     status: string
@@ -401,6 +406,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [isInGame, setIsInGame] = useState(false)
   const [isMatchInitialized, setIsMatchInitialized] = useState(false)
   const [startTime, setStartTime] = useState<string | null>(null)
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [showCustomModeDialog, setShowCustomModeDialog] = useState(false)
   
   const playerNames = {
     p1: formatPlayerFromObject(match.playerOne),
@@ -417,7 +424,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   // Convert store point details to lib point details for stats calculation
   const convertedPointLog: LibPointDetail[] = pointLog.map(point => ({
     ...point,
-    lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType'])
+    lastShotType: point.lastShotType === 'other' ? 'serve' : (point.lastShotType as LibPointDetail['lastShotType']),
+    serveType: point.serveType || 'first',
+    rallyLength: point.rallyLength || 1,
+    serveOutcome: point.serveOutcome || point.pointOutcome,
+    // Preserve the original pointOutcome
+    pointOutcome: point.pointOutcome || 'winner'
   }))
   
   // Parse match format properly
@@ -450,36 +462,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   // Calculate current breakpoint status
   const getBreakPointStatus = () => {
     if (!currentServer || isTiebreak) return { isBreakPoint: false, facingBreakPoint: null }
-    
     const serverPoints = currentServer === 'p1' ? score.points[0] : score.points[1]
     const returnerPoints = currentServer === 'p1' ? score.points[1] : score.points[0]
-    
+    // Block BP at 40:40 in standard scoring
+    if (!parsedMatchFormat.noAd && serverPoints === 3 && returnerPoints === 3) {
+      return { isBreakPoint: false, facingBreakPoint: null }
+    }
     const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, parsedMatchFormat.noAd)
-    
-    // The RETURNER has the breakpoint opportunity (should get the BP badge)
     const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
-    
     return {
       isBreakPoint: isCurrentlyBreakPoint,
-      facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
+      facingBreakPoint: isCurrentlyBreakPoint ? returner : null
     }
   }
-  
   // Calculate current set point and match point status
   const getSetAndMatchPointStatus = () => {
-    if (!score) return { isSetPoint: false, isMatchPoint: false, facingSetPoint: null, facingMatchPoint: null }
-    
+    let isSetPoint = false
+    let facingSetPoint: 'p1' | 'p2' | null = null
+    // Restore missing variables
     const setsNeededToWin = Math.ceil(parsedMatchFormat.sets / 2)
     const currentP1SetsWon = score.sets.filter((s: [number, number]) => s[0] > s[1]).length
     const currentP2SetsWon = score.sets.filter((s: [number, number]) => s[1] > s[0]).length
-    
-    // Check if either player could win the set by winning the current game
     const currentGames = score.games as [number, number]
     const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
     const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
-    
-    let isSetPoint = false
-    let facingSetPoint: 'p1' | 'p2' | null = null
     
     if (isTiebreak) {
       // In tiebreak, check if either player is close to winning
@@ -498,9 +504,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         facingSetPoint = 'p2'
       }
     } else {
-      // Regular game scoring
       const [p1Score, p2Score] = score.points as [number, number]
-      
+      // Block SP/MP at 40:40 in standard scoring
+      if (!parsedMatchFormat.noAd && p1Score === 3 && p2Score === 3) {
+        return {
+          isSetPoint: false,
+          isMatchPoint: false,
+          facingSetPoint: null,
+          facingMatchPoint: null
+        }
+      }
       // Check if either player is at game point AND could win the set
       const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
       const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
@@ -710,7 +723,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const minimalPointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
         pointOutcome: 'winner',
-        serveOutcome: 'winner',
         rallyLength: 1,
         lastShotType: 'serve',
       }
@@ -822,17 +834,29 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleSimpleStatsOutcome = (outcome: SimplePointOutcome) => {
     if (pendingPointWinner) {
+      let lastShotPlayer: "p1" | "p2";
+      
+      if (outcome === 'ace') {
+        lastShotPlayer = currentServer;
+      } else if (outcome === 'winner') {
+        lastShotPlayer = pendingPointWinner;
+      } else if (outcome === 'forced_error') {
+        lastShotPlayer = (pendingPointWinner === 'p1' ? 'p2' : 'p1');
+      } else if (outcome === 'unforced_error') {
+        lastShotPlayer = (pendingPointWinner === 'p1' ? 'p2' : 'p1');
+      } else { // double fault
+        lastShotPlayer = currentServer;
+      }
+
+      // Debug logging available for troubleshooting
+      // console.log('Point logged:', outcome, 'winner:', pendingPointWinner, 'lastShotPlayer:', lastShotPlayer);
+
       const storePointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
-        pointOutcome: outcome === 'winner' ? 'winner' : 
-                     outcome === 'ace' ? 'ace' :
-                     outcome === 'forced_error' ? 'forced_error' :
-                     outcome === 'unforced_error' ? 'unforced_error' :
-                     'double_fault',
-        serveOutcome: outcome === 'ace' ? 'ace' : 
-                     outcome === 'double_fault' ? 'double_fault' : 'winner',
+        pointOutcome: outcome,
         rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 2,
         lastShotType: 'serve',
+        lastShotPlayer: lastShotPlayer,
       }
       
       handleAwardPoint(pendingPointWinner, storePointDetail)
@@ -1007,6 +1031,56 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 </motion.div>
               )}
               
+              {/* Advanced Stats button is visible but disabled (coming soon) */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="flex items-center gap-2 opacity-50 cursor-not-allowed relative"
+                title="Coming soon"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced Stats</span>
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-xs text-muted-foreground border ml-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Coming soon
+                </span>
+              </Button>
+              
+              {/* Export Button - Show after first set is completed */}
+              {score.sets.length > 0 && (
+                <LiveSetExportButton
+                  match={{
+                    $id: match.$id,
+                    userId: match.playerOne.userId || '',
+                    playerOneId: match.playerOne.$id,
+                    playerTwoId: match.playerTwo.$id,
+                    matchDate: new Date().toISOString(),
+                    matchFormat: parsedMatchFormat,
+                    status: match.status as 'In Progress' | 'Completed',
+                    score,
+                    pointLog,
+                    startTime: match.startTime,
+                    endTime: match.endTime,
+                    setDurations: match.setDurations,
+                    events: []
+                  }}
+                  playerNames={[playerNames.p1, playerNames.p2]}
+                  setNumber={score.sets.length}
+                  className="hidden sm:flex"
+                />
+              )}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSettingsDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('settings')}</span>
+              </Button>
+              
               <Button
                 variant="outline"
                 size="sm"
@@ -1041,6 +1115,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerTwoRating={match.playerTwo.rating}
           playerThreeRating={match.playerThree?.rating}
           playerFourRating={match.playerFour?.rating}
+          playerOneClub={match.playerOne.club}
+          playerTwoClub={match.playerTwo.club}
+          playerThreeClub={match.playerThree?.club}
+          playerFourClub={match.playerFour?.club}
           score={score}
           currentServer={currentServer}
           status={match.status}
@@ -1131,7 +1209,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           
           <TabsContent value="stats" className="mt-4">
             <MatchStatsComponentSimpleFixed 
-              stats={calculateMatchStats(convertedPointLog)}
+              stats={calculateMatchStatsByLevel(convertedPointLog, detailLevel)}
               playerNames={{
                 p1: playerNames.p1,
                 p2: playerNames.p2
@@ -1143,7 +1221,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           
           <TabsContent value="points" className="mt-4">
             <PointByPointView 
-              pointLog={convertedPointLog} 
+              pointLog={convertedPointLog}
+              playerObjects={{
+                p1: match.playerOne,
+                p2: match.playerTwo,
+                ...(match.playerThree ? { p3: match.playerThree } : {}),
+                ...(match.playerFour ? { p4: match.playerFour } : {})
+              }}
+              detailLevel={
+                detailLevel === "points" || detailLevel === "simple" || detailLevel === "complex" || detailLevel === "detailed"
+                  ? detailLevel
+                  : "simple"
+              }
             />
           </TabsContent>
           
@@ -1192,7 +1281,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }}
       />
 
-      <PointDetailSheet
+      <UltraSimplePointLogger
         open={showPointDetail}
         onOpenChange={setShowPointDetail}
         onSave={handlePointDetailSave}
@@ -1204,9 +1293,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           winner: pendingPointWinner || 'p1',
           server: currentServer || 'p1',
           serveType: serveType,
-                      isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
-            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
-            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
+          isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+          isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+          isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
           playerNames
         }}
       />
@@ -1346,6 +1435,19 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Match Settings Dialog */}
+      <MatchSettingsDialog
+        isOpen={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+        match={match}
+      />
+
+      {/* Custom Mode Dialog */}
+      <CustomModeDialog
+        open={showCustomModeDialog}
+        onOpenChange={setShowCustomModeDialog}
+      />
     </div>
   )
 } 

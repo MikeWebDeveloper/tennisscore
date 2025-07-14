@@ -276,13 +276,12 @@ export function PointDetailSheet({
 
           <Separator />
 
-          {/* Detailed Stats Section (Collapsed by default) */}
+          {/* Detailed Stats Section */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                {t('detailedStatistics')}
-                <span className="text-sm font-normal text-muted-foreground">{t('optional')}</span>
+                {t('howDidTheyWin')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -321,33 +320,21 @@ export function PointDetailSheet({
                     className="mt-2"
                   >
                     <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="long" id="long" />
+                      <Label htmlFor="long">{t('long')}</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <RadioGroupItem value="wide" id="wide" />
                       <Label htmlFor="wide">{t('wide')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="body" id="body" />
-                      <Label htmlFor="body">{t('body')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="t" id="t" />
-                      <Label htmlFor="t">{t('tDownTheMiddle')}</Label>
+                      <RadioGroupItem value="net" id="net" />
+                      <Label htmlFor="net">{t('net')}</Label>
                     </div>
                   </RadioGroup>
                 </div>
 
-                <div>
-                  <Label htmlFor="serve-speed" className="text-sm font-medium">
-                    {t('serveSpeed')} <span className="text-muted-foreground">{t('optional')}</span>
-                  </Label>
-                  <Input
-                    id="serve-speed"
-                    type="number"
-                    placeholder="120"
-                    value={serveSpeed}
-                    onChange={(e) => setServeSpeed(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
+                {/* Serve speed section removed as requested */}
               </div>
 
               <div>
@@ -431,24 +418,6 @@ export function PointDetailSheet({
               )}
 
               <div>
-                <Label className="text-sm font-medium">{t('courtPosition')}</Label>
-                <RadioGroup 
-                  value={courtPosition} 
-                  onValueChange={(value) => setCourtPosition(value as CourtPosition)}
-                  className="flex gap-6 mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="deuce" id="deuce-side" />
-                    <Label htmlFor="deuce-side">{t('deuceSide')}</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="ad" id="ad-side" />
-                    <Label htmlFor="ad-side">{t('adSide')}</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div>
                 <Label htmlFor="notes" className="text-sm font-medium">
                   {t('notes')} <span className="text-muted-foreground">{t('optional')}</span>
                 </Label>
@@ -471,6 +440,9 @@ export function PointDetailSheet({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Custom Mode Enhanced Statistics */}
+          {/* Removed as per edit hint */}
         </div>
       </SheetContent>
     </Sheet>

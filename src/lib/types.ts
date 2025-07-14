@@ -25,6 +25,11 @@ export interface Match extends Models.Document {
   playerTwoId: string
   playerOne?: Player // Populated relationship (optional because it might not always be populated)
   playerTwo?: Player // Populated relationship (optional because it might not always be populated)
+  // Embedded player data for anonymous players
+  playerOneData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerTwoData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerThreeData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
+  playerFourData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
   matchDate: string
   matchFormat: string
   status: 'pending' | 'in-progress' | 'completed' | 'retired'
@@ -38,7 +43,7 @@ export interface Match extends Models.Document {
   playerThree?: Player
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
-  detailLevel?: "points" | "simple" | "complex"
+  detailLevel?: "points" | "simple" | "complex" | "detailed"
   tournamentName?: string // Tournament/League name
   
   // Timing fields
@@ -55,7 +60,7 @@ export interface MatchFormat {
   tiebreakAt: number
   finalSetTiebreak?: 'standard' | 'super' | 'none'
   noAd: boolean
-  detailLevel?: "points" | "simple" | "complex"
+  detailLevel?: "points" | "simple" | "complex" | "detailed"
 }
 
 export interface Score {
@@ -128,6 +133,8 @@ export interface PointDetail {
   notes?: string // Free text notes about the point
   courtPosition?: CourtPosition // Where the point was played
   atNet?: "p1" | "p2" | "both" // Which player was at the net
+  winnerType?: "regular" | "return" // Type of winner when receiving player wins
+  shotDirection?: "cross" | "line" | "body" | "long" | "wide" | "net" // Direction of the shot
 }
 
 export interface DetailedPointLog {

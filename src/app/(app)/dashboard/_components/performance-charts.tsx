@@ -115,9 +115,9 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="p-8 flex flex-col items-center justify-center text-center">
-            <TrendingUp className="h-12 w-12 text-slate-600 mb-4" />
-            <p className="text-slate-500 mb-2">No performance data yet</p>
-            <p className="text-sm text-slate-600">Complete some matches to see your charts</p>
+            <TrendingUp className="h-12 w-12 text-gray-600 dark:text-slate-600 mb-4" />
+            <p className="text-gray-700 dark:text-slate-500 mb-2">No performance data yet</p>
+            <p className="text-sm text-gray-600 dark:text-slate-600">Complete some matches to see your charts</p>
           </CardContent>
         </Card>
       </div>
@@ -135,7 +135,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
       >
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-200">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-slate-200">
               <TrendingUp className="h-5 w-5 text-primary" />
               Win Rate Trend
             </CardTitle>
@@ -185,7 +185,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
       >
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-200">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-slate-200">
               <Target className="h-5 w-5 text-primary" />
               Point Breakdown
             </CardTitle>
@@ -226,7 +226,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
                     className="w-3 h-3 rounded-full" 
                     style={{ backgroundColor: entry.fill }}
                   />
-                  <span className="text-xs text-slate-400">{entry.name}</span>
+                  <span className="text-xs text-gray-700 dark:text-slate-400">{entry.name}</span>
                 </div>
               ))}
             </div>
@@ -243,7 +243,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
       >
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
-            <CardTitle className="text-slate-200">Recent Form</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-slate-200">Recent Form</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2 justify-center mb-4">
@@ -260,7 +260,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
                 </div>
               ))}
             </div>
-            <p className="text-center text-xs text-slate-500">
+            <p className="text-center text-xs text-gray-700 dark:text-slate-500">
               Last {recentForm.length} matches
             </p>
           </CardContent>

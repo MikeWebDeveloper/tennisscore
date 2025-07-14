@@ -1,7 +1,7 @@
 # Tennis Scoring System - Complete Reference
 
 ## Overview
-Tennis matches are comprised of **Points**, **Games**, **Sets**, and **Matches**. The unique scoring system differs significantly from most other sports.
+Tennis matches are comprised of **Points**, **Games**, **Sets**, and **Matches**. The unique scoring system differs significantly from most other sports, with complex statistical tracking for professional analysis.
 
 ## Point Scoring within a Game
 
@@ -71,81 +71,235 @@ A player must win a game by **at least 2 points**. This is why deuce exists - if
 - Continue alternating **2 serves** each
 - Switch ends every **6 points** (at 6-0, 6-2, 6-4, etc.)
 
-## Score Announcement Rules
+## Tennis Statistics - Definitions and Attribution
 
-### Format: Server's Score First
-- "15-30" means server has 15, receiver has 30
-- "40-Love" means server has 40, receiver has 0
-- "Deuce" when both have 40
-- "Advantage [Player Name]" or "Ad-In"/"Ad-Out"
+### Winner Statistics
 
-## Common Terms
+#### Winners
+**Definition**: If Player A hits the ball & Player B is unable to touch it with their racquet before the ball bounces twice, then it's a Winner for Player A.
+- **Attribution**: Credited to the player who hit the winning shot
+- **Objectivity**: This statistic is very objective and straightforward
 
-### Love
-- Means "zero" or "no points"
-- Possibly from French "l'œuf" (the egg) - shape of zero
+#### Aces
+**Definition**: A serve that the receiver cannot touch with their racquet (Service Winner)
+- **Attribution**: Always credited to the server
+- **Professional Rates**: Aces account for ~16% of ATP Tour first serve effectiveness
+- **Note**: Aces are counted as winners in overall winner statistics
 
-### All
-- Used when scores are tied: "30-All", "5-All"
-- Exception: 40-40 is called "Deuce", not "40-All"
+### Error Statistics
 
-### Game Point
-- When a player is one point away from winning the game
-- Can occur at 40-0, 40-15, 40-30, or on advantage
+#### Unforced Errors
+**Definition**: Error made when a player has ample time and position to play the shot but sends it out or into the net
+- **Attribution**: Credited to the player who made the error (LOST the point)
+- **Subjectivity**: Purely subjective decision by match officials/statisticians
+- **Professional Rates**: ~8.0% error rate on ATP, ~8.6% on WTA
+- **Tennis Logic**: CRITICAL - If Player A wins a point by unforced error, the error is attributed to Player B (who lost)
 
-### Break Point  
-- When the receiving player is one point away from winning the service game
-- Significant because holding serve is expected
+#### Forced Errors
+**Definition**: Error made when a player is under pressure (on the run, poor court position) and sends the shot out or into the net
+- **Attribution**: Credited to the player who made the error (LOST the point)
+- **Causation**: Can also be credited to the player who forced the error in some systems
+- **Subjectivity**: Highly subjective - requires judgment about time pressure and court position
 
-### Set Point
-- When a player is one point away from winning the set
+#### Double Faults
+**Definition**: When server misses both first and second serve attempts
+- **Attribution**: Always credited to the server
+- **Point Award**: Point awarded to receiver
+- **Frequency**: Median of 2-3 double faults per match in professional tennis
 
-### Match Point
-- When a player is one point away from winning the entire match
+### Serve Statistics
 
-## Special Situations
+#### First Serve Percentage
+**Definition**: Percentage of first serve attempts that land in the service box
+- **Professional Average**: Varies by player, but top players typically 60-70%
+- **Strategy**: Higher percentage often means more conservative serving
 
-### Double Fault
-- When server misses both first and second serve
-- Point awarded to receiver
+#### Serve Effectiveness
+**Definition**: Percentage of points where serve creates an advantage
+- **ATP Average**: 58% on first serve, 23% on second serve
+- **Components**: Includes aces (16%), unreturned serves (22%), attacking first ball (20%)
 
-### Ace
-- Serve that receiver cannot touch or return
-- Point awarded to server
+#### Serve Speed
+**Definition**: Velocity of the serve measured by radar
+- **Men's Record**: 263.4 km/h (163.7 mph) by Sam Groth
+- **ATP Record**: 253.0 km/h (157.0 mph) by John Isner
+- **Note**: WTA doesn't maintain official serve speed rankings consistently
 
-### Let
-- Ball touches net but lands in correct service box
-- Point is replayed
+### Return and Break Point Statistics
 
-## Implementation Notes for TennisScore App
+#### Break Points
+**Definition**: Opportunity for the receiver to win a game on the opponent's serve
+- **Occurs At**: 30-40, 15-40, 0-40, or advantage to receiver
+- **Types**: Single (30-40), Double (15-40), Triple (0-40) break points
+- **Critical Metric**: Return games with break opportunities won (more meaningful than conversion %)
 
-### Point Storage Format
-For each point in pointLog, we need:
-```json
-{
-  "pointNumber": 1,
-  "gameScore": {"p1": 0, "p2": 1}, // Tennis points (0, 15, 30, 40, Ad)
-  "setScore": {"p1": 0, "p2": 0},   // Games won in current set
-  "matchScore": {"p1": 0, "p2": 0}, // Sets won in match
-  "server": "p1",                   // Who was serving
-  "winner": "p2",                   // Who won the point
-  "pointType": "Winner",            // How point was won
-  "shotType": "Forehand"            // Last shot type
+#### Break Point Conversion
+**Definition**: Percentage of break point opportunities successfully converted
+- **Alternative Metric**: "Return games with break opportunities won" provides better insight
+- **Match Impact**: Successful breaks often determine set outcomes
+
+### Rally and Court Position Statistics
+
+#### Rally Length
+**Definition**: Number of shots in a point from serve to point end
+- **Most Common**: 1 shot (~30% of points - aces/service winners)
+- **Professional Average**: Men 3.8 shots, Women 3.9 shots per rally
+- **Key Insight**: 59% (men) and 62% (women) of points end within first 4 shots
+- **First 4 Shots**: Serve, return, serve+1, return+1 (most critical for match outcome)
+
+#### Court Positioning
+**Definition**: Location of player when hitting shots
+- **Offensive Zone**: When opponent's ball bounces in service zone or middle zone
+- **Net Position**: Extremely high percentage for winning points
+- **Surface Impact**: Clay has more short rallies than commonly believed
+
+### Advanced Modern Analytics
+
+#### Pressure Points
+**Definition**: Points played at crucial score situations (deuce, break point, set point)
+- **ATP Average**: 1.61 pressure points per service game
+- **WTA Average**: 2.31 pressure points per service game (43.5% higher)
+- **Surface Variation**: Most frequent on clay, least on grass
+
+#### Dominance Ratio (DR)
+**Definition**: Comprehensive metric incorporating point winning and clutch performance
+- **DR+**: Dominance Ratio multiplied by Balanced Leverage Ratio
+- **Components**: Points Dominance Ratio, Games Dominance Ratio
+- **Purpose**: Measures overall match control beyond simple point counts
+
+#### Serve Plus One
+**Definition**: Analysis of serve and immediate next shot effectiveness
+- **Critical Pattern**: Serve → Return → Serve+1 → Return+1
+- **Match Impact**: Most practiced shots that matter most for winning
+- **Strategy**: Front-loading points in first 4 shots
+
+## Statistical Attribution Rules (CRITICAL)
+
+### Error Attribution Logic
+**Tennis Law**: A player CANNOT make an error and win the same point
+- If point outcome = "unforced_error" AND winner = "Player A", then error player = "Player B"
+- If point outcome = "forced_error" AND winner = "Player A", then error player = "Player B"
+- **Data Validation**: lastShotPlayer should NEVER equal winner for error outcomes
+
+### Winner Attribution Logic
+- If point outcome = "winner" AND winner = "Player A", then lastShotPlayer = "Player A"
+- If point outcome = "ace" AND winner = "Player A", then lastShotPlayer = "Player A" (server)
+
+### Statistical Calculation Formula
+```typescript
+// For errors: Error player is always the LOSER of the point
+if (pointOutcome === 'unforced_error' || pointOutcome === 'forced_error') {
+  errorPlayer = (winner === 'p1') ? 'p2' : 'p1'  // Error goes to loser
+  stats[errorType][errorPlayer === 'p1' ? 0 : 1]++
+}
+
+// For winners: Winner is the player who hit the shot
+if (pointOutcome === 'winner' || pointOutcome === 'ace') {
+  stats[winnerType][winner === 'p1' ? 0 : 1]++
 }
 ```
 
-### Score Progression Logic
+## Implementation for TennisScore App
+
+### Detail Level System
+
+#### Points Only Mode
+- **Store**: Point winner, server, basic score progression
+- **Available Stats**: Service points won/lost, break points, games won
+- **No Storage**: Shot types, error classifications, rally details
+
+#### Simple Mode
+- **Store**: Points Only + point outcomes (ace, winner, forced/unforced error, double fault)
+- **Available Stats**: All Points Only stats + winner/error counts by type
+- **Serve Stats**: First/second serve tracking, serve type effectiveness
+
+#### Detailed Mode
+- **Store**: Simple Mode + shot directions, court positions, rally length
+- **Available Stats**: All Simple stats + positional analysis, rally patterns
+- **Advanced Metrics**: Shot direction analysis, court positioning effectiveness
+
+#### Custom Mode
+- **Store**: User-selected combination of all available metrics
+- **Available Stats**: Fully customizable based on data collection choices
+- **Future**: AI-powered insights, pressure point analysis
+
+### Point Storage Format
+```json
+{
+  "pointNumber": 1,
+  "timestamp": "2024-01-01T10:00:00Z",
+  "winner": "p1",                    // Who won the point
+  "server": "p1",                    // Who was serving
+  "serveType": "first",              // first | second
+  "pointOutcome": "unforced_error",  // ace | winner | forced_error | unforced_error | double_fault
+  "lastShotPlayer": "p2",            // Who hit the last shot (CRITICAL: for errors = error player)
+  "lastShotType": "forehand",        // Type of last shot
+  "rallyLength": 3,                  // Number of shots in rally
+  "gameScore": "15-30",              // Score display at time of point
+  "isBreakPoint": true,              // Was this a break point?
+  "isSetPoint": false,               // Was this a set point?
+  "isMatchPoint": false,             // Was this a match point?
+  "courtPosition": "baseline",       // Where last shot was hit from
+  "shotDirection": "cross_court",    // Direction of last shot
+  "notes": "Great defensive shot"    // Optional notes
+}
+```
+
+### Key Calculations for App
+
+#### Score Progression Logic
 1. **Point won**: Update tennis points (0→15→30→40→Game or Deuce logic)
 2. **Game won**: Reset points to 0-0, increment game count, check set win
 3. **Set won**: Reset games, increment set count, check match win
 4. **Serve rotation**: Switch server after each game
 5. **End switching**: Switch ends after odd total games
 
-### Key Calculations Needed
+#### Statistical Calculations
 - Convert tennis points (0,1,2,3+) to display (Love,15,30,40,Ad)
 - Determine if game is at deuce
 - Calculate if point is game/set/match point
 - Track serving player correctly
 - Handle tiebreak scoring differently
+- Validate error attribution logic
 
-This comprehensive system ensures consistent tennis scoring throughout the TennisScore application. 
+#### Data Validation Rules
+- Verify lastShotPlayer ≠ winner for error outcomes
+- Ensure point outcomes match tennis logic
+- Validate serve types match serving patterns
+- Check rally length matches shot count
+
+### Professional Tennis Integration
+
+#### ATP/WTA Standards
+- Follow official ATP/WTA statistical definitions
+- Implement subjective error classification guidelines
+- Support multiple scoring formats (standard, no-ad, super tiebreaks)
+- Include pressure point identification
+
+#### Modern Analytics Support
+- Calculate dominance ratios for advanced users
+- Track serve plus one effectiveness
+- Analyze rally pattern distributions
+- Support pressure point analysis
+
+## Best Practices for Implementation
+
+### Data Collection
+1. **Progressive Enhancement**: Collect more data as detail level increases
+2. **Backward Compatibility**: Ensure older matches remain functional
+3. **Real-time Validation**: Check data consistency during input
+4. **Error Recovery**: Provide undo functionality for incorrect entries
+
+### Statistical Display
+1. **Contextual Information**: Show what each statistic means
+2. **Drill-down Capability**: Allow detailed exploration of statistics
+3. **Comparative Analysis**: Compare to professional averages when relevant
+4. **Visual Representation**: Use charts and graphs for complex statistics
+
+### User Experience
+1. **Clear Attribution**: Make it obvious who gets credited with each statistic
+2. **Educational Content**: Explain tennis statistics to casual users
+3. **Professional Mode**: Provide detailed analytics for serious players
+4. **Mobile Optimization**: Ensure statistics work well on small screens
+
+This comprehensive system ensures consistent tennis scoring and statistical tracking throughout the TennisScore application, following professional standards while accommodating different levels of detail collection.

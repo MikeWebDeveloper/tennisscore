@@ -34,8 +34,18 @@ export default async function MatchPage({
   const realPlayerIds = playerIds.filter(id => !id.startsWith('anonymous-'))
   const playersData = realPlayerIds.length > 0 ? await getPlayersByIds(realPlayerIds) : {}
 
-  // Create player objects
-  const createPlayer = (id: string, defaultNumber: string): Player => {
+  // Create player objects, preferring embedded data for anonymous players
+  const createPlayer = (id: string, defaultNumber: string, embeddedData?: Pick<Player, 'firstName' | 'lastName' | '$id'>): Player => {
+    // Use embedded data if available (for anonymous players)
+    if (embeddedData) {
+      return {
+        ...embeddedData,
+        userId: user.$id,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString()
+      } as Player
+    }
+    
     if (id.startsWith('anonymous-')) {
       return { 
         $id: id,
@@ -49,10 +59,10 @@ export default async function MatchPage({
     return playersData[id] || null
   }
 
-  const player1 = createPlayer(match.playerOneId, "1")
-  const player2 = createPlayer(match.playerTwoId, "2")
-  const player3 = isDoubles ? createPlayer(match.playerThreeId!, "3") : null
-  const player4 = isDoubles ? createPlayer(match.playerFourId!, "4") : null
+  const player1 = createPlayer(match.playerOneId, "1", match.playerOneData)
+  const player2 = createPlayer(match.playerTwoId, "2", match.playerTwoData)
+  const player3 = isDoubles ? createPlayer(match.playerThreeId!, "3", match.playerThreeData) : null
+  const player4 = isDoubles ? createPlayer(match.playerFourId!, "4", match.playerFourData) : null
 
   // Parse score for display
   const score = JSON.parse(match.score || "{}")

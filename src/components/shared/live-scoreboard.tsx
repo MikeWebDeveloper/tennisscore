@@ -3,9 +3,9 @@
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
-import { Score } from "@/stores/matchStore"
+import { Score, MatchFormat } from "@/stores/matchStore"
 import { cn } from "@/lib/utils"
-import { isBreakPoint } from "@/lib/utils/tennis-scoring"
+import { isBreakPoint, isSetPoint, isMatchPoint } from "@/lib/utils/tennis-scoring"
 import { useEffect } from "react"
 
 interface LiveScoreboardProps {
@@ -23,6 +23,10 @@ interface LiveScoreboardProps {
   playerTwoRating?: string
   playerThreeRating?: string
   playerFourRating?: string
+  playerOneClub?: string
+  playerTwoClub?: string
+  playerThreeClub?: string
+  playerFourClub?: string
   score: Score
   currentServer?: "p1" | "p2" | null
   status?: string
@@ -32,7 +36,7 @@ interface LiveScoreboardProps {
   isInGame?: boolean
   onSetServer?: (server: 'p1' | 'p2') => void
   className?: string
-  matchFormat?: { noAd?: boolean }
+  matchFormat?: MatchFormat
 }
 
 export function LiveScoreboard({
@@ -50,6 +54,10 @@ export function LiveScoreboard({
   playerTwoRating,
   playerThreeRating,
   playerFourRating,
+  playerOneClub,
+  playerTwoClub,
+  playerThreeClub,
+  playerFourClub,
   score,
   currentServer,
   status = "In Progress",
@@ -101,25 +109,88 @@ export function LiveScoreboard({
     score.sets.filter(set => set[1] > set[0]).length
   ]
   
-  // Calculate current breakpoint status
-  const getBreakPointStatus = () => {
-    if (status !== "In Progress" || isTiebreak || !server) return { isBreakPoint: false, facingBreakPoint: null }
+  // Calculate current game situation status (BP, SP, MP)
+  const getGameSituationStatus = () => {
+    // Create a default match format if none provided
+    const defaultFormat = {
+      sets: 3 as const,
+      noAd: false,
+      tiebreak: true,
+      finalSetTiebreak: "standard" as const,
+      ...matchFormat
+    }
     
-    const serverPoints = server === 'p1' ? score.points[0] : score.points[1]
-    const returnerPoints = server === 'p1' ? score.points[1] : score.points[0]
+    if (status !== "In Progress") {
+      return { 
+        isBreakPoint: false, 
+        facingBreakPoint: null,
+        isSetPoint: false,
+        setPointPlayer: null,
+        isMatchPoint: false,
+        matchPointPlayer: null
+      }
+    }
     
-    const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, matchFormat?.noAd || false)
+    // Block BP/SP/MP at 40:40 in standard scoring
+    if (!defaultFormat.noAd && score.points[0] === 3 && score.points[1] === 3 && !isTiebreak) {
+      return {
+        isBreakPoint: false,
+        facingBreakPoint: null,
+        isSetPoint: false,
+        setPointPlayer: null,
+        isMatchPoint: false,
+        matchPointPlayer: null
+      }
+    }
+
+    let breakPointInfo: { isBreakPoint: boolean; facingBreakPoint: "p1" | "p2" | null } = { isBreakPoint: false, facingBreakPoint: null }
     
-    // The RETURNER has the breakpoint opportunity (should get the BP badge)
-    const returner = server === 'p1' ? 'p2' : 'p1'
+    // Break point only applies in regular games (not tiebreaks)
+    if (!isTiebreak && server) {
+      const serverPoints = server === 'p1' ? score.points[0] : score.points[1]
+      const returnerPoints = server === 'p1' ? score.points[1] : score.points[0]
+      
+      const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, defaultFormat.noAd)
+      const returner = server === 'p1' ? 'p2' : 'p1'
+      
+      breakPointInfo = {
+        isBreakPoint: isCurrentlyBreakPoint,
+        facingBreakPoint: isCurrentlyBreakPoint ? returner : null
+      }
+    }
+    
+    // Set point check
+    const setPointInfo = isSetPoint(
+      score.games[0], 
+      score.games[1], 
+      isTiebreak ? (score.tiebreakPoints?.[0] || 0) : score.points[0], 
+      isTiebreak ? (score.tiebreakPoints?.[1] || 0) : score.points[1],
+      defaultFormat,
+      isTiebreak,
+      score.sets
+    )
+    
+    // Match point check
+    const matchPointInfo = isMatchPoint(
+      score.games[0], 
+      score.games[1], 
+      isTiebreak ? (score.tiebreakPoints?.[0] || 0) : score.points[0], 
+      isTiebreak ? (score.tiebreakPoints?.[1] || 0) : score.points[1],
+      score.sets,
+      defaultFormat,
+      isTiebreak
+    )
     
     return {
-      isBreakPoint: isCurrentlyBreakPoint,
-      facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
+      ...breakPointInfo,
+      isSetPoint: setPointInfo.isSetPoint,
+      setPointPlayer: setPointInfo.player,
+      isMatchPoint: matchPointInfo.isMatchPoint,
+      matchPointPlayer: matchPointInfo.player
     }
   }
   
-  const breakPointStatus = getBreakPointStatus()
+  const gameStatus = getGameSituationStatus()
   
   const getPointDisplay = (playerIndex: number) => {
     if (status !== "In Progress") return ""
@@ -154,7 +225,9 @@ export function LiveScoreboard({
           className={cn(
             "p-2 sm:p-4 transition-colors",
             isWinner(playerOneId) && "bg-primary/5",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20",
+            gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p1' && "bg-orange-50 dark:bg-orange-950/20",
+            gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p1' && "bg-blue-50 dark:bg-blue-950/20",
+            gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p1' && "bg-red-50 dark:bg-red-950/20",
             onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
           )}
           onClick={!isInGame ? () => onSetServer?.('p1') : undefined}
@@ -180,7 +253,30 @@ export function LiveScoreboard({
                   >
                     {teamOneName}
                   </h3>
-                  {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' && (
+                  {/* Game situation badges with priority: MP > SP > BP */}
+                  {gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p1' && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="destructive" className="text-[10px] font-bold bg-red-500 hover:bg-red-600 px-1 py-0.5">
+                        MP
+                      </Badge>
+                    </motion.div>
+                  )}
+                  {gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p1' && !gameStatus.isMatchPoint && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="secondary" className="text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white px-1 py-0.5">
+                        SP
+                      </Badge>
+                    </motion.div>
+                  )}
+                  {gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p1' && !gameStatus.isSetPoint && !gameStatus.isMatchPoint && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -193,26 +289,42 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="player-details-line">
-                  {playerOneYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      {playerOneYearOfBirth}
-                    </span>
-                  )}
-                  {playerOneRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerOneRating})
-                    </span>
-                  )}
-                  {isDoubles && playerThreeYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      / {playerThreeYearOfBirth}
-                    </span>
-                  )}
-                  {isDoubles && playerThreeRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerThreeRating})
-                    </span>
+                <div className="space-y-0.5">
+                  <div className="player-details-line">
+                    {playerOneYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        {playerOneYearOfBirth}
+                      </span>
+                    )}
+                    {playerOneRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerOneRating})
+                      </span>
+                    )}
+                    {isDoubles && playerThreeYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        / {playerThreeYearOfBirth}
+                      </span>
+                    )}
+                    {isDoubles && playerThreeRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerThreeRating})
+                      </span>
+                    )}
+                  </div>
+                  {(playerOneClub || (isDoubles && playerThreeClub)) && (
+                    <div className="player-details-line">
+                      {playerOneClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerOneClub}
+                        </span>
+                      )}
+                      {isDoubles && playerThreeClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerOneClub ? " / " : ""}{playerThreeClub}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -276,7 +388,11 @@ export function LiveScoreboard({
               <div className="text-center min-w-[20px] sm:min-w-[28px]">
                 <div className={cn(
                   "text-sm sm:text-lg lg:text-xl font-medium font-mono",
-                  breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p1' 
+                  gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p1' 
+                    ? "text-red-600 dark:text-red-400"
+                    : gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p1'
+                    ? "text-blue-600 dark:text-blue-400"
+                    : gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p1' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
                 )}>
@@ -292,7 +408,9 @@ export function LiveScoreboard({
           className={cn(
             "p-2 sm:p-4 transition-colors",
             isWinner(playerTwoId) && "bg-primary/5",
-            breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20",
+            gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p2' && "bg-orange-50 dark:bg-orange-950/20",
+            gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p2' && "bg-blue-50 dark:bg-blue-950/20",
+            gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p2' && "bg-red-50 dark:bg-red-950/20",
             onSetServer && !isInGame && "cursor-pointer hover:bg-muted"
           )}
           onClick={!isInGame ? () => onSetServer?.('p2') : undefined}
@@ -318,7 +436,30 @@ export function LiveScoreboard({
                   >
                     {teamTwoName}
                   </h3>
-                  {breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' && (
+                  {/* Game situation badges with priority: MP > SP > BP */}
+                  {gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p2' && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="destructive" className="text-[10px] font-bold bg-red-500 hover:bg-red-600 px-1 py-0.5">
+                        MP
+                      </Badge>
+                    </motion.div>
+                  )}
+                  {gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p2' && !gameStatus.isMatchPoint && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <Badge variant="secondary" className="text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white px-1 py-0.5">
+                        SP
+                      </Badge>
+                    </motion.div>
+                  )}
+                  {gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p2' && !gameStatus.isSetPoint && !gameStatus.isMatchPoint && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -331,26 +472,42 @@ export function LiveScoreboard({
                   )}
                 </div>
                 {/* Tiny player details */}
-                <div className="player-details-line">
-                  {playerTwoYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      {playerTwoYearOfBirth}
-                    </span>
-                  )}
-                  {playerTwoRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerTwoRating})
-                    </span>
-                  )}
-                  {isDoubles && playerFourYearOfBirth && (
-                    <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                      / {playerFourYearOfBirth}
-                    </span>
-                  )}
-                  {isDoubles && playerFourRating && (
-                    <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                      ({playerFourRating})
-                    </span>
+                <div className="space-y-0.5">
+                  <div className="player-details-line">
+                    {playerTwoYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        {playerTwoYearOfBirth}
+                      </span>
+                    )}
+                    {playerTwoRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerTwoRating})
+                      </span>
+                    )}
+                    {isDoubles && playerFourYearOfBirth && (
+                      <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        / {playerFourYearOfBirth}
+                      </span>
+                    )}
+                    {isDoubles && playerFourRating && (
+                      <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">
+                        ({playerFourRating})
+                      </span>
+                    )}
+                  </div>
+                  {(playerTwoClub || (isDoubles && playerFourClub)) && (
+                    <div className="player-details-line">
+                      {playerTwoClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerTwoClub}
+                        </span>
+                      )}
+                      {isDoubles && playerFourClub && (
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">
+                          {playerTwoClub ? " / " : ""}{playerFourClub}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -414,7 +571,11 @@ export function LiveScoreboard({
               <div className="text-center min-w-[20px] sm:min-w-[28px]">
                 <div className={cn(
                   "text-sm sm:text-lg lg:text-xl font-medium font-mono",
-                  breakPointStatus.isBreakPoint && breakPointStatus.facingBreakPoint === 'p2' 
+                  gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p2' 
+                    ? "text-red-600 dark:text-red-400"
+                    : gameStatus.isSetPoint && gameStatus.setPointPlayer === 'p2'
+                    ? "text-blue-600 dark:text-blue-400"
+                    : gameStatus.isBreakPoint && gameStatus.facingBreakPoint === 'p2' 
                     ? "text-orange-600 dark:text-orange-400"
                     : ""
                 )}>

@@ -8,6 +8,7 @@ import {
   calculateScoreFromPointLog,
   isBreakPoint
 } from '@/lib/utils/tennis-scoring'
+import { CourtPosition } from '@/lib/types'
 
 export interface MatchFormat {
   sets: 1 | 3 | 5
@@ -28,6 +29,7 @@ export interface Score {
   initialTiebreakServer?: 'p1' | 'p2';
 }
 
+// Store point detail type - compatible with both schema and legacy types
 export interface PointDetail {
   id: string
   timestamp: string
@@ -37,23 +39,25 @@ export interface PointDetail {
   gameScore: string
   winner: 'p1' | 'p2'
   server: 'p1' | 'p2'
-  serveType: 'first' | 'second'
-  serveOutcome: 'ace' | 'winner' | 'unforced_error' | 'forced_error' | 'double_fault'
-  servePlacement?: 'wide' | 'body' | 't'
-  serveSpeed?: number
-  rallyLength: number
-  pointOutcome: 'ace' | 'winner' | 'unforced_error' | 'forced_error' | 'double_fault'
-  lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
-  lastShotPlayer: 'p1' | 'p2'
   isBreakPoint: boolean
   isSetPoint: boolean
   isMatchPoint: boolean
   isGameWinning: boolean
   isSetWinning: boolean
   isMatchWinning: boolean
+  isTiebreak: boolean
+  
+  // Optional enhanced fields
+  lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
+  lastShotPlayer?: 'p1' | 'p2'
   notes?: string
-  courtPosition?: 'deuce' | 'ad' | 'baseline' | 'net'
-  isTiebreak?: boolean
+  courtPosition?: CourtPosition
+  
+  // Additional fields for compatibility
+  serveType: 'first' | 'second'
+  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  rallyLength: number
 }
 
 export interface Match {
@@ -76,6 +80,13 @@ export interface Match {
     timestamp: string
   }>
   userId: string
+}
+
+// Custom mode configuration interface
+export interface CustomModeConfig {
+  enabled: boolean
+  level: 1 | 2 | 3
+  selectedCategories: string[]
 }
 
 interface MatchState {
@@ -108,6 +119,11 @@ interface MatchState {
   // Detailed logging mode
   detailedLoggingEnabled: boolean
   setDetailedLoggingEnabled: (enabled: boolean) => void
+  
+  // Custom mode for advanced statistics
+  customMode: CustomModeConfig
+  setCustomMode: (config: CustomModeConfig) => void
+  toggleCustomMode: () => void
   
   // Match events (comments, photos)
   events: Array<{ type: 'comment' | 'photo'; content: string; timestamp: string }>
@@ -215,6 +231,16 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   
   detailedLoggingEnabled: false,
   setDetailedLoggingEnabled: (enabled) => set({ detailedLoggingEnabled: enabled }),
+  
+  customMode: {
+    enabled: false,
+    level: 1,
+    selectedCategories: ['serve-placement', 'rally-type'],
+  },
+  setCustomMode: (config) => set({ customMode: config }),
+  toggleCustomMode: () => set((state) => ({
+    customMode: { ...state.customMode, enabled: !state.customMode.enabled }
+  })),
   
   events: [],
   addEvent: (event) => set((state) => ({
@@ -499,6 +525,24 @@ export const useMatchStore = create<MatchState>((set, get) => ({
         '❌ No BP: No break opportunity'
     })
 
+    // Fix: Check both outcome and pointOutcome for error types
+    const outcomeToCheck = details.pointOutcome;
+    let correctedLastShotPlayer = details.lastShotPlayer;
+    
+    // If no lastShotPlayer provided, calculate it based on outcome
+    if (!correctedLastShotPlayer) {
+      if (outcomeToCheck === 'forced_error' || outcomeToCheck === 'unforced_error') {
+        // For errors, the lastShotPlayer should be the opponent (who made the error)
+        correctedLastShotPlayer = winner === 'p1' ? 'p2' : 'p1';
+      } else {
+        // For winners, aces, etc., the lastShotPlayer should be the winner
+        correctedLastShotPlayer = winner;
+      }
+    }
+    
+    // Debug logging available for troubleshooting
+    // console.log('Store: Corrected lastShotPlayer for', outcomeToCheck, 'from', details.lastShotPlayer, 'to', correctedLastShotPlayer);
+
     const pointDetail: PointDetail = {
       ...details,
       id: `point-${pointLog.length + 1}`,
@@ -515,12 +559,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       isGameWinning: isThisPointGameWinning,
       isSetWinning: isThisPointSetWinning,
       isMatchWinning: isThisPointMatchWinning,
-      isTiebreak: previousScore.isTiebreak,
+      isTiebreak: previousScore.isTiebreak || false,
       serveType: details.serveType || 'first',
-      serveOutcome: details.serveOutcome || 'winner',
+      pointOutcome: details.pointOutcome || 'winner',
       rallyLength: details.rallyLength || 1,
-      pointOutcome: details.pointOutcome || details.serveOutcome || 'winner',
-      lastShotPlayer: winner,
+      lastShotPlayer: correctedLastShotPlayer,
     }
 
     const newPointLog = [...pointLog, pointDetail]
@@ -641,6 +684,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     isMatchComplete: false,
     winnerId: null,
     detailedLoggingEnabled: false,
+    customMode: {
+      enabled: false,
+      level: 1,
+      selectedCategories: ['serve-placement', 'rally-type'],
+    },
   }),
 }))
 
