@@ -55,6 +55,78 @@ const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail
     return { p1: p1Games, p2: p2Games };
 }
 
+// Helper to determine BP/SP/MP for a given point
+function getPointBadge(point: PointDetail, pointLog: PointDetail[], matchFormat: MatchFormat, setsArr: number[][]) {
+  // Calculate context for this point
+  const setNumber = point.setNumber
+  const gameNumber = point.gameNumber
+  const setPoints = pointLog.filter(p => p.setNumber === setNumber)
+  const gamePoints = setPoints.filter(p => p.gameNumber === gameNumber)
+  // Calculate games won in this set so far
+  let p1Games = 0, p2Games = 0
+  setPoints.forEach(p => {
+    if (p.isGameWinning) {
+      if (p.winner === 'p1') p1Games++
+      else p2Games++
+    }
+  })
+  // Calculate points in this game so far
+  let p1Points = 0, p2Points = 0
+  gamePoints.forEach(p => {
+    if (p.winner === 'p1') p1Points++
+    else p2Points++
+  })
+  // Determine if tiebreak
+  const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
+  const isTiebreak = gamePoints.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
+  let tiebreakPoints = [0, 0]
+  if (isTiebreak) {
+    tiebreakPoints = [0, 0]
+    gamePoints.forEach(p => {
+      if (p.winner === 'p1') tiebreakPoints[0]++
+      else tiebreakPoints[1]++
+    })
+  }
+  // Use helpers to determine BP/SP/MP
+  let isBP = false, isSP = false, isMP = false
+  if (!isTiebreak) {
+    // Only check BP in regular games
+    const server = point.server
+    const serverPoints = server === 'p1' ? p1Points : p2Points
+    const returnerPoints = server === 'p1' ? p2Points : p1Points
+    isBP = isBreakPoint(serverPoints, returnerPoints, matchFormat.noAd)
+  }
+  // Set point
+  const setPointRes = isSetPoint(
+    p1Games, p2Games,
+    isTiebreak ? tiebreakPoints[0] : p1Points,
+    isTiebreak ? tiebreakPoints[1] : p2Points,
+    matchFormat,
+    isTiebreak,
+    setsArr
+  )
+  isSP = setPointRes.isSetPoint && setPointRes.player === point.winner
+  // Match point
+  const matchPointRes = isMatchPoint(
+    p1Games, p2Games,
+    isTiebreak ? tiebreakPoints[0] : p1Points,
+    isTiebreak ? tiebreakPoints[1] : p2Points,
+    setsArr,
+    matchFormat,
+    isTiebreak
+  )
+  isMP = matchPointRes.isMatchPoint && matchPointRes.player === point.winner
+  // Only show one badge per point: MP > SP > BP
+  if (isMP) {
+    return { label: 'MP', className: 'text-xs p-1 bg-red-600 text-white hover:bg-red-700' }
+  } else if (isSP) {
+    return { label: 'SP', className: 'text-xs p-1 bg-blue-500 text-white hover:bg-blue-600' }
+  } else if (isBP) {
+    return { label: 'BP', className: 'text-xs p-1 bg-orange-500 text-white hover:bg-orange-600' }
+  }
+  return null
+}
+
 export function PointByPointView({ pointLog, playerNames, playerObjects, detailLevel = "simple" }: PointByPointViewProps) {
   const t = useTranslations()
   const [detailedView, setDetailedView] = React.useState(false)
@@ -412,14 +484,34 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                 case 'double_fault': outcome = t('doubleFault'); break
                                 default: outcome = point.pointOutcome
                               }
+                              // --- BADGE LOGIC ---
+                              // Reconstruct sets array for helpers
+                              const setNumber = point.setNumber
+                              const setsArr: number[][] = []
+                              for (let s = 1; s < setNumber; s++) {
+                                const setPts = pointLog.filter(p => p.setNumber === s)
+                                let s1 = 0, s2 = 0
+                                setPts.forEach(p => {
+                                  if (p.isGameWinning) {
+                                    if (p.winner === 'p1') s1++
+                                    else s2++
+                                  }
+                                })
+                                setsArr.push([s1, s2])
+                              }
+                              const matchFormat: MatchFormat = (pointLog[0] as (PointDetail & { matchFormat?: MatchFormat }))?.matchFormat || { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard" }
+                              const badge = getPointBadge(point, pointLog, matchFormat, setsArr)
                               return (
                                 <div
                                   key={point.id}
                                   className="w-full md:grid md:grid-cols-4 md:gap-2 flex flex-col items-center md:items-stretch text-sm py-1 border-b border-border/30 last:border-b-0"
                                 >
-                                  {/* Score */}
-                                  <div className="font-mono min-w-[40px] text-xs text-muted-foreground md:text-left w-full text-left md:col-span-1 flex-shrink-0">
+                                  {/* Score + badge */}
+                                  <div className="font-mono min-w-[40px] text-xs text-muted-foreground md:text-left w-full text-left md:col-span-1 flex-shrink-0 flex items-center gap-1">
                                     {point.gameScore.replace(/-/g, ':')}
+                                    {badge && (
+                                      <Badge className={badge.className}>{badge.label}</Badge>
+                                    )}
                                   </div>
                                   {/* Name */}
                                   <div className={`font-semibold ${getPlayerColor(point.winner)} w-full text-center md:text-center md:col-span-1 md:whitespace-nowrap md:overflow-x-auto`}>

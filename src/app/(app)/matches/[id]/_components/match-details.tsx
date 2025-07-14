@@ -830,7 +830,17 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PointByPointView pointLog={pointDetails} />
+                  <PointByPointView 
+                    pointLog={pointDetails}
+                    playerObjects={Object.assign(
+                      {
+                        p1: match.playerOne ? match.playerOne : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] },
+                        p2: match.playerTwo ? match.playerTwo : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] }
+                      },
+                      match.playerThree ? { p3: match.playerThree } : {},
+                      match.playerFour ? { p4: match.playerFour } : {}
+                    )}
+                  />
                 </CardContent>
               </Card>
             )
