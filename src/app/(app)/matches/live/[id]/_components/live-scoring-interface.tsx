@@ -462,36 +462,30 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   // Calculate current breakpoint status
   const getBreakPointStatus = () => {
     if (!currentServer || isTiebreak) return { isBreakPoint: false, facingBreakPoint: null }
-    
     const serverPoints = currentServer === 'p1' ? score.points[0] : score.points[1]
     const returnerPoints = currentServer === 'p1' ? score.points[1] : score.points[0]
-    
+    // Block BP at 40:40 in standard scoring
+    if (!parsedMatchFormat.noAd && serverPoints === 3 && returnerPoints === 3) {
+      return { isBreakPoint: false, facingBreakPoint: null }
+    }
     const isCurrentlyBreakPoint = isBreakPoint(serverPoints, returnerPoints, parsedMatchFormat.noAd)
-    
-    // The RETURNER has the breakpoint opportunity (should get the BP badge)
     const returner: 'p1' | 'p2' = currentServer === 'p1' ? 'p2' : 'p1'
-    
     return {
       isBreakPoint: isCurrentlyBreakPoint,
-      facingBreakPoint: isCurrentlyBreakPoint ? returner : null  // RETURNER gets the BP badge
+      facingBreakPoint: isCurrentlyBreakPoint ? returner : null
     }
   }
-  
   // Calculate current set point and match point status
   const getSetAndMatchPointStatus = () => {
-    if (!score) return { isSetPoint: false, isMatchPoint: false, facingSetPoint: null, facingMatchPoint: null }
-    
+    let isSetPoint = false
+    let facingSetPoint: 'p1' | 'p2' | null = null
+    // Restore missing variables
     const setsNeededToWin = Math.ceil(parsedMatchFormat.sets / 2)
     const currentP1SetsWon = score.sets.filter((s: [number, number]) => s[0] > s[1]).length
     const currentP2SetsWon = score.sets.filter((s: [number, number]) => s[1] > s[0]).length
-    
-    // Check if either player could win the set by winning the current game
     const currentGames = score.games as [number, number]
     const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
     const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
-    
-    let isSetPoint = false
-    let facingSetPoint: 'p1' | 'p2' | null = null
     
     if (isTiebreak) {
       // In tiebreak, check if either player is close to winning
@@ -510,9 +504,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         facingSetPoint = 'p2'
       }
     } else {
-      // Regular game scoring
       const [p1Score, p2Score] = score.points as [number, number]
-      
+      // Block SP/MP at 40:40 in standard scoring
+      if (!parsedMatchFormat.noAd && p1Score === 3 && p2Score === 3) {
+        return {
+          isSetPoint: false,
+          isMatchPoint: false,
+          facingSetPoint: null,
+          facingMatchPoint: null
+        }
+      }
       // Check if either player is at game point AND could win the set
       const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
       const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
@@ -1214,7 +1215,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           
           <TabsContent value="points" className="mt-4">
             <PointByPointView 
-              pointLog={convertedPointLog} 
+              pointLog={convertedPointLog}
+              playerObjects={{
+                p1: match.playerOne,
+                p2: match.playerTwo,
+                ...(match.playerThree ? { p3: match.playerThree } : {}),
+                ...(match.playerFour ? { p4: match.playerFour } : {})
+              }}
+              detailLevel={
+                detailLevel === "points" || detailLevel === "simple" || detailLevel === "complex" || detailLevel === "detailed"
+                  ? detailLevel
+                  : "simple"
+              }
             />
           </TabsContent>
           

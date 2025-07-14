@@ -14,6 +14,10 @@ describe('Tennis BP/SP/MP Logic', () => {
       expect(isBreakPoint(3, 4, false)).toBe(true) // 40-AD
       expect(isBreakPoint(4, 3, false)).toBe(false) // AD-40
     })
+    it('never returns break point at 40:40 in standard scoring', () => {
+      expect(isBreakPoint(3, 3, false)).toBe(false)
+      expect(isBreakPoint(3, 3, true)).toBe(true) // No-Ad: should be true
+    })
     it('detects break point in no-ad scoring', () => {
       expect(isBreakPoint(3, 3, true)).toBe(true) // 40-40, returner BP
       expect(isBreakPoint(2, 3, true)).toBe(true) // 30-40, returner BP
@@ -29,6 +33,10 @@ describe('Tennis BP/SP/MP Logic', () => {
       expect(isSetPoint(4, 5, 2, 3, standardFormat, false, [[4,5]])).toEqual({ isSetPoint: true, player: 'p2' })
       // Not set point at 4-4
       expect(isSetPoint(4, 4, 3, 2, standardFormat, false, [[4,4]])).toEqual({ isSetPoint: false, player: null })
+    })
+    it('never returns set point at 40:40 in standard scoring', () => {
+      expect(isSetPoint(5, 4, 3, 3, standardFormat, false, [[5,4]])).toEqual({ isSetPoint: false, player: null })
+      expect(isSetPoint(5, 4, 3, 3, { ...standardFormat, noAd: true }, false, [[5,4]])).not.toEqual({ isSetPoint: false, player: null })
     })
     it('detects set point at deuce/advantage', () => {
       // P1 at 5 games, deuce, can win set
@@ -62,7 +70,7 @@ describe('Tennis BP/SP/MP Logic', () => {
     })
     it('detects match point in tiebreak', () => {
       // P1 one set away, at tiebreak set point
-      expect(isMatchPoint(6, 6, 6, 7, [[6,4]], standardFormat, true)).toEqual({ isMatchPoint: true, player: 'p2' })
+      expect(isMatchPoint(6, 6, 6, 7, [[4,6]], standardFormat, true)).toEqual({ isMatchPoint: true, player: 'p2' })
       // Not match point if not at set point
       expect(isMatchPoint(6, 6, 6, 6, [[6,4]], standardFormat, true)).toEqual({ isMatchPoint: false, player: null })
     })

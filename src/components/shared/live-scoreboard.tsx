@@ -131,6 +131,18 @@ export function LiveScoreboard({
       }
     }
     
+    // Block BP/SP/MP at 40:40 in standard scoring
+    if (!defaultFormat.noAd && score.points[0] === 3 && score.points[1] === 3 && !isTiebreak) {
+      return {
+        isBreakPoint: false,
+        facingBreakPoint: null,
+        isSetPoint: false,
+        setPointPlayer: null,
+        isMatchPoint: false,
+        matchPointPlayer: null
+      }
+    }
+
     let breakPointInfo: { isBreakPoint: boolean; facingBreakPoint: "p1" | "p2" | null } = { isBreakPoint: false, facingBreakPoint: null }
     
     // Break point only applies in regular games (not tiebreaks)

@@ -167,11 +167,18 @@ export function isSetPoint(
   
   if (isTiebreak) {
     const tiebreakTarget = (isFinalSet && format.finalSetTiebreak === "super") ? (format.finalSetTiebreakAt || 10) : 7
+    // Debug log for test diagnosis
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[isSetPoint tiebreak debug]', { p1Points, p2Points, tiebreakTarget,
+        cond1: p2Points >= tiebreakTarget - 1,
+        cond2: (p2Points + 1) >= tiebreakTarget,
+        cond3: (p2Points + 1) - p1Points >= 2
+      })
+    }
     // Set point in tiebreak - only if player can win with next point
     // For p1
     if (
       p1Points >= tiebreakTarget - 1 &&
-      p1Points > p2Points &&
       (p1Points + 1) >= tiebreakTarget && (p1Points + 1) - p2Points >= 2
     ) {
       return { isSetPoint: true, player: "p1" }
@@ -179,7 +186,6 @@ export function isSetPoint(
     // For p2
     if (
       p2Points >= tiebreakTarget - 1 &&
-      p2Points > p1Points &&
       (p2Points + 1) >= tiebreakTarget && (p2Points + 1) - p1Points >= 2
     ) {
       return { isSetPoint: true, player: "p2" }
