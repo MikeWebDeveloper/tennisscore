@@ -18,7 +18,8 @@ import {
   Sun,
   Moon,
   LogOut,
-  Settings
+  Settings,
+  Shield
 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
@@ -95,7 +96,7 @@ export function AppShell({ children, user }: AppShellProps) {
   const t = useTranslations()
 
   // Localized navigation
-  const localizedNavigation = [
+  const baseNavigation = [
     {
       href: "/dashboard",
       icon: Home,
@@ -115,6 +116,16 @@ export function AppShell({ children, user }: AppShellProps) {
       description: t('managePlayers')
     }
   ]
+
+  // Add admin link only for privileged user
+  const localizedNavigation = user.email === "michal.latal@yahoo.co.uk" 
+    ? [...baseNavigation, {
+        href: "/admin",
+        icon: Shield,
+        label: "Admin",
+        description: "All matches"
+      }]
+    : baseNavigation
 
   // Prevent hydration mismatch
   useEffect(() => {

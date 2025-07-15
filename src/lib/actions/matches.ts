@@ -788,4 +788,326 @@ export async function updateMatchFormat(matchId: string, newFormat: MatchFormat)
   }
 }
 
+// Admin function to get all matches for privileged user
+export async function getAllMatches(options: {
+  limit?: number
+  offset?: number
+  search?: string
+} = {}): Promise<{ matches: Match[], total: number, hasMore: boolean }> {
+  try {
+    const user = await getCurrentUser()
+    
+    // Check if user has admin access (specifically for michal.latal@yahoo.co.uk)
+    if (!user || user.email !== "michal.latal@yahoo.co.uk") {
+      return { matches: [], total: 0, hasMore: false }
+    }
+
+    const { databases } = await createAdminClient()
+    const { limit = 20, offset = 0, search = "" } = options
+
+    // Build query
+    const queries: string[] = []
+    
+    // Add search functionality if provided
+    if (search.trim()) {
+      // For search, we'll need to get all matches first and filter client-side
+      // as Appwrite doesn't support complex text search across multiple fields
+      queries.push(Query.orderDesc("$createdAt"))
+      queries.push(Query.limit(1000).toString()) // Get more for search
+    } else {
+      // Regular pagination
+      queries.push(Query.orderDesc("$createdAt"))
+      queries.push(Query.limit(limit).toString())
+      queries.push(Query.offset(offset).toString())
+    }
+
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        queries
+      )
+    )
+
+    let matches = response.documents as unknown as Match[]
+
+    // If search term provided, filter matches
+    if (search.trim()) {
+      const searchLower = search.toLowerCase()
+      matches = matches.filter(match => {
+        // Search in tournament name
+        if (match.tournamentName?.toLowerCase().includes(searchLower)) return true
+        
+        // We'll need to populate players to search in player names
+        // For now, just search in tournament and user data
+        return false
+      })
+      
+      // Apply pagination after filtering
+      const total = matches.length
+      matches = matches.slice(offset, offset + limit)
+      return { 
+        matches, 
+        total, 
+        hasMore: (offset + limit) < total 
+      }
+    }
+
+    // Get total count for pagination
+    const totalResponse = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        [Query.orderDesc("$createdAt")]
+      )
+    )
+
+    const total = totalResponse.total
+    const hasMore = (offset + limit) < total
+
+    return { matches, total, hasMore }
+  } catch (error) {
+    console.error("Error fetching all matches:", error)
+    return { matches: [], total: 0, hasMore: false }
+  }
+}
+
+// Utility function to normalize text for diacritic-insensitive search
+function normalizeForSearch(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD') // Decompose characters with diacritics
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritic marks
+    .trim()
+}
+
+// Enhanced version with player data populated - optimized for search across ALL matches
+export async function getAllMatchesWithPlayers(options: {
+  limit?: number
+  offset?: number
+  search?: string
+} = {}): Promise<{ matches: (Match & {
+  playerOneName: string
+  playerTwoName: string
+  playerThreeName?: string
+  playerFourName?: string
+  createdByEmail?: string
+})[], total: number, hasMore: boolean }> {
+  try {
+    const user = await getCurrentUser()
+    
+    // Check if user has admin access
+    if (!user || user.email !== "michal.latal@yahoo.co.uk") {
+      return { matches: [], total: 0, hasMore: false }
+    }
+
+    const { databases } = await createAdminClient()
+    const { limit = 20, offset = 0, search = "" } = options
+    const isSearching = search.trim().length > 0
+
+    // When searching, we need to load more matches to search across ALL matches
+    // When not searching, use efficient pagination
+    const queries = [Query.orderDesc("$createdAt")]
+    
+    if (isSearching) {
+      // Load more matches for comprehensive search
+      // Adjust this number based on your database size and performance requirements
+      // 1000 is a reasonable balance between search coverage and performance
+      queries.push(Query.limit(1000))
+    } else {
+      // Normal pagination when not searching
+      queries.push(Query.limit(limit))
+      queries.push(Query.offset(offset))
+    }
+
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        queries
+      )
+    )
+
+    const matches = response.documents as unknown as Match[]
+
+    // Get unique player IDs and user IDs to batch fetch
+    const playerIds = new Set<string>()
+    const userIds = new Set<string>()
+    
+    matches.forEach(match => {
+      if (match.playerOneId && !match.playerOneId.startsWith('anonymous')) playerIds.add(match.playerOneId)
+      if (match.playerTwoId && !match.playerTwoId.startsWith('anonymous')) playerIds.add(match.playerTwoId)
+      if (match.playerThreeId && !match.playerThreeId.startsWith('anonymous')) playerIds.add(match.playerThreeId)
+      if (match.playerFourId && !match.playerFourId.startsWith('anonymous')) playerIds.add(match.playerFourId)
+      if (match.userId) userIds.add(match.userId)
+    })
+
+    // Batch fetch players and users
+    const [playersMap, usersMap] = await Promise.all([
+      batchGetPlayers(Array.from(playerIds)),
+      batchGetUsers(Array.from(userIds))
+    ])
+
+    // Enhance matches with populated data
+    const enhancedMatches = matches.map(match => {
+      const playerOne = playersMap.get(match.playerOneId)
+      const playerTwo = playersMap.get(match.playerTwoId)
+      const playerThree = playersMap.get(match.playerThreeId || '')
+      const playerFour = playersMap.get(match.playerFourId || '')
+      const creator = usersMap.get(match.userId)
+
+      // Helper function to get player display name
+      const getPlayerName = (player: Player | undefined): string => {
+        if (!player) return "Unknown Player"
+        return `${player.firstName} ${player.lastName}`.trim()
+      }
+
+      return {
+        ...match,
+        playerOneName: getPlayerName(playerOne),
+        playerTwoName: getPlayerName(playerTwo), 
+        playerThreeName: playerThree ? getPlayerName(playerThree) : undefined,
+        playerFourName: playerFour ? getPlayerName(playerFour) : undefined,
+        createdByEmail: creator,
+        playerOne: playerOne || undefined,
+        playerTwo: playerTwo || undefined,
+        playerThree: playerThree || undefined,
+        playerFour: playerFour || undefined,
+      }
+    })
+
+    // Apply search filter with diacritic-insensitive matching
+    let filteredMatches = enhancedMatches
+    if (isSearching) {
+      const normalizedSearch = normalizeForSearch(search)
+      filteredMatches = enhancedMatches.filter(match => {
+        // Helper function to safely normalize and check text
+        const matchesText = (text: string | undefined): boolean => {
+          if (!text) return false
+          return normalizeForSearch(text).includes(normalizedSearch)
+        }
+
+        return (
+          matchesText(match.playerOneName) ||
+          matchesText(match.playerTwoName) ||
+          matchesText(match.playerThreeName) ||
+          matchesText(match.playerFourName) ||
+          matchesText(match.tournamentName) ||
+          matchesText(match.createdByEmail)
+        )
+      })
+
+      // For search results, apply pagination to filtered results
+      const total = filteredMatches.length
+      const paginatedMatches = filteredMatches.slice(offset, offset + limit)
+      const hasMore = (offset + limit) < total
+
+      return { 
+        matches: paginatedMatches, 
+        total, 
+        hasMore 
+      }
+    } else {
+      // For non-search results, get total count for pagination info
+      const totalResponse = await withRetry(() =>
+        databases.listDocuments(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+          [Query.orderDesc("$createdAt")]
+        )
+      )
+
+      const total = totalResponse.total
+      const hasMore = (offset + limit) < total
+
+      return { 
+        matches: enhancedMatches, 
+        total, 
+        hasMore 
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching all matches with players:", error)
+    return { matches: [], total: 0, hasMore: false }
+  }
+}
+
+// Batch fetch players to reduce API calls
+async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>> {
+  if (playerIds.length === 0) return new Map()
+  
+  try {
+    const { databases } = await createAdminClient()
+    
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [
+          Query.equal("$id", playerIds),
+          Query.limit(100) // Batch limit
+        ]
+      )
+    )
+    
+    const playersMap = new Map<string, Player>()
+    response.documents.forEach((player) => {
+      const playerData = player as Player
+      playersMap.set(player.$id, playerData)
+    })
+    
+    return playersMap
+  } catch (error) {
+    console.error("Error batch fetching players:", error)
+    return new Map()
+  }
+}
+
+// Batch fetch user emails using Appwrite Users API
+async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
+  if (userIds.length === 0) return new Map()
+  
+  try {
+    const { users } = await createAdminClient()
+    const usersMap = new Map<string, string>()
+    
+    // Appwrite Users API doesn't support batch queries, so we need to fetch individually
+    // But we can do it in parallel to optimize performance
+    const userPromises = userIds.map(async (userId) => {
+      try {
+        const user = await withRetry(() => users.get(userId))
+        return { id: userId, email: user.email }
+      } catch (error) {
+        console.warn(`Could not fetch user ${userId}:`, error)
+        return { id: userId, email: 'Unknown User' }
+      }
+    })
+    
+    const userResults = await Promise.all(userPromises)
+    userResults.forEach(({ id, email }) => {
+      usersMap.set(id, email)
+    })
+    
+    return usersMap
+  } catch (error) {
+    console.error("Error batch fetching users:", error)
+    return new Map()
+  }
+}
+
+// Legacy function - replaced by batchGetUsers for better performance
+// async function getCreatorEmail(userId: string): Promise<string | undefined> {
+//   try {
+//     const { databases } = await createAdminClient()
+//     const user = await databases.getDocument(
+//       process.env.APPWRITE_DATABASE_ID!,
+//       process.env.APPWRITE_USERS_COLLECTION_ID!,
+//       userId
+//     )
+//     return user.email
+//   } catch {
+//     return undefined
+//   }
+// }
+
  
