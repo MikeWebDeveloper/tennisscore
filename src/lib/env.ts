@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { logger } from '@/lib/utils/logger'
 
 const envSchema = z.object({
   // Public Appwrite Configuration (Client-side)
@@ -29,9 +30,9 @@ try {
 } catch (error) {
   if (error instanceof z.ZodError) {
     const missingVars = error.issues.map((issue) => issue.path.join(".")).join(", ")
-    console.error("❌ Environment variable validation failed:")
-    console.error("Missing or invalid environment variables:", missingVars)
-    console.error("\nPlease check your .env.local file and ensure all required variables are set.")
+    logger.error("❌ Environment variable validation failed:")
+    logger.error("Missing or invalid environment variables:", missingVars)
+    logger.error("\nPlease check your .env.local file and ensure all required variables are set.")
     process.exit(1)
   }
   throw error
