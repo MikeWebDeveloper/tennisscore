@@ -9,6 +9,7 @@ import {
   isBreakPoint
 } from '@/lib/utils/tennis-scoring'
 import { CourtPosition } from '@/lib/types'
+import { logger } from '@/lib/utils/logger'
 
 export interface MatchFormat {
   sets: 1 | 3 | 5
@@ -390,7 +391,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             tempGames[winner === 'p1' ? 0 : 1]++
             
             // Debug logging for Set Point detection
-            console.log('🎾 SET POINT Detection (Game Winning):', {
+            logger.debug('🎾 SET POINT Detection (Game Winning):', {
                 currentGames: previousScore.games,
                 tempGames,
                 winner,
@@ -404,7 +405,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
+                logger.debug('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
                 
                 // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
@@ -412,11 +413,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
-                    console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
+                    logger.debug('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
             }
         } else {
-            console.log('❌ NOT Game Point:', {
+            logger.debug('❌ NOT Game Point:', {
                 currentPoints: previousScore.points,
                 tempPoints: [temp_p1_score, temp_p2_score],
                 winner,
@@ -442,7 +443,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             const isDeuceSetPoint = (p1Score === 3 && p2Score === 3) && 
                 ((winner === 'p1' && p1CouldWinSetNextGame) || (winner === 'p2' && p2CouldWinSetNextGame))
             
-            console.log('🎾 Additional Set Point Check:', {
+            logger.debug('🎾 Additional Set Point Check:', {
                 currentGames,
                 currentPoints: previousScore.points,
                 p1Score,
@@ -463,7 +464,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame) ||
                 isDeuceSetPoint) {
                 isThisPointSetPoint = true
-                console.log('✅ SET POINT DETECTED! (player at game point position)', { 
+                logger.debug('✅ SET POINT DETECTED! (player at game point position)', { 
                     winner, 
                     currentGames,
                     points: previousScore.points,
@@ -477,10 +478,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchPoint = true
-                    console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
+                    logger.debug('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
                 }
             } else {
-                console.log('❌ SET POINT NOT DETECTED:', {
+                logger.debug('❌ SET POINT NOT DETECTED:', {
                     winner,
                     p1AtGamePoint,
                     p2AtGamePoint, 
@@ -511,7 +512,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       : getTennisScore(tempScore.points[0], tempScore.points[1]);
 
     // Debug log for breakpoint detection in point storage
-    console.log('💾 Storing Point - BP Detection:', {
+    logger.debug('💾 Storing Point - BP Detection:', {
       currentServer,
       scoreBEFORE: `${previousScore.points[0]}-${previousScore.points[1]}`,
       scoreAFTER: gameScoreToStore,
@@ -694,34 +695,34 @@ export const useMatchStore = create<MatchState>((set, get) => ({
 
 // Test function to verify break point logic
 function testBreakPointLogic() {
-  console.log('=== Testing Break Point Logic ===')
+  logger.debug('=== Testing Break Point Logic ===')
   
   // Test traditional scoring
-  console.log('Traditional Scoring Tests:')
+  logger.debug('Traditional Scoring Tests:')
   
   // Should be BP: 0-40 (server p1, receiver p2 at 3 points)
-  console.log('0-40 (p1 serving):', {
+  logger.debug('0-40 (p1 serving):', {
     beforeP1: 0, beforeP2: 3,
     shouldBeBP: true,
     actualBP: (3 >= 3 && 0 < 3) // P2 >= 3 && P1 < 3
   })
   
   // Should be BP: 15-40 
-  console.log('15-40 (p1 serving):', {
+  logger.debug('15-40 (p1 serving):', {
     beforeP1: 1, beforeP2: 3,
     shouldBeBP: true,
     actualBP: (3 >= 3 && 1 < 3)
   })
   
   // Should NOT be BP: 40-40 (deuce)
-  console.log('40-40 (p1 serving):', {
+  logger.debug('40-40 (p1 serving):', {
     beforeP1: 3, beforeP2: 3,
     shouldBeBP: false,
     actualBP: (3 >= 3 && 3 < 3) || (3 >= 3 && 3 >= 3 && 3 > 3) // False
   })
   
   // Should be BP: 40-AD (receiver advantage)
-  console.log('40-AD (p1 serving):', {
+  logger.debug('40-AD (p1 serving):', {
     beforeP1: 3, beforeP2: 4,
     shouldBeBP: true,
     actualBP: (4 >= 3 && 3 >= 3 && 4 > 3)
