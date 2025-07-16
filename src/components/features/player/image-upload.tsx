@@ -12,6 +12,7 @@ import ReactCrop, {
 import 'react-image-crop/dist/ReactCrop.css'
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/hooks/use-translations"
+import { logger } from "@/lib/utils/logger"
 
 interface ImageUploadProps {
   onFileChange: (file: File | null) => void
@@ -31,7 +32,7 @@ async function getCroppedImg(
     const ctx = canvas.getContext('2d')
 
     if (!ctx) {
-      console.error('Could not get canvas context')
+      logger.error('Could not get canvas context')
       resolve(null)
       return
     }
@@ -84,7 +85,7 @@ async function getCroppedImg(
               })
               resolve(file)
             } catch (fallbackError) {
-              console.error('Fallback dataURL method failed:', fallbackError)
+              logger.error('Fallback dataURL method failed:', fallbackError)
               resolve(null)
             }
           }
@@ -93,7 +94,7 @@ async function getCroppedImg(
         0.9
       )
     } catch (error) {
-      console.error('Canvas.toBlob threw error:', error)
+      logger.error('Canvas.toBlob threw error:', error)
       resolve(null)
     }
   })
@@ -139,7 +140,7 @@ export function ImageUpload({
         setIsExternalImage(false)
       }
       reader.onerror = () => {
-        console.error('File read failed')
+        logger.error('File read failed')
         alert('Failed to read the selected file')
       }
       reader.readAsDataURL(file)
@@ -197,7 +198,7 @@ export function ImageUpload({
         alert('Failed to process the cropped image. Please try again.')
       }
     } catch (error) {
-      console.error('Error cropping image:', error)
+      logger.error('Error cropping image:', error)
       alert('Error processing image. Please try again.')
     } finally {
       setIsProcessing(false)
