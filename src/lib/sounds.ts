@@ -1,6 +1,8 @@
 // Sound Manager for Tennis Match Events
 // Uses Web Audio API with fallback to HTML5 Audio for cross-browser compatibility
 
+import { logger } from '@/lib/utils/logger'
+
 export type SoundEvent = 
   | 'point-won'
   | 'game-won'
@@ -43,7 +45,7 @@ class SoundManager {
         return { ...this.getDefaultSettings(), ...JSON.parse(stored) }
       }
     } catch (error) {
-      console.warn('Failed to load sound settings:', error)
+      logger.warn('Failed to load sound settings:', error)
     }
     
     return this.getDefaultSettings()
@@ -64,7 +66,7 @@ class SoundManager {
       try {
         localStorage.setItem('tennis-sound-settings', JSON.stringify(this.settings))
       } catch (error) {
-        console.warn('Failed to save sound settings:', error)
+        logger.warn('Failed to save sound settings:', error)
       }
     }
   }
@@ -85,7 +87,7 @@ class SoundManager {
 
       this.isInitialized = true
     } catch (error) {
-      console.warn('Failed to initialize AudioContext:', error)
+      logger.warn('Failed to initialize AudioContext:', error)
       // Fallback to HTML5 Audio will be used
     }
   }
@@ -229,7 +231,7 @@ class SoundManager {
     audio.src = `data:audio/wav;base64,${base64}`
     audio.volume = this.settings.volume
     
-    audio.play().catch(e => console.warn('Failed to play fallback audio:', e))
+    audio.play().catch(e => logger.warn('Failed to play fallback audio:', e))
   }
 
   private getFrequencyForEvent(event: SoundEvent): number {
@@ -300,7 +302,7 @@ class SoundManager {
         this.playWithHTML5Audio(event)
       }
     } catch (error) {
-      console.warn(`Failed to play sound for ${event}:`, error)
+      logger.warn(`Failed to play sound for ${event}:`, error)
     }
   }
 
