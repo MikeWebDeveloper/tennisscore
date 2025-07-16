@@ -16,6 +16,7 @@ import { useTranslations } from "@/hooks/use-translations"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { updateMatchFormat } from "@/lib/actions/matches"
+import { logger } from '@/lib/utils/logger'
 
 interface MatchForSettings {
   $id: string
@@ -37,7 +38,7 @@ export function MatchSettingsDialog({ isOpen, onOpenChange, match }: MatchSettin
     try {
       return JSON.parse(match.matchFormat)
     } catch (error) {
-      console.error("Failed to parse match format:", error)
+      logger.error("Failed to parse match format:", error)
       return {
         sets: 3,
         noAd: false,
@@ -53,7 +54,7 @@ export function MatchSettingsDialog({ isOpen, onOpenChange, match }: MatchSettin
       try {
         return JSON.parse(match.matchFormat)
       } catch (error) {
-        console.error("Failed to parse match format:", error)
+        logger.error("Failed to parse match format:", error)
         return {
           sets: 3,
           noAd: false,
