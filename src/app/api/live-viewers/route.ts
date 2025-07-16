@@ -62,14 +62,13 @@ export async function GET(request: Request) {
     }
     const since = Date.now() - ACTIVE_WINDOW_SECONDS * 1000
     const { databases } = await createAdminClient()
-    // Query for active public viewers
+    // Query for all active viewers (both public and private)
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTION_ID,
       [
         Query.equal("matchId", matchId),
-        Query.greaterThan("lastActive", since),
-        Query.equal("isPublic", true)
+        Query.greaterThan("lastActive", since)
       ]
     )
     return NextResponse.json({ success: true, count: response.total })
