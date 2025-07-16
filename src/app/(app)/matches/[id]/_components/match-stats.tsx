@@ -8,9 +8,9 @@ import { Target, Zap, Shield } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/hooks/use-translations"
 import { PointDetail } from "@/lib/types"
-import { calculateAdvancedMatchStats, calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
+import { calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
-import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
+// import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
 
 interface MatchStatsComponentProps {
   stats: MatchStats
@@ -809,9 +809,9 @@ export function MatchStatsComponentSimpleFixed({
   }
   
   // Calculate enhanced analytics if we have point log
-  const advancedStats = pointLog && pointLog.length > 0 
-    ? calculateAdvancedMatchStats(pointLog) 
-    : null
+  // const advancedStats = pointLog && pointLog.length > 0 
+  //   ? calculateAdvancedMatchStats(pointLog) 
+  //   : null
     
   // Calculate detailed stats for detailed mode
   const detailedStats = pointLog && pointLog.length > 0 && detailLevel === 'detailed'

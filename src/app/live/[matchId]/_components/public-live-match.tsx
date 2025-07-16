@@ -21,6 +21,7 @@ import { formatPlayerFromObject } from "@/lib/utils"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
+import { useTranslations } from "@/hooks/use-translations"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -163,6 +164,7 @@ const itemVariants = {
 }
 
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
+  const t = useTranslations()
   const [match, setMatch] = useState(initialMatch)
   const [score, setScore] = useState<Score>(() => parseAndConvertScore(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
@@ -207,7 +209,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   const shareMatch = async () => {
     const url = window.location.href
-    const title = `${formatPlayerFromObject(match.playerOne)} vs ${formatPlayerFromObject(match.playerTwo)} - Live Tennis Match`
+    const title = `${formatPlayerFromObject(match.playerOne)} ${t('vs')} ${formatPlayerFromObject(match.playerTwo)} - ${t('liveTennisMatch')}`
     const text = "Watch this live tennis match!"
     
     // Check if we're on a mobile device
@@ -221,7 +223,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           text,
           url
         })
-        toast.success("Match shared successfully!")
+        toast.success(t('matchLinkCopied'))
         return
       } catch (err) {
         // User canceled or error occurred, fall through to clipboard
@@ -236,7 +238,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const fallbackShare = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url)
-      toast.success("Match link copied to clipboard! Share it with others to let them watch live.")
+      toast.success(t('matchLinkCopied'))
     } catch {
       // If clipboard fails, show the URL in an alert
       toast.error(`Copy this link manually: ${url}`)
@@ -267,12 +269,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   // Enhanced connection status for Safari mobile
   const getConnectionStatus = () => {
-    if (!mounted) return { status: "connecting", message: "Loading..." }
+    if (!mounted) return { status: "connecting", message: t('loading') }
     
     if (isVercelPreview) {
       return { 
         status: "preview", 
-        message: "Preview mode - scores update every 8-10 seconds" 
+        message: t('previewModeStatus')
       }
     }
     
@@ -311,11 +313,11 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   }
 
   const generateMetaTags = useCallback(() => {
-    const title = `${formatPlayerFromObject(match.playerOne)} vs ${formatPlayerFromObject(match.playerTwo)} - Live Tennis Match`
+    const title = `${formatPlayerFromObject(match.playerOne)} ${t('vs')} ${formatPlayerFromObject(match.playerTwo)} - ${t('liveTennisMatch')}`
     const description = `Follow the live tennis match between ${formatPlayerFromObject(match.playerOne)} and ${formatPlayerFromObject(match.playerTwo)}`
     
     return { title, description }
-  }, [match.playerOne, match.playerTwo])
+  }, [match.playerOne, match.playerTwo, t])
 
   useEffect(() => {
     const { title, description } = generateMetaTags()
@@ -336,9 +338,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           <div className="text-center pt-6 sm:pt-8">
             <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Live Tennis Match</h1>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{t('liveTennisMatch')}</h1>
             </div>
-            <div className="animate-pulse text-sm sm:text-base text-muted-foreground">Loading...</div>
+            <div className="animate-pulse text-sm sm:text-base text-muted-foreground">{t('loading')}</div>
           </div>
         </div>
       </div>
@@ -365,14 +367,14 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                 {match.tournamentName}
               </span>
             )}
-            <h1 className="text-lg font-bold text-white whitespace-nowrap">Live Tennis</h1>
+            <h1 className="text-lg font-bold text-white whitespace-nowrap">{t('liveTennis')}</h1>
           </div>
           {/* Right: Language Toggle, Share & Reload Buttons */}
           <div className="flex gap-2 ml-auto items-center">
             <LanguageToggle />
             <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
               <Share2 className="w-4 h-4 mr-2" />
-              Share
+              {t('share')}
             </Button>
             <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
               <RefreshCw className="w-4 h-4 mr-2" />
@@ -384,7 +386,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         {/* Status badges and connection info (unchanged) */}
         <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
-            {match.status === "In Progress" ? "Live" : "Completed"}
+            {match.status === "In Progress" ? t('live') : t('completed')}
           </Badge>
           {/* Viewer count live */}
           <div className="flex items-center gap-1 px-2 text-xs sm:text-sm text-blue-500 font-semibold min-w-[32px]">
@@ -487,9 +489,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="stats" className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10 max-w-xs sm:max-w-lg mx-auto">
-              <TabsTrigger value="stats" className="text-xs sm:text-sm">Stats</TabsTrigger>
+              <TabsTrigger value="stats" className="text-xs sm:text-sm">{t('statistics')}</TabsTrigger>
               <TabsTrigger value="commentary" disabled={!hasPointData} className="text-xs sm:text-sm">
-                Point-by-Point
+                {t('commentary')}
               </TabsTrigger>
             </TabsList>
             
@@ -534,7 +536,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                 : playerNames.p1
               }
             </h1>
-            <div className="text-xs sm:text-sm text-muted-foreground">vs</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">{t('vs')}</div>
             <h2 className="text-sm sm:text-base md:text-lg font-bold break-words">
               {playerNames.p3 && playerNames.p4 
                 ? `${playerNames.p2} / ${playerNames.p4}`

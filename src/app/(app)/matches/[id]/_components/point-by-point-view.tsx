@@ -108,7 +108,7 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
   // Get match format (assume from first point)
   // Check if we're in a super-tiebreak by examining the context
   const firstPoint = pointLog[0]
-  const currentSetNumber = point.setNumber
+  // const currentSetNumber = point.setNumber
   const isInTiebreak = gamePoints.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
   
   // Determine if this should be a super-tiebreak based on context

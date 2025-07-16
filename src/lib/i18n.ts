@@ -34,6 +34,7 @@ export interface Translations {
   // Match scoring
   newMatch: string
   liveScoring: string
+  liveDisplay: string
   matchCompleted: string
   winner: string
   winnerType: string
@@ -236,7 +237,6 @@ export interface Translations {
   ended: string
   finish: string
   refresh: string
-  vs: string
   live: string
   changeServer: string
   cannotChangeServer: string
@@ -329,12 +329,10 @@ export interface Translations {
   yourMatches: string
   unableToLoadMatches: string
   matchesConnectivityIssue: string
-  unknownPlayer: string
   noMatchesFound: string
   tennisMatchResults: string
   checkMatchResults: string
   matchSharedSuccessfully: string
-  matchLinkCopied: string
   copyLinkManually: string
   final: string
   shareMatchResults: string
@@ -704,30 +702,27 @@ export interface Translations {
   // Search placeholders
   searchPlayers: string
   searchMatches: string
-
-  showingMatchesSummary: string
-  showingPlayersSummary: string
-
+  
+  // Filter options
+  all: string
   allTime: string
   last3Months: string
   thisYear: string
-  all: string
   
-  // Authentication & Auth Flow
+  // Summary messages
+  showingMatchesSummary: string
+  showingPlayersSummary: string
+  
+  // Authentication
   signingIn: string
   signIn: string
   tennisScore: string
-  yourDigitalTennisCompanion: string
   welcomeBackAuth: string
   signInToYourAccount: string
   email: string
   enterYourEmail: string
   password: string
   enterYourPassword: string
-  dontHaveAccount: string
-  signUp: string
-  passwordsDoNotMatch: string
-  unexpectedError: string
   createYourAccount: string
   getStartedWithTennisScore: string
   name: string
@@ -737,77 +732,31 @@ export interface Translations {
   confirmYourPassword: string
   creatingAccount: string
   createAccount: string
+  dontHaveAccount: string
+  signUp: string
   alreadyHaveAccount: string
+  passwordsDoNotMatch: string
+  unexpectedError: string
+  yourDigitalTennisCompanion: string
   
-  // Error Handling & Connection
-  youreOfflineCheckConnection: string
-  unableToConnectToServer: string
-  appUpdatedPleaseRefresh: string
-  oopsSomethingWentWrong: string
-  youreOffline: string
-  connected: string
-  offline: string
-  retryAttempt: string
-  goToDashboard: string
-  errorDetailsDevMode: string
-  connectionIssueTitle: string
-  unableToConnectDescription: string
-  
-  // Navigation & Layout
-  allMatches: string
-  userFallback: string
-  openNavigationMenu: string
-  switchToLightMode: string
-  switchToDarkMode: string
-  mainContent: string
-  mainNavigation: string
-  collapseNavigationAria: string
-  expandNavigationAria: string
-  menu: string
-  navigationOptions: string
-  createNewMatch: string
-  createNewMatchAria: string
-  newText: string
-  
-  // Status & Match Display
-  inProgressStatus: string
+  // Status labels
   completedStatus: string
   liveStatus: string
   retiredStatus: string
+  
+  // Match types
   doublesType: string
-  unknownPlayer: string
   singlesType: string
+  unknownPlayer: string
   createdBy: string
+  vs: string
   watchLive: string
-  statusPlaceholder: string
   
-  // Tennis Scoring Display
-  advantage: string
-  gameP1: string
-  gameP2: string
-  deuceTennis: string
-  advantageP1: string
-  advantageP2: string
-  
-  // UI Components
-  closeButton: string
-  
-  // Live Match Features
-  liveDisplay: string
-  hideAdvancedStatistics: string
-  showAdvancedStatistics: string
-  showLess: string
-  viewMoreStats: string
-  totalLabel: string
-  summaryLabel: string
-  
-  // App Metadata
-  appDescription: string
-  tennisScoreTeam: string
-  tennisScoreCreator: string
-  tennisScorePublisher: string
-  tennisScoreTitle: string
-  tennisScoreSiteName: string
+  // Public live match
+  previewModeStatus: string
+  matchLinkCopied: string
+  liveTennisMatch: string
+  liveTennis: string
 }
 
 export const translations = {
@@ -845,6 +794,7 @@ export const translations = {
     // Match scoring
     newMatch: "New Match",
     liveScoring: "Live Scoring",
+    liveDisplay: "Live",
     matchCompleted: "Match Completed",
     winner: "Winner",
     winnerType: "Winner Type",
@@ -1146,7 +1096,6 @@ export const translations = {
     tennisMatchResults: "Tennis Match Results",
     checkMatchResults: "Check out the results of my tennis match!",
     matchSharedSuccessfully: "Match shared successfully!",
-    matchLinkCopied: "Match link copied to clipboard.",
     copyLinkManually: "Could not copy link. Please copy it manually.",
     final: "Final",
     shareMatchResults: "Share Match Results",
@@ -1516,110 +1465,59 @@ export const translations = {
     // Search placeholders
     searchPlayers: "Search players by name or rating...",
     searchMatches: "Search matches by player name...",
-
-    showingMatchesSummary: "Showing {shown} of {total} matches",
-    showingPlayersSummary: "Showing {shown} of {total} players",
-
+    
+    // Filter options
+    all: "All",
     allTime: "All Time",
     last3Months: "Last 3 Months",
     thisYear: "This Year",
-    all: "All Status",
     
-    // Authentication & Auth Flow
+    // Summary messages
+    showingMatchesSummary: "Showing {shown} of {total} matches",
+    showingPlayersSummary: "Showing {shown} of {total} players",
+    
+    // Authentication
     signingIn: "Signing in...",
     signIn: "Sign In",
     tennisScore: "TennisScore",
-    yourDigitalTennisCompanion: "Your digital tennis companion",
     welcomeBackAuth: "Welcome back",
-    signInToYourAccount: "Sign in to your account to continue",
+    signInToYourAccount: "Sign in to your account",
     email: "Email",
     enterYourEmail: "Enter your email",
     password: "Password",
     enterYourPassword: "Enter your password",
-    dontHaveAccount: "Don't have an account?",
-    signUp: "Sign up",
-    passwordsDoNotMatch: "Passwords do not match",
-    unexpectedError: "An unexpected error occurred",
     createYourAccount: "Create your account",
-    getStartedWithTennisScore: "Get started with TennisScore today",
+    getStartedWithTennisScore: "Get started with TennisScore",
     name: "Name",
     enterYourName: "Enter your name",
-    createPassword: "Create a password",
-    confirmPassword: "Confirm Password",
+    createPassword: "Create password",
+    confirmPassword: "Confirm password",
     confirmYourPassword: "Confirm your password",
     creatingAccount: "Creating account...",
     createAccount: "Create Account",
+    dontHaveAccount: "Don't have an account?",
+    signUp: "Sign up",
     alreadyHaveAccount: "Already have an account?",
+    passwordsDoNotMatch: "Passwords do not match",
+    unexpectedError: "An unexpected error occurred",
+    yourDigitalTennisCompanion: "Your digital tennis companion",
     
-    // Error Handling & Connection
-    youreOfflineCheckConnection: "You're offline. Check your connection and try again.",
-    unableToConnectToServer: "Unable to connect to the server. Please check your internet connection.",
-    appUpdatedPleaseRefresh: "The app has been updated. Please refresh to get the latest version.",
-    oopsSomethingWentWrong: "Oops! Something went wrong",
-    youreOffline: "You're offline",
-    connected: "Connected",
-    offline: "Offline",
-    retryAttempt: "Retry attempt:",
-    goToDashboard: "Go to Dashboard",
-    errorDetailsDevMode: "Error Details (Dev Mode)",
-    connectionIssueTitle: "Connection Issue",
-    unableToConnectDescription: "Unable to connect to the server. Please check your internet connection and try again.",
-    
-    // Navigation & Layout
-    allMatches: "All matches",
-    userFallback: "User",
-    openNavigationMenu: "Open navigation menu",
-    switchToLightMode: "Switch to light mode",
-    switchToDarkMode: "Switch to dark mode",
-    mainContent: "Main content",
-    mainNavigation: "Main navigation",
-    collapseNavigationAria: "Collapse navigation",
-    expandNavigationAria: "Expand navigation",
-    menu: "Menu",
-    navigationOptions: "Navigation options",
-    createNewMatch: "Create new match",
-    createNewMatchAria: "Create new match",
-    newText: "New",
-    
-    // Status & Match Display
-    inProgressStatus: "In Progress",
+    // Status labels
     completedStatus: "Completed",
     liveStatus: "Live",
     retiredStatus: "Retired",
+    
+    // Match types
     doublesType: "Doubles",
-    unknownPlayer: "Unknown",
     singlesType: "Singles",
-    createdBy: "Created by:",
+    createdBy: "Created by",
     watchLive: "Watch Live",
-    statusPlaceholder: "Status",
     
-    // Tennis Scoring Display
-    advantage: "AD",
-    gameP1: "Game P1",
-    gameP2: "Game P2",
-    deuceTennis: "Deuce",
-    advantageP1: "Ad-40",
-    advantageP2: "40-Ad",
-    
-    // UI Components
-    closeButton: "Close",
-    
-    // Live Match Features
-    liveDisplay: "Live",
-    hideAdvancedStatistics: "Hide advanced statistics",
-    showAdvancedStatistics: "Show advanced statistics",
-    showLess: "Show Less",
-    viewMoreStats: "View More Stats",
-    totalLabel: "Total",
-    summaryLabel: "Summary",
-    
-    // App Metadata
-    appDescription: "Professional tennis scoring and statistics tracking for players and coaches",
-    tennisScoreTeam: "TennisScore Team",
-    tennisScoreCreator: "TennisScore",
-    tennisScorePublisher: "TennisScore",
-    tennisScoreTitle: "TennisScore",
-    tennisScoreSiteName: "TennisScore",
+    // Public live match
+    previewModeStatus: "Preview mode - scores update every 8-10 seconds",
+    matchLinkCopied: "Match link copied to clipboard! Share it with others to let them watch live.",
+    liveTennisMatch: "Live Tennis Match",
+    liveTennis: "Live Tennis",
   },
   cs: {
     // Common
@@ -1655,6 +1553,7 @@ export const translations = {
     // Match scoring
     newMatch: "Nový zápas",
     liveScoring: "Živé skórování",
+    liveDisplay: "Živě",
     matchCompleted: "Zápas dokončen",
     winner: "Vítěz",
     winnerType: "Typ vítězného úderu",
@@ -1956,7 +1855,6 @@ export const translations = {
     tennisMatchResults: "Výsledky tenisového zápasu",
     checkMatchResults: "Podívejte se na výsledky mého tenisového zápasu!",
     matchSharedSuccessfully: "Zápas úspěšně sdílen!",
-    matchLinkCopied: "Odkaz na zápas zkopírován do schránky.",
     copyLinkManually: "Nepodařilo se zkopírovat odkaz. Zkopírujte ho prosím ručně.",
     final: "Konečný",
     shareMatchResults: "Sdílet výsledky zápasu",
@@ -2326,110 +2224,59 @@ export const translations = {
     // Search placeholders
     searchPlayers: "Hledat hráče podle jména nebo hodnocení...",
     searchMatches: "Hledat zápasy podle jména hráče...",
-
-    showingMatchesSummary: "Zobrazeno {shown} z {total} zápasů",
-    showingPlayersSummary: "Zobrazeno {shown} z {total} hráčů",
-
-    allTime: "Celé období",
+    
+    // Filter options
+    all: "Vše",
+    allTime: "Celá doba",
     last3Months: "Poslední 3 měsíce",
     thisYear: "Tento rok",
-    all: "Všechny stavy",
     
-    // Authentication & Auth Flow
+    // Summary messages
+    showingMatchesSummary: "Zobrazeno {shown} z {total} zápasů",
+    showingPlayersSummary: "Zobrazeno {shown} z {total} hráčů",
+    
+    // Authentication
     signingIn: "Přihlašování...",
     signIn: "Přihlásit se",
     tennisScore: "TennisScore",
-    yourDigitalTennisCompanion: "Váš digitální tenisový společník",
     welcomeBackAuth: "Vítejte zpět",
-    signInToYourAccount: "Přihlaste se ke svému účtu pro pokračování",
-    email: "E-mail",
-    enterYourEmail: "Zadejte svůj e-mail",
+    signInToYourAccount: "Přihlásit se ke svému účtu",
+    email: "Email",
+    enterYourEmail: "Zadejte svůj email",
     password: "Heslo",
     enterYourPassword: "Zadejte své heslo",
-    dontHaveAccount: "Nemáte účet?",
-    signUp: "Zaregistrovat se",
-    passwordsDoNotMatch: "Hesla se neshodují",
-    unexpectedError: "Došlo k neočekávané chybě",
     createYourAccount: "Vytvořte si účet",
-    getStartedWithTennisScore: "Začněte s TennisScore ještě dnes",
+    getStartedWithTennisScore: "Začněte s TennisScore",
     name: "Jméno",
     enterYourName: "Zadejte své jméno",
     createPassword: "Vytvořte heslo",
-    confirmPassword: "Potvrďte heslo",
+    confirmPassword: "Potvrdit heslo",
     confirmYourPassword: "Potvrďte své heslo",
     creatingAccount: "Vytváření účtu...",
     createAccount: "Vytvořit účet",
+    dontHaveAccount: "Nemáte účet?",
+    signUp: "Registrovat se",
     alreadyHaveAccount: "Již máte účet?",
+    passwordsDoNotMatch: "Hesla se neshodují",
+    unexpectedError: "Došlo k neočekávané chybě",
+    yourDigitalTennisCompanion: "Váš digitální tenisový partner",
     
-    // Error Handling & Connection
-    youreOfflineCheckConnection: "Jste offline. Zkontrolujte připojení a zkuste to znovu.",
-    unableToConnectToServer: "Nelze se připojit k serveru. Zkontrolujte prosím internetové připojení.",
-    appUpdatedPleaseRefresh: "Aplikace byla aktualizována. Obnovte prosím stránku pro nejnovější verzi.",
-    oopsSomethingWentWrong: "Ajaj! Něco se pokazilo",
-    youreOffline: "Jste offline",
-    connected: "Připojeno",
-    offline: "Offline",
-    retryAttempt: "Pokus o opakování:",
-    goToDashboard: "Přejít na nástěnku",
-    errorDetailsDevMode: "Detaily chyby (vývojový režim)",
-    connectionIssueTitle: "Problém s připojením",
-    unableToConnectDescription: "Nelze se připojit k serveru. Zkontrolujte prosím internetové připojení a zkuste to znovu.",
-    
-    // Navigation & Layout
-    allMatches: "Všechny zápasy",
-    userFallback: "Uživatel",
-    openNavigationMenu: "Otevřít navigační menu",
-    switchToLightMode: "Přepnout na světlý režim",
-    switchToDarkMode: "Přepnout na tmavý režim",
-    mainContent: "Hlavní obsah",
-    mainNavigation: "Hlavní navigace",
-    collapseNavigationAria: "Sbalit navigaci",
-    expandNavigationAria: "Rozbalit navigaci",
-    menu: "Menu",
-    navigationOptions: "Možnosti navigace",
-    createNewMatch: "Vytvořit nový zápas",
-    createNewMatchAria: "Vytvořit nový zápas",
-    newText: "Nový",
-    
-    // Status & Match Display
-    inProgressStatus: "Probíhá",
-    completedStatus: "Dokončeno",
-    liveStatus: "Živě",
+    // Status labels
+    completedStatus: "Ukončen",
+    liveStatus: "Naživo",
     retiredStatus: "Skreč",
-    doublesType: "Čtyřhra",
-    unknownPlayer: "Neznámý",
+    
+    // Match types
+    doublesType: "Čtyrhry",
     singlesType: "Dvouhra",
-    createdBy: "Vytvořil:",
-    watchLive: "Sledovat živě",
-    statusPlaceholder: "Stav",
+    createdBy: "Vytvořeno uživatelem",
+    watchLive: "Sledovat naživo",
     
-    // Tennis Scoring Display
-    advantage: "VÝH",
-    gameP1: "Gem H1",
-    gameP2: "Gem H2",
-    deuceTennis: "Shoda",
-    advantageP1: "Výh-40",
-    advantageP2: "40-Výh",
-    
-    // UI Components
-    closeButton: "Zavřít",
-    
-    // Live Match Features
-    liveDisplay: "Živě",
-    hideAdvancedStatistics: "Skrýt pokročilé statistiky",
-    showAdvancedStatistics: "Zobrazit pokročilé statistiky",
-    showLess: "Zobrazit méně",
-    viewMoreStats: "Zobrazit více statistik",
-    totalLabel: "Celkem",
-    summaryLabel: "Souhrn",
-    
-    // App Metadata
-    appDescription: "Profesionální tenisové skórování a sledování statistik pro hráče a trenéry",
-    tennisScoreTeam: "Tým TennisScore",
-    tennisScoreCreator: "TennisScore",
-    tennisScorePublisher: "TennisScore",
-    tennisScoreTitle: "TennisScore",
-    tennisScoreSiteName: "TennisScore",
+    // Public live match
+    previewModeStatus: "Náhledový režim - skóre se aktualizuje každých 8-10 sekund",
+    matchLinkCopied: "Odkaz na zápas zkopírován do schránky! Sdílejte ho s ostatními, aby mohli sledovat zápas naživo.",
+    liveTennisMatch: "Živý tenisový zápas",
+    liveTennis: "Živý tenis",
   }
 }
 

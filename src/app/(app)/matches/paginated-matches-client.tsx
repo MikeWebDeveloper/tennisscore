@@ -261,7 +261,7 @@ export function PaginatedMatchesClient({
           <h1 className="text-2xl font-bold">{t("yourMatches")}</h1>
           {total > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
-              {t("showingMatchesSummary", { shown: matches.length, total })}
+              {t("showingMatchesSummary").replace("{shown}", matches.length.toString()).replace("{total}", total.toString())}
             </p>
           )}
         </div>
