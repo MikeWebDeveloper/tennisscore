@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/appwrite-server"
 import { Player, MatchFormat, Score } from "@/lib/types"
 import { PublicLiveMatch } from "./_components/public-live-match"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { logger } from "@/lib/utils/logger"
 
 // Force dynamic rendering and no caching for live matches
 export const dynamic = 'force-dynamic'
@@ -32,7 +33,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
     const getPlayerData = async (playerId: string, playerNumber: string) => {
       // For anonymous players, create fallback immediately
       if (playerId?.startsWith('anonymous-')) {
-        console.log(`🤖 Creating anonymous player ${playerNumber}`)
+        logger.debug(`🤖 Creating anonymous player ${playerNumber}`)
         return { 
           firstName: "Player", 
           lastName: playerNumber,
@@ -48,10 +49,10 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
             process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
             playerId
           )
-          console.log(`✅ Successfully fetched player ${playerNumber}: ${player.firstName} ${player.lastName}`)
+          logger.debug(`✅ Successfully fetched player ${playerNumber}: ${player.firstName} ${player.lastName}`)
           return player
         } catch (error) {
-          console.error(`❌ Failed to fetch player ${playerNumber} (${playerId}):`, error)
+          logger.error(`❌ Failed to fetch player ${playerNumber} (${playerId}):`, error)
           // Create a more informative fallback
           return { 
             firstName: "Unknown", 
@@ -106,7 +107,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
 
     return <PublicLiveMatch match={matchData} />
   } catch (error) {
-    console.error("Error fetching match:", error)
+    logger.error("Error fetching match:", error)
     notFound()
   }
 }
