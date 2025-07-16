@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RefreshCw, Trash2, HardDrive, Database, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
+import { logger } from '@/lib/utils/logger'
 
 export function CacheManager() {
   const [loading, setLoading] = useState<string | null>(null)
@@ -29,7 +30,7 @@ export function CacheManager() {
         }
       }, 1000)
     } catch (error) {
-      console.error('Cache clear failed:', error)
+      logger.error('Cache clear failed:', error)
       toast.error('Failed to clear cache')
       setLoading(null)
     }
@@ -67,7 +68,7 @@ export function CacheManager() {
         toast.info('Cache API not available')
       }
     } catch (error) {
-      console.error('Cache info check failed:', error)
+      logger.error('Cache info check failed:', error)
       toast.error('Failed to get cache information')
     } finally {
       setLoading(null)
