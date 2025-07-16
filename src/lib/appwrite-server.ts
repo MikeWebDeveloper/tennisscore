@@ -2,6 +2,7 @@
 
 import { Client, Account, Databases, Storage, Users } from "node-appwrite"
 import { getSession } from "./session"
+import { logger } from '@/lib/utils/logger'
 
 // Enhanced client configuration with better timeout handling
 function createClientWithRetry() {
@@ -47,7 +48,7 @@ export async function withRetry<T>(
             err.cause?.code === 'ENOTFOUND' ||
             err.message?.includes('fetch failed') ||
             err.message?.includes('network')) {
-          console.log(`🔄 Network error detected (${err.cause?.code || 'fetch failed'}), will retry...`)
+          logger.info(`🔄 Network error detected (${err.cause?.code || 'fetch failed'}), will retry...`)
           // Continue to retry logic
         } else if (err.code === 401 || err.code === 403 || err.type === 'general_unauthorized_scope') {
           // Don't retry on auth/permission errors
@@ -60,13 +61,13 @@ export async function withRetry<T>(
       
       // If this was the last attempt, throw the error
       if (attempt === maxRetries) {
-        console.error(`❌ Operation failed after ${maxRetries + 1} attempts:`, lastError?.message)
+        logger.error(`❌ Operation failed after ${maxRetries + 1} attempts:`, lastError?.message)
         throw lastError
       }
       
       // Calculate delay with exponential backoff and jitter
       const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000
-      console.warn(`⚠️  Attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms...`, (error as Error)?.message)
+      logger.warn(`⚠️  Attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms...`, (error as Error)?.message)
       
       await new Promise(resolve => setTimeout(resolve, delay))
     }
