@@ -1,4 +1,5 @@
 import { Client, Account, Databases, Storage } from "appwrite"
+import { logger } from '@/lib/utils/logger'
 
 // Lazy client creation to ensure environment variables are available
 let clientInstance: Client | null = null
@@ -12,7 +13,7 @@ const getClient = (): Client => {
         const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.trim()
         const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT?.trim()
 
-        console.log("🔧 Creating Appwrite client with:", {
+        logger.info("🔧 Creating Appwrite client with:", {
             endpoint: endpoint ? `${endpoint.slice(0, 30)}...` : "missing",
             project: project ? `${project.slice(0, 10)}...` : "missing",
             hasEndpoint: !!endpoint,
@@ -27,7 +28,7 @@ const getClient = (): Client => {
             .setEndpoint(endpoint)
             .setProject(project)
 
-        console.log("✅ Appwrite client created successfully")
+        logger.info("✅ Appwrite client created successfully")
     }
     
     return clientInstance
