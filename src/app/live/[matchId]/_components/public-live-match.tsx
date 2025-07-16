@@ -485,13 +485,13 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </motion.div>
         )}
 
-        {/* Match Details Tabs - Only Stats and Point-by-Point */}
+        {/* Match Details Tabs - Stats and Points */}
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="stats" className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10 max-w-xs sm:max-w-lg mx-auto">
               <TabsTrigger value="stats" className="text-xs sm:text-sm">{t('statistics')}</TabsTrigger>
-              <TabsTrigger value="commentary" disabled={!hasPointData} className="text-xs sm:text-sm">
-                {t('commentary')}
+              <TabsTrigger value="points" className="text-xs sm:text-sm">
+                {t('points')}
               </TabsTrigger>
             </TabsList>
             
@@ -508,19 +508,26 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               </Card>
             </TabsContent>
             
-            <TabsContent value="commentary" className="mt-3 sm:mt-4">
+            <TabsContent value="points" className="mt-3 sm:mt-4">
               <Card>
                 <CardContent className="p-3 sm:p-4 md:p-6">
-                  <PointByPointView
-                    pointLog={pointLog}
-                    playerNames={playerNames}
-                    playerObjects={{
-                      p1: match.playerOne,
-                      p2: match.playerTwo,
-                      ...(match.playerThree ? { p3: match.playerThree } : {}),
-                      ...(match.playerFour ? { p4: match.playerFour } : {})
-                    }}
-                  />
+                  {hasPointData ? (
+                    <PointByPointView
+                      pointLog={pointLog}
+                      playerNames={playerNames}
+                      playerObjects={{
+                        p1: match.playerOne,
+                        p2: match.playerTwo,
+                        ...(match.playerThree ? { p3: match.playerThree } : {}),
+                        ...(match.playerFour ? { p4: match.playerFour } : {})
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      <p>{t('noPointsYet')}</p>
+                      <p className="text-sm mt-2">{t('pointsWillAppearHere')}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

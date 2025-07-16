@@ -757,6 +757,11 @@ export interface Translations {
   matchLinkCopied: string
   liveTennisMatch: string
   liveTennis: string
+  
+  // Point by point view
+  currentGame: string
+  noPointsYet: string
+  pointsWillAppearHere: string
 }
 
 export const translations = {
@@ -1518,6 +1523,11 @@ export const translations = {
     matchLinkCopied: "Match link copied to clipboard! Share it with others to let them watch live.",
     liveTennisMatch: "Live Tennis Match",
     liveTennis: "Live Tennis",
+    
+    // Point by point view
+    currentGame: "Current Game",
+    noPointsYet: "No points yet",
+    pointsWillAppearHere: "Points will appear here as the match progresses",
   },
   cs: {
     // Common
@@ -2277,6 +2287,11 @@ export const translations = {
     matchLinkCopied: "Odkaz na zápas zkopírován do schránky! Sdílejte ho s ostatními, aby mohli sledovat zápas naživo.",
     liveTennisMatch: "Živý tenisový zápas",
     liveTennis: "Živý tenis",
+    
+    // Point by point view
+    currentGame: "Aktuální gem",
+    noPointsYet: "Zatím žádné body",
+    pointsWillAppearHere: "Body se zde objeví v průběhu zápasu",
   }
 }
 

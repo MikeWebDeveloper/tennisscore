@@ -1210,10 +1210,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* Tabs */}
         <Tabs defaultValue="stats" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="stats">{t('statsTab')}</TabsTrigger>
             <TabsTrigger value="points">{t('pointsTab')}</TabsTrigger>
-            <TabsTrigger value="commentary">{t('commentaryTab')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="stats" className="mt-4">
@@ -1243,13 +1242,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   : "simple"
               }
             />
-          </TabsContent>
-          
-          <TabsContent value="commentary" className="mt-4">
-            <div className="text-center text-muted-foreground py-8">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Commentary feature coming soon</p>
-            </div>
           </TabsContent>
         </Tabs>
 
