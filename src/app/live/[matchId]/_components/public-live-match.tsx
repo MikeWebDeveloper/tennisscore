@@ -22,6 +22,7 @@ import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
 import { useTranslations } from "@/hooks/use-translations"
+import { logger } from "@/lib/utils/logger"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -38,7 +39,7 @@ function parseAndConvertScore(scoreString: string | undefined): Score {
   if (!scoreString) return defaultScore
   try {
     const dbScore = JSON.parse(scoreString)
-    console.log("📊 Parsing score from DB:", dbScore)
+    logger.debug("📊 Parsing score from DB:", dbScore)
     
     // Handle both modern format (arrays) and legacy format (objects with player1/player2)
     let sets: [number, number][] = []
@@ -117,10 +118,10 @@ function parseAndConvertScore(scoreString: string | undefined): Score {
       tiebreakPoints,
     }
     
-    console.log("✅ Converted score:", convertedScore)
+    logger.debug("✅ Converted score:", convertedScore)
     return convertedScore
   } catch (e) {
-    console.error("Failed to parse score:", e)
+    logger.error("Failed to parse score:", e)
     return defaultScore
   }
 }
@@ -186,7 +187,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         const parsedPointLog: PointDetail[] = match.pointLog.map(pointStr => JSON.parse(pointStr))
         setPointLog(parsedPointLog)
       } catch (error) {
-        console.error("Failed to parse point log:", error)
+        logger.error("Failed to parse point log:", error)
       }
     }
   }, [match.pointLog])
@@ -194,7 +195,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   // Update match when real-time data changes
   useEffect(() => {
     if (lastUpdate && mounted) {
-      console.log("🔄 Real-time update received:", lastUpdate)
+      logger.debug("🔄 Real-time update received:", lastUpdate)
       const newScore = parseAndConvertScore(lastUpdate.score)
       setScore(newScore)
 
@@ -227,7 +228,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         return
       } catch (err) {
         // User canceled or error occurred, fall through to clipboard
-        console.log("Native share failed or canceled:", err)
+        logger.debug("Native share failed or canceled:", err)
       }
     }
     
@@ -250,7 +251,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   // Manual refresh function for Safari mobile users
   const refreshMatch = useCallback(() => {
-    console.log("🔄 Manual refresh triggered")
+    logger.debug("🔄 Manual refresh triggered")
     if (mounted) {
       // Force fetch new data
       window.location.reload()
