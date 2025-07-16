@@ -10,6 +10,7 @@ import { useTranslations } from "@/hooks/use-translations"
 import { MatchesList } from "./_components/matches-list"
 import { getMatchesByUserPaginated } from "@/lib/actions/matches"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { logger } from '@/lib/utils/logger'
 import { 
   Select,
   SelectContent,
@@ -126,7 +127,7 @@ function enhanceMatches(matches: Match[], players: Player[]): EnhancedMatch[] {
         }
       }
     } catch (e) {
-      console.error("Failed to parse score JSON", e)
+      logger.error("Failed to parse score JSON", e)
       // Provide default values
       scoreParsed = {
         sets: [],
@@ -218,7 +219,7 @@ export function PaginatedMatchesClient({
       setTotal(result.total)
       setHasMore(result.hasMore)
     } catch (error) {
-      console.error("Failed to filter matches:", error)
+      logger.error("Failed to filter matches:", error)
     } finally {
       setIsLoading(false)
     }
@@ -239,7 +240,7 @@ export function PaginatedMatchesClient({
       setMatches(prev => [...prev, ...enhancedNewMatches])
       setHasMore(result.hasMore)
     } catch (error) {
-      console.error("Failed to load more matches:", error)
+      logger.error("Failed to load more matches:", error)
     } finally {
       setIsLoading(false)
     }
