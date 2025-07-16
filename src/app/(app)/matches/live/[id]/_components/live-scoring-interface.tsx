@@ -31,6 +31,7 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTranslations } from "@/hooks/use-translations"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
+import { logger } from "@/lib/utils/logger"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
@@ -445,7 +446,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         finalSetTiebreakAt: parsed.finalSetTiebreakAt || 10,
       }
     } catch (error) {
-      console.error("Failed to parse match format:", error)
+      logger.error("Failed to parse match format:", error)
       return {
         sets: 3,
         noAd: false,
@@ -609,7 +610,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           try {
             return JSON.parse(pointStr)
           } catch (error) {
-            console.error("Failed to parse point:", error)
+            logger.error("Failed to parse point:", error)
             return null
           }
         }).filter(Boolean)
@@ -619,7 +620,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     try {
       dbScore = JSON.parse(match.score)
     } catch (error) {
-      console.error("Failed to parse match score:", error)
+      logger.error("Failed to parse match score:", error)
       dbScore = { 
         sets: [], 
         games: [{player1: 0, player2: 0}], 
@@ -661,7 +662,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       setIsMatchInitialized(true)
       setStartTime(match.startTime || null)
     } catch (error) {
-      console.error("Failed to initialize match:", error)
+      logger.error("Failed to initialize match:", error)
     }
   }, [match, parsedMatchFormat, initializeMatch, setServer])
 
@@ -702,7 +703,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handlePointWin = async (winner: "p1" | "p2") => {
     if (!currentServer || !score) {
-      console.error("Match not properly initialized - missing server or score")
+      logger.error("Match not properly initialized - missing server or score")
       toast.error("Match not ready. Please refresh the page.")
       return
     }
@@ -713,7 +714,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
 
     // Debug logging to understand detailLevel issues
-    console.log('Detail level check:', { 
+    logger.debug('Detail level check:', { 
       detailLevel, 
       parsedMatchFormat, 
       matchFormatString: match.matchFormat 
@@ -721,7 +722,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     // For "Points Only", create a minimal point object and save it immediately
     if (detailLevel === 'points') {
-      console.log('Points only mode - awarding point directly')
+      logger.debug('Points only mode - awarding point directly')
       const minimalPointDetail: Partial<StorePointDetail> = {
         serveType: serveType,
         pointOutcome: 'winner',
@@ -734,14 +735,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     // For 'simple' mode, open the simple stats popup
     if (detailLevel === 'simple') {
-      console.log('Simple mode - opening stats popup')
+      logger.debug('Simple mode - opening stats popup')
       setPendingPointWinner(winner)
       setShowSimpleStats(true)
       return
     }
 
     // For complex mode, use the detailed sheet
-    console.log('Complex mode - opening detailed sheet')
+    logger.debug('Complex mode - opening detailed sheet')
     setPendingPointWinner(winner)
     setShowPointDetail(true)
   }
@@ -829,7 +830,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }, 2000)
       }
     } catch (error) {
-      console.error("Failed to award point:", error)
+      logger.error("Failed to award point:", error)
       toast.error("Failed to save point")
     }
   }
@@ -897,7 +898,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       setIsInGame(result.newPointLog.length > 0)
       toast.success("Point undone")
     } catch (error) {
-      console.error("Failed to undo point:", error)
+      logger.error("Failed to undo point:", error)
       playSound('error')
       toast.error("Failed to undo point")
     }
@@ -963,7 +964,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         router.push(`/matches/${match.$id}`)
       }, 2000)
     } catch (error) {
-      console.error("Failed to retire match:", error)
+      logger.error("Failed to retire match:", error)
       toast.error("Failed to end match")
     }
   }
@@ -986,7 +987,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         return
       } catch (err) {
         // User canceled or share failed
-        console.log("Native share failed:", err)
+        logger.warn("Native share failed:", err)
         // Fall through to show dialog
       }
     }
