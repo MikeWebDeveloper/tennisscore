@@ -12,6 +12,7 @@ import { useTranslations } from "@/hooks/use-translations"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowUpDown, ArrowUpAZ, ArrowDownZA, Search, Loader2, Users, Eye } from "lucide-react"
+import { logger } from "@/lib/utils/logger"
 
 interface PaginatedPlayersClientProps {
   initialPlayers: Player[]
@@ -113,7 +114,7 @@ export function PaginatedPlayersClient({
       setPlayers(prev => [...prev, ...result.players])
       setHasMore(result.hasMore)
     } catch (error) {
-      console.error("Failed to load more players:", error)
+      logger.error("Failed to load more players:", error)
     } finally {
       setIsLoading(false)
     }
@@ -133,7 +134,7 @@ export function PaginatedPlayersClient({
       setHasMore(false)
       setViewMode('all')
     } catch (error) {
-      console.error("Failed to load all players:", error)
+      logger.error("Failed to load all players:", error)
     } finally {
       setIsLoading(false)
     }
@@ -153,7 +154,7 @@ export function PaginatedPlayersClient({
       setHasMore(result.hasMore)
       setViewMode('paginated')
     } catch (error) {
-      console.error("Failed to reset pagination:", error)
+      logger.error("Failed to reset pagination:", error)
     } finally {
       setIsLoading(false)
     }
@@ -175,7 +176,7 @@ export function PaginatedPlayersClient({
       setHasMore(result.hasMore)
       setViewMode('paginated')
     } catch (error) {
-      console.error("Failed to search players:", error)
+      logger.error("Failed to search players:", error)
     } finally {
       setIsLoading(false)
     }
