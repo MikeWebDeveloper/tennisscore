@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { client } from "@/lib/appwrite-client"
 import { databases } from "@/lib/appwrite-client"
+import { logger } from "@/lib/utils/logger"
 
 interface RealtimeMatchData {
   score?: string
@@ -26,7 +27,7 @@ export function useRealtimeMatch(matchId: string) {
     if (!matchId) return
 
     try {
-      console.log("📊 Fetching current match data...")
+      logger.debug("📊 Fetching current match data...")
       const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID?.trim()
       const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID?.trim()
       
@@ -40,7 +41,7 @@ export function useRealtimeMatch(matchId: string) {
         matchId
       )
 
-      console.log("✅ Match data fetched:", response)
+      logger.debug("✅ Match data fetched:", response)
       
       setLastUpdate({
         score: response.score as string,
@@ -50,7 +51,7 @@ export function useRealtimeMatch(matchId: string) {
         winnerId: response.winnerId as string | undefined
       })
     } catch (err) {
-      console.error("❌ Failed to fetch match data:", err)
+      logger.error("❌ Failed to fetch match data:", err)
     }
   }, [matchId])
 
@@ -59,18 +60,18 @@ export function useRealtimeMatch(matchId: string) {
       return
     }
 
-    console.log("🚀 Starting real-time connection for match:", matchId)
+    logger.debug("🚀 Starting real-time connection for match:", matchId)
     isConnectingRef.current = true
 
     const connectToRealtime = () => {
       try {
-        console.log("🔄 Connecting to real-time updates...")
+        logger.debug("🔄 Connecting to real-time updates...")
         
         // Verify environment variables and trim whitespace/newlines
         const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID?.trim()
         const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID?.trim()
         
-        console.log("🔍 Environment check:", {
+        logger.debug("🔍 Environment check:", {
           endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.trim(),
           project: process.env.NEXT_PUBLIC_APPWRITE_PROJECT?.trim(),
           database: dbId,
@@ -85,15 +86,15 @@ export function useRealtimeMatch(matchId: string) {
         // Simple subscription to the specific document
         const channel = `databases.${dbId}.collections.${collectionId}.documents.${matchId}`
         
-        console.log("📡 Subscription channel:", channel)
-        console.log("🔧 Client configuration:", {
+        logger.debug("📡 Subscription channel:", channel)
+        logger.debug("🔧 Client configuration:", {
           hasClient: !!client
         })
 
         const unsubscribe = client.subscribe(
           channel,
           (response) => {
-            console.log("🎉 Real-time event received:", response)
+            logger.debug("🎉 Real-time event received:", response)
             
             // Check if this is an update event
             const isUpdate = response.events.some(event => 
@@ -102,7 +103,7 @@ export function useRealtimeMatch(matchId: string) {
             
             if (isUpdate && response.payload) {
               const payload = response.payload as Record<string, unknown>
-              console.log("✅ Match updated:", payload)
+              logger.debug("✅ Match updated:", payload)
               
               setLastUpdate({
                 score: payload.score as string,
@@ -121,20 +122,20 @@ export function useRealtimeMatch(matchId: string) {
         unsubscribeRef.current = unsubscribe
         setConnected(true)
         setError(null)
-        console.log("✅ Real-time subscription established")
+        logger.debug("✅ Real-time subscription established")
 
         // Fetch initial data after establishing connection
         fetchMatchData()
 
       } catch (err) {
-        console.error("❌ Real-time connection failed:", err)
+        logger.error("❌ Real-time connection failed:", err)
         setError(err instanceof Error ? err.message : "Connection failed")
         setConnected(false)
         
         // Retry with exponential backoff
         if (retryCount < 3) {
           const delay = 1000 * Math.pow(2, retryCount)
-          console.log(`⏳ Retrying in ${delay}ms...`)
+          logger.debug(`⏳ Retrying in ${delay}ms...`)
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
             connectToRealtime()
@@ -150,12 +151,12 @@ export function useRealtimeMatch(matchId: string) {
 
     // Cleanup function
     return () => {
-      console.log("🧹 Cleaning up real-time connection")
+      logger.debug("🧹 Cleaning up real-time connection")
       if (unsubscribeRef.current) {
         try {
           unsubscribeRef.current()
         } catch (err) {
-          console.error("Error during cleanup:", err)
+          logger.error("Error during cleanup:", err)
         }
         unsubscribeRef.current = null
       }
@@ -170,7 +171,7 @@ export function useRealtimeMatch(matchId: string) {
       const now = Date.now()
       
       if (document.visibilityState === 'visible' && matchId) {
-        console.log("👁️ Page became visible")
+        logger.debug("👁️ Page became visible")
         
         // Calculate time since last visibility change
         const timeSinceLastChange = now - lastVisibilityChangeRef.current
@@ -194,15 +195,15 @@ export function useRealtimeMatch(matchId: string) {
           forceRefreshThreshold = 5000 // Safari-specific
         }
         
-        console.log(`🔍 Environment: Preview=${isVercelPreview}, Safari=${isSafari}, Mobile=${isMobile}, Threshold=${forceRefreshThreshold}ms`)
+        logger.debug(`🔍 Environment: Preview=${isVercelPreview}, Safari=${isSafari}, Mobile=${isMobile}, Threshold=${forceRefreshThreshold}ms`)
         
         if (timeSinceLastChange > forceRefreshThreshold) {
-          console.log(`🔄 Page was hidden for >${forceRefreshThreshold/1000}s, refreshing data...`)
+          logger.debug(`🔄 Page was hidden for >${forceRefreshThreshold/1000}s, refreshing data...`)
           fetchMatchData()
           
           // For Vercel preview URLs, also force reconnection
           if (isVercelPreview && !isConnectingRef.current) {
-            console.log("🔌 Vercel preview detected - forcing reconnection...")
+            logger.debug("🔌 Vercel preview detected - forcing reconnection...")
             if (unsubscribeRef.current) {
               unsubscribeRef.current()
               unsubscribeRef.current = null
@@ -214,21 +215,21 @@ export function useRealtimeMatch(matchId: string) {
         
         // If not connected and not already connecting, trigger reconnection
         if (!connected && !isConnectingRef.current) {
-          console.log("🔌 Not connected, triggering reconnection...")
+          logger.debug("🔌 Not connected, triggering reconnection...")
           setRetryCount(0) // Reset retry count to trigger reconnection
         }
       } else if (document.visibilityState === 'hidden') {
         lastVisibilityChangeRef.current = now
-        console.log("👻 Page became hidden")
+        logger.debug("👻 Page became hidden")
       }
     }
 
     // Safari-specific page lifecycle handling
     const handlePageShow = (event: PageTransitionEvent) => {
-      console.log("📄 Page show event", { persisted: event.persisted })
+      logger.debug("📄 Page show event", { persisted: event.persisted })
       if (event.persisted && matchId) {
         // Page was restored from cache (Safari back/forward cache)
-        console.log("🔄 Page restored from cache, forcing refresh...")
+        logger.debug("🔄 Page restored from cache, forcing refresh...")
         fetchMatchData()
         if (!connected && !isConnectingRef.current) {
           setRetryCount(0)
@@ -237,7 +238,7 @@ export function useRealtimeMatch(matchId: string) {
     }
 
     const handlePageHide = () => {
-      console.log("📄 Page hide event")
+      logger.debug("📄 Page hide event")
       lastVisibilityChangeRef.current = Date.now()
     }
 
@@ -250,24 +251,24 @@ export function useRealtimeMatch(matchId: string) {
     
     // Enhanced focus/blur handling for Safari mobile
     const handleFocus = () => {
-      console.log("🎯 Window focused")
+      logger.debug("🎯 Window focused")
       if (matchId) {
         // Always refresh on focus for Safari mobile to ensure fresh data
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
         if (isSafari) {
-          console.log("🍎 Safari detected, forcing refresh on focus")
+          logger.debug("🍎 Safari detected, forcing refresh on focus")
           fetchMatchData()
         }
         
         if (!connected && !isConnectingRef.current) {
-          console.log("🔌 Not connected on focus, triggering reconnection...")
+          logger.debug("🔌 Not connected on focus, triggering reconnection...")
           setRetryCount(0)
         }
       }
     }
 
     const handleBlur = () => {
-      console.log("😶‍🌫️ Window blurred")
+      logger.debug("😶‍🌫️ Window blurred")
       lastVisibilityChangeRef.current = Date.now()
     }
     
@@ -276,7 +277,7 @@ export function useRealtimeMatch(matchId: string) {
 
     // Safari-specific: Handle app state changes on iOS
     const handleAppStateChange = () => {
-      console.log("📱 App state change detected")
+      logger.debug("📱 App state change detected")
       if (document.visibilityState === 'visible' && matchId) {
         fetchMatchData()
         if (!connected && !isConnectingRef.current) {
@@ -323,17 +324,17 @@ export function useRealtimeMatch(matchId: string) {
 
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        console.log("⏰ Periodic connection check")
+        logger.debug("⏰ Periodic connection check")
         
         // For Safari mobile, actively check if real-time is still working
         if (isSafari && isMobile) {
-          console.log("🍎📱 Safari mobile heartbeat - checking data freshness")
+          logger.debug("🍎📱 Safari mobile heartbeat - checking data freshness")
           fetchMatchData()
         }
         
         // For Vercel preview URLs, use more aggressive polling as WebSocket fallback
         if (isVercelPreview) {
-          console.log("🔄 Vercel preview polling fallback")
+          logger.debug("🔄 Vercel preview polling fallback")
           fetchMatchData()
         }
       }
