@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition, Player } from "@/lib/types"
 import { getPlayerById } from "./players"
+import { logger } from "@/lib/utils/logger"
 
 export async function createMatch(matchData: {
   playerOneId: string
@@ -52,7 +53,7 @@ export async function createMatch(matchData: {
       userId: user.$id,
     }
 
-    console.log("Attempting to create match with data:", newMatch)
+    logger.debug("Attempting to create match with data:", newMatch)
 
     const match = await databases.createDocument(
       process.env.APPWRITE_DATABASE_ID!,
@@ -63,7 +64,7 @@ export async function createMatch(matchData: {
 
     return { success: true, matchId: match.$id }
   } catch (error) {
-    console.error("Failed to create match:", JSON.stringify(error, null, 2))
+    logger.error("Failed to create match:", JSON.stringify(error, null, 2))
     const errorMessage = (error as { message?: string })?.message || "An unexpected error occurred while creating the match."
     return { error: errorMessage }
   }
@@ -84,7 +85,7 @@ async function getPopulatedPlayer(
 export async function getMatchById(matchId: string): Promise<Match | null> {
   const user = await getCurrentUser()
   if (!user) {
-    console.error("Unauthorized attempt to fetch match")
+    logger.error("Unauthorized attempt to fetch match")
     return null
   }
 
@@ -99,7 +100,7 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
 
     // Ensure the user owns this match
     if (match.userId !== user.$id) {
-      console.error("User does not have permission to view this match")
+      logger.error("User does not have permission to view this match")
       return null
     }
 
@@ -121,7 +122,7 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
       setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
     }
   } catch (error) {
-    console.error(`Failed to fetch match ${matchId}:`, error)
+    logger.error(`Failed to fetch match ${matchId}:`, error)
     return null
   }
 }
@@ -149,7 +150,7 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       typeof point === 'string' ? point : JSON.stringify(point)
     )
 
-    console.log("updateMatchScore called with:", {
+    logger.debug("updateMatchScore called with:", {
       matchId,
       pointLogLength: scoreUpdate.pointLog.length,
       serializedPointLogLength: serializedPointLog.length,
@@ -199,7 +200,7 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
     revalidatePath(`/live/${matchId}`)
     return { success: true, match: match as unknown as Match }
   } catch (error) {
-    console.error("Error updating match score:", error)
+    logger.error("Error updating match score:", error)
     return { error: error instanceof Error ? error.message : "Failed to update match score" }
   }
 }
@@ -227,7 +228,7 @@ export async function getMatchesByUser(): Promise<Match[]> {
 
     return response.documents as unknown as Match[]
   } catch (error) {
-    console.error("Error fetching matches:", error)
+    logger.error("Error fetching matches:", error)
     return []
   }
 }
@@ -307,7 +308,7 @@ export async function getMatchesByUserPaginated(options: {
 
     return { matches, total, hasMore }
   } catch (error) {
-    console.error("Error fetching paginated matches:", error)
+    logger.error("Error fetching paginated matches:", error)
     return { matches: [], total: 0, hasMore: false }
   }
 }
@@ -337,7 +338,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
 
     return response.documents as unknown as Match[]
   } catch (error) {
-    console.error("Error fetching player matches:", error)
+    logger.error("Error fetching player matches:", error)
     return []
   }
 }
@@ -360,7 +361,7 @@ export async function getMatch(matchId: string): Promise<Match> {
       setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
     } as Match
   } catch (error: unknown) {
-    console.error("Error fetching match:", error)
+    logger.error("Error fetching match:", error)
     
     // Handle specific Appwrite errors
     if (error && typeof error === 'object') {
@@ -407,7 +408,7 @@ export async function deleteMatch(matchId: string) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error deleting match:", error)
+    logger.error("Error deleting match:", error)
     return { error: error instanceof Error ? error.message : "Failed to delete match" }
   }
 }
@@ -458,7 +459,7 @@ export async function addMatchComment(matchId: string, comment: string): Promise
     revalidatePath(`/live/${matchId}`)
     return { success: true }
   } catch (error) {
-    console.error("Error adding match comment:", error)
+    logger.error("Error adding match comment:", error)
     return { error: error instanceof Error ? error.message : "Failed to add comment" }
   }
 }
@@ -493,7 +494,7 @@ export async function generateDetailedPointData(matchId: string = "68494c7fd65b6
     revalidatePath(`/matches/${matchId}`)
     return { success: true, pointCount: detailedPoints.length }
   } catch (error) {
-    console.error("Error generating detailed point data:", error)
+    logger.error("Error generating detailed point data:", error)
     return { error: error instanceof Error ? error.message : "Failed to generate point data" }
   }
 }
@@ -783,7 +784,7 @@ export async function updateMatchFormat(matchId: string, newFormat: MatchFormat)
     revalidatePath(`/matches/live/${matchId}`)
     return { success: true }
   } catch (error) {
-    console.error("Error updating match format:", error)
+    logger.error("Error updating match format:", error)
     return { success: false, error: "Failed to update match format." }
   }
 }
@@ -867,7 +868,7 @@ export async function getAllMatches(options: {
 
     return { matches, total, hasMore }
   } catch (error) {
-    console.error("Error fetching all matches:", error)
+    logger.error("Error fetching all matches:", error)
     return { matches: [], total: 0, hasMore: false }
   }
 }
@@ -1027,7 +1028,7 @@ export async function getAllMatchesWithPlayers(options: {
       }
     }
   } catch (error) {
-    console.error("Error fetching all matches with players:", error)
+    logger.error("Error fetching all matches with players:", error)
     return { matches: [], total: 0, hasMore: false }
   }
 }
@@ -1058,7 +1059,7 @@ async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>
     
     return playersMap
   } catch (error) {
-    console.error("Error batch fetching players:", error)
+    logger.error("Error batch fetching players:", error)
     return new Map()
   }
 }
@@ -1078,7 +1079,7 @@ async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
         const user = await withRetry(() => users.get(userId))
         return { id: userId, email: user.email }
       } catch (error) {
-        console.warn(`Could not fetch user ${userId}:`, error)
+        logger.warn(`Could not fetch user ${userId}:`, error)
         return { id: userId, email: 'Unknown User' }
       }
     })
@@ -1090,7 +1091,7 @@ async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
     
     return usersMap
   } catch (error) {
-    console.error("Error batch fetching users:", error)
+    logger.error("Error batch fetching users:", error)
     return new Map()
   }
 }
