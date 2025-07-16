@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { Player } from "@/lib/types"
+import { logger } from "@/lib/utils/logger"
 
 const playerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -50,7 +51,7 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
         )
         profilePictureId = uploadedFile.$id
       } catch (error) {
-        console.error("Error uploading profile picture:", error)
+        logger.error("Error uploading profile picture:", error)
       }
     }
     
@@ -90,7 +91,7 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
     revalidatePath("/dashboard")
     return { success: true, player: player as unknown as Player }
   } catch (error: unknown) {
-    console.error("Error creating player:", error)
+    logger.error("Error creating player:", error)
     return { error: error instanceof Error ? error.message : "Failed to create player" }
   }
 }
@@ -122,7 +123,7 @@ export async function getPlayersByUser(): Promise<Player[]> {
 
     return playersWithPictures
   } catch (error) {
-    console.error("Failed to fetch players:", error)
+    logger.error("Failed to fetch players:", error)
     throw new Error("Failed to fetch players")
   }
 }
@@ -220,7 +221,7 @@ export async function getPlayersByUserPaginated(options: {
 
     return { players, total, hasMore }
   } catch (error) {
-    console.error("Error fetching paginated players:", error)
+    logger.error("Error fetching paginated players:", error)
     return { players: [], total: 0, hasMore: false }
   }
 }
@@ -392,7 +393,7 @@ export async function getMainPlayer(): Promise<Player | null> {
     
     return null
   } catch (error: unknown) {
-    console.error("Error fetching main player:", error)
+    logger.error("Error fetching main player:", error)
     return null
   }
 }
@@ -433,7 +434,7 @@ export async function updatePlayer(playerId: string, formData: FormData) {
         )
         profilePictureId = uploadedFile.$id
       } catch (error) {
-        console.error("Error uploading profile picture:", error)
+        logger.error("Error uploading profile picture:", error)
       }
     }
     
@@ -476,7 +477,7 @@ export async function updatePlayer(playerId: string, formData: FormData) {
     revalidatePath("/dashboard")
     return { success: true, player }
   } catch (error) {
-    console.error("Error updating player:", error)
+    logger.error("Error updating player:", error)
     const message = error instanceof Error ? error.message : "Failed to update player"
     return { error: message }
   }
@@ -512,14 +513,14 @@ export async function getPlayersByIds(playerIds: string[]): Promise<Record<strin
         )
         players[playerId] = player as unknown as Player
       } catch (error) {
-        console.error(`Error fetching player ${playerId}:`, error)
+        logger.error(`Error fetching player ${playerId}:`, error)
         // Don't create fallback entries - let formatPlayerFromObject handle null properly
       }
     }
     
     return players
   } catch (error: unknown) {
-    console.error("Error fetching players by IDs:", error)
+    logger.error("Error fetching players by IDs:", error)
     return {}
   }
 }
@@ -558,7 +559,7 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
     revalidatePath("/dashboard")
     return { success: true }
   } catch (error: unknown) {
-    console.error("Error deleting player:", error)
+    logger.error("Error deleting player:", error)
     return { error: error instanceof Error ? error.message : "Failed to delete player" }
   }
 }
@@ -583,7 +584,7 @@ export async function updatePlayerProfilePicture(
     )
     return { success: true, player }
   } catch (error) {
-    console.error("Failed to update player profile picture:", error)
+    logger.error("Failed to update player profile picture:", error)
     return { error: "Failed to update profile picture." }
   }
 }
@@ -607,7 +608,7 @@ export async function getPlayerById(playerId: string): Promise<Player | null> {
     
     return response as unknown as Player
   } catch (error: unknown) {
-    console.error("Error fetching player:", error)
+    logger.error("Error fetching player:", error)
     return null
   }
 }
@@ -649,7 +650,7 @@ export async function removePlayerProfilePicture(playerId: string) {
 
     return { success: true, player: updatedPlayer, deleteResult }
   } catch (error) {
-    console.error("Failed to remove player profile picture:", error)
+    logger.error("Failed to remove player profile picture:", error)
     return { error: "Failed to remove profile picture." }
   }
 } 
