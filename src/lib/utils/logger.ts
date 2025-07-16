@@ -51,7 +51,7 @@ export class Logger {
     return level >= this.logLevel;
   }
 
-  private formatMessage(level: string, message: string, ...args: any[]): string {
+  private formatMessage(level: string, message: string, ...args: unknown[]): string {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level}]`;
     
@@ -64,7 +64,7 @@ export class Logger {
     return `${prefix} ${message}`;
   }
 
-  public debug(message: string, ...args: any[]): void {
+  public debug(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       if (this.isDevelopment) {
         console.log(this.formatMessage('DEBUG', message, ...args));
@@ -72,7 +72,7 @@ export class Logger {
     }
   }
 
-  public info(message: string, ...args: any[]): void {
+  public info(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.INFO)) {
       if (this.isDevelopment) {
         console.info(this.formatMessage('INFO', message, ...args));
@@ -80,7 +80,7 @@ export class Logger {
     }
   }
 
-  public warn(message: string, ...args: any[]): void {
+  public warn(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.WARN)) {
       if (this.isDevelopment) {
         console.warn(this.formatMessage('WARN', message, ...args));
@@ -88,14 +88,14 @@ export class Logger {
     }
   }
 
-  public error(message: string, ...args: any[]): void {
+  public error(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       // Always log errors, even in production
       console.error(this.formatMessage('ERROR', message, ...args));
     }
   }
 
-  public log(message: string, ...args: any[]): void {
+  public log(message: string, ...args: unknown[]): void {
     // Alias for debug
     this.debug(message, ...args);
   }
