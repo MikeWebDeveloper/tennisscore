@@ -105,6 +105,20 @@ const nextConfig = {
       },
     ]
   },
+  
+  // Webpack configuration for production optimizations
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      // Strip debug logs in production builds
+      config.optimization.minimizer.forEach((minimizer) => {
+        if (minimizer.constructor.name === 'TerserPlugin') {
+          minimizer.options.terserOptions.compress.drop_console = true;
+          minimizer.options.terserOptions.compress.drop_debugger = true;
+        }
+      });
+    }
+    return config;
+  },
 };
 
 export default nextConfig; 
