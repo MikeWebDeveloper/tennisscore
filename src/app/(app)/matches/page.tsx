@@ -3,6 +3,7 @@ import { getPlayersByUser } from "@/lib/actions/players"
 import { Match, Player } from "@/lib/types"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { PaginatedMatchesClient, EnhancedMatch } from "./paginated-matches-client"
+import { logger } from "@/lib/utils/logger"
 
 // Helper function to get anonymous player display name
 function getAnonymousPlayerName(playerId: string): { firstName: string; lastName: string } {
@@ -39,18 +40,18 @@ export default async function MatchesPage() {
       total = matchesResult.value.total
       hasMore = matchesResult.value.hasMore
     } else {
-      console.error("Failed to fetch matches:", matchesResult.reason)
+      logger.error("Failed to fetch matches:", matchesResult.reason)
       hasError = true
     }
 
     if (playersResult.status === 'fulfilled') {
       players = playersResult.value
     } else {
-      console.error("Failed to fetch players:", playersResult.reason)
+      logger.error("Failed to fetch players:", playersResult.reason)
       hasError = true
     }
   } catch (error) {
-    console.error("Error in MatchesPage:", error)
+    logger.error("Error in MatchesPage:", error)
     hasError = true
   }
 
@@ -120,7 +121,7 @@ export default async function MatchesPage() {
         }
       }
     } catch (e) {
-      console.error("Failed to parse score JSON", e)
+      logger.error("Failed to parse score JSON", e)
       // Provide default values
       scoreParsed = {
         sets: [],
