@@ -3,6 +3,7 @@
 import { ID } from "node-appwrite"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
+import { logger } from '@/lib/utils/logger'
 
 export async function uploadProfilePicture(formData: FormData) {
   const user = await getCurrentUser()
@@ -27,7 +28,7 @@ export async function uploadProfilePicture(formData: FormData) {
 
   // Log and check the bucket ID env var
   const bucketId = process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID
-  console.log("[UPLOAD] APPWRITE_PROFILE_PICTURES_BUCKET_ID:", bucketId)
+  logger.info("[UPLOAD] APPWRITE_PROFILE_PICTURES_BUCKET_ID:", bucketId)
   if (!bucketId) {
     throw new Error("Missing APPWRITE_PROFILE_PICTURES_BUCKET_ID environment variable on server.")
   }
@@ -43,7 +44,7 @@ export async function uploadProfilePicture(formData: FormData) {
 
     return { success: true, fileId: uploadedFile.$id }
   } catch (error) {
-    console.error("Error uploading file:", error)
+    logger.error("Error uploading file:", error)
     return { error: "Failed to upload file. Please try again." }
   }
 } 
