@@ -44,6 +44,7 @@ import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 import { LiveSetExportButton } from "@/components/features/match-export-dialog"
+import { useLiveViewers } from "@/hooks/use-live-viewers"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -594,6 +595,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
   const pointSituation = getPointSituation()
   
+  const { count: viewerCount, loading: viewerLoading } = useLiveViewers(match.$id, false)
 
   
   // Initialize match data
@@ -996,10 +998,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Enhanced Header with More Space */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
+      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md border-b">
+        {/* z-40: Always below sidebar (z-50), always at top of page */}
         <div className="container mx-auto px-4">
           {/* Top row: Back button, title, and action buttons */}
-          <div className="flex items-center justify-between h-12 border-b border-border/50">
+          <div className="flex items-center h-12 border-b border-border/50 w-full gap-2 justify-between">
             <Button
               variant="ghost"
               size="icon"
@@ -1009,16 +1012,26 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <ArrowLeft className="h-4 w-4" />
             </Button>
 
-            <div className="flex items-center gap-2">
+            {/* Responsive Title: 'Live' on mobile, 'Live Match' on sm+ */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               {match.tournamentName && (
-                <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2">
+                <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2 truncate max-w-[5rem] sm:max-w-xs min-w-0">
                   {match.tournamentName}
                 </span>
               )}
-              <h1 className="text-lg font-bold">Live Match</h1>
+              <h1 className="text-lg font-bold truncate min-w-0">
+                <span className="sm:hidden">{t('liveDisplay')}</span>
+                <span className="hidden sm:inline">{t('liveScoring')}</span>
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Action Buttons: icon + text on desktop/tablet, icon only on mobile */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Viewer count live */}
+              <div className="flex items-center gap-1 px-2 text-xs sm:text-sm text-blue-500 font-semibold min-w-[32px]">
+                <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' /><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' /></svg>
+                {viewerLoading ? <span className="w-3 h-3 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block"></span> : <span>{viewerCount}</span>}
+              </div>
               {/* Breakpoint indicator in header */}
               {pointSituation && (
                 <motion.div
@@ -1030,24 +1043,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   </Badge>
                 </motion.div>
               )}
-              
-              {/* Advanced Stats button is visible but disabled (coming soon) */}
+              {/* Advanced Stats button: icon + text (truncate text if needed) */}
               <Button
                 variant="outline"
                 size="sm"
                 disabled
-                className="flex items-center gap-2 opacity-50 cursor-not-allowed relative"
+                className="opacity-50 cursor-not-allowed relative flex items-center gap-2 min-w-0"
                 title="Coming soon"
               >
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">Advanced Stats</span>
-                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-xs text-muted-foreground border ml-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Coming soon
-                </span>
+                <BarChart3 className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate min-w-0 hidden xs:block">Advanced Stats</span>
               </Button>
-              
-              {/* Export Button - Show after first set is completed */}
+              {/* Export Button - Show after first set is completed (icon + text) */}
               {score.sets.length > 0 && (
                 <LiveSetExportButton
                   match={{
@@ -1070,25 +1077,27 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   className="hidden sm:flex"
                 />
               )}
-              
+              {/* Settings button: icon + text (truncate text if needed) */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowSettingsDialog(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 min-w-0"
+                aria-label={t('settings')}
               >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('settings')}</span>
+                <Settings className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate min-w-0 hidden xs:block">{t('settings')}</span>
               </Button>
-              
+              {/* Share button: icon + text (truncate text if needed) */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowShareDialog(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 min-w-0"
+                aria-label={t('share')}
               >
-                <Share2 className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('share')}</span>
+                <Share2 className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate min-w-0 hidden xs:block">{t('share')}</span>
               </Button>
             </div>
           </div>

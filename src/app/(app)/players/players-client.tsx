@@ -140,7 +140,7 @@ export function PlayersClient({ players }: PlayersClientProps) {
             </div>
             {searchQuery && (
               <p className="text-sm text-muted-foreground">
-                {sortedAndFilteredPlayers.length} of {players.length} players
+                {t("showingPlayersSummary").replace('{shown}', String(sortedAndFilteredPlayers.length)).replace('{total}', String(players.length))}
               </p>
             )}
           </div>

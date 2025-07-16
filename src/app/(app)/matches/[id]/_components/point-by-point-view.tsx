@@ -55,6 +55,9 @@ const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail
     return { p1: p1Games, p2: p2Games };
 }
 
+// Helper to check if a point has isTiebreak property
+const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
+
 // Helper to determine BP/SP/MP for a given point, reconstructing context up to that point
 function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
   // Only consider points up to and including this one
@@ -80,7 +83,6 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
     else p2Points++
   })
   // Determine if tiebreak
-  const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
   const isTiebreak = gamePoints.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
   let tiebreakPoints = [0, 0]
   if (isTiebreak) {
@@ -104,7 +106,41 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
     setsArr.push([s1, s2])
   }
   // Get match format (assume from first point)
-  const matchFormat: MatchFormat = (pointLog[0] as (PointDetail & { matchFormat?: MatchFormat }))?.matchFormat || { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard" }
+  // Check if we're in a super-tiebreak by examining the context
+  const firstPoint = pointLog[0]
+  const currentSetNumber = point.setNumber
+  const isInTiebreak = gamePoints.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
+  
+  // Determine if this should be a super-tiebreak based on context
+  let matchFormat: MatchFormat = (firstPoint as (PointDetail & { matchFormat?: MatchFormat }))?.matchFormat || { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard" }
+  
+  // If we're in a tiebreak, check if it should be a super-tiebreak
+  if (isInTiebreak) {
+    const setsNeededToWin = Math.ceil(matchFormat.sets / 2)
+    const p1SetsWon = setsArr.filter(set => set[0] > set[1]).length
+    const p2SetsWon = setsArr.filter(set => set[1] > set[0]).length
+    const isDecidingSet = p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1
+    
+    // Check if any point in this tiebreak goes beyond what a standard tiebreak allows
+    const maxTiebreakPoints = Math.max(...gamePoints.map((_, idx) => {
+      let p1 = 0, p2 = 0
+      for (let i = 0; i <= idx; i++) {
+        if (gamePoints[i].winner === 'p1') p1++
+        else p2++
+      }
+      return Math.max(p1, p2)
+    }))
+    
+    // Also check if games are 0-0 which indicates super-tiebreak format
+    const currentP1Games = p1Games
+    const currentP2Games = p2Games
+    const isGamesZeroZero = currentP1Games === 0 && currentP2Games === 0
+    
+    // If we're in deciding set AND (points go beyond 7 OR games are 0-0), assume super-tiebreak
+    if (isDecidingSet && (maxTiebreakPoints > 7 || isGamesZeroZero)) {
+      matchFormat = { ...matchFormat, finalSetTiebreak: "super", finalSetTiebreakAt: 10 }
+    }
+  }
   // Use helpers to determine BP/SP/MP
   let isBP = false, isSP = false, isMP = false
   if (!isTiebreak) {
@@ -148,6 +184,23 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
 export function PointByPointView({ pointLog, playerNames, playerObjects, detailLevel = "simple" }: PointByPointViewProps) {
   const t = useTranslations()
   const [detailedView, setDetailedView] = React.useState(false)
+  // Group points by set (moved up for hook order)
+  const pointsBySets = pointLog.reduce((acc, point) => {
+    const setNumber = point.setNumber
+    if (!acc[setNumber]) acc[setNumber] = []
+    acc[setNumber].push(point)
+    return acc
+  }, {} as Record<number, PointDetail[]>)
+  const setNumbers = Object.keys(pointsBySets).map(Number).sort((a, b) => a - b)
+  const defaultSet = setNumbers[setNumbers.length - 1]?.toString() || "1"
+  // Add controlled state for selected set
+  const [selectedSet, setSelectedSet] = React.useState(defaultSet)
+  // Always keep selectedSet in sync with available setNumbers
+  React.useEffect(() => {
+    if (!setNumbers.map(String).includes(selectedSet)) {
+      setSelectedSet(defaultSet)
+    }
+  }, [defaultSet, setNumbers, selectedSet])
   
   // playerNames is available for future enhancements but not currently used
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -161,15 +214,20 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
   const matchStartingServer = pointLog[0]?.server || 'p1'
   
   // Group points by set
-  const pointsBySets = pointLog.reduce((acc, point) => {
-    const setNumber = point.setNumber
-    if (!acc[setNumber]) acc[setNumber] = []
-    acc[setNumber].push(point)
-    return acc
-  }, {} as Record<number, PointDetail[]>)
+  // const pointsBySets = pointLog.reduce((acc, point) => {
+  //   const setNumber = point.setNumber
+  //   if (!acc[setNumber]) acc[setNumber] = []
+  //   acc[setNumber].push(point)
+  //   return acc
+  // }, {} as Record<number, PointDetail[]>)
 
-  const setNumbers = Object.keys(pointsBySets).map(Number).sort((a, b) => a - b)
-  const defaultSet = setNumbers[setNumbers.length - 1]?.toString() || "1"
+  // const setNumbers = Object.keys(pointsBySets).map(Number).sort((a, b) => a - b)
+  // const defaultSet = setNumbers[setNumbers.length - 1]?.toString() || "1"
+  // // Add controlled state for selected set
+  // const [selectedSet, setSelectedSet] = React.useState(defaultSet)
+  // React.useEffect(() => {
+  //   setSelectedSet(defaultSet)
+  // }, [defaultSet])
 
   // Helper to get player/team display name (singles/doubles)
   const getPlayerName = (key: "p1" | "p2") => {
@@ -200,24 +258,33 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
-        <TabsList className="grid" style={{ gridTemplateColumns: `repeat(${setNumbers.length}, 1fr)` }}>
-          {setNumbers.map(setNumber => (
-            <TabsTrigger key={setNumber} value={setNumber.toString()}>
-              {t('set')} {setNumber}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {/* Only show toggle for simple or detailed scoring */}
-        {(detailLevel === "simple" || detailLevel === "detailed") && (
-          <div className="flex items-center gap-2 ml-4">
-            <Grid size={18} className={!detailedView ? "text-primary" : "text-muted-foreground"} />
-            <Switch checked={detailedView} onCheckedChange={setDetailedView} />
-            <List size={18} className={detailedView ? "text-primary" : "text-muted-foreground"} />
-          </div>
-        )}
-      </div>
-      <Tabs defaultValue={defaultSet} className="w-full">
+      <Tabs value={selectedSet} onValueChange={value => {
+        console.log('[PointByPointView] onValueChange', { value, selectedSet, setNumbers });
+        if (!value || setNumbers.length === 1) return;
+        if (setNumbers.map(String).includes(value)) {
+          setSelectedSet(value);
+        } else {
+          // fallback: always set to the only available set if invalid
+          setSelectedSet(defaultSet);
+        }
+      }} className="w-full">
+        <div className="flex items-center justify-between mb-2">
+          <TabsList className="grid" style={{ gridTemplateColumns: `repeat(${setNumbers.length}, 1fr)` }}>
+            {setNumbers.map(setNumber => (
+              <TabsTrigger key={setNumber} value={setNumber.toString()} disabled={setNumbers.length === 1}>
+                {t('set')} {setNumber}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {/* Only show toggle for simple or detailed scoring */}
+          {(detailLevel === "simple" || detailLevel === "detailed") && (
+            <div className="flex items-center gap-2 ml-4">
+              <Grid size={18} className={!detailedView ? "text-primary" : "text-muted-foreground"} />
+              <Switch checked={detailedView} onCheckedChange={setDetailedView} />
+              <List size={18} className={detailedView ? "text-primary" : "text-muted-foreground"} />
+            </div>
+          )}
+        </div>
         {setNumbers.map(setNumber => {
           const setPoints = pointsBySets[setNumber]
           // Group points by game within this set
@@ -304,26 +371,33 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                           </div>
                         </div>
                         <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2 font-mono">
-                          {(() => {
-                            // Reconstruct the score context for each point
-                            // We'll walk through the point log up to this point to get the correct games, points, sets, tiebreak status, etc.
-                            return pointsInGame
-                             .filter(point => !point.isGameWinning)
-                             .map((point) => {
-                               const pointIdx = pointLog.findIndex(p => p.id === point.id)
-                               const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
-                               return (
-                                 <div key={point.id} className="inline-flex items-center gap-1">
-                                   <span className="text-xs">
-                                     {point.gameScore.replace(/-/g, ':')}
-                                   </span>
-                                   {badge && (
-                                     <Badge className={badge.className}>{badge.label}</Badge>
-                                   )}
-                                 </div>
-                               )
-                             })
-                          })()}
+                          {/* Only show the point progression, not winner or outcome, and exclude the game-winning point */}
+                          {pointsInGame.filter(point => !point.isGameWinning).map((point, idx) => {
+                            const pointIdx = pointLog.findIndex(p => p.id === point.id)
+                            const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
+                            // Determine if this game is a tiebreak
+                            const isTiebreak = pointsInGame.some(p => hasIsTiebreak(p) && p.isTiebreak === true)
+                            let displayScore = point.gameScore.replace(/-/g, ':')
+                            if (isTiebreak) {
+                              // For tiebreaks, count points up to and including this point in this game
+                              let p1 = 0, p2 = 0
+                              for (let i = 0; i <= idx; i++) {
+                                if (pointsInGame[i].winner === 'p1') p1++
+                                else if (pointsInGame[i].winner === 'p2') p2++
+                              }
+                              displayScore = `${p1}:${p2}`
+                            }
+                            return (
+                              <div key={point.id} className="inline-flex items-center gap-1">
+                                <span className="text-xs">
+                                  {displayScore}
+                                </span>
+                                {badge && (
+                                  <Badge className={badge.className}>{badge.label}</Badge>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     )
@@ -362,80 +436,138 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                           <div className="text-right">Outcome</div>
                         </div>
                         <div className="flex flex-col items-center gap-1 mt-2 w-full">
-                          {[...pointsInGame]
-                            .filter(point => !point.isGameWinning)
-                            .reverse()
-                            .map((point) => {
-                              // Responsive name formatting
-                              let displayName = getPlayerName(point.winner)
-                              let isDoubles = false
+                          {(() => {
+                            const gameWinningPoint = pointsInGame.find(point => point.isGameWinning)
+                            if (!gameWinningPoint) return null
+                            let displayName = getPlayerName(gameWinningPoint.winner)
+                            let isDoubles = false
+                            if (playerObjects) {
+                              isDoubles = !!(playerObjects.p3 && playerObjects.p4)
+                            }
+                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
                               if (playerObjects) {
-                                isDoubles = !!(playerObjects.p3 && playerObjects.p4)
-                              }
-                              if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                                // Mobile: Surname F. (doubles stacked)
-                                if (playerObjects) {
-                                  if (isDoubles) {
-                                    if (point.winner === 'p1') {
-                                      displayName =
-                                        formatPlayerName(playerObjects.p1.firstName, playerObjects.p1.lastName, { shortened: true }) +
-                                        '<br />' +
-                                        formatPlayerName(playerObjects.p3!.firstName, playerObjects.p3!.lastName, { shortened: true })
-                                    } else {
-                                      displayName =
-                                        formatPlayerName(playerObjects.p2.firstName, playerObjects.p2.lastName, { shortened: true }) +
-                                        '<br />' +
-                                        formatPlayerName(playerObjects.p4!.firstName, playerObjects.p4!.lastName, { shortened: true })
-                                    }
+                                if (isDoubles) {
+                                  if (gameWinningPoint.winner === 'p1') {
+                                    displayName =
+                                      formatPlayerName(playerObjects.p1.firstName, playerObjects.p1.lastName, { shortened: true }) +
+                                      '<br />' +
+                                      formatPlayerName(playerObjects.p3!.firstName, playerObjects.p3!.lastName, { shortened: true })
                                   } else {
-                                    const player = point.winner === 'p1' ? playerObjects.p1 : playerObjects.p2
-                                    displayName = formatPlayerName(player.firstName, player.lastName, { shortened: true })
+                                    displayName =
+                                      formatPlayerName(playerObjects.p2.firstName, playerObjects.p2.lastName, { shortened: true }) +
+                                      '<br />' +
+                                      formatPlayerName(playerObjects.p4!.firstName, playerObjects.p4!.lastName, { shortened: true })
                                   }
+                                } else {
+                                  const player = gameWinningPoint.winner === 'p1' ? playerObjects.p1 : playerObjects.p2
+                                  displayName = formatPlayerName(player.firstName, player.lastName, { shortened: true })
                                 }
                               }
-                              // Serve type: only "1st" or "2nd"
-                              const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
-                              // Outcome
-                              let outcome = ''
-                              switch (point.pointOutcome) {
-                                case 'winner': outcome = t('winner'); break
-                                case 'unforced_error': outcome = t('unforcedError'); break
-                                case 'forced_error': outcome = t('forcedError'); break
-                                case 'ace': outcome = t('ace'); break
-                                case 'double_fault': outcome = t('doubleFault'); break
-                                default: outcome = point.pointOutcome
-                              }
-                              // --- BADGE LOGIC ---
-                              const pointIdx = pointLog.findIndex(p => p.id === point.id)
-                              const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
-                              return (
+                            }
+                            const serveTypeShort = gameWinningPoint.serveType === 'first' ? '1st' : '2nd'
+                            let outcome = ''
+                            switch (gameWinningPoint.pointOutcome) {
+                              case 'winner': outcome = t('winner'); break
+                              case 'unforced_error': outcome = t('unforcedError'); break
+                              case 'forced_error': outcome = t('forcedError'); break
+                              case 'ace': outcome = t('ace'); break
+                              case 'double_fault': outcome = t('doubleFault'); break
+                              default: outcome = gameWinningPoint.pointOutcome
+                            }
+                            return (
+                              <>
                                 <div
-                                  key={point.id}
-                                  className="w-full md:grid md:grid-cols-4 md:gap-2 flex flex-col items-center md:items-stretch text-sm py-1 border-b border-border/30 last:border-b-0"
+                                  key={gameWinningPoint.id + '-game'}
+                                  className="w-full md:grid md:grid-cols-4 md:gap-2 flex flex-col items-center md:items-stretch text-base py-1 border-b border-border/30 last:border-b-0 font-bold bg-muted/40"
                                 >
-                                  {/* Score + badge */}
-                                  <div className="font-mono min-w-[40px] text-xs text-muted-foreground md:text-left w-full text-left md:col-span-1 flex-shrink-0 flex items-center gap-1">
-                                    {point.gameScore.replace(/-/g, ':')}
-                                    {badge && (
-                                      <Badge className={badge.className}>{badge.label}</Badge>
-                                    )}
+                                  <div className="font-mono min-w-[40px] text-lg text-primary md:text-left w-full text-left md:col-span-1 flex-shrink-0 flex items-center gap-1">
+                                    {finalGameScore.p1}:{finalGameScore.p2}
                                   </div>
-                                  {/* Name */}
-                                  <div className={`font-semibold ${getPlayerColor(point.winner)} w-full text-center md:text-center md:col-span-1 md:whitespace-nowrap md:overflow-x-auto`}>
-                                    {/* For mobile, render doubles names stacked with <br /> */}
+                                  <div className={`font-semibold ${getPlayerColor(gameWinningPoint.winner)} w-full text-center md:text-center md:col-span-1 md:whitespace-nowrap md:overflow-x-auto`}>
                                     <span dangerouslySetInnerHTML={{ __html: displayName }} />
                                   </div>
-                                  {/* Serve type */}
                                   <div className="text-xs text-muted-foreground w-full text-right md:text-right md:col-span-1">
                                     {serveTypeShort}
                                   </div>
-                                  {/* Outcome */}
                                   <div className="text-xs font-medium w-full text-right md:text-right md:col-span-1">
                                     {outcome}
                                   </div>
                                 </div>
-                              )
-                            })}
+                                {[...pointsInGame]
+                                  .filter(point => !point.isGameWinning)
+                                  .reverse()
+                                  .map((point) => {
+                                    // Responsive name formatting
+                                    let displayName = getPlayerName(point.winner)
+                                    let isDoubles = false
+                                    if (playerObjects) {
+                                      isDoubles = !!(playerObjects.p3 && playerObjects.p4)
+                                    }
+                                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                                      // Mobile: Surname F. (doubles stacked)
+                                      if (playerObjects) {
+                                        if (isDoubles) {
+                                          if (point.winner === 'p1') {
+                                            displayName =
+                                              formatPlayerName(playerObjects.p1.firstName, playerObjects.p1.lastName, { shortened: true }) +
+                                              '<br />' +
+                                              formatPlayerName(playerObjects.p3!.firstName, playerObjects.p3!.lastName, { shortened: true })
+                                          } else {
+                                            displayName =
+                                              formatPlayerName(playerObjects.p2.firstName, playerObjects.p2.lastName, { shortened: true }) +
+                                              '<br />' +
+                                              formatPlayerName(playerObjects.p4!.firstName, playerObjects.p4!.lastName, { shortened: true })
+                                          }
+                                        } else {
+                                          const player = point.winner === 'p1' ? playerObjects.p1 : playerObjects.p2
+                                          displayName = formatPlayerName(player.firstName, player.lastName, { shortened: true })
+                                        }
+                                      }
+                                    }
+                                    const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
+                                    let outcome = ''
+                                    switch (point.pointOutcome) {
+                                      case 'winner': outcome = t('winner'); break
+                                      case 'unforced_error': outcome = t('unforcedError'); break
+                                      case 'forced_error': outcome = t('forcedError'); break
+                                      case 'ace': outcome = t('ace'); break
+                                      case 'double_fault': outcome = t('doubleFault'); break
+                                      default: outcome = point.pointOutcome
+                                    }
+                                    // --- BADGE LOGIC ---
+                                    const pointIdx = pointLog.findIndex(p => p.id === point.id)
+                                    const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
+                                    return (
+                                      <div
+                                        key={point.id}
+                                        className="w-full md:grid md:grid-cols-4 md:gap-2 flex flex-col items-center md:items-stretch text-sm py-1 border-b border-border/30 last:border-b-0"
+                                      >
+                                        {/* Score + badge */}
+                                        <div className="font-mono min-w-[40px] text-xs text-muted-foreground md:text-left w-full text-left md:col-span-1 flex-shrink-0 flex items-center gap-1">
+                                          {point.gameScore.replace(/-/g, ':')}
+                                          {badge && (
+                                            <Badge className={badge.className}>{badge.label}</Badge>
+                                          )}
+                                        </div>
+                                        {/* Name */}
+                                        <div className={`font-semibold ${getPlayerColor(point.winner)} w-full text-center md:text-center md:col-span-1 md:whitespace-nowrap md:overflow-x-auto`}>
+                                          {/* For mobile, render doubles names stacked with <br /> */}
+                                          <span dangerouslySetInnerHTML={{ __html: displayName }} />
+                                        </div>
+                                        {/* Serve type */}
+                                        <div className="text-xs text-muted-foreground w-full text-right md:text-right md:col-span-1">
+                                          {serveTypeShort}
+                                        </div>
+                                        {/* Outcome */}
+                                        <div className="text-xs font-medium w-full text-right md:text-right md:col-span-1">
+                                          {outcome}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                              </>
+                            )
+                          })()}
                         </div>
                       </div>
                     )

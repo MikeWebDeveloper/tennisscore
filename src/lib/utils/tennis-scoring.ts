@@ -157,7 +157,6 @@ export function isSetPoint(
   isTiebreak: boolean = false,
   currentSets: number[][] = []
 ): { isSetPoint: boolean; player: "p1" | "p2" | null } {
-  const targetGames = format.shortSets ? 4 : 6
   // Check if this is the final set
   const setsNeededToWin = Math.ceil(format.sets / 2)
   const p1SetsWon = currentSets.filter(set => set[0] > set[1]).length
@@ -181,29 +180,29 @@ export function isSetPoint(
     }
     return { isSetPoint: false, player: null }
   }
-  // Regular game - check if winning this game would win the set
-  const wouldP1WinSet = (p1Games >= targetGames - 1 && p1Games >= p2Games) || 
-                        (p1Games === targetGames && p2Games < targetGames)
-  const wouldP2WinSet = (p2Games >= targetGames - 1 && p2Games >= p1Games) || 
-                        (p2Games === targetGames && p1Games < targetGames)
-  // Determine who has game point - use exact conditions
+  // Regular game - check if winning this point would win the game, and if winning the game would win the set
   let gamePointPlayer: "p1" | "p2" | null = null
   if (format.noAd) {
-    // No-ad: player wins at 4 points if ahead or tied
     if (p1Points === 3 && p1Points >= p2Points) gamePointPlayer = "p1"
     else if (p2Points === 3 && p2Points >= p1Points) gamePointPlayer = "p2"
   } else {
-    // Standard: game point at 40 (3 points) when ahead, or at advantage
-    if (p1Points === 3 && p2Points <= 2) gamePointPlayer = "p1" // 40-0, 40-15, 40-30
-    else if (p2Points === 3 && p1Points <= 2) gamePointPlayer = "p2" // 0-40, 15-40, 30-40
-    else if (p1Points >= 4 && p2Points >= 3 && p1Points === p2Points + 1) gamePointPlayer = "p1" // AD-40
-    else if (p2Points >= 4 && p1Points >= 3 && p2Points === p1Points + 1) gamePointPlayer = "p2" // 40-AD
+    if (p1Points === 3 && p2Points <= 2) gamePointPlayer = "p1"
+    else if (p2Points === 3 && p1Points <= 2) gamePointPlayer = "p2"
+    else if (p1Points >= 4 && p2Points >= 3 && p1Points === p2Points + 1) gamePointPlayer = "p1"
+    else if (p2Points >= 4 && p1Points >= 3 && p2Points === p1Points + 1) gamePointPlayer = "p2"
   }
   if (!gamePointPlayer) return { isSetPoint: false, player: null }
-  if (gamePointPlayer === "p1" && wouldP1WinSet) {
+
+  // Simulate winning the game for the player at game point
+  let nextP1Games = p1Games
+  let nextP2Games = p2Games
+  if (gamePointPlayer === "p1") nextP1Games += 1
+  if (gamePointPlayer === "p2") nextP2Games += 1
+  // Use isSetWon to check if this would win the set
+  if (gamePointPlayer === "p1" && isSetWon(nextP1Games, nextP2Games, format)) {
     return { isSetPoint: true, player: "p1" }
   }
-  if (gamePointPlayer === "p2" && wouldP2WinSet) {
+  if (gamePointPlayer === "p2" && isSetWon(nextP2Games, nextP1Games, format)) {
     return { isSetPoint: true, player: "p2" }
   }
   return { isSetPoint: false, player: null }

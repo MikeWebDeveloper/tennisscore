@@ -281,9 +281,9 @@ export function AppShell({ children, user }: AppShellProps) {
         </div>
 
         {/* Mobile Layout */}
-        <div className="md:hidden">
+        <div className="md:hidden w-full max-w-full overflow-x-hidden">
           {/* Mobile Header */}
-          <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card border-b border-border flex items-center justify-between px-4 shadow-sm">
+          <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-card border-b border-border flex items-center justify-between px-4 shadow-sm w-full max-w-full overflow-x-hidden">
             <Button
               variant="ghost"
               size="sm"
@@ -337,7 +337,7 @@ export function AppShell({ children, user }: AppShellProps) {
                   onClick={() => setSidebarOpen(false)}
                 />
                 <motion.aside
-                  className="fixed left-0 top-0 z-50 h-screen w-80 bg-card border-r border-border shadow-xl"
+                  className="fixed left-0 top-0 z-50 h-screen w-80 max-w-[100vw] bg-card border-r border-border shadow-xl overflow-x-hidden"
                   variants={sidebarVariants}
                   initial="closed"
                   animate="open"
@@ -430,13 +430,17 @@ export function AppShell({ children, user }: AppShellProps) {
                     </div>
                   </div>
                 </motion.aside>
+                {/* Prevent body scroll when sidebar is open */}
+                {typeof window !== 'undefined' && document && (document.body.style.overflow = 'hidden')}
               </>
             )}
+            {/* Restore body scroll when sidebar is closed */}
+            {!sidebarOpen && typeof window !== 'undefined' && document && (document.body.style.overflow = '')}
           </AnimatePresence>
 
           {/* Mobile Main Content */}
-          <main className="pt-16" role="main" aria-label="Main content">
-            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <main className="pt-16 w-full max-w-full overflow-x-hidden" role="main" aria-label="Main content">
+            <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8 overflow-x-hidden">
               <ExtensionConflictNotice />
               {children}
             </div>

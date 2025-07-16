@@ -4,10 +4,12 @@ import { useEffect, useState } from "react"
 import { useLocaleStore } from "@/stores/localeStore"
 import { Button } from "./button"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "@/hooks/use-translations"
 
 export function LanguageToggle({ className }: { className?: string }) {
   const { locale, setLocale } = useLocaleStore()
   const [mounted, setMounted] = useState(false)
+  const t = useTranslations()
 
   useEffect(() => {
     setMounted(true)
@@ -46,7 +48,7 @@ export function LanguageToggle({ className }: { className?: string }) {
       size="sm"
       onClick={toggleLanguage}
       className={cn("h-8 w-8 p-0", className)}
-      title={`Switch to ${locale === 'en' ? 'Czech' : 'English'}`}
+      title={locale === 'en' ? t('switchToCzech') : t('switchToEnglish')}
     >
       <span className="text-base">
         {locale === 'en' ? '🇬🇧' : '🇨🇿'}

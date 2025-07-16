@@ -72,7 +72,7 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                   <span>{t("rating")}: <span className="font-medium text-foreground">{player.rating}</span></span>
                 )}
                 {player.club && (
-                  <span className="truncate max-w-[120px] sm:max-w-none">{t("club")}: <span className="font-medium text-foreground">{player.club}</span></span>
+                  <span>{t("club").replace(/ \(volitelné\)/, "")}: <span className="font-medium text-foreground">{player.club}</span></span>
                 )}
                 {player.playingHand && (
                   <span>{t("plays")}: <span className="font-medium text-foreground">{player.playingHand === 'left' ? t("leftHanded") : t("rightHanded")}</span></span>

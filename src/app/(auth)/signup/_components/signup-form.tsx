@@ -15,9 +15,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signUp } from "@/lib/actions/auth"
 import { toast } from "sonner"
+import { useTranslations } from "@/hooks/use-translations"
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const t = useTranslations()
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
@@ -26,7 +28,7 @@ export function SignupForm() {
     const confirmPassword = formData.get("confirmPassword") as string
     
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match")
+      toast.error(t('passwordsDoNotMatch'))
       setIsLoading(false)
       return
     }
@@ -38,7 +40,7 @@ export function SignupForm() {
         toast.error(result.error)
       }
     } catch {
-      toast.error("An unexpected error occurred")
+      toast.error(t('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -59,7 +61,7 @@ export function SignupForm() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            TennisScore
+            {t('tennisScore')}
           </motion.h1>
           <motion.p 
             className="text-muted-foreground"
@@ -67,15 +69,15 @@ export function SignupForm() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Your digital tennis companion
+            {t('yourDigitalTennisCompanion')}
           </motion.p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Create your account</CardTitle>
+            <CardTitle>{t('createYourAccount')}</CardTitle>
             <CardDescription>
-              Get started with TennisScore today
+              {t('getStartedWithTennisScore')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -88,47 +90,47 @@ export function SignupForm() {
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{t('name')}</Label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder={t('enterYourName')}
                   disabled={isLoading}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('enterYourEmail')}
                   required
                   disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Create a password"
+                  placeholder={t('createPassword')}
                   required
                   disabled={isLoading}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
-                  placeholder="Confirm your password"
+                  placeholder={t('confirmYourPassword')}
                   required
                   disabled={isLoading}
                 />
@@ -139,18 +141,18 @@ export function SignupForm() {
                 className="w-full" 
                 disabled={isLoading}
               >
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading ? t('creatingAccount') : t('createAccount')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Already have an account?{" "}
+                {t('alreadyHaveAccount')}{" "}
                 <Link 
                   href="/login" 
                   className="font-medium text-primary hover:underline"
                 >
-                  Sign in
+                  {t('signIn')}
                 </Link>
               </p>
             </div>

@@ -210,7 +210,7 @@ export function PaginatedPlayersClient({
               <div className="flex items-center gap-2 mt-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  Showing {players.length} of {total} players
+                  {t("showingPlayersSummary").replace('{shown}', String(players.length)).replace('{total}', String(total))}
                 </span>
               </div>
             )}

@@ -18,6 +18,9 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "@/app/(app)/matches/live/[id]/_components/MatchTimerDisplay"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { LanguageToggle } from "@/components/ui/language-toggle"
+import { useLiveViewers } from "@/hooks/use-live-viewers"
+import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -167,6 +170,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   
   // Only start real-time connection after component mounts to prevent hydration issues
   const { connected, lastUpdate, error, retryCount } = useRealtimeMatch(mounted ? match.$id : "")
+  const { count: viewerCount, loading: viewerLoading } = useLiveViewers(match.$id, true)
 
   // Handle mounting
   useEffect(() => {
@@ -291,25 +295,17 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   // Extract current server from the latest point or score
   let currentServer: "p1" | "p2" | undefined = undefined
   if (pointLog.length > 0 && score) {
-    // For simplicity, we'll calculate based on the game count and who served first
     const totalGames =
       score.sets.reduce((sum, set) => sum + (set[0] || 0) + (set[1] || 0), 0) +
       (score.games[0] || 0) +
       (score.games[1] || 0)
     const firstServer = pointLog[0]?.server || "p1"
-    
     if (score.isTiebreak) {
-      // In tiebreak, server alternates every 2 points
-      const totalTiebreakPoints = (score.tiebreakPoints?.[0] || 0) + 
-                                  (score.tiebreakPoints?.[1] || 0)
-      // The player who would normally serve this game starts the tiebreak
+      const totalTiebreakPoints = (score.tiebreakPoints?.[0] || 0) + (score.tiebreakPoints?.[1] || 0)
+      // Find the initial tiebreak server: the player who would normally serve this game
       const tiebreakStartServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
-      // Then alternate every 2 points
-      currentServer = Math.floor(totalTiebreakPoints / 2) % 2 === 0 ? 
-                      tiebreakStartServer : 
-                      (tiebreakStartServer === 'p1' ? 'p2' : 'p1')
+      currentServer = getTiebreakServer(totalTiebreakPoints, tiebreakStartServer)
     } else {
-      // In regular games, server alternates each game
       currentServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
     }
   }
@@ -371,8 +367,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             )}
             <h1 className="text-lg font-bold text-white whitespace-nowrap">Live Tennis</h1>
           </div>
-          {/* Right: Share & Reload Buttons */}
-          <div className="flex gap-2 ml-auto">
+          {/* Right: Language Toggle, Share & Reload Buttons */}
+          <div className="flex gap-2 ml-auto items-center">
+            <LanguageToggle />
             <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
               <Share2 className="w-4 h-4 mr-2" />
               Share
@@ -389,6 +386,11 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
             {match.status === "In Progress" ? "Live" : "Completed"}
           </Badge>
+          {/* Viewer count live */}
+          <div className="flex items-center gap-1 px-2 text-xs sm:text-sm text-blue-500 font-semibold min-w-[32px]">
+            <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' /><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' /></svg>
+            {viewerLoading ? <span className="w-3 h-3 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block"></span> : <span>{viewerCount}</span>}
+          </div>
           {/* Connection Status - only show if match is in progress */}
           {match.status === "In Progress" && (
             <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>

@@ -6,6 +6,7 @@ import { ExternalLink, Users, Trophy, Clock } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import Link from "next/link"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface AdminMatchCardProps {
   match: Match & {
@@ -22,6 +23,8 @@ interface AdminMatchCardProps {
 }
 
 export function AdminMatchCard({ match }: AdminMatchCardProps) {
+  const t = useTranslations()
+  
   // Parse score to show current/final score
   const getMatchScore = () => {
     try {
@@ -38,11 +41,11 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
   const getStatusBadge = () => {
     switch (match.status) {
       case "completed":
-        return <Badge variant="secondary" className="text-xs">Completed</Badge>
+        return <Badge variant="secondary" className="text-xs">{t('completedStatus')}</Badge>
       case "in-progress":
-        return <Badge variant="default" className="text-xs bg-green-600">Live</Badge>
+        return <Badge variant="default" className="text-xs bg-green-600">{t('liveStatus')}</Badge>
       case "retired":
-        return <Badge variant="destructive" className="text-xs">Retired</Badge>
+        return <Badge variant="destructive" className="text-xs">{t('retiredStatus')}</Badge>
       default:
         return <Badge variant="outline" className="text-xs">{match.status}</Badge>
     }
@@ -52,14 +55,14 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
     if (match.isDoubles) {
       return {
         icon: <Users className="h-3.5 w-3.5" />,
-        label: "Doubles",
-        players: `${match.playerOneName} & ${match.playerThreeName || "Unknown"} vs ${match.playerTwoName} & ${match.playerFourName || "Unknown"}`
+        label: t('doublesType'),
+        players: `${match.playerOneName} & ${match.playerThreeName || t('unknownPlayer')} ${t('vs')} ${match.playerTwoName} & ${match.playerFourName || t('unknownPlayer')}`
       }
     }
     return {
       icon: <Users className="h-3.5 w-3.5" />,
-      label: "Singles", 
-      players: `${match.playerOneName} vs ${match.playerTwoName}`
+      label: t('singlesType'), 
+      players: `${match.playerOneName} ${t('vs')} ${match.playerTwoName}`
     }
   }
 
@@ -92,7 +95,7 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
 
             {/* Created by and match type */}
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <span>Created by: {match.createdByEmail || "Unknown"}</span>
+              <span>{t('createdBy')} {match.createdByEmail || t('unknownPlayer')}</span>
               <span>•</span>
               <span>{matchTypeInfo.label}</span>
             </div>
@@ -118,7 +121,7 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors"
               >
-                <span>Watch Live</span>
+                <span>{t('watchLive')}</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>

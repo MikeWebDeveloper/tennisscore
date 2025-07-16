@@ -17,18 +17,21 @@ import { Label } from "@/components/ui/label"
 import { signInAction } from "@/lib/actions/auth"
 import { toast } from "sonner"
 import { useEffect } from "react"
+import { useTranslations } from "@/hooks/use-translations"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
+  const t = useTranslations()
   return (
     <Button type="submit" className="w-full" aria-disabled={pending}>
-      {pending ? "Signing in..." : "Sign In"}
+      {pending ? t('signingIn') : t('signIn')}
     </Button>
   )
 }
 
 export function LoginForm() {
   const [state, formAction] = useActionState(signInAction, undefined)
+  const t = useTranslations()
 
   useEffect(() => {
     if (state?.error) {
@@ -51,7 +54,7 @@ export function LoginForm() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            TennisScore
+            {t('tennisScore')}
           </motion.h1>
           <motion.p
             className="text-muted-foreground"
@@ -59,37 +62,37 @@ export function LoginForm() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Your digital tennis companion
+            {t('yourDigitalTennisCompanion')}
           </motion.p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
+            <CardTitle>{t('welcomeBackAuth')}</CardTitle>
             <CardDescription>
-              Sign in to your account to continue
+              {t('signInToYourAccount')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('enterYourEmail')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('enterYourPassword')}
                   required
                 />
               </div>
@@ -99,12 +102,12 @@ export function LoginForm() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                {t('dontHaveAccount')}{" "}
                 <Link
                   href="/signup"
                   className="font-medium text-primary hover:underline"
                 >
-                  Sign up
+                  {t('signUp')}
                 </Link>
               </p>
             </div>

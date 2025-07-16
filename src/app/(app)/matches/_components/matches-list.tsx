@@ -206,9 +206,9 @@ export function MatchesList({ matches }: MatchesListProps) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="completed">{t('completed')}</SelectItem>
+              <SelectItem value="in-progress">{t('inProgress')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -217,7 +217,7 @@ export function MatchesList({ matches }: MatchesListProps) {
       {/* Results Count */}
       {searchQuery || statusFilter !== "all" ? (
         <p className="text-sm text-muted-foreground">
-          {filteredMatches.length} of {matches.length} matches
+          {t("showingMatchesSummary").replace('{shown}', String(filteredMatches.length)).replace('{total}', String(matches.length))}
         </p>
       ) : null}
 

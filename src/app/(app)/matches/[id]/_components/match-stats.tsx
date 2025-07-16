@@ -1233,8 +1233,8 @@ export function MatchStatsComponentSimpleFixed({
     )
   }
 
-  // Calculate tab count including enhanced stats
-  const tabCount = setNumbers.length + 1 + (advancedStats?.hasEnhancedData ? 1 : 0)
+  // Calculate tab count excluding enhanced stats
+  const tabCount = setNumbers.length + 1
   
   // Render with tabs
   return (
@@ -1247,9 +1247,6 @@ export function MatchStatsComponentSimpleFixed({
               {t('set')} {setNumber}
             </TabsTrigger>
           ))}
-          {advancedStats?.hasEnhancedData && (
-            <TabsTrigger value="enhanced">Advanced</TabsTrigger>
-          )}
         </TabsList>
         
         <TabsContent value="match" className="mt-4">
@@ -1261,12 +1258,6 @@ export function MatchStatsComponentSimpleFixed({
             {renderStatsContent(setStats[setNumber])}
           </TabsContent>
         ))}
-        
-        {advancedStats?.hasEnhancedData && (
-          <TabsContent value="enhanced" className="mt-4">
-            <EnhancedStatsDisplay stats={advancedStats} />
-          </TabsContent>
-        )}
       </Tabs>
       
       {/* Player Names Footer */}

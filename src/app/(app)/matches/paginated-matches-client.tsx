@@ -247,10 +247,10 @@ export function PaginatedMatchesClient({
 
   const getDateFilterLabel = (filter: DateFilter) => {
     switch (filter) {
-      case 'thisMonth': return "This Month"
-      case 'last3Months': return "Last 3 Months"
-      case 'thisYear': return "This Year"
-      default: return "All Time"
+      case 'thisMonth': return t('thisMonth')
+      case 'last3Months': return t('last3Months')
+      case 'thisYear': return t('thisYear')
+      default: return t('allTime')
     }
   }
   
@@ -261,7 +261,7 @@ export function PaginatedMatchesClient({
           <h1 className="text-2xl font-bold">{t("yourMatches")}</h1>
           {total > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
-              Showing {matches.length} of {total} matches
+              {t("showingMatchesSummary", { shown: matches.length, total })}
             </p>
           )}
         </div>
