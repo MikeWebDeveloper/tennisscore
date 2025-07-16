@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { logger } from '@/lib/utils/logger'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -158,14 +159,14 @@ export function logError(error: Error | unknown, context?: string): void {
   const timestamp = new Date().toISOString()
   const contextPrefix = context ? `[${context}] ` : ''
   
-  console.error(`${timestamp} - ${contextPrefix}Error:`, errorMessage)
+  logger.error(`${timestamp} - ${contextPrefix}Error:`, errorMessage)
   
   if (errorStack) {
-    console.error(`${timestamp} - ${contextPrefix}Stack:`, errorStack)
+    logger.error(`${timestamp} - ${contextPrefix}Stack:`, errorStack)
   }
   
   // In development, also log additional error details
   if (process.env.NODE_ENV === 'development') {
-    console.error(`${timestamp} - ${contextPrefix}Full Error Object:`, error)
+    logger.error(`${timestamp} - ${contextPrefix}Full Error Object:`, error)
   }
 }
