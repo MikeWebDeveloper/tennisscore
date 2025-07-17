@@ -1,11 +1,10 @@
 "use client"
 
+import React, { Suspense, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { GSAPAnimatedCounter } from "@/components/ui/gsap-animated-counter"
-import { GSAPInteractiveCard } from "@/components/ui/gsap-interactive-card"
 import { 
   Trophy, 
   Calendar,
@@ -16,18 +15,14 @@ import {
   Flame,
   Plus,
   UserPlus,
-  LucideIcon,
   RotateCcw,
   Shield,
   CircleArrowDown,
   Percent,
   ArrowUpRight,
-  ArrowDownLeft,
-  TrendingUp,
-  Timer
+  ArrowDownLeft
 } from "lucide-react"
 import Link from "next/link"
-import { Suspense } from "react"
 import { PerformanceCharts } from "./performance-charts"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/hooks/use-translations"
@@ -35,9 +30,12 @@ import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
 import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
 import { calculateEnhancedStats } from "@/lib/utils/dashboard-stats"
 import { CreatePlayerDialog } from "../../players/_components/create-player-dialog"
-import { useState } from "react"
 import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
 import { ChartSkeleton } from "@/components/ui/loading-skeletons"
+import { StatisticsCard } from "./statistics-card"
+import { PerformanceInsightsCard } from "./performance-insights-card"
+import { RecentMatchesCard } from "./recent-matches-card"
+import { PlayerStatsCard } from "./player-stats-card"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -58,16 +56,7 @@ const containerVariants = {
 }
 
 
-const buttonVariants = {
-  hover: { 
-    scale: 1.02,
-    transition: { type: "spring", stiffness: 400, damping: 10 }
-  },
-  tap: { 
-    scale: 0.98,
-    transition: { type: "spring", stiffness: 400, damping: 10 }
-  }
-}
+// Removed unused buttonVariants since we're using regular divs now
 
 // Enhanced skeleton component for charts
 function ChartsSkeleton() {
@@ -79,11 +68,18 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
   const [isCreatePlayerOpen, setCreatePlayerOpen] = useState(false)
   const [showAdvancedStats, setShowAdvancedStats] = useState(false)
   
-  // Calculate comprehensive stats
-  const stats = calculateEnhancedStats(matches, mainPlayer?.$id)
   
-  // Calculate total number of cards dynamically
-  const totalCardsCount = 16 + (stats.bestTimeOfDay ? 1 : 0) + (stats.forehandBackhandRatio > 0 ? 1 : 0)
+  // Calculate comprehensive stats with memoization for expensive calculations
+  const stats = useMemo(() => 
+    calculateEnhancedStats(matches, mainPlayer?.$id), 
+    [matches, mainPlayer?.$id]
+  )
+  
+  // Calculate total number of cards dynamically with memoization
+  const totalCardsCount = useMemo(() => 
+    16 + (stats.bestTimeOfDay ? 1 : 0) + (stats.forehandBackhandRatio > 0 ? 1 : 0),
+    [stats.bestTimeOfDay, stats.forehandBackhandRatio]
+  )
   
   // GSAP-powered unified animation for all cards
   const cardAnimation = useGSAPCardAnimation({
@@ -92,111 +88,41 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
     startDelay: 0.5
   })
 
-  // Recent matches for quick access
-  const recentMatches = matches
-    .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
-    .slice(0, 3)
+  // Recent matches for quick access with memoization
+  const recentMatches = useMemo(() => 
+    matches
+      .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+      .slice(0, 3),
+    [matches]
+  )
 
-  // GSAP-powered stat card component with unique animations per type
-  const StatCard = ({ 
-    icon: Icon, 
-    label, 
-    value, 
-    subtitle,
-    trend,
-    className = "",
-    variant = "default",
-    cardIndex,
-    cardType = "performance"
-  }: {
-    icon: LucideIcon
-    label: string
-    value: string | number
-    subtitle?: string
-    trend?: "up" | "down" | "neutral"
-    className?: string
-    variant?: "default" | "primary" | "success" | "warning" | "danger"
-    cardIndex: number
-    cardType?: "performance" | "serve" | "return" | "shotmaking" | "insights"
-  }) => {
-
-    const getTrendIcon = () => {
-      if (trend === "up") return <ArrowUpRight className="h-3 w-3 text-green-500" />
-      if (trend === "down") return <ArrowDownLeft className="h-3 w-3 text-red-500" />
-      return null
-    }
-
-    const getIconColor = () => {
-      switch (variant) {
-        case "primary":
-          return "text-primary"
-        case "success":
-          return "text-green-500"
-        case "warning":
-          return "text-yellow-500"
-        case "danger":
-          return "text-red-500"
-        default:
-          return "text-muted-foreground"
-      }
-    }
-
-    return (
-      <GSAPInteractiveCard 
-        variant={variant}
-        cardType={cardType}
-        className={className}
-      >
-          <CardContent className="p-3 md:p-4 lg:p-6 h-full">
-            <div className="flex flex-col h-full justify-between">
-              {/* Header with icon and trend */}
-              <div className="flex items-center justify-between mb-1 md:mb-2">
-                <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <h4 className="text-xs md:text-sm text-gray-800 dark:text-muted-foreground font-medium truncate">{label}</h4>
-                  {getTrendIcon()}
-                </div>
-                <div className="p-1.5 md:p-2 lg:p-2.5 rounded-full bg-muted/50 group-hover:bg-muted/80 transition-colors duration-200 ml-2 flex-shrink-0">
-                  <Icon className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 ${getIconColor()}`} aria-hidden="true" />
-                </div>
-              </div>
-              
-              {/* Value */}
-              <div className="flex-1 flex items-center">
-                <p className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
-                  {typeof value === 'number' ? (
-                    <GSAPAnimatedCounter
-                      value={value}
-                      duration={1.8}
-                      delay={cardAnimation.getDelay(cardIndex)}
-                      shouldAnimate={cardAnimation.shouldAnimate(cardIndex)}
-                    />
-                  ) : typeof value === 'string' && value.includes('%') ? (
-                    <GSAPAnimatedCounter
-                      value={parseInt(value.replace('%', ''))}
-                      suffix="%"
-                      duration={1.8}
-                      delay={cardAnimation.getDelay(cardIndex)}
-                      shouldAnimate={cardAnimation.shouldAnimate(cardIndex)}
-                    />
-                  ) : (
-                    value
-                  )}
-                </p>
-              </div>
-              
-              {/* Subtitle */}
-              {subtitle && (
-                <div className="mt-1">
-                  <p className="text-xs md:text-xs lg:text-sm text-gray-700 dark:text-muted-foreground/80 truncate leading-tight">
-                    {subtitle}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-      </GSAPInteractiveCard>
+  // Memoized opponent records analysis for expensive processing
+  const opponentRecords = useMemo(() => {
+    if (!mainPlayer) return []
+    
+    return analyzeOpponentRecords(
+      mainPlayer.$id, 
+      matches
+        .filter(match => match.playerOne && match.playerTwo) // Only include matches with valid player data
+        .map(match => ({
+          $id: match.$id,
+          playerOne: match.playerOne!,
+          playerTwo: match.playerTwo!,
+          playerThree: match.playerThree,
+          playerFour: match.playerFour,
+          winner: match.winnerId,
+          status: match.status,
+          finalScore: match.finalScore,
+          endTime: match.endTime,
+          createdAt: match.createdAt || match.matchDate
+        } as MatchData))
     )
-  }
+  }, [matches, mainPlayer])
+
+  // Use the memoized StatisticsCard component
+  const StatCard = (props: Omit<React.ComponentProps<typeof StatisticsCard>, 'cardAnimation'>) => (
+    <StatisticsCard {...props} cardAnimation={cardAnimation} />
+  )
 
   return (
     <motion.div
@@ -206,27 +132,24 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       className="p-4 space-y-6"
     >
       {/* Quick Actions */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
+      <div 
         className="flex flex-col sm:flex-row gap-3"
       >
-        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+        <div className="flex-1">
           <Button asChild className="w-full h-11 font-medium shadow-sm">
             <Link href="/matches/new">
               <Plus className="h-4 w-4 mr-2" />
               {t("newMatch")}
             </Link>
           </Button>
-        </motion.div>
-        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+        </div>
+        <div className="flex-1">
           <Button variant="outline" className="w-full h-11" onClick={() => setCreatePlayerOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
             {t("addPlayer")}
           </Button>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
       <CreatePlayerDialog isOpen={isCreatePlayerOpen} onOpenChange={setCreatePlayerOpen} />
 
       {/* Smart Dashboard - Show Key Metrics by Default */}
@@ -443,84 +366,10 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
         </div>
         
         {/* Performance Insights Section */}
-        <div className="space-y-3 md:space-y-4 lg:space-y-6">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-foreground">Performance Insights</h3>
-            <Badge variant="outline" className="ml-auto text-xs">
-              Advanced Analytics
-            </Badge>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
-            <StatCard 
-              icon={Flame} 
-              label="Recent Form" 
-              value={`${Math.round(stats.recentForm)}%`}
-              subtitle="Last 5 matches"
-              trend={stats.recentForm >= 60 ? "up" : "down"}
-              variant={stats.recentForm >= 80 ? "success" : stats.recentForm >= 60 ? "primary" : "warning"}
-              cardIndex={16}
-              cardType="insights"
-            />
-            <StatCard 
-              icon={Calendar} 
-              label="This Month" 
-              value={stats.thisMonthMatches}
-              subtitle="Matches played"
-              variant={stats.thisMonthMatches >= 5 ? "success" : stats.thisMonthMatches >= 3 ? "primary" : "default"}
-              cardIndex={17}
-              cardType="insights"
-            />
-            <StatCard 
-              icon={Timer} 
-              label="Court Time" 
-              value={stats.totalPlayingTime}
-              subtitle="Total playing time"
-              variant="primary"
-              cardIndex={18}
-              cardType="insights"
-            />
-            {stats.bestTimeOfDay && (
-              <StatCard 
-                icon={Target} 
-                label="Peak Performance" 
-                value={stats.bestTimeOfDay}
-                subtitle="Best playing time"
-                variant="success"
-                cardIndex={19}
-                cardType="insights"
-              />
-            )}
-            <StatCard 
-              icon={Activity} 
-              label="Avg Duration" 
-              value={stats.averageMatchDuration}
-              subtitle="Per match"
-              variant="default"
-              cardIndex={stats.bestTimeOfDay ? 20 : 19}
-              cardType="insights"
-            />
-            {stats.forehandBackhandRatio > 0 && (
-              <StatCard 
-                icon={Zap} 
-                label="FH/BH Ratio" 
-                value={`${stats.forehandBackhandRatio}:1`}
-                subtitle="Forehand preference"
-                variant={stats.forehandBackhandRatio >= 2 ? "primary" : "default"}
-                cardIndex={stats.bestTimeOfDay ? 21 : 20}
-                cardType="insights"
-              />
-            )}
-          </div>
-        </div>
+        <PerformanceInsightsCard stats={stats} cardAnimation={cardAnimation} />
 
             {/* Performance Charts */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-            >
+            <div>
               <Card className="hover:shadow-md transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -534,148 +383,26 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                   </Suspense>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           </div>
         )}
       </div>
 
       {/* Recent Matches */}
-      {recentMatches.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.6 }}
-        >
-          <Card className="hover:shadow-md transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">{t("recentMatches")}</h3>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/matches">{t("viewAll")}</Link>
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {recentMatches.map((match, index) => (
-                  <motion.div
-                    key={match.$id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors duration-200"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        match.winnerId === mainPlayer?.$id 
-                          ? "bg-green-500" 
-                          : "bg-red-500"
-                      }`} />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {t("vs")} {match.playerTwoId === mainPlayer?.$id ? t("player1") : t("player2")}
-                        </p>
-                        <p className="text-xs text-gray-700 dark:text-muted-foreground">
-                          {new Date(match.matchDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {t("inProgress")}
-                    </Badge>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+      <RecentMatchesCard recentMatches={recentMatches} mainPlayer={mainPlayer} />
 
       {/* Monthly Progress Card */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9, duration: 0.6 }}
-      >
-        <Card className="hover:shadow-md transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">{t("thisMonthHeader")}</h3>
-              <Calendar className="w-5 h-5 text-primary" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">
-                  <GSAPAnimatedCounter 
-                    value={stats.thisMonthMatches} 
-                    duration={2.0} 
-                    delay={12.0} // Start after main cards complete
-                    shouldAnimate={cardAnimation.hasTriggered}
-                    ease="elastic.out(1, 0.5)"
-                  />
-                </div>
-                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("matchesLabel")}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">
-                  <GSAPAnimatedCounter 
-                    value={Math.round(stats.thisMonthMatches * stats.winRate / 100)} 
-                    duration={2.0} 
-                    delay={12.5}
-                    shouldAnimate={cardAnimation.hasTriggered}
-                    ease="power4.out"
-                  />
-                </div>
-                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("wonLabel")}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-1">{stats.averageMatchDuration}</div>
-                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("avgDurationLabel")}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">
-                  <GSAPAnimatedCounter 
-                    value={stats.currentWinStreak} 
-                    duration={2.0} 
-                    delay={13.0}
-                    shouldAnimate={cardAnimation.hasTriggered}
-                    ease="bounce.out"
-                  />
-                </div>
-                <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("winStreakMonthlyLabel")}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <PlayerStatsCard stats={stats} cardAnimation={cardAnimation} />
 
       {/* Nemesis & Bunny Stats */}
       {mainPlayer && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
-        >
+        <div>
           <NemesisBunnyStats
             playerId={mainPlayer.$id}
             playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}
-            opponentRecords={analyzeOpponentRecords(
-              mainPlayer.$id, 
-              matches
-                .filter(match => match.playerOne && match.playerTwo) // Only include matches with valid player data
-                .map(match => ({
-                  $id: match.$id,
-                  playerOne: match.playerOne!,
-                  playerTwo: match.playerTwo!,
-                  playerThree: match.playerThree,
-                  playerFour: match.playerFour,
-                  winner: match.winnerId,
-                  status: match.status,
-                  finalScore: match.finalScore,
-                  endTime: match.endTime,
-                  createdAt: match.createdAt || match.matchDate
-                } as MatchData))
-            )}
+            opponentRecords={opponentRecords}
           />
-        </motion.div>
+        </div>
       )}
     </motion.div>
   )
