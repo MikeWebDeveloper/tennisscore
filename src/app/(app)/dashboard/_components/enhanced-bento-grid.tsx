@@ -1,6 +1,6 @@
 "use client"
 
-import React, { Suspense, useMemo, useState } from "react"
+import React, { Suspense, useMemo, useState, lazy } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,19 +23,22 @@ import {
   ArrowDownLeft
 } from "lucide-react"
 import Link from "next/link"
-import { PerformanceCharts } from "./performance-charts"
+
+// Lazy load heavy components
+const PerformanceCharts = lazy(() => import("./performance-charts").then(mod => ({ default: mod.PerformanceCharts })))
+const NemesisBunnyStats = lazy(() => import("@/components/features/nemesis-bunny-stats").then(mod => ({ default: mod.NemesisBunnyStats })))
+const CreatePlayerDialog = lazy(() => import("../../players/_components/create-player-dialog").then(mod => ({ default: mod.CreatePlayerDialog })))
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/hooks/use-translations"
-import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
 import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
 import { calculateEnhancedStats } from "@/lib/utils/dashboard-stats"
-import { CreatePlayerDialog } from "../../players/_components/create-player-dialog"
 import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
 import { ChartSkeleton } from "@/components/ui/loading-skeletons"
 import { StatisticsCard } from "./statistics-card"
 import { PerformanceInsightsCard } from "./performance-insights-card"
 import { RecentMatchesCard } from "./recent-matches-card"
 import { PlayerStatsCard } from "./player-stats-card"
+import { performanceMonitor } from "@/lib/utils/performance-metrics"
 
 interface EnhancedBentoGridProps {
   matches: Match[]
@@ -63,17 +66,43 @@ function ChartsSkeleton() {
   return <ChartSkeleton />
 }
 
+// Skeleton for nemesis bunny stats
+function NemesisBunnySkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+      </div>
+    </div>
+  )
+}
+
 export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProps) {
   const t = useTranslations()
   const [isCreatePlayerOpen, setCreatePlayerOpen] = useState(false)
   const [showAdvancedStats, setShowAdvancedStats] = useState(false)
   
+  // Performance monitoring
+  React.useEffect(() => {
+    performanceMonitor.startTimer('dashboard-render', { 
+      matchesCount: matches.length,
+      hasMainPlayer: !!mainPlayer 
+    })
+    
+    return () => {
+      performanceMonitor.endTimer('dashboard-render')
+    }
+  }, [matches.length, mainPlayer])
   
   // Calculate comprehensive stats with memoization for expensive calculations
-  const stats = useMemo(() => 
-    calculateEnhancedStats(matches, mainPlayer?.$id), 
-    [matches, mainPlayer?.$id]
-  )
+  const stats = useMemo(() => {
+    performanceMonitor.startTimer('stats-calculation')
+    const result = calculateEnhancedStats(matches, mainPlayer?.$id)
+    performanceMonitor.endTimer('stats-calculation')
+    return result
+  }, [matches, mainPlayer?.$id])
   
   // Calculate total number of cards dynamically with memoization
   const totalCardsCount = useMemo(() => 
@@ -150,7 +179,9 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
           </Button>
         </div>
       </div>
-      <CreatePlayerDialog isOpen={isCreatePlayerOpen} onOpenChange={setCreatePlayerOpen} />
+      <Suspense fallback={null}>
+        <CreatePlayerDialog isOpen={isCreatePlayerOpen} onOpenChange={setCreatePlayerOpen} />
+      </Suspense>
 
       {/* Smart Dashboard - Show Key Metrics by Default */}
       <div data-dashboard-container className="space-y-6 md:space-y-8">
@@ -397,11 +428,13 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       {/* Nemesis & Bunny Stats */}
       {mainPlayer && (
         <div>
-          <NemesisBunnyStats
-            playerId={mainPlayer.$id}
-            playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}
-            opponentRecords={opponentRecords}
-          />
+          <Suspense fallback={<NemesisBunnySkeleton />}>
+            <NemesisBunnyStats
+              playerId={mainPlayer.$id}
+              playerName={`${mainPlayer.firstName} ${mainPlayer.lastName}`}
+              opponentRecords={opponentRecords}
+            />
+          </Suspense>
         </div>
       )}
     </motion.div>
