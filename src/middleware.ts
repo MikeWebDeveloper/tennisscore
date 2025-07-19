@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { decrypt } from "@/lib/session"
 
+// Admin user emails
+const ADMIN_EMAILS = [
+  "michal.latal@yahoo.co.uk",
+  "mareklatal@seznam.cz"
+]
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
@@ -8,15 +14,20 @@ export async function middleware(request: NextRequest) {
   // Protected app routes
   const isAppRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/matches") || pathname.startsWith("/players")
   
+  // Admin routes
+  const isAdminRoute = pathname.startsWith("/admin")
+  
   // Auth routes  
   const isAuthRoute = ["/login", "/signup"].includes(pathname)
 
-  // Check if user has valid session
+  // Check if user has valid session and get user email
   let hasValidSession = false
+  let userEmail: string | null = null
   if (sessionCookie) {
     try {
       const sessionData = await decrypt(sessionCookie)
       hasValidSession = !!sessionData?.userId
+      userEmail = sessionData?.email || null
     } catch {
       hasValidSession = false
     }
@@ -25,6 +36,10 @@ export async function middleware(request: NextRequest) {
   // Redirect logic
   if (isAppRoute && !hasValidSession) {
     return NextResponse.redirect(new URL("/login", request.url))
+  }
+
+  if (isAdminRoute && (!hasValidSession || !userEmail || !ADMIN_EMAILS.includes(userEmail))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   if (isAuthRoute && hasValidSession) {

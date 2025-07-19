@@ -29,4 +29,23 @@ export async function requireAuth() {
     redirect("/login")
   }
   return user
+}
+
+// Admin user emails
+const ADMIN_EMAILS = [
+  "michal.latal@yahoo.co.uk",
+  "mareklatal@seznam.cz"
+]
+
+export function isAdmin(userEmail?: string | null): boolean {
+  if (!userEmail) return false
+  return ADMIN_EMAILS.includes(userEmail)
+}
+
+export async function requireAdmin() {
+  const user = await getCurrentUser()
+  if (!user || !isAdmin(user.email)) {
+    redirect("/")
+  }
+  return user
 } 

@@ -24,6 +24,7 @@ import {
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
 import { User } from "@/lib/types"
+import { isAdmin } from "@/lib/auth"
 import { CollapsibleMobileNav } from "./collapsible-mobile-nav"
 import { useTranslations } from "@/hooks/use-translations"
 import { ExtensionConflictNotice } from "@/components/shared/extension-conflict-notice"
@@ -117,8 +118,8 @@ export function AppShell({ children, user }: AppShellProps) {
     }
   ]
 
-  // Add admin link only for privileged user
-  const localizedNavigation = user.email === "michal.latal@yahoo.co.uk" 
+  // Add admin link only for privileged users
+  const localizedNavigation = isAdmin(user.email) 
     ? [...baseNavigation, {
         href: "/admin",
         icon: Shield,

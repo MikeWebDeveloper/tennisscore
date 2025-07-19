@@ -2,7 +2,7 @@
 
 import { ID, Query } from "node-appwrite"
 import { createAdminClient, withRetry } from "@/lib/appwrite-server"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isAdmin } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition, Player } from "@/lib/types"
 import { getPlayerById } from "./players"
@@ -797,8 +797,8 @@ export async function getAllMatches(options: {
   try {
     const user = await getCurrentUser()
     
-    // Check if user has admin access (specifically for michal.latal@yahoo.co.uk)
-    if (!user || user.email !== "michal.latal@yahoo.co.uk") {
+    // Check if user has admin access
+    if (!user || !isAdmin(user.email)) {
       return { matches: [], total: 0, hasMore: false }
     }
 
@@ -897,7 +897,7 @@ export async function getAllMatchesWithPlayers(options: {
     const user = await getCurrentUser()
     
     // Check if user has admin access
-    if (!user || user.email !== "michal.latal@yahoo.co.uk") {
+    if (!user || !isAdmin(user.email)) {
       return { matches: [], total: 0, hasMore: false }
     }
 
