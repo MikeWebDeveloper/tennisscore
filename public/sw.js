@@ -1,9 +1,9 @@
 // TennisScore Service Worker - Enhanced Caching & PWA with IndexedDB
-// Version: 2.2.0 - Fixed Authentication-Protected Page Caching
-const CACHE_NAME = 'tennisscore-v2.2.0'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.2.0'
-const API_CACHE = 'tennisscore-api-v2.2.0'
-const OFFLINE_CACHE = 'tennisscore-offline-v2.2.0'
+// Version: 2.3.0 - Fixed Vercel Production Offline Mode Issue
+const CACHE_NAME = 'tennisscore-v2.3.0'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.3.0'
+const API_CACHE = 'tennisscore-api-v2.3.0'
+const OFFLINE_CACHE = 'tennisscore-offline-v2.3.0'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -50,7 +50,7 @@ const CACHE_STRATEGIES = {
   IMAGES: /\.(png|jpg|jpeg|gif|webp|svg)$/
 }
 
-// Requests to bypass (never intercept)
+// Requests to bypass (never intercept) - Enhanced for Vercel production
 const BYPASS_PATTERNS = [
   // Development assets
   /webpack/,
@@ -81,7 +81,22 @@ const BYPASS_PATTERNS = [
   
   // Live match pages should always be fresh
   /\/live\//,
-  /\/matches\/live\//
+  /\/matches\/live\//,
+  
+  // Vercel-specific patterns
+  /_next\/image/,
+  /_next\/webpack-hmr/,
+  /_next\/static\/chunks\/.*\.js/,
+  /_next\/static\/css\/.*\.css/,
+  
+  // Navigation requests (pages) - Let them pass through naturally
+  /\/dashboard/,
+  /\/matches/,
+  /\/players/,
+  /\/statistics/,
+  /\/admin/,
+  /\/settings/,
+  /\/player-statistics/
 ]
 
 // Install event
@@ -211,6 +226,11 @@ function shouldBypassRequest(request) {
     if (pattern.test(urlString) || pattern.test(pathname)) {
       return true
     }
+  }
+  
+  // Navigation requests should be bypassed in production to prevent offline mode issues
+  if (request.mode === 'navigate') {
+    return true
   }
   
   return false
@@ -408,7 +428,7 @@ async function staleWhileRevalidate(request, cacheName) {
     
     if (cachedResponse) {
       // Return cached version immediately, fresh data updates in background
-      fetchPromise // Don't await - let it run in background
+      // fetchPromise runs in background (not awaited)
       return cachedResponse
     }
     
@@ -502,7 +522,7 @@ async function cleanupCache(cache) {
   }
 }
 
-// Handle navigation requests
+// Handle navigation requests - Modified to prevent offline mode issues
 async function handleNavigation(request) {
   try {
     // Create a new request with explicit redirect handling for proxy scenarios
@@ -523,12 +543,9 @@ async function handleNavigation(request) {
   } catch (error) {
     console.error('[SW] Navigation failed for:', request.url, error)
     
-    // Only provide offline fallback in production
-    if (!isDevelopment) {
-      return await getOfflineFallback()
-    }
-    
-    // In development, let the error propagate
+    // CRITICAL FIX: Don't show offline fallback for navigation requests in production
+    // This prevents the offline mode issue on Vercel
+    // Let the error propagate so the app can handle it properly
     throw error
   }
 }
