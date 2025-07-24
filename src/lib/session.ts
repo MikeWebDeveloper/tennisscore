@@ -3,7 +3,11 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose"
 import { cookies } from "next/headers"
 
-const key = new TextEncoder().encode(process.env.SESSION_SECRET)
+const sessionSecret = process.env.SESSION_SECRET
+if (!sessionSecret) {
+  throw new Error("SESSION_SECRET environment variable is not set. Please check your .env.local file.")
+}
+const key = new TextEncoder().encode(sessionSecret)
 
 export interface SessionPayload extends JWTPayload {
   userId: string
@@ -46,7 +50,7 @@ export async function createSession(data: { userId: string; email: string }) {
   cookieStore.set("session", sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax", // Changed from "strict" to "lax" for better compatibility
     maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/",
   })

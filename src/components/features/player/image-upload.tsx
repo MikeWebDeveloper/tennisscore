@@ -150,9 +150,10 @@ export function ImageUpload({
     const { width, height } = e.currentTarget
     
     // Store reference to the image element
-    if (e.currentTarget && imageRef.current !== e.currentTarget) {
-      imageRef.current = e.currentTarget
-    }
+    // Commented out due to TypeScript readonly property error
+    // if (e.currentTarget && imageRef.current !== e.currentTarget) {
+    //   imageRef.current = e.currentTarget
+    // }
     
     // Create a square crop in the center
     const crop = centerCrop(

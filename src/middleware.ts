@@ -60,6 +60,6 @@ export const config = {
      * - live (public live match page)
      * - clear-session (session clearing page)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|live|clear-session).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|live|clear-session|auth-error).*)",
   ],
 } 
