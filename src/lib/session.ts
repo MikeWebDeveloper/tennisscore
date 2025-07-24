@@ -26,7 +26,6 @@ export async function decrypt(input: string): Promise<SessionPayload | null> {
     })
     return payload as SessionPayload
   } catch (error) {
-    console.log("Session decryption failed:", error)
     return null
   }
 }

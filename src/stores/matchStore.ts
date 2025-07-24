@@ -389,22 +389,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             const tempGames = [...previousScore.games] as [number, number];
             tempGames[winner === 'p1' ? 0 : 1]++
             
-            // Debug logging for Set Point detection
-            console.log('🎾 SET POINT Detection (Game Winning):', {
-                currentGames: previousScore.games,
-                tempGames,
-                winner,
-                wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat),
-                currentPoints: previousScore.points,
-                tempPoints: [temp_p1_score, temp_p2_score],
-                explanation: `${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
-            })
             
             if (isSetWon(tempGames[0], tempGames[1], matchFormat)) {
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
                 
                 // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
@@ -412,17 +401,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
-                    console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
             }
         } else {
-            console.log('❌ NOT Game Point:', {
-                currentPoints: previousScore.points,
-                tempPoints: [temp_p1_score, temp_p2_score],
-                winner,
-                isGameWonResult: isGameWon(temp_p1_score, temp_p2_score, matchFormat.noAd),
-                reason: 'This point would not win the game'
-            })
             
             // ADDITIONAL SET POINT CHECK: Even if this point doesn't win the game,
             // check if the player would be in a winning position next point
@@ -463,14 +444,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame) ||
                 isDeuceSetPoint) {
                 isThisPointSetPoint = true
-                console.log('✅ SET POINT DETECTED! (player at game point position)', { 
-                    winner, 
-                    currentGames,
-                    points: previousScore.points,
-                    detectionType: isDeuceSetPoint ? 'DEUCE SET POINT' : 'REGULAR SET POINT',
-                    gamePointPlayer: winner === 'p1' ? 'p1AtGamePoint' : 'p2AtGamePoint',
-                    gamePointValue: winner === 'p1' ? p1AtGamePoint : p2AtGamePoint
-                })
                 
                 // Check if this would also be match point
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
@@ -510,20 +483,6 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       ? `${tempScore.tiebreakPoints[0]}-${tempScore.tiebreakPoints[1]}`
       : getTennisScore(tempScore.points[0], tempScore.points[1]);
 
-    // Debug log for breakpoint detection in point storage
-    console.log('💾 Storing Point - BP Detection:', {
-      currentServer,
-      scoreBEFORE: `${previousScore.points[0]}-${previousScore.points[1]}`,
-      scoreAFTER: gameScoreToStore,
-      serverPoints: currentServer === 'p1' ? previousScore.points[0] : previousScore.points[1],
-      returnerPoints: currentServer === 'p1' ? previousScore.points[1] : previousScore.points[0],
-      noAd: matchFormat.noAd,
-      isBreakPoint: isThisPointBreakPoint,
-      pointWinner: winner,
-      explanation: isThisPointBreakPoint ? 
-        `✅ BP: Returner ${currentServer === 'p1' ? 'p2' : 'p1'} could break serve by winning this point` : 
-        '❌ No BP: No break opportunity'
-    })
 
     // Fix: Check both outcome and pointOutcome for error types
     const outcomeToCheck = details.pointOutcome;
@@ -690,45 +649,4 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       selectedCategories: ['serve-placement', 'rally-type'],
     },
   }),
-}))
-
-// Test function to verify break point logic
-function testBreakPointLogic() {
-  console.log('=== Testing Break Point Logic ===')
-  
-  // Test traditional scoring
-  console.log('Traditional Scoring Tests:')
-  
-  // Should be BP: 0-40 (server p1, receiver p2 at 3 points)
-  console.log('0-40 (p1 serving):', {
-    beforeP1: 0, beforeP2: 3,
-    shouldBeBP: true,
-    actualBP: (3 >= 3 && 0 < 3) // P2 >= 3 && P1 < 3
-  })
-  
-  // Should be BP: 15-40 
-  console.log('15-40 (p1 serving):', {
-    beforeP1: 1, beforeP2: 3,
-    shouldBeBP: true,
-    actualBP: (3 >= 3 && 1 < 3)
-  })
-  
-  // Should NOT be BP: 40-40 (deuce)
-  console.log('40-40 (p1 serving):', {
-    beforeP1: 3, beforeP2: 3,
-    shouldBeBP: false,
-    actualBP: (3 >= 3 && 3 < 3) || (3 >= 3 && 3 >= 3 && 3 > 3) // False
-  })
-  
-  // Should be BP: 40-AD (receiver advantage)
-  console.log('40-AD (p1 serving):', {
-    beforeP1: 3, beforeP2: 4,
-    shouldBeBP: true,
-    actualBP: (4 >= 3 && 3 >= 3 && 4 > 3)
-  })
-}
-
-// Call test function
-if (typeof window !== 'undefined') {
-  (window as unknown as Record<string, unknown>).testBreakPointLogic = testBreakPointLogic
-} 
+})) 

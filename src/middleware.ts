@@ -11,10 +11,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
   
-  // Only log important paths to avoid console spam
-  if (!pathname.startsWith('/_next') && !pathname.includes('.')) {
-    console.log(`[Middleware] Processing path: ${pathname}`)
-  }
+  // Removed console.log to reduce production logging
   
   // Skip middleware for static assets, API routes, and public paths
   if (

@@ -16,7 +16,7 @@ export function useServiceWorker() {
 
     const register = async () => {
       try {
-        const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" })
+        const reg = await navigator.serviceWorker.register("/sw-fixed.js", { scope: "/" })
 
         // ➜ Fresh install
         if (!navigator.serviceWorker.controller) {
