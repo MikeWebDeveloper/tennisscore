@@ -30,8 +30,8 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
-  // Generate static exports for better caching
-  output: 'standalone',
+  // Remove standalone mode - not compatible with Vercel deployment
+  // output: 'standalone', // This causes static file serving issues on Vercel
   
   // Custom headers for caching and security
   async headers() {

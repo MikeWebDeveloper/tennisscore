@@ -1,0 +1,340 @@
+---
+alwaysApply: false
+---
+# TennisScore Component Patterns & Standards
+
+## shadcn/ui Component Usage
+
+### Base Components Location
+All shadcn/ui components should be in `/src/components/ui/` and follow the standard shadcn/ui patterns.
+
+### Custom Component Composition
+```tsx
+// Feature components should compose ui components
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+export function StatsCard({ title, value, ...props }) {
+  return (
+    <Card {...props}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## Animation Patterns
+
+### Standard Page Animations
+```tsx
+import { motion } from "framer-motion"
+
+// Use for all page components
+export const pageVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 }
+}
+
+// Implementation
+<motion.div
+  variants={pageVariants}
+  initial="initial"
+  animate="animate"
+  exit="exit"
+  transition={{ duration: 0.3 }}
+>
+```
+
+### List Animations
+```tsx
+export const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+export const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+}
+```
+
+### Button Interactions
+```tsx
+// Standard for all interactive buttons
+<motion.button
+  whileTap={{ scale: 0.95 }}
+  whileHover={{ scale: 1.02 }}
+  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+>
+```
+
+## Component Structure Standards
+
+### Server Components
+```tsx
+// For data-fetching pages and components
+import { getMatches } from "@/lib/actions/matches"
+
+export default async function MatchesPage() {
+  const matches = await getMatches()
+  
+  return (
+    <div>
+      <MatchesList matches={matches} />
+    </div>
+  )
+}
+```
+
+### Client Components
+```tsx
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { useUserStore } from "@/stores/userStore"
+
+export function InteractiveComponent() {
+  const { user } = useUserStore()
+  const [state, setState] = useState()
+  
+  return (
+    <motion.div>
+      {/* Interactive content */}
+    </motion.div>
+  )
+}
+```
+
+## Form Patterns
+
+### Form Validation with Zod
+```tsx
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+const playerSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  yearOfBirth: z.number().optional(),
+  rating: z.string().optional(),
+})
+
+export function PlayerForm() {
+  const form = useForm({
+    resolver: zodResolver(playerSchema),
+  })
+  
+  return (
+    <Form {...form}>
+      {/* Form fields */}
+    </Form>
+  )
+}
+```
+
+## Loading States
+
+### Skeleton Components
+```tsx
+import { Skeleton } from "@/components/ui/skeleton"
+
+export function StatsCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-4 w-[100px]" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-8 w-[60px]" />
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+### Loading Boundaries
+```tsx
+import { Suspense } from "react"
+
+export default function Page() {
+  return (
+    <Suspense fallback={<StatsCardSkeleton />}>
+      <StatsCard />
+    </Suspense>
+  )
+}
+```
+
+## Error Handling
+
+### Error Boundaries
+```tsx
+"use client"
+
+import { Component } from "react"
+
+export class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-center p-4">
+          <h2>Something went wrong.</h2>
+          <Button onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </Button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## Responsive Design Patterns
+
+### Mobile-First Breakpoints
+```tsx
+// Use Tailwind responsive prefixes
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Content */}
+</div>
+```
+
+### Navigation Components
+```tsx
+// Mobile: Bottom tab bar
+export function MobileNav() {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 md:hidden">
+      {/* Tab items */}
+    </nav>
+  )
+}
+
+// Desktop: Sidebar
+export function DesktopNav() {
+  return (
+    <nav className="hidden md:block w-64">
+      {/* Sidebar content */}
+    </nav>
+  )
+}
+```
+
+## Real-time Components
+
+### Appwrite Realtime Hook
+```tsx
+"use client"
+
+import { useEffect, useState } from "react"
+import { client } from "@/lib/appwrite-client"
+
+export function useRealtimeDocument(databaseId, collectionId, documentId) {
+  const [document, setDocument] = useState(null)
+
+  useEffect(() => {
+    const unsubscribe = client.subscribe(
+      `databases.${databaseId}.collections.${collectionId}.documents.${documentId}`,
+      (response) => {
+        setDocument(response.payload)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [databaseId, collectionId, documentId])
+
+  return document
+}
+```
+
+## Chart Components
+
+### Recharts Integration
+```tsx
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
+
+export function WinLossChart({ data }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Line 
+          type="monotone" 
+          dataKey="winRate" 
+          stroke="hsl(var(--primary))" 
+          strokeWidth={2}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  )
+}
+```
+
+## File Upload Patterns
+
+### Image Upload Component
+```tsx
+"use client"
+
+import { useState } from "react"
+import { Upload } from "lucide-react"
+
+export function ImageUpload({ onUpload }) {
+  const [preview, setPreview] = useState(null)
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setPreview(URL.createObjectURL(file))
+      onUpload(file)
+    }
+  }
+
+  return (
+    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+        id="image-upload"
+      />
+      <label
+        htmlFor="image-upload"
+        className="cursor-pointer flex flex-col items-center"
+      >
+        {preview ? (
+          <img src={preview} alt="Preview" className="w-24 h-24 rounded-full" />
+        ) : (
+          <Upload className="w-12 h-12 text-gray-400" />
+        )}
+      </label>
+    </div>
+  )
+}
+```

@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#39FF14" stroke="#0A1A0A" stroke-width="8"/>
+  
+  <!-- Tennis ball seam lines -->
+  <path d="M 100 256 Q 180 160 256 256 Q 332 352 412 256" 
+        stroke="#0A1A0A" 
+        stroke-width="6" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <path d="M 100 256 Q 180 352 256 256 Q 332 160 412 256" 
+        stroke="#0A1A0A" 
+        stroke-width="6" 
+        fill="none" 
+        stroke-linecap="round"/>
+</svg> 

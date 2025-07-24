@@ -27,14 +27,21 @@ const getClient = (): Client => {
         })
 
         if (!endpoint || !project) {
-            throw new Error(`Missing Appwrite configuration: endpoint=${!!endpoint}, project=${!!project}`)
+            const error = new Error(`Missing Appwrite configuration: endpoint=${!!endpoint}, project=${!!project}`)
+            console.error("❌ Appwrite client creation failed:", error.message)
+            throw error
         }
 
-        clientInstance = new Client()
-            .setEndpoint(endpoint)
-            .setProject(project)
+        try {
+            clientInstance = new Client()
+                .setEndpoint(endpoint)
+                .setProject(project)
 
-        console.log("✅ Appwrite client created successfully")
+            console.log("✅ Appwrite client created successfully")
+        } catch (error) {
+            console.error("❌ Failed to initialize Appwrite client:", error)
+            throw error
+        }
     }
     
     return clientInstance

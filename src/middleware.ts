@@ -8,10 +8,6 @@ const ADMIN_EMAILS = [
 ]
 
 export async function middleware(request: NextRequest) {
-  // EMERGENCY BYPASS: Disable middleware temporarily to debug redirect loop
-  console.log('Middleware bypassed for debugging:', request.nextUrl.pathname)
-  return NextResponse.next()
-  
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
   
@@ -124,7 +120,8 @@ export const config = {
      * - favicon.ico (favicon file)
      * - live (public live match page)
      * - clear-session (session clearing page)
+     * - Any file with an extension (static files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|live|clear-session).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico|live|clear-session|.*\\..*).*)',
   ],
 } 

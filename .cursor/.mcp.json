@@ -1,0 +1,9 @@
+{
+  "appwrite-tennis": {
+    "type": "appwrite",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectId": "68460965002524f1942e",
+    "apiKey": "standard_8e0a8d8d3d0902f846887429cacf282a805f9b330056332d2c0283210edc2897688fba6c10f4c43f8332f8e09e740fcd880b94ac0aed97e38fe163f850abf835951c646246a5e36978b0a6c28199590007626e3fd37abc3355b30870d5c48c9847592f499aaf604d7afd7147d6aba3cfbe96b6eba6c677a51c8376f5445a4255",
+    "databaseId": "tennisscore_db"
+  }
+} 

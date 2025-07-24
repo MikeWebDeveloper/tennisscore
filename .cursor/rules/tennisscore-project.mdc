@@ -1,0 +1,253 @@
+---
+alwaysApply: false
+---
+# TennisScore Project Rules
+
+## Project Overview
+
+TennisScore is a modern web application for tennis scoring, statistics tracking, and real-time match sharing. The app targets competitive junior players and coaches, providing professional-grade statistical analysis with an elegant, intuitive user experience.
+
+### Key Documents
+- [Frontend Design Specification](mdc:docs/Frontend.md)
+- [Product Requirements Document](mdc:docs/PRD.md)
+- [Software Architecture Document](mdc:docs/SAD.md)
+
+## Technology Stack
+
+### Frontend
+- **Framework**: Next.js 15 with App Router
+- **UI Library**: shadcn/ui (built on Radix UI)
+- **Styling**: Tailwind CSS
+- **Animation**: Framer Motion
+- **State Management**: Zustand
+- **Charts**: Recharts
+- **Icons**: Lucide React
+
+### Backend
+- **BaaS**: Appwrite Cloud
+- **Authentication**: Appwrite Auth (Email/Password)
+- **Database**: Appwrite Databases
+- **Storage**: Appwrite Storage
+- **Real-time**: Appwrite Realtime
+
+### Deployment
+- **Hosting**: Vercel
+- **Domain**: tenscr.app
+
+## Architecture Patterns
+
+### Component Strategy
+- **Server Components (RSCs)**: Default for pages and data-fetching components
+- **Client Components**: For interactivity, state, animations, and browser APIs
+- **Server Actions**: For secure backend mutations (BFF pattern)
+
+### Directory Structure
+```
+/src
+├── /app                  # Next.js App Router
+│   ├── /(auth)           # Auth pages (login, signup)
+│   ├── /(app)            # Authenticated app pages
+│   │   ├── /dashboard
+│   │   ├── /matches
+│   │   └── layout.tsx
+│   ├── /live/[matchId]   # Public live sharing
+│   └── layout.tsx
+├── /components
+│   ├── /ui               # shadcn/ui components
+│   ├── /features         # Feature-specific components
+│   └── /layout           # Layout components
+├── /lib
+│   ├── appwrite-client.ts
+│   ├── appwrite-server.ts
+│   └── utils.ts
+├── /hooks                # Custom React hooks
+├── /stores               # Zustand stores
+└── /styles
+```
+
+## Design System
+
+### Typography
+- **Primary Font**: Satoshi (headings, UI)
+- **Secondary Font**: Inter (body, data)
+- **Monospace**: JetBrains Mono (scores, stats)
+
+### Color Palette
+- **Theme**: Dark mode first with light mode support
+- **Neutrals**: Slate scale (slate-950 to slate-200)
+- **Primary**: Electric Green (#39FF14)
+- **Accent Colors**: Success (green), Warning (amber), Error (red)
+
+### Design Principles
+1. **Focused Clarity**: Zero friction, minimalism, strong visual hierarchy
+2. **Fluid & Responsive**: Immediate feedback, meaningful animations
+3. **Personal & Insightful**: Adaptive to user's main player, beautiful insights
+
+### Responsive Design
+- **Mobile-First**: Design from smallest screen up
+- **Navigation**: Bottom tab bar (mobile), sidebar (desktop)
+- **Breakpoints**: 768px for mobile/desktop transition
+
+## Animation Guidelines
+
+### Motion Language (Framer Motion)
+- **Page Transitions**: Subtle fade & slide
+- **List Loading**: Staggered fade-in
+- **Button Interactions**: Quick scale/bounce (`whileTap={{ scale: 0.95 }}`)
+- **Scoreboard Updates**: Animated counter/flip
+- **Modals**: Scale & fade in/out
+
+### Implementation Patterns
+```tsx
+// Page transitions
+<motion.div 
+  initial={{ opacity: 0, y: 10 }} 
+  animate={{ opacity: 1, y: 0 }}
+>
+
+// Staggered children
+<motion.div 
+  variants={{ staggerChildren: 0.1 }}
+>
+```
+
+## Data Models
+
+### Players Collection
+```typescript
+{
+  firstName: string;        // Required
+  lastName: string;         // Required
+  yearOfBirth?: number;     // Optional
+  rating?: string;          // Optional, free text
+  profilePictureId?: string; // File ID from storage
+  userId: string;           // Auth user ID (for permissions)
+}
+```
+
+### Matches Collection
+```typescript
+{
+  playerOneId: string;      // Relationship to Players
+  playerTwoId: string;      // Relationship to Players
+  matchDate: Date;          // ISO 8601 format
+  matchFormat: string;      // JSON: {sets: 3, noAd: false}
+  status: 'In Progress' | 'Completed';
+  winnerId?: string;        // Set when completed
+  score: string;            // JSON: Current score snapshot
+  pointLog?: Array<object>; // Detailed point history
+  events?: Array<object>;   // Comments, photos for live sharing
+  userId: string;           // Scorekeeper's user ID
+}
+```
+
+## State Management
+
+### Zustand Stores
+- **userStore.ts**: Global user state, authentication, main player selection
+- **matchStore.ts**: Live scoring session state (non-persistent)
+
+### Persistence
+- Use Zustand's persist middleware for user preferences
+- Server-provided initial data via StoreProvider pattern
+
+## Security & Permissions
+
+### Authentication Flow
+1. Client form submission → Server Action
+2. Server Action uses Appwrite Node.js SDK with secret key
+3. Secure HTTP-only cookies for session management
+
+### Database Permissions
+- **Players**: Users can only CRUD their own documents
+- **Matches**: Document-level permissions, public read for live matches
+- **File Storage**: Authenticated uploads, public read for profiles
+
+## Performance Requirements
+
+### Core Web Vitals
+- **TTFB**: < 400ms for server-rendered pages
+- **LCP**: < 2.0s for dashboard
+- **FID**: < 100ms
+
+### Optimization Strategies
+- Server Components for data fetching
+- Image optimization via Appwrite transformations
+- Efficient real-time subscriptions
+
+## Development Practices
+
+### Code Quality
+- Use TypeScript for type safety
+- Follow shadcn/ui component patterns
+- Implement proper error boundaries
+- Include loading states and skeletons
+
+### Accessibility
+- WCAG AA compliance
+- Semantic HTML5 elements
+- Keyboard navigation support
+- Focus management for modals
+- Proper ARIA labels
+
+### Real-time Features
+- Document-level subscriptions: `databases.[DB_ID].collections.[COLLECTION_ID].documents.[DOC_ID]`
+- Read-only subscriptions on public pages
+- WebSocket connection management
+
+## Key Features
+
+### Live Scoring Interface
+- Full-screen tap targets for point scoring
+- Non-intrusive detailed logging toggle
+- Undo functionality
+- Real-time scoreboard updates
+
+### Dashboard (Bento Grid)
+- Responsive grid layout
+- Win/loss statistics
+- Performance charts (Recharts)
+- Animated stat cards
+- Main player selector
+
+### Live Sharing
+- Unique shareable URLs: `tenscr.app/live/{matchId}`
+- Real-time score updates
+- Comment and photo timeline
+- Public access without authentication
+
+## Error Handling
+
+### Client-Side
+- Form validation with clear error messages
+- Optimistic UI updates with rollback
+- Connection status indicators
+
+### Server-Side
+- Proper error responses from Server Actions
+- Database constraint validation
+- File upload error handling
+
+## Future Considerations
+
+### Scalability
+- PWA support for offline capabilities
+- Microservices for AI analysis
+- Data warehousing for complex analytics
+
+### Platform Expansion
+- Native mobile app considerations
+- Enhanced social features
+- Advanced statistics visualization
+
+## Development Workflow
+
+### Environment Setup
+- Local: Connect to Appwrite "Dev" project
+- Preview: Vercel preview deployments
+- Production: Appwrite "Prod" project
+
+### Deployment
+- GitHub-based CI/CD
+- Automatic Vercel deployments
+- Preview environments for PRs

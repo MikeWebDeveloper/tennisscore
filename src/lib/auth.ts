@@ -5,7 +5,12 @@ export async function getCurrentUser() {
   try {
     // Get session data - this contains the user info we need
     const sessionData = await getSession()
-    if (!sessionData) {
+    if (!sessionData || !sessionData.userId || !sessionData.email) {
+      return null
+    }
+    
+    // Check if session is expired
+    if (sessionData.expiresAt && new Date(sessionData.expiresAt) <= new Date()) {
       return null
     }
     
