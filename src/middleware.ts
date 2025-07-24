@@ -7,11 +7,22 @@ const ADMIN_EMAILS = [
   "mareklatal@seznam.cz"
 ]
 
+// Max redirect attempts before breaking the loop
+const MAX_REDIRECT_ATTEMPTS = 3
+
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, searchParams } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
   
-  // Removed console.log to reduce production logging
+  // Check for redirect loop
+  const redirectCount = parseInt(searchParams.get("_rc") || "0")
+  if (redirectCount >= MAX_REDIRECT_ATTEMPTS) {
+    // Break the redirect loop
+    console.error(`[Middleware] Redirect loop detected at ${pathname}`)
+    const response = NextResponse.next()
+    response.headers.set("X-Redirect-Loop", "true")
+    return response
+  }
   
   // Skip middleware for static assets, API routes, and public paths
   if (
@@ -21,7 +32,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/manifest.json') ||
     pathname.startsWith('/icons') ||
     pathname.startsWith('/clear-cache.html') ||
-    pathname.startsWith('/test-static.html')
+    pathname.startsWith('/test-static.html') ||
+    pathname.startsWith('/auth-error') ||
+    pathname.startsWith('/clear-session')
   ) {
     return NextResponse.next()
   }
@@ -39,77 +52,96 @@ export async function middleware(request: NextRequest) {
   // Auth routes  
   const isAuthRoute = pathname === "/login" || pathname === "/signup"
   
-  // Root route handling - minimal intervention, let page.tsx handle it
+  // Root route handling
   const isRootRoute = pathname === "/"
   
-  // Check if user has valid session with strict timeout protection
+  // Public routes that don't require auth
+  const isPublicRoute = pathname.startsWith("/live/")
+  
+  // Allow public routes without auth check
+  if (isPublicRoute) {
+    return NextResponse.next()
+  }
+  
+  // Check if user has valid session
   let hasValidSession = false
   let userEmail: string | null = null
   
   if (sessionCookie) {
     try {
-      // Strict timeout protection - fail fast to prevent hanging
+      // Validate session with timeout protection
       const decryptPromise = decrypt(sessionCookie)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Decrypt timeout')), 2000)
+        setTimeout(() => reject(new Error('Session validation timeout')), 2000)
       )
       
       const sessionData = await Promise.race([decryptPromise, timeoutPromise]) as any
       
-      // Validate session data more thoroughly
       if (sessionData && sessionData.userId && sessionData.email) {
         // Check if session is expired
-        if (sessionData.expiresAt && new Date(sessionData.expiresAt) > new Date()) {
+        if (!sessionData.expiresAt || new Date(sessionData.expiresAt) > new Date()) {
           hasValidSession = true
           userEmail = sessionData.email
         }
       }
     } catch (error) {
+      // Session validation failed
       hasValidSession = false
-      // Only log non-timeout errors
-      if ((error as Error).message !== 'Decrypt timeout') {
-        console.warn(`[Middleware] Session decrypt failed for ${pathname}:`, error)
-      }
       
-      // Clear invalid session cookie silently
-      const response = NextResponse.next()
-      response.cookies.delete('session')
-      
-      // For timeout errors, continue without authentication
-      if ((error as Error).message === 'Decrypt timeout') {
-        // Silent timeout handling
+      // For timeout errors, don't delete the cookie immediately
+      if ((error as Error).message !== 'Session validation timeout') {
+        // Clear invalid session cookie
+        const response = NextResponse.next()
+        response.cookies.delete('session')
         return response
       }
     }
   }
   
-  // Redirect logic with enhanced loop prevention
-  const url = request.nextUrl.clone()
+  // Helper function to create redirect with loop counter
+  const createRedirect = (url: URL) => {
+    url.searchParams.set("_rc", String(redirectCount + 1))
+    const response = NextResponse.redirect(url)
+    // Clean up the redirect counter from the URL after redirect
+    response.headers.set("X-Clean-URL", "true")
+    return response
+  }
   
-  // For root route, let page.tsx handle it completely
+  // Handle root route
   if (isRootRoute) {
-    // Root route - let page.tsx handle authentication
+    // Don't auto-redirect from root anymore to prevent loops
+    // Let the page.tsx handle what to show
     return NextResponse.next()
   }
   
   // Redirect unauthenticated users from protected routes
   if (isAppRoute && !hasValidSession) {
-    // Redirect unauthenticated user to login
+    const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    url.searchParams.set("from", pathname)
+    return createRedirect(url)
   }
   
   // Redirect non-admin users from admin routes
   if (isAdminRoute && (!hasValidSession || !userEmail || !ADMIN_EMAILS.includes(userEmail))) {
-    // Redirect non-admin user to dashboard
+    const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return createRedirect(url)
   }
   
-  // Redirect authenticated users from auth routes (with caution)
+  // Redirect authenticated users from auth routes
   if (isAuthRoute && hasValidSession) {
-    // Redirect authenticated user to dashboard
-    url.pathname = '/dashboard'
+    const url = request.nextUrl.clone()
+    const from = searchParams.get("from")
+    url.pathname = from || '/dashboard'
+    url.searchParams.delete("from")
+    return createRedirect(url)
+  }
+  
+  // Clean up redirect counter from successful requests
+  if (searchParams.has("_rc")) {
+    const url = request.nextUrl.clone()
+    url.searchParams.delete("_rc")
     return NextResponse.redirect(url)
   }
   
@@ -127,8 +159,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - live (public live match page)
      * - clear-session (session clearing page)
+     * - auth-error (auth error page)
      * - Any file with an extension (static files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|live|clear-session|.*\\..*).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|live|clear-session|auth-error|.*\\..*).*)',
   ],
-} 
+}
