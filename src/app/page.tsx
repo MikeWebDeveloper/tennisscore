@@ -1,14 +1,28 @@
+import { redirect } from "next/navigation"
+import { getCurrentUser } from "@/lib/auth"
+
 export default async function RootPage() {
-  // TEMPORARY: Show a simple page to test if the site loads
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Tennis Score App - Test Page</h1>
-      <p>If you can see this, the redirect loop has been bypassed.</p>
-      <p>This is a temporary page for debugging.</p>
-      <div style={{ marginTop: '20px' }}>
-        <a href="/login" style={{ marginRight: '10px' }}>Go to Login</a>
-        <a href="/dashboard">Go to Dashboard (requires auth)</a>
-      </div>
-    </div>
-  )
+  try {
+    console.log("[Root Page] Starting authentication check")
+    
+    // Add timeout protection to prevent hanging
+    const authCheckPromise = getCurrentUser()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Auth timeout')), 5000)
+    )
+    
+    const user = await Promise.race([authCheckPromise, timeoutPromise])
+    
+    if (user) {
+      console.log("[Root Page] User authenticated, redirecting to dashboard")
+      redirect("/dashboard")
+    } else {
+      console.log("[Root Page] No user found, redirecting to login")
+      redirect("/login")
+    }
+  } catch (error) {
+    console.error("[Root Page] Auth check failed:", error)
+    // Always fallback to login on any error to prevent redirect loops
+    redirect("/login")
+  }
 } 
