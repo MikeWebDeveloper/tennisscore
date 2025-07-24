@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
 
 export default async function RootPage() {
-  // Server-side redirect to dashboard
-  redirect("/dashboard")
+  // Temporary fix: Always redirect to login to break the loop
+  // The middleware will handle redirecting authenticated users to dashboard
+  redirect("/login")
 } 
