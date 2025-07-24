@@ -1,0 +1,483 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts - Import statements must be first */
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    /* Light theme - Pure black and white */
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+    --card: 255 255 255;
+    --card-foreground: 0 0 0;
+    --popover: 255 255 255;
+    --popover-foreground: 0 0 0;
+    --primary: 0 0 0;
+    --primary-foreground: 255 255 255;
+    --secondary: 248 248 248;
+    --secondary-foreground: 0 0 0;
+    --muted: 245 245 245;
+    --muted-foreground: 115 115 115;
+    --accent: 240 240 240;
+    --accent-foreground: 0 0 0;
+    --destructive: 0 0 0;
+    --destructive-foreground: 255 255 255;
+    --border: 229 229 229;
+    --input: 229 229 229;
+    --ring: 0 0 0;
+    --radius: 0.5rem;
+    --chart-1: 0 0 0;
+    --chart-2: 64 64 64;
+    --chart-3: 128 128 128;
+    --chart-4: 160 160 160;
+    --chart-5: 192 192 192;
+  }
+
+  .dark {
+    /* Dark theme - Pure black and white */
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --card: 0 0 0;
+    --card-foreground: 255 255 255;
+    --popover: 0 0 0;
+    --popover-foreground: 255 255 255;
+    --primary: 255 255 255;
+    --primary-foreground: 0 0 0;
+    --secondary: 24 24 24;
+    --secondary-foreground: 255 255 255;
+    --muted: 38 38 38;
+    --muted-foreground: 163 163 163;
+    --accent: 38 38 38;
+    --accent-foreground: 255 255 255;
+    --destructive: 255 255 255;
+    --destructive-foreground: 0 0 0;
+    --border: 38 38 38;
+    --input: 38 38 38;
+    --ring: 255 255 255;
+    --radius: 0.5rem;
+    --chart-1: 255 255 255;
+    --chart-2: 192 192 192;
+    --chart-3: 128 128 128;
+    --chart-4: 96 96 96;
+    --chart-5: 64 64 64;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    /* Clay court background for overscroll areas */
+    background-image: url('/claycourt.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #B85441;
+    /* Use scroll instead of fixed for better mobile Safari support */
+    background-attachment: scroll;
+    /* Ensure it covers the entire viewport including overscroll areas */
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+  
+  /* Additional mobile Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      /* iOS Safari specific background handling */
+      background-attachment: scroll;
+      background-size: 120% 120%; /* Oversized to ensure coverage during overscroll */
+      background-position: center center;
+    }
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Keep the app background clean and readable */
+    background-color: hsl(var(--background));
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.15s ease-out;
+}
+
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
+
+/* Focus styles */
+.focus-visible {
+  @apply outline-none ring-1 ring-ring ring-offset-1 ring-offset-background;
+}
+
+/* Radio button selection - whole box clickable */
+.radio-option {
+  @apply flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-ring/50 hover:bg-accent/30 transition-all duration-200 cursor-pointer;
+  /* Ensure consistent height and centered content */
+  min-height: 64px;
+  align-items: center;
+}
+
+/* Mobile-specific adjustments for radio options */
+@media (max-width: 640px) {
+  .radio-option {
+    @apply p-3 space-x-2;
+    min-height: 56px;
+  }
+  
+  .radio-option span,
+  .radio-option div {
+    @apply text-sm;
+  }
+  
+  /* Ensure text doesn't break and stays centered */
+  .radio-option > span,
+  .radio-option > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .radio-option {
+    @apply p-2 space-x-2;
+    min-height: 52px;
+  }
+  
+  .radio-option span,
+  .radio-option div {
+    @apply text-xs;
+  }
+}
+
+.radio-option:has([data-state="checked"]) {
+  @apply border-ring bg-accent/50 shadow-sm;
+}
+
+.radio-option [data-slot="radio-group-item"] {
+  @apply border-ring/50 flex-shrink-0;
+}
+
+.radio-option:has([data-state="checked"]) [data-slot="radio-group-item"] {
+  @apply border-ring bg-ring text-primary-foreground;
+}
+
+/* Disabled radio option styling */
+.radio-option-disabled {
+  @apply flex items-center space-x-3 p-4 rounded-lg border border-border/30 bg-muted/20 transition-all duration-200 cursor-not-allowed opacity-50;
+}
+
+.radio-option-disabled [data-slot="radio-group-item"] {
+  @apply border-muted-foreground/30;
+}
+
+.radio-option-disabled div {
+  @apply text-muted-foreground;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .mobile-padding {
+    @apply px-3 py-2;
+  }
+  
+  .mobile-text {
+    @apply text-sm;
+  }
+  
+  .mobile-button {
+    @apply h-11 text-base;
+  }
+}
+
+/* Form elements */
+.form-input {
+  @apply bg-background border-input hover:border-ring/50 focus:border-ring focus:ring-1 focus:ring-ring/20 transition-all duration-200;
+}
+
+.form-select {
+  @apply bg-background border-input hover:border-ring/50 focus:border-ring focus:ring-1 focus:ring-ring/20 transition-all duration-200;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-foreground font-medium;
+}
+
+.text-subtle {
+  @apply text-muted-foreground;
+}
+
+/* Animation improvements */
+.animate-in {
+  animation: animate-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes animate-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page transitions */
+.page-transition {
+  animation: page-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Touch-friendly improvements */
+@layer components {
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button, [role="button"], .radio-option {
+    @apply touch-target;
+  }
+}
+
+/* Clean stat cards */
+.stat-card {
+  @apply bg-card border border-border/30 hover:border-border/60 transition-all duration-300 rounded-lg hover:shadow-sm;
+}
+
+/* Minimal theme overrides */
+.minimal-card {
+  @apply bg-card/50 backdrop-blur-sm border border-border/30 transition-all duration-300 hover:bg-card/80;
+}
+
+.minimal-button {
+  @apply bg-foreground text-background hover:bg-foreground/90 shadow-sm;
+}
+
+.minimal-input {
+  @apply bg-background/50 border border-border/50 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-200;
+}
+
+/* Hover effects */
+.hover-lift {
+  @apply hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300;
+}
+
+.hover-scale {
+  @apply hover:scale-105 transition-transform duration-200;
+}
+
+/* Loading animations */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Staggered animations */
+.stagger-item {
+  animation: stagger-in 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.1s; }
+.stagger-item:nth-child(2) { animation-delay: 0.2s; }
+.stagger-item:nth-child(3) { animation-delay: 0.3s; }
+.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+.stagger-item:nth-child(5) { animation-delay: 0.5s; }
+.stagger-item:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Safari CSS Grid fixes */
+@layer utilities {
+  /* Remove all complex webkit fixes and use simple iOS-compatible layout */
+  
+  /* iOS Safari compatible layout - Simple flexbox approach */
+  .ios-safe-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 48px;
+    /* Safari-specific hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Player names section - takes available space, left aligned */
+  .player-names-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0; /* Allows text truncation */
+    text-align: left;
+  }
+  
+  /* Player text content wrapper */
+  .player-text-content {
+    min-width: 0;
+    flex: 1;
+  }
+  
+  /* Player name text with proper truncation for mobile */
+  .player-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    text-align: left;
+  }
+  
+  /* Player details line */
+  .player-details-line {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.125rem;
+    text-align: left;
+  }
+  
+  /* Score section - fixed width, right aligned */
+  .score-section {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    flex-shrink: 0;
+    margin-left: auto; /* Force right alignment */
+    text-align: right;
+  }
+  
+  /* Mobile-specific fixes for iOS Safari */
+  @media (max-width: 768px) {
+    .ios-safe-layout {
+      /* Force consistent behavior on mobile */
+      min-height: 44px; /* iOS minimum touch target */
+    }
+    
+    .player-name-text {
+      /* More aggressive truncation on mobile */
+      max-width: calc(100vw - 200px); /* Reserve space for scores */
+    }
+    
+    .score-section {
+      gap: 0.25rem; /* Slightly more space on mobile */
+    }
+  }
+  
+  /* iPhone specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .ios-safe-layout {
+      /* Ensure proper alignment on iOS */
+      -webkit-box-align: center;
+      -webkit-justify-content: space-between;
+      -webkit-box-pack: justify;
+    }
+    
+    .player-names-section {
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
+    }
+    
+    .score-section {
+      -webkit-margin-start: auto;
+    }
+  }
+}
+
+/* Mobile browser specific fixes */
+@media screen and (max-width: 768px) {
+  /* Force layout recalculation on mobile devices */
+  .mobile-grid-fix {
+    contain: layout style;
+  }
+  
+  /* Prevent text centering on smaller screens */
+  .mobile-grid-fix h1,
+  .mobile-grid-fix h2,
+  .mobile-grid-fix h3,
+  .mobile-grid-fix h4,
+  .mobile-grid-fix h5,
+  .mobile-grid-fix h6 {
+    text-align: inherit !important;
+  }
+  
+  /* Fix for Opera Mobile */
+  @supports (-o-min-device-pixel-ratio: 2/1) {
+    .mobile-grid-fix {
+      -o-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+  }
+  
+  /* Fix for Chrome Mobile */
+  @supports (-webkit-appearance: none) {
+    .mobile-grid-fix {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+  }
+}
+
+/* Anti-hydration mismatch utilities */
+.suppress-hydration {
+  /* Prevent layout shift during hydration */
+  contain: layout;
+  will-change: contents;
+}

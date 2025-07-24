@@ -1,0 +1,432 @@
+"use client"
+
+import { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
+import { Player } from "@/lib/types"
+import { deletePlayer, getPlayersByUserPaginated } from "@/lib/actions/players"
+import { formatPlayerFromObject } from "@/lib/utils"
+import { PlayerList } from "./_components/player-list"
+import { CreatePlayerDialog, CreatePlayerTrigger } from "./_components/create-player-dialog"
+import { EditPlayerDialog } from "./_components/edit-player-dialog"
+import { useTranslations } from "@/hooks/use-translations"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { ArrowUpDown, ArrowUpAZ, ArrowDownZA, Search, Loader2, Users, Eye, ScrollText } from "lucide-react"
+
+interface PaginatedPlayersClientProps {
+  initialPlayers: Player[]
+  initialTotal: number
+  initialHasMore: boolean
+}
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 }
+}
+
+type SortOrder = 'none' | 'asc' | 'desc'
+type ViewMode = 'paginated' | 'all'
+
+export function PaginatedPlayersClient({ 
+  initialPlayers, 
+  initialTotal, 
+  initialHasMore 
+}: PaginatedPlayersClientProps) {
+  const t = useTranslations()
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
+  const [sortOrder, setSortOrder] = useState<SortOrder>('none')
+  const [searchQuery, setSearchQuery] = useState("")
+  const [viewMode, setViewMode] = useState<ViewMode>('paginated')
+  const [isLoading, setIsLoading] = useState(false)
+  const [enableInfiniteScroll, setEnableInfiniteScroll] = useState(true)
+  
+  // Pagination state
+  const [players, setPlayers] = useState<Player[]>(initialPlayers)
+  const [total, setTotal] = useState(initialTotal)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  
+  // Refs for infinite scroll
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  // Since we're now doing server-side filtering and sorting, we just need to handle local sorting for non-search cases
+  const sortedAndFilteredPlayers = useMemo(() => {
+    // If there's a search query, the server already handled filtering and sorting
+    if (searchQuery) return players
+
+    // Only apply client-side sorting when there's no search
+    if (sortOrder === 'none') return players
+
+    const sorted = [...players].sort((a, b) => {
+      const nameA = formatPlayerFromObject(a).toLowerCase()
+      const nameB = formatPlayerFromObject(b).toLowerCase()
+      
+      if (sortOrder === 'asc') {
+        return nameA.localeCompare(nameB)
+      } else {
+        return nameB.localeCompare(nameA)
+      }
+    })
+
+    return sorted
+  }, [players, sortOrder, searchQuery])
+
+  const handleDeletePlayer = async (playerId: string) => {
+    if (confirm(t("confirmDeletePlayer"))) {
+      const result = await deletePlayer(playerId)
+      if (result.success) {
+        // Remove player from local state instead of reloading page
+        setPlayers(prev => prev.filter(p => p.$id !== playerId))
+        setTotal(prev => prev - 1)
+      }
+    }
+  }
+
+  const handleSortToggle = () => {
+    setSortOrder(current => {
+      if (current === 'none') return 'asc'
+      if (current === 'asc') return 'desc'
+      return 'none'
+    })
+  }
+
+  const getSortIcon = () => {
+    switch (sortOrder) {
+      case 'asc':
+        return <ArrowUpAZ className="h-4 w-4" />
+      case 'desc':
+        return <ArrowDownZA className="h-4 w-4" />
+      default:
+        return <ArrowUpDown className="h-4 w-4" />
+    }
+  }
+
+  const loadMorePlayers = async () => {
+    if (isLoading || !hasMore) return
+    
+    setIsLoading(true)
+    try {
+      const result = await getPlayersByUserPaginated({ 
+        limit: 20, 
+        offset: players.length,
+        sortBy: 'mainFirst',
+        searchQuery: searchQuery || undefined
+      })
+      
+      setPlayers(prev => [...prev, ...result.players])
+      setHasMore(result.hasMore)
+    } catch (error) {
+      console.error("Failed to load more players:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadAllPlayers = async () => {
+    setIsLoading(true)
+    try {
+      const result = await getPlayersByUserPaginated({ 
+        limit: 1000, 
+        offset: 0,
+        sortBy: 'mainFirst',
+        searchQuery: searchQuery || undefined
+      })
+      
+      setPlayers(result.players)
+      setHasMore(false)
+      setViewMode('all')
+    } catch (error) {
+      console.error("Failed to load all players:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const resetToPaginated = async () => {
+    setIsLoading(true)
+    try {
+      const result = await getPlayersByUserPaginated({ 
+        limit: 20, 
+        offset: 0,
+        sortBy: 'mainFirst',
+        searchQuery: searchQuery || undefined
+      })
+      
+      setPlayers(result.players)
+      setHasMore(result.hasMore)
+      setViewMode('paginated')
+    } catch (error) {
+      console.error("Failed to reset pagination:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Debounced search functionality
+  const handleSearch = useCallback(async (query: string) => {
+    setIsLoading(true)
+    try {
+      const result = await getPlayersByUserPaginated({ 
+        limit: 20, 
+        offset: 0,
+        sortBy: sortOrder === 'none' ? 'mainFirst' : (sortOrder === 'asc' ? 'name' : 'recent'),
+        searchQuery: query || undefined
+      })
+      
+      setPlayers(result.players)
+      setTotal(result.total)
+      setHasMore(result.hasMore)
+      setViewMode('paginated')
+    } catch (error) {
+      console.error("Failed to search players:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [sortOrder])
+
+  // Debounce search calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSearch(searchQuery)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, handleSearch])
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    if (!enableInfiniteScroll || viewMode !== 'paginated' || !hasMore) {
+      return
+    }
+
+    const options = {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.1
+    }
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      const [entry] = entries
+      if (entry.isIntersecting && !isLoading && hasMore) {
+        loadMorePlayers()
+      }
+    }, options)
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [enableInfiniteScroll, viewMode, hasMore, isLoading])
+
+  return (
+    <motion.div 
+      className="min-h-screen bg-background p-4 md:p-6"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground">{t("players")}</h1>
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              {t("managePlayersDescription")}
+            </p>
+            {total > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {t("showingPlayersSummary").replace('{shown}', String(players.length)).replace('{total}', String(total))}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {players.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSortToggle}
+                  className="flex items-center gap-2"
+                >
+                  {getSortIcon()}
+                  <span className="hidden sm:inline">{t("sort")}</span>
+                </Button>
+                
+                {/* Infinite scroll toggle */}
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="infinite-scroll"
+                    checked={enableInfiniteScroll}
+                    onCheckedChange={setEnableInfiniteScroll}
+                    aria-label="Toggle infinite scroll"
+                  />
+                  <Label htmlFor="infinite-scroll" className="text-sm hidden sm:block">
+                    Infinite Scroll
+                  </Label>
+                  <ScrollText className="h-4 w-4 sm:hidden" />
+                </div>
+              </>
+            )}
+            <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
+          </div>
+        </div>
+
+        {/* Search and Results */}
+        {players.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
+              <Input
+                placeholder={t('searchPlayers')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                aria-label="Search players by name or rating"
+                role="searchbox"
+              />
+            </div>
+            {searchQuery && (
+              <p className="text-sm text-muted-foreground">
+                {total} players found
+              </p>
+            )}
+          </div>
+        )}
+
+        {players.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">{t("noPlayersYet")}</p>
+            <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
+          </div>
+        ) : sortedAndFilteredPlayers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">No players found matching your search</p>
+            <Button variant="outline" onClick={() => setSearchQuery("")}>
+              Clear Search
+            </Button>
+          </div>
+        ) : (
+          <>
+            <PlayerList 
+              players={sortedAndFilteredPlayers}
+              onEditPlayer={setEditingPlayer}
+              onDeletePlayer={handleDeletePlayer}
+            />
+
+            {/* Pagination Controls */}
+            {(
+              <div className="flex flex-col items-center gap-4 mt-8">
+                {viewMode === 'paginated' ? (
+                  // Paginated Mode Controls
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    {hasMore && (
+                      <>
+                        {/* Infinite scroll trigger */}
+                        <div ref={loadMoreRef} className="w-full h-1" />
+                        
+                        {/* Manual load more button (shown when infinite scroll is disabled or as fallback) */}
+                        {!enableInfiniteScroll && (
+                          <Button 
+                            variant="outline" 
+                            onClick={loadMorePlayers}
+                            disabled={isLoading}
+                            className="min-w-[140px]"
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                {t("loading")}
+                              </>
+                            ) : (
+                              <>
+                                Show More ({total - players.length} remaining)
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        
+                        {/* Loading indicator for infinite scroll */}
+                        {enableInfiniteScroll && isLoading && (
+                          <div className="flex items-center text-muted-foreground">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Loading more players...
+                          </div>
+                        )}
+                      </>
+                    )}
+                    
+                    {total > 30 && players.length < total && (
+                      <Button 
+                        variant="secondary" 
+                        onClick={loadAllPlayers}
+                        disabled={isLoading}
+                        className="min-w-[120px]"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View All ({total})
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  // All Mode Controls
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      Showing all players ({total})
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={resetToPaginated}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {t("loading")}
+                        </>
+                      ) : (
+                        "Back to Paginated"
+                      )}
+                    </Button>
+                  </div>
+                )}
+                
+                {/* No More Players Message */}
+                {!hasMore && viewMode === 'paginated' && players.length > 20 && (
+                  <div className="text-center text-sm text-muted-foreground">
+                    All players loaded
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        <CreatePlayerDialog 
+          isOpen={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+        />
+
+        <EditPlayerDialog 
+          player={editingPlayer}
+          isOpen={!!editingPlayer}
+          onOpenChange={(open) => !open && setEditingPlayer(null)}
+        />
+      </div>
+    </motion.div>
+  )
+}
