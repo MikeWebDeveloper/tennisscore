@@ -101,7 +101,7 @@ const BYPASS_PATTERNS = [
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v2.0.0...')
+  console.log('[SW] Installing service worker v2.3.0...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -318,10 +318,8 @@ async function handleRequest(request) {
       return await networkFirstWithOfflineFallback(request)
     }
     
-    // Navigation requests (pages)
-    if (request.mode === 'navigate') {
-      return await handleNavigation(request)
-    }
+    // Navigation requests (pages) - Already bypassed in shouldBypassRequest
+    // This code should never be reached for navigation requests
     
     // Default: Network with fallback
     return await networkWithFallback(request)
@@ -522,33 +520,8 @@ async function cleanupCache(cache) {
   }
 }
 
-// Handle navigation requests - Modified to prevent offline mode issues
-async function handleNavigation(request) {
-  try {
-    // Create a new request with explicit redirect handling for proxy scenarios
-    const url = request.url
-    const navigationRequest = new Request(url, {
-      method: 'GET',
-      headers: request.headers,
-      mode: request.mode === 'navigate' ? 'cors' : request.mode,
-      credentials: request.credentials,
-      redirect: 'follow',
-      cache: 'default'
-    })
-    
-    const response = await fetch(navigationRequest)
-    
-    return response
-    
-  } catch (error) {
-    console.error('[SW] Navigation failed for:', request.url, error)
-    
-    // CRITICAL FIX: Don't show offline fallback for navigation requests in production
-    // This prevents the offline mode issue on Vercel
-    // Let the error propagate so the app can handle it properly
-    throw error
-  }
-}
+// Navigation requests are now bypassed in shouldBypassRequest() to prevent offline mode issues
+// This prevents the service worker from interfering with normal page navigation on Vercel
 
 // Network with graceful fallback
 async function networkWithFallback(request) {
@@ -706,7 +679,7 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '2.0.0' })
+      event.ports[0]?.postMessage({ version: '2.3.0' })
       break
       
     default:
