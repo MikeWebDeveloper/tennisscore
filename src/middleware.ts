@@ -36,18 +36,31 @@ export async function middleware(request: NextRequest) {
   // Auth routes  
   const isAuthRoute = pathname === "/login" || pathname === "/signup"
   
-  // Check if user has valid session
+  // Check if user has valid session with timeout protection
   let hasValidSession = false
   let userEmail: string | null = null
   
   if (sessionCookie) {
     try {
-      const sessionData = await decrypt(sessionCookie)
+      // Add timeout protection to prevent middleware from hanging
+      const decryptPromise = decrypt(sessionCookie)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Decrypt timeout')), 3000)
+      )
+      
+      const sessionData = await Promise.race([decryptPromise, timeoutPromise]) as any
       hasValidSession = !!sessionData?.userId
       userEmail = sessionData?.email || null
     } catch (error) {
       hasValidSession = false
       console.warn('Session decrypt failed:', error)
+      
+      // If it's a timeout, clear the corrupted session cookie
+      if ((error as Error).message === 'Decrypt timeout') {
+        const response = NextResponse.next()
+        response.cookies.delete('session')
+        return response
+      }
     }
   }
   
