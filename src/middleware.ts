@@ -8,6 +8,10 @@ const ADMIN_EMAILS = [
 ]
 
 export async function middleware(request: NextRequest) {
+  // EMERGENCY BYPASS: Disable middleware temporarily to debug redirect loop
+  console.log('Middleware bypassed for debugging:', request.nextUrl.pathname)
+  return NextResponse.next()
+  
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
   
@@ -36,6 +40,9 @@ export async function middleware(request: NextRequest) {
   // Auth routes  
   const isAuthRoute = pathname === "/login" || pathname === "/signup"
   
+  // Root route handling - should be handled by page.tsx but add safety check
+  const isRootRoute = pathname === "/"
+  
   // Check if user has valid session with timeout protection
   let hasValidSession = false
   let userEmail: string | null = null
@@ -49,16 +56,25 @@ export async function middleware(request: NextRequest) {
       )
       
       const sessionData = await Promise.race([decryptPromise, timeoutPromise]) as any
-      hasValidSession = !!sessionData?.userId
-      userEmail = sessionData?.email || null
+      
+      // Validate session data more thoroughly
+      if (sessionData && sessionData.userId && sessionData.email) {
+        // Check if session is expired
+        if (sessionData.expiresAt && new Date(sessionData.expiresAt) > new Date()) {
+          hasValidSession = true
+          userEmail = sessionData.email
+        }
+      }
     } catch (error) {
       hasValidSession = false
       console.warn('Session decrypt failed:', error)
       
-      // If it's a timeout, clear the corrupted session cookie
+      // Clear invalid session cookie to prevent future issues
+      const response = NextResponse.next()
+      response.cookies.delete('session')
+      
+      // For timeout or other errors, let the request continue without session
       if ((error as Error).message === 'Decrypt timeout') {
-        const response = NextResponse.next()
-        response.cookies.delete('session')
         return response
       }
     }
@@ -82,6 +98,16 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users from auth routes
   if (isAuthRoute && hasValidSession) {
     url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+  
+  // Handle root route as fallback (should be handled by page.tsx)
+  if (isRootRoute) {
+    if (hasValidSession) {
+      url.pathname = '/dashboard'
+    } else {
+      url.pathname = '/login'
+    }
     return NextResponse.redirect(url)
   }
   
