@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { decrypt } from "@/lib/session"
-
-// Admin user emails
-const ADMIN_EMAILS = [
-  "michal.latal@yahoo.co.uk",
-  "mareklatal@seznam.cz"
-]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const sessionCookie = request.cookies.get("session")?.value
   
   // Skip middleware for static assets, API routes, and public paths
   if (
@@ -18,95 +10,14 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/sw.js') ||
     pathname.startsWith('/manifest.json') ||
     pathname.startsWith('/icons') ||
-    pathname.startsWith('/clear-cache.html')
+    pathname.startsWith('/clear-cache.html') ||
+    pathname.startsWith('/test-static.html')
   ) {
     return NextResponse.next()
   }
   
-  // Protected app routes
-  const isAppRoute = pathname.startsWith("/dashboard") || 
-                    pathname.startsWith("/matches") || 
-                    pathname.startsWith("/players") ||
-                    pathname.startsWith("/statistics") ||
-                    pathname.startsWith("/player-statistics")
-  
-  // Admin routes
-  const isAdminRoute = pathname.startsWith("/admin")
-  
-  // Auth routes  
-  const isAuthRoute = pathname === "/login" || pathname === "/signup"
-  
-  // Root route handling - should be handled by page.tsx but add safety check
-  const isRootRoute = pathname === "/"
-  
-  // Check if user has valid session with timeout protection
-  let hasValidSession = false
-  let userEmail: string | null = null
-  
-  if (sessionCookie) {
-    try {
-      // Add timeout protection to prevent middleware from hanging
-      const decryptPromise = decrypt(sessionCookie)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Decrypt timeout')), 3000)
-      )
-      
-      const sessionData = await Promise.race([decryptPromise, timeoutPromise]) as any
-      
-      // Validate session data more thoroughly
-      if (sessionData && sessionData.userId && sessionData.email) {
-        // Check if session is expired
-        if (sessionData.expiresAt && new Date(sessionData.expiresAt) > new Date()) {
-          hasValidSession = true
-          userEmail = sessionData.email
-        }
-      }
-    } catch (error) {
-      hasValidSession = false
-      console.warn('Session decrypt failed:', error)
-      
-      // Clear invalid session cookie to prevent future issues
-      const response = NextResponse.next()
-      response.cookies.delete('session')
-      
-      // For timeout or other errors, let the request continue without session
-      if ((error as Error).message === 'Decrypt timeout') {
-        return response
-      }
-    }
-  }
-  
-  // Redirect logic with loop prevention
-  const url = request.nextUrl.clone()
-  
-  // Redirect unauthenticated users from protected routes
-  if (isAppRoute && !hasValidSession) {
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-  
-  // Redirect non-admin users from admin routes
-  if (isAdminRoute && (!hasValidSession || !userEmail || !ADMIN_EMAILS.includes(userEmail))) {
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-  
-  // Redirect authenticated users from auth routes
-  if (isAuthRoute && hasValidSession) {
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-  
-  // Handle root route as fallback (should be handled by page.tsx)
-  if (isRootRoute) {
-    if (hasValidSession) {
-      url.pathname = '/dashboard'
-    } else {
-      url.pathname = '/login'
-    }
-    return NextResponse.redirect(url)
-  }
-  
+  // TEMPORARY BYPASS: Let all requests through to isolate the redirect loop
+  console.log(`[Middleware] Processing path: ${pathname}`)
   return NextResponse.next()
 }
 
