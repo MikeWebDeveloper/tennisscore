@@ -129,3 +129,9 @@ The application is configured as a Progressive Web App with service worker suppo
 
 ### Cursor AI Rules
 The project includes comprehensive Cursor AI rules in `.cursor/rules/gpt-4.1-best-practices.mdc` that emphasize functional programming patterns, proper TypeScript usage, and following existing project conventions.
+
+## Branch Management Guidelines
+
+### Deployment Branches
+- **Test Branch Deployment Rule**: Test branch must ONLY contain commits for preview on Vercel
+- **Production Deployment**: Never deploy test branch to production without explicit double confirmation from project owner
