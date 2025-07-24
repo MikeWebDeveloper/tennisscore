@@ -11,7 +11,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
   
-  console.log(`[Middleware] Processing path: ${pathname}`)
+  // Only log important paths to avoid console spam
+  if (!pathname.startsWith('/_next') && !pathname.includes('.')) {
+    console.log(`[Middleware] Processing path: ${pathname}`)
+  }
   
   // Skip middleware for static assets, API routes, and public paths
   if (
@@ -66,7 +69,10 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       hasValidSession = false
-      console.warn(`[Middleware] Session decrypt failed for ${pathname}:`, error)
+      // Only log non-timeout errors
+      if ((error as Error).message !== 'Decrypt timeout') {
+        console.warn(`[Middleware] Session decrypt failed for ${pathname}:`, error)
+      }
       
       // Clear invalid session cookie silently
       const response = NextResponse.next()
@@ -74,7 +80,7 @@ export async function middleware(request: NextRequest) {
       
       // For timeout errors, continue without authentication
       if ((error as Error).message === 'Decrypt timeout') {
-        console.warn(`[Middleware] Timeout during session check for ${pathname}, continuing without auth`)
+        // Silent timeout handling
         return response
       }
     }
@@ -85,32 +91,32 @@ export async function middleware(request: NextRequest) {
   
   // For root route, let page.tsx handle it completely
   if (isRootRoute) {
-    console.log(`[Middleware] Root route detected, letting page.tsx handle authentication`)
+    // Root route - let page.tsx handle authentication
     return NextResponse.next()
   }
   
   // Redirect unauthenticated users from protected routes
   if (isAppRoute && !hasValidSession) {
-    console.log(`[Middleware] Redirecting unauthenticated user from ${pathname} to /login`)
+    // Redirect unauthenticated user to login
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
   
   // Redirect non-admin users from admin routes
   if (isAdminRoute && (!hasValidSession || !userEmail || !ADMIN_EMAILS.includes(userEmail))) {
-    console.log(`[Middleware] Redirecting non-admin user from ${pathname} to /dashboard`)
+    // Redirect non-admin user to dashboard
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
   
   // Redirect authenticated users from auth routes (with caution)
   if (isAuthRoute && hasValidSession) {
-    console.log(`[Middleware] Redirecting authenticated user from ${pathname} to /dashboard`)
+    // Redirect authenticated user to dashboard
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
   
-  console.log(`[Middleware] Allowing request to ${pathname}`)
+  // Allow request
   return NextResponse.next()
 }
 

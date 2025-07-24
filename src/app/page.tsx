@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth"
 
 export default async function RootPage() {
   try {
-    console.log("[Root Page] Starting authentication check")
+    // Check authentication with timeout
     
     // Add timeout protection to prevent hanging
     const authCheckPromise = getCurrentUser()
@@ -14,10 +14,10 @@ export default async function RootPage() {
     const user = await Promise.race([authCheckPromise, timeoutPromise])
     
     if (user) {
-      console.log("[Root Page] User authenticated, redirecting to dashboard")
+      // User authenticated
       redirect("/dashboard")
     } else {
-      console.log("[Root Page] No user found, redirecting to login")
+      // No user found
       redirect("/login")
     }
   } catch (error) {

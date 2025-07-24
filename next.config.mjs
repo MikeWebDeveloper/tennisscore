@@ -96,12 +96,16 @@ const nextConfig = {
     ]
   },
   
-  // Custom rewrites for service worker
+  // Custom rewrites for static files
   async rewrites() {
     return [
       {
         source: '/sw.js',
         destination: '/sw.js',
+      },
+      {
+        source: '/manifest.json',
+        destination: '/manifest.json',
       },
     ]
   },
