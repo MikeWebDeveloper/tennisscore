@@ -92,6 +92,19 @@
     "pleaseRefresh": "Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "wins": "Siege",
     "ongoing": "Laufend",
-    "noData": "Keine Daten"
+    "noData": "Keine Daten",
+    "reload": "Neu laden",
+    "connecting": "Verbinde...",
+    "preview": "Vorschau",
+    "backToPaginated": "Zurück zur Paginierung",
+    "searchPlayersAriaLabel": "Spieler nach Name oder Bewertung suchen",
+    "totalMatches": "Gesamte Spiele",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen",
+    "playersCreated": "Erstellte Spieler",
+    "hot": "Heiß!",
+    "win": "Sieg",
+    "loss": "Verlust",
+    "unknownPlayer": "Unbekannter Spieler"
   }
 }

@@ -92,6 +92,19 @@
     "pleaseRefresh": "Por favor, actualice la página e intente de nuevo.",
     "wins": "victorias",
     "ongoing": "En Curso",
-    "noData": "Sin datos"
+    "noData": "Sin datos",
+    "reload": "Recargar",
+    "connecting": "Conectando...",
+    "preview": "Vista previa",
+    "backToPaginated": "Volver a paginado",
+    "searchPlayersAriaLabel": "Buscar jugadores por nombre o calificación",
+    "totalMatches": "Total de Partidos",
+    "inProgress": "En Progreso",
+    "completed": "Completado",
+    "playersCreated": "Jugadores Creados",
+    "hot": "¡Caliente!",
+    "win": "Victoria",
+    "loss": "Derrota",
+    "unknownPlayer": "Jugador Desconocido"
   }
 }
