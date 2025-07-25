@@ -144,6 +144,12 @@
     "breakPointsCreated": "Vytvořené brejkboly",
     "breakPointsConverted": "Proměněné brejkboly",
     "bestOf": "Nejlepší z",
-    "noAd": "Bez výhod"
+    "noAd": "Bez výhod",
+    "spinType": "Typ rotace",
+    "returnType": "Typ returnu",
+    "rallyType": "Typ výměny",
+    "rallyTypes": "Typy výměn",
+    "rallyTypeDistribution": "Rozdělení typů výměn",
+    "rallyTypeDistributionAndSuccess": "Rozdělení typů výměn a úspěšnost"
   }
 }

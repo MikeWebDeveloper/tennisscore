@@ -144,6 +144,12 @@
     "breakPointsCreated": "Break Points Created",
     "breakPointsConverted": "Break Points Converted",
     "bestOf": "Best of",
-    "noAd": "No-Ad"
+    "noAd": "No-Ad",
+    "spinType": "Spin Type",
+    "returnType": "Return Type",
+    "rallyType": "Rally Type",
+    "rallyTypes": "Rally Types",
+    "rallyTypeDistribution": "Rally Type Distribution",
+    "rallyTypeDistributionAndSuccess": "Rally Type Distribution & Success"
   }
 }

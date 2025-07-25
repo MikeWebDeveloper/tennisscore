@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ServeStats } from "@/lib/schemas/match"
 import { Zap, Target, TrendingUp } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface AdvancedServeCollectorProps {
   onServeStats: (stats: ServeStats) => void
@@ -21,6 +22,7 @@ export function AdvancedServeCollector({
   isVisible, 
   initialData 
 }: AdvancedServeCollectorProps) {
+  const t = useTranslations('common')
   const [speed, setSpeed] = useState(initialData?.speed || 100)
   const [placement, setPlacement] = useState<NonNullable<ServeStats>['placement']>(
     initialData?.placement || 'long'
@@ -139,7 +141,7 @@ export function AdvancedServeCollector({
 
         {/* Spin Type */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Spin Type</Label>
+          <Label className="text-sm font-medium">{t('spinType')}</Label>
           <div className="grid grid-cols-2 gap-3">
             {spinOptions.map(option => (
               <Button

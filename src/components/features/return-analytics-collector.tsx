@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ReturnStats } from "@/lib/schemas/match"
 import { CornerDownLeft, Crosshair, Shield } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface ReturnAnalyticsCollectorProps {
   onReturnStats: (stats: ReturnStats) => void
@@ -20,6 +21,7 @@ export function ReturnAnalyticsCollector({
   isVisible, 
   initialData 
 }: ReturnAnalyticsCollectorProps) {
+  const t = useTranslations('common')
   const [placement, setPlacement] = useState<NonNullable<ReturnStats>['placement']>(
     initialData?.placement || 'center-deep'
   )
@@ -211,7 +213,7 @@ export function ReturnAnalyticsCollector({
 
         {/* Return Type */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Return Type</Label>
+          <Label className="text-sm font-medium">{t('returnType')}</Label>
           <div className="grid grid-cols-2 gap-3">
             {typeOptions.map(option => (
               <Button

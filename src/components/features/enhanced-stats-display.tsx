@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AdvancedMatchStats } from "@/lib/utils/match-stats"
 import { BarChart3, Target, Zap, Activity } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface EnhancedStatsDisplayProps {
   stats: AdvancedMatchStats
 }
 
 export function EnhancedStatsDisplay({ stats }: EnhancedStatsDisplayProps) {
+  const t = useTranslations('common')
   if (!stats.hasEnhancedData) {
     return (
       <Card>
@@ -189,12 +191,12 @@ export function EnhancedStatsDisplay({ stats }: EnhancedStatsDisplayProps) {
                 <div className="text-lg font-bold">
                   {Object.keys(stats.rallyAnalytics.typeDistribution).length}
                 </div>
-                <div className="text-xs text-muted-foreground">Rally Types</div>
+                <div className="text-xs text-muted-foreground">{t('rallyTypes')}</div>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-3">Rally Type Distribution & Success</h4>
+              <h4 className="text-sm font-medium mb-3">{t('rallyTypeDistributionAndSuccess')}</h4>
               <div className="space-y-3">
                 {Object.entries(stats.rallyAnalytics.typeDistribution).map(([type, count]) => {
                   const success = stats.rallyAnalytics.typeSuccess[type] || 0
