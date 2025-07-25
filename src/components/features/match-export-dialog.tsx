@@ -40,6 +40,7 @@ import {
 } from '@/lib/utils/match-export'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { useTranslations } from '@/hooks/use-translations'
 
 interface MatchExportDialogProps {
   match: Match
@@ -58,6 +59,7 @@ export function MatchExportDialog({
   setNumber,
   disabled = false 
 }: MatchExportDialogProps) {
+  const t = useTranslations('common')
   const [isOpen, setIsOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
@@ -173,7 +175,7 @@ export function MatchExportDialog({
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Format:</span>
-                <span className="text-sm font-medium">Best of {match.matchFormat.sets}</span>
+                <span className="text-sm font-medium">{t('bestOf')} {match.matchFormat.sets}</span>
               </div>
               {match.status === 'Completed' && (
                 <div className="flex justify-between">

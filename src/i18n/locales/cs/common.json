@@ -135,6 +135,15 @@
     "qualityWorkNeeded": "Potřebuje práci",
     "completedDescription": "dokončených",
     "best": "Nejlepší",
-    "inProgress": "Probíhá"
+    "inProgress": "Probíhá",
+    "backToMatches": "Zpět na zápasy",
+    "shareResults": "Sdílet výsledky",
+    "doublesMatch": "Čtyřhra",
+    "aces": "Esa",
+    "totalPointsPlayed": "Celkem odehraných bodů",
+    "breakPointsCreated": "Vytvořené brejkboly",
+    "breakPointsConverted": "Proměněné brejkboly",
+    "bestOf": "Nejlepší z",
+    "noAd": "Bez výhod"
   }
 }

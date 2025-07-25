@@ -182,7 +182,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
           <div className="text-2xl font-bold">
             {match.playerOne && formatPlayerFromObject(match.playerOne)} / {match.playerThree && formatPlayerFromObject(match.playerThree)}
           </div>
-          <div className="text-lg text-muted-foreground">vs</div>
+          <div className="text-lg text-muted-foreground">{t('vs')}</div>
           <div className="text-2xl font-bold">
             {match.playerTwo && formatPlayerFromObject(match.playerTwo)} / {match.playerFour && formatPlayerFromObject(match.playerFour)}
           </div>
@@ -192,7 +192,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     
     return (
       <h1 className="text-2xl font-bold">
-        {match.playerOne && formatPlayerFromObject(match.playerOne)} vs{" "}
+        {match.playerOne && formatPlayerFromObject(match.playerOne)} {t('vs')}{" "}
         {match.playerTwo && formatPlayerFromObject(match.playerTwo)}
       </h1>
     )
@@ -665,7 +665,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             {(() => {
                               try {
                                 const format = JSON.parse(match.matchFormat)
-                                return `Best of ${format.sets} ${format.noAd ? '(No-Ad)' : ''}`
+                                return `${t('bestOf')} ${format.sets} ${format.noAd ? `(${t('noAd')})` : ''}`
                               } catch {
                                 return "Standard"
                               }
