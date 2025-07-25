@@ -466,4 +466,587 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
     }
   }
   return newScore;
-}; 
+};
+
+// Enhanced Pressure and Clutch Analysis Functions
+
+export interface PressureAnalysis {
+  level: 1 | 2 | 3 | 4 | 5; // 1 = low pressure, 5 = extreme pressure
+  factors: string[]; // Array of contributing factors
+  description: string;
+}
+
+export interface ClutchSituation {
+  isClutch: boolean;
+  type: 'break_point' | 'set_point' | 'match_point' | 'comeback' | 'tiebreak' | 'deciding_set' | null;
+  level: 1 | 2 | 3 | 4 | 5; // Intensity level
+  description: string;
+  affectedPlayer: 'p1' | 'p2' | null; // Player under pressure
+}
+
+export interface MomentumShift {
+  hasShifted: boolean;
+  direction: 'p1' | 'p2' | null; // Which player gained momentum
+  intensity: 1 | 2 | 3 | 4 | 5; // How significant the shift
+  description: string;
+  triggerPoints: number; // Number of points that triggered the shift
+}
+
+export interface ComebackSituation {
+  isComeback: boolean;
+  type: 'game' | 'set' | 'match' | null;
+  player: 'p1' | 'p2' | null;
+  deficit: number; // How many points/games/sets behind they were
+  description: string;
+}
+
+export interface StreakAnalysis {
+  currentStreak: {
+    player: 'p1' | 'p2' | null;
+    length: number;
+    type: 'points' | 'games' | 'sets';
+  };
+  longestPointStreak: {
+    player: 'p1' | 'p2';
+    length: number;
+    startPoint: number;
+    endPoint: number;
+  };
+  recentForm: {
+    p1: { wins: number; total: number; percentage: number };
+    p2: { wins: number; total: number; percentage: number };
+  };
+}
+
+/**
+ * Calculate pressure level (1-5) based on game situation, set status, and recent momentum
+ */
+export function getPressureLevel(
+  pointLog: PointDetail[],
+  currentScore: Score,
+  format: MatchFormat
+): PressureAnalysis {
+  const factors: string[] = [];
+  let pressureScore = 1;
+
+  if (pointLog.length === 0) {
+    return {
+      level: 1,
+      factors: ['Match just started'],
+      description: 'Low pressure - beginning of match'
+    };
+  }
+
+  const setsNeededToWin = Math.ceil(format.sets / 2);
+  const p1SetsWon = currentScore.sets.filter(set => set[0] > set[1]).length;
+  const p2SetsWon = currentScore.sets.filter(set => set[1] > set[0]).length;
+  const isDecidingSet = p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1;
+
+  // Check for match/set point situations
+  const matchPointStatus = isMatchPoint(
+    currentScore.games[0], 
+    currentScore.games[1], 
+    currentScore.points[0], 
+    currentScore.points[1],
+    currentScore.sets,
+    format,
+    currentScore.isTiebreak
+  );
+
+  const setPointStatus = isSetPoint(
+    currentScore.games[0], 
+    currentScore.games[1], 
+    currentScore.points[0], 
+    currentScore.points[1],
+    format,
+    currentScore.isTiebreak,
+    currentScore.sets
+  );
+
+  // Match point adds maximum pressure
+  if (matchPointStatus.isMatchPoint) {
+    pressureScore += 4;
+    factors.push(`Match point for ${matchPointStatus.player}`);
+  }
+  // Set point adds significant pressure
+  else if (setPointStatus.isSetPoint) {
+    pressureScore += 3;
+    factors.push(`Set point for ${setPointStatus.player}`);
+    
+    if (isDecidingSet) {
+      pressureScore += 1;
+      factors.push('Deciding set');
+    }
+  }
+
+  // Break point pressure
+  const lastPoint = pointLog[pointLog.length - 1];
+  if (lastPoint?.isBreakPoint) {
+    pressureScore += 2;
+    factors.push('Break point situation');
+  }
+
+  // Tiebreak pressure
+  if (currentScore.isTiebreak) {
+    pressureScore += 2;
+    factors.push('Tiebreak situation');
+    
+    const tiebreakTarget = (isDecidingSet && format.finalSetTiebreak === "super") ? 
+      (format.finalSetTiebreakAt || 10) : 7;
+    
+    const p1TB = currentScore.tiebreakPoints?.[0] || 0;
+    const p2TB = currentScore.tiebreakPoints?.[1] || 0;
+    const maxTBPoints = Math.max(p1TB, p2TB);
+    
+    if (maxTBPoints >= tiebreakTarget - 2) {
+      pressureScore += 1;
+      factors.push('Close tiebreak');
+    }
+  }
+
+  // Close game pressure
+  const p1Points = currentScore.points[0];
+  const p2Points = currentScore.points[1];
+  const isCloseGame = (p1Points >= 2 && p2Points >= 2) || 
+                     (p1Points >= 3 || p2Points >= 3);
+  
+  if (isCloseGame && !currentScore.isTiebreak) {
+    pressureScore += 1;
+    factors.push('Close game');
+  }
+
+  // Momentum considerations
+  const recentPoints = pointLog.slice(-6); // Last 6 points
+  const recentWinners = recentPoints.map(p => p.winner);
+  const p1RecentWins = recentWinners.filter(w => w === 'p1').length;
+  const p2RecentWins = recentWinners.filter(w => w === 'p2').length;
+  
+  if (Math.abs(p1RecentWins - p2RecentWins) >= 4) {
+    pressureScore += 1;
+    factors.push('Momentum swing');
+  }
+
+  // Deciding set adds pressure
+  if (isDecidingSet && !factors.includes('Deciding set')) {
+    pressureScore += 1;
+    factors.push('Deciding set');
+  }
+
+  // Close set pressure
+  const currentGames = Math.abs(currentScore.games[0] - currentScore.games[1]);
+  if (currentGames <= 1 && Math.max(currentScore.games[0], currentScore.games[1]) >= 4) {
+    pressureScore += 1;
+    factors.push('Close set');
+  }
+
+  // Cap at 5
+  const finalLevel = Math.min(5, pressureScore) as 1 | 2 | 3 | 4 | 5;
+
+  const descriptions = {
+    1: 'Low pressure - routine situation',
+    2: 'Moderate pressure - important points',
+    3: 'High pressure - crucial moments',
+    4: 'Very high pressure - critical situation',
+    5: 'Extreme pressure - decisive moments'
+  };
+
+  return {
+    level: finalLevel,
+    factors: factors.length > 0 ? factors : ['Standard play'],
+    description: descriptions[finalLevel]
+  };
+}
+
+/**
+ * Detect clutch scenarios with different types and levels
+ */
+export function isClutchSituation(
+  pointLog: PointDetail[],
+  currentScore: Score,
+  format: MatchFormat
+): ClutchSituation {
+  if (pointLog.length === 0) {
+    return {
+      isClutch: false,
+      type: null,
+      level: 1,
+      description: 'No clutch situation',
+      affectedPlayer: null
+    };
+  }
+
+  const setsNeededToWin = Math.ceil(format.sets / 2);
+  const p1SetsWon = currentScore.sets.filter(set => set[0] > set[1]).length;
+  const p2SetsWon = currentScore.sets.filter(set => set[1] > set[0]).length;
+  const isDecidingSet = p1SetsWon === setsNeededToWin - 1 && p2SetsWon === setsNeededToWin - 1;
+
+  // Check match point
+  const matchPointStatus = isMatchPoint(
+    currentScore.games[0], 
+    currentScore.games[1], 
+    currentScore.points[0], 
+    currentScore.points[1],
+    currentScore.sets,
+    format,
+    currentScore.isTiebreak
+  );
+
+  if (matchPointStatus.isMatchPoint) {
+    return {
+      isClutch: true,
+      type: 'match_point',
+      level: 5,
+      description: `Match point for ${matchPointStatus.player}`,
+      affectedPlayer: matchPointStatus.player === 'p1' ? 'p2' : 'p1'
+    };
+  }
+
+  // Check set point
+  const setPointStatus = isSetPoint(
+    currentScore.games[0], 
+    currentScore.games[1], 
+    currentScore.points[0], 
+    currentScore.points[1],
+    format,
+    currentScore.isTiebreak,
+    currentScore.sets
+  );
+
+  if (setPointStatus.isSetPoint) {
+    const level = isDecidingSet ? 5 : 4;
+    return {
+      isClutch: true,
+      type: 'set_point',
+      level: level as 4 | 5,
+      description: `Set point for ${setPointStatus.player}${isDecidingSet ? ' (deciding set)' : ''}`,
+      affectedPlayer: setPointStatus.player === 'p1' ? 'p2' : 'p1'
+    };
+  }
+
+  // Check break point
+  const lastPoint = pointLog[pointLog.length - 1];
+  if (lastPoint?.isBreakPoint) {
+    const level = isDecidingSet ? 4 : 3;
+    return {
+      isClutch: true,
+      type: 'break_point',
+      level: level as 3 | 4,
+      description: `Break point situation${isDecidingSet ? ' (deciding set)' : ''}`,
+      affectedPlayer: lastPoint.server
+    };
+  }
+
+  // Check tiebreak
+  if (currentScore.isTiebreak) {
+    const level = isDecidingSet ? 4 : 3;
+    return {
+      isClutch: true,
+      type: 'tiebreak',
+      level: level as 3 | 4,
+      description: `Tiebreak${isDecidingSet ? ' (deciding set)' : ''}`,
+      affectedPlayer: null
+    };
+  }
+
+  // Check deciding set
+  if (isDecidingSet) {
+    return {
+      isClutch: true,
+      type: 'deciding_set',
+      level: 3,
+      description: 'Deciding set',
+      affectedPlayer: null
+    };
+  }
+
+  // Check comeback situation
+  const comeback = detectComebackSituation(pointLog, currentScore, format);
+  if (comeback.isComeback) {
+    return {
+      isClutch: true,
+      type: 'comeback',
+      level: 3,
+      description: comeback.description,
+      affectedPlayer: comeback.player === 'p1' ? 'p2' : 'p1'
+    };
+  }
+
+  return {
+    isClutch: false,
+    type: null,
+    level: 1,
+    description: 'No clutch situation',
+    affectedPlayer: null
+  };
+}
+
+/**
+ * Analyze momentum changes based on recent point patterns
+ */
+export function calculateMomentumShift(
+  pointLog: PointDetail[],
+  lookbackPoints: number = 8
+): MomentumShift {
+  if (pointLog.length < 4) {
+    return {
+      hasShifted: false,
+      direction: null,
+      intensity: 1,
+      description: 'Insufficient data for momentum analysis',
+      triggerPoints: 0
+    };
+  }
+
+  const recentPoints = pointLog.slice(-lookbackPoints);
+  const midPoint = Math.floor(recentPoints.length / 2);
+  
+  // Split into two halves for comparison
+  const firstHalf = recentPoints.slice(0, midPoint);
+  const secondHalf = recentPoints.slice(midPoint);
+
+  // Calculate win rates for each half
+  const firstHalfP1Wins = firstHalf.filter(p => p.winner === 'p1').length;
+  const firstHalfP1Rate = firstHalfP1Wins / firstHalf.length;
+  
+  const secondHalfP1Wins = secondHalf.filter(p => p.winner === 'p1').length;
+  const secondHalfP1Rate = secondHalfP1Wins / secondHalf.length;
+
+  const momentumChange = secondHalfP1Rate - firstHalfP1Rate;
+  const absoluteChange = Math.abs(momentumChange);
+
+  // Determine if there's a significant shift (threshold: 0.4)
+  if (absoluteChange < 0.4) {
+    return {
+      hasShifted: false,
+      direction: null,
+      intensity: 1,
+      description: 'No significant momentum shift',
+      triggerPoints: 0
+    };
+  }
+
+  const direction = momentumChange > 0 ? 'p1' : 'p2';
+  let intensity: 1 | 2 | 3 | 4 | 5;
+  let description: string;
+
+  if (absoluteChange >= 0.8) {
+    intensity = 5;
+    description = `Strong momentum shift to ${direction}`;
+  } else if (absoluteChange >= 0.6) {
+    intensity = 4;
+    description = `Clear momentum shift to ${direction}`;
+  } else if (absoluteChange >= 0.5) {
+    intensity = 3;
+    description = `Moderate momentum shift to ${direction}`;
+  } else {
+    intensity = 2;
+    description = `Slight momentum shift to ${direction}`;
+  }
+
+  return {
+    hasShifted: true,
+    direction,
+    intensity,
+    description,
+    triggerPoints: secondHalf.length
+  };
+}
+
+/**
+ * Identify comeback scenarios
+ */
+export function detectComebackSituation(
+  pointLog: PointDetail[],
+  currentScore: Score,
+  format: MatchFormat
+): ComebackSituation {
+  if (pointLog.length < 10) {
+    return {
+      isComeback: false,
+      type: null,
+      player: null,
+      deficit: 0,
+      description: 'No comeback situation detected'
+    };
+  }
+
+  // Check for match-level comeback
+  const setsNeededToWin = Math.ceil(format.sets / 2);
+  const p1SetsWon = currentScore.sets.filter(set => set[0] > set[1]).length;
+  const p2SetsWon = currentScore.sets.filter(set => set[1] > set[0]).length;
+
+  // Check if someone was down in sets and is now level or ahead
+  if (format.sets >= 3) {
+    const maxSetsWon = Math.max(p1SetsWon, p2SetsWon);
+    const minSetsWon = Math.min(p1SetsWon, p2SetsWon);
+    
+    if (maxSetsWon >= setsNeededToWin - 1 && minSetsWon === maxSetsWon) {
+      // Someone came back to level the match
+      const comebackPlayer = p1SetsWon === p2SetsWon ? 
+        (p1SetsWon > 0 ? 'p2' : 'p1') : // Simplified logic
+        (p1SetsWon > p2SetsWon ? 'p1' : 'p2');
+      
+      return {
+        isComeback: true,
+        type: 'match',
+        player: comebackPlayer,
+        deficit: 1,
+        description: `${comebackPlayer} came back to level the match`
+      };
+    }
+  }
+
+  // Check for set-level comeback
+  const p1Games = currentScore.games[0];
+  const p2Games = currentScore.games[1];
+  const gamesDiff = Math.abs(p1Games - p2Games);
+  
+  if (gamesDiff <= 1 && Math.max(p1Games, p2Games) >= 4) {
+    // Check recent game history to see if someone was significantly behind
+    const recentPoints = pointLog.slice(-20);
+    let wasSignificantlyBehind = false;
+    let comebackPlayer: 'p1' | 'p2' | null = null;
+
+    // Look for patterns where someone was down multiple games
+    if (p1Games === p2Games && p1Games >= 4) {
+      // Currently level - check who was behind recently
+      const p1RecentWins = recentPoints.filter(p => p.winner === 'p1').length;
+      const p2RecentWins = recentPoints.filter(p => p.winner === 'p2').length;
+      
+      if (Math.abs(p1RecentWins - p2RecentWins) >= 6) {
+        wasSignificantlyBehind = true;
+        comebackPlayer = p1RecentWins > p2RecentWins ? 'p1' : 'p2';
+      }
+    }
+
+    if (wasSignificantlyBehind && comebackPlayer) {
+      return {
+        isComeback: true,
+        type: 'set',
+        player: comebackPlayer,
+        deficit: 2,
+        description: `${comebackPlayer} came back from games deficit`
+      };
+    }
+  }
+
+  // Check for game-level comeback
+  if (!currentScore.isTiebreak) {
+    const p1Points = currentScore.points[0];
+    const p2Points = currentScore.points[1];
+    
+    // Check for comeback from 0-40 or similar
+    if ((p1Points >= 3 && p2Points === 0) || (p2Points >= 3 && p1Points === 0)) {
+      const comebackPlayer = p1Points > p2Points ? 'p1' : 'p2';
+      const deficit = Math.abs(p1Points - p2Points);
+      
+      if (deficit >= 3) {
+        return {
+          isComeback: true,
+          type: 'game',
+          player: comebackPlayer,
+          deficit,
+          description: `${comebackPlayer} came back from ${deficit}-point deficit`
+        };
+      }
+    }
+  }
+
+  return {
+    isComeback: false,
+    type: null,
+    player: null,
+    deficit: 0,
+    description: 'No comeback situation detected'
+  };
+}
+
+/**
+ * Track point streaks and analyze recent form
+ */
+export function calculateCurrentStreak(
+  pointLog: PointDetail[],
+  analysisWindow: number = 20
+): StreakAnalysis {
+  if (pointLog.length === 0) {
+    return {
+      currentStreak: { player: null, length: 0, type: 'points' },
+      longestPointStreak: { player: 'p1', length: 0, startPoint: 0, endPoint: 0 },
+      recentForm: {
+        p1: { wins: 0, total: 0, percentage: 0 },
+        p2: { wins: 0, total: 0, percentage: 0 }
+      }
+    };
+  }
+
+  // Calculate current point streak
+  let currentStreakLength = 1;
+  const currentStreakPlayer = pointLog[pointLog.length - 1].winner;
+  
+  for (let i = pointLog.length - 2; i >= 0; i--) {
+    if (pointLog[i].winner === currentStreakPlayer) {
+      currentStreakLength++;
+    } else {
+      break;
+    }
+  }
+
+  // Find longest point streak in the match
+  let longestStreak = { player: 'p1' as 'p1' | 'p2', length: 0, startPoint: 0, endPoint: 0 };
+  let currentLength = 1;
+  let streakStart = 0;
+
+  for (let i = 1; i < pointLog.length; i++) {
+    if (pointLog[i].winner === pointLog[i - 1].winner) {
+      currentLength++;
+    } else {
+      if (currentLength > longestStreak.length) {
+        longestStreak = {
+          player: pointLog[i - 1].winner,
+          length: currentLength,
+          startPoint: streakStart + 1, // 1-indexed
+          endPoint: i
+        };
+      }
+      currentLength = 1;
+      streakStart = i;
+    }
+  }
+
+  // Check final streak
+  if (currentLength > longestStreak.length) {
+    longestStreak = {
+      player: pointLog[pointLog.length - 1].winner,
+      length: currentLength,
+      startPoint: streakStart + 1,
+      endPoint: pointLog.length
+    };
+  }
+
+  // Calculate recent form
+  const recentPoints = pointLog.slice(-Math.min(analysisWindow, pointLog.length));
+  const p1RecentWins = recentPoints.filter(p => p.winner === 'p1').length;
+  const p2RecentWins = recentPoints.filter(p => p.winner === 'p2').length;
+  const totalRecent = recentPoints.length;
+
+  return {
+    currentStreak: {
+      player: currentStreakLength > 1 ? currentStreakPlayer : null,
+      length: currentStreakLength,
+      type: 'points'
+    },
+    longestPointStreak: longestStreak,
+    recentForm: {
+      p1: {
+        wins: p1RecentWins,
+        total: totalRecent,
+        percentage: totalRecent > 0 ? Math.round((p1RecentWins / totalRecent) * 100) : 0
+      },
+      p2: {
+        wins: p2RecentWins,
+        total: totalRecent,
+        percentage: totalRecent > 0 ? Math.round((p2RecentWins / totalRecent) * 100) : 0
+      }
+    }
+  };
+} 

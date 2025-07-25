@@ -6,7 +6,17 @@ import {
   getTiebreakServer,
   getTennisScore,
   calculateScoreFromPointLog,
-  isBreakPoint
+  isBreakPoint,
+  getPressureLevel,
+  isClutchSituation,
+  calculateMomentumShift,
+  detectComebackSituation,
+  calculateCurrentStreak,
+  type PressureAnalysis,
+  type ClutchSituation,
+  type MomentumShift,
+  type ComebackSituation,
+  type StreakAnalysis
 } from '@/lib/utils/tennis-scoring'
 import { CourtPosition } from '@/lib/types'
 
@@ -29,6 +39,78 @@ export interface Score {
   initialTiebreakServer?: 'p1' | 'p2';
 }
 
+// Enhanced serve placement and quality tracking
+export interface EnhancedServeData {
+  placement?: 'wide' | 'body' | 't' | 'long' | 'net'
+  quality?: 1 | 2 | 3 | 4 | 5 // 1=poor, 5=excellent
+  spin?: 'flat' | 'slice' | 'kick' | 'twist'
+  speed?: number // mph or km/h
+  bounceHeight?: 'low' | 'medium' | 'high'
+  effectiveness?: 'weak' | 'neutral' | 'strong'
+}
+
+// Enhanced return analysis
+export interface EnhancedReturnData {
+  quality?: 'defensive' | 'neutral' | 'offensive'
+  placement?: 'deuce-deep' | 'center-deep' | 'ad-deep' | 'deuce-mid' | 'center-mid' | 'ad-mid' | 'deuce-short' | 'center-short' | 'ad-short'
+  type?: 'block' | 'swing' | 'slice' | 'defensive' | 'attack'
+  depth?: 'short' | 'medium' | 'deep'
+  direction?: 'cross-court' | 'down-the-line' | 'inside-out' | 'inside-in'
+  effectiveness?: 'weak' | 'neutral' | 'strong'
+}
+
+// Rally characteristics and context
+export interface RallyCharacteristics {
+  type?: 'baseline' | 'serve-and-volley' | 'net-play' | 'defensive' | 'power-baseline' | 'mixed'
+  character?: 'aggressive' | 'defensive' | 'neutral' | 'counter-attacking' | 'grinding'
+  keyShots?: Array<{
+    shotNumber: number
+    shotType: 'forehand' | 'backhand' | 'volley' | 'overhead' | 'drop-shot' | 'lob' | 'slice'
+    player: 'p1' | 'p2'
+    effectiveness: 'poor' | 'good' | 'excellent'
+    turning_point?: boolean
+  }>
+  dominantPlayer?: 'p1' | 'p2' | 'balanced'
+  netApproaches?: number
+  changeOfPace?: boolean
+}
+
+// Momentum context and indicators
+export interface MomentumContext {
+  shift?: MomentumShift
+  currentStreak?: {
+    player: 'p1' | 'p2' | null
+    length: number
+    type: 'points' | 'games' | 'sets'
+  }
+  isGameChanger?: boolean
+  momentumDirection?: 'p1' | 'p2' | 'neutral'
+  emotionalTone?: 'high-energy' | 'tense' | 'routine' | 'deflating' | 'momentum-shifting'
+}
+
+// Enhanced match conditions
+export interface MatchConditions {
+  fatigue?: {
+    p1Level: 1 | 2 | 3 | 4 | 5 // 1=fresh, 5=exhausted
+    p2Level: 1 | 2 | 3 | 4 | 5
+  }
+  weather?: {
+    condition?: 'sunny' | 'cloudy' | 'windy' | 'hot' | 'cold' | 'humid'
+    windStrength?: 'none' | 'light' | 'moderate' | 'strong'
+    windDirection?: 'behind-server' | 'against-server' | 'cross-court' | 'variable'
+  }
+  surface?: {
+    type?: 'hard' | 'clay' | 'grass' | 'carpet' | 'synthetic'
+    speed?: 'slow' | 'medium' | 'fast'
+    condition?: 'good' | 'worn' | 'slippery' | 'rough'
+  }
+  time?: {
+    matchDuration?: number // minutes elapsed
+    setDuration?: number // minutes for current set
+    gameTime?: number // minutes for current game
+  }
+}
+
 // Store point detail type - compatible with both schema and legacy types
 export interface PointDetail {
   id: string
@@ -47,17 +129,51 @@ export interface PointDetail {
   isMatchWinning: boolean
   isTiebreak: boolean
   
-  // Optional enhanced fields
+  // Basic fields for compatibility
+  serveType: 'first' | 'second'
+  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  rallyLength: number
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
   lastShotPlayer?: 'p1' | 'p2'
   notes?: string
   courtPosition?: CourtPosition
   
-  // Additional fields for compatibility
-  serveType: 'first' | 'second'
-  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
-  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
-  rallyLength: number
+  // ===== ENHANCED CONTEXTUAL FIELDS =====
+  
+  // Pressure and clutch analysis
+  pressureContext?: PressureAnalysis
+  clutchSituation?: ClutchSituation
+  comebackContext?: ComebackSituation
+  
+  // Enhanced serve data
+  enhancedServeData?: EnhancedServeData
+  
+  // Return analysis
+  enhancedReturnData?: EnhancedReturnData
+  
+  // Rally characteristics
+  rallyCharacteristics?: RallyCharacteristics
+  
+  // Momentum indicators
+  momentumContext?: MomentumContext
+  
+  // Match conditions (optional, for progressive enhancement)
+  matchConditions?: MatchConditions
+  
+  // Streak analysis at point of play
+  streakAnalysis?: StreakAnalysis
+  
+  // Additional tactical context
+  tacticalContext?: {
+    approachShot?: boolean
+    netPosition?: boolean
+    pressureSituation?: boolean
+    tacticalImportance?: 1 | 2 | 3 | 4 | 5 // How tactically important was this point
+    gameState?: 'routine' | 'important' | 'crucial' | 'decisive'
+    setContext?: 'early' | 'middle' | 'late' | 'decisive'
+    matchContext?: 'early' | 'middle' | 'late' | 'decisive'
+  }
 }
 
 export interface Match {
@@ -171,6 +287,211 @@ const getServerWithStartingChoice = (gameNumber: number, startingServer: 'p1' | 
   }
 }
 
+// Helper function to calculate enhanced contextual data for a point
+const calculateEnhancedContext = (
+  pointLog: PointDetail[],
+  currentScore: Score,
+  format: MatchFormat,
+  details: Partial<PointDetail>
+): {
+  pressureContext: PressureAnalysis
+  clutchSituation: ClutchSituation
+  momentumContext: MomentumContext
+  comebackContext: ComebackSituation
+  streakAnalysis: StreakAnalysis
+  tacticalContext: PointDetail['tacticalContext']
+} => {
+  // Calculate pressure level
+  const pressureContext = getPressureLevel(pointLog, currentScore, format)
+  
+  // Detect clutch situations
+  const clutchSituation = isClutchSituation(pointLog, currentScore, format)
+  
+  // Calculate momentum shift
+  const momentumShift = calculateMomentumShift(pointLog)
+  
+  // Analyze current streaks
+  const streakAnalysis = calculateCurrentStreak(pointLog)
+  
+  // Detect comeback situations
+  const comebackContext = detectComebackSituation(pointLog, currentScore, format)
+  
+  // Determine if this is a game changer
+  const isGameChanger = pressureContext.level >= 4 || 
+                       clutchSituation.level >= 4 || 
+                       momentumShift.intensity >= 4
+  
+  // Create momentum context
+  const momentumContext: MomentumContext = {
+    shift: momentumShift.hasShifted ? momentumShift : undefined,
+    currentStreak: streakAnalysis.currentStreak,
+    isGameChanger,
+    momentumDirection: momentumShift.direction || 'neutral',
+    emotionalTone: pressureContext.level >= 4 ? 'tense' : 
+                   isGameChanger ? 'momentum-shifting' :
+                   pressureContext.level >= 3 ? 'high-energy' : 'routine'
+  }
+  
+  // Calculate tactical importance and context
+  const totalPoints = pointLog.length + 1
+  const setsPlayed = currentScore.sets.length
+  const gamesInCurrentSet = currentScore.games[0] + currentScore.games[1]
+  
+  const tacticalImportance = Math.min(5, Math.max(1, 
+    pressureContext.level + (clutchSituation.level - 1)
+  )) as 1 | 2 | 3 | 4 | 5
+  
+  const gameState: 'routine' | 'important' | 'crucial' | 'decisive' = 
+    tacticalImportance >= 4 ? 'decisive' :
+    tacticalImportance >= 3 ? 'crucial' :
+    tacticalImportance >= 2 ? 'important' : 'routine'
+  
+  const setContext: 'early' | 'middle' | 'late' | 'decisive' = 
+    gamesInCurrentSet <= 2 ? 'early' :
+    gamesInCurrentSet >= 10 ? 'decisive' :
+    gamesInCurrentSet >= 8 ? 'late' : 'middle'
+  
+  const matchContext: 'early' | 'middle' | 'late' | 'decisive' = 
+    totalPoints <= 20 ? 'early' :
+    (setsPlayed >= Math.ceil(format.sets / 2) - 1) ? 'decisive' :
+    totalPoints >= 100 ? 'late' : 'middle'
+  
+  const tacticalContext = {
+    approachShot: details.rallyCharacteristics?.netApproaches ? details.rallyCharacteristics.netApproaches > 0 : false,
+    netPosition: details.courtPosition === 'net',
+    pressureSituation: pressureContext.level >= 3,
+    tacticalImportance,
+    gameState,
+    setContext,
+    matchContext
+  }
+  
+  return {
+    pressureContext,
+    clutchSituation,
+    momentumContext,
+    comebackContext,
+    streakAnalysis,
+    tacticalContext
+  }
+}
+
+// Helper function to enhance serve data based on basic serve info
+const enhanceServeData = (
+  serveType: 'first' | 'second',
+  pointOutcome: string,
+  details: Partial<PointDetail>
+): EnhancedServeData | undefined => {
+  if (!details.enhancedServeData && !details.serveOutcome) {
+    // If no enhanced data provided, create basic enhancement based on outcomes
+    const isAce = pointOutcome === 'ace'
+    const isDoubleFault = pointOutcome === 'double_fault'
+    const isWinner = pointOutcome === 'winner'
+    
+    let quality: 1 | 2 | 3 | 4 | 5 = 3 // default neutral
+    let effectiveness: 'weak' | 'neutral' | 'strong' = 'neutral'
+    
+    if (isAce) {
+      quality = 5
+      effectiveness = 'strong'
+    } else if (isDoubleFault) {
+      quality = 1
+      effectiveness = 'weak'
+    } else if (isWinner && serveType === 'first') {
+      quality = 4
+      effectiveness = 'strong'
+    } else if (details.pointOutcome === 'forced_error') {
+      quality = 4
+      effectiveness = 'strong'
+    } else if (details.pointOutcome === 'unforced_error') {
+      quality = 2
+      effectiveness = 'weak'
+    }
+    
+    return {
+      quality,
+      effectiveness,
+      ...(details.enhancedServeData || {})
+    }
+  }
+  
+  return details.enhancedServeData
+}
+
+// Helper function to enhance return data
+const enhanceReturnData = (
+  server: 'p1' | 'p2',
+  winner: 'p1' | 'p2',
+  pointOutcome: string,
+  details: Partial<PointDetail>
+): EnhancedReturnData | undefined => {
+  const isReturnWinner = server !== winner
+  
+  if (!details.enhancedReturnData && isReturnWinner) {
+    let quality: 'defensive' | 'neutral' | 'offensive' = 'neutral'
+    let effectiveness: 'weak' | 'neutral' | 'strong' = 'neutral'
+    
+    if (pointOutcome === 'winner' || pointOutcome === 'ace') {
+      quality = 'offensive'
+      effectiveness = 'strong'
+    } else if (pointOutcome === 'forced_error') {
+      quality = 'offensive'
+      effectiveness = 'strong'
+    } else if (pointOutcome === 'unforced_error') {
+      quality = 'defensive'
+      effectiveness = 'weak'
+    }
+    
+    return {
+      quality,
+      effectiveness,
+      ...(details.enhancedReturnData || {})
+    }
+  }
+  
+  return details.enhancedReturnData
+}
+
+// Helper function to enhance rally characteristics
+const enhanceRallyCharacteristics = (
+  rallyLength: number,
+  pointOutcome: string,
+  lastShotType?: string,
+  details?: Partial<PointDetail>
+): RallyCharacteristics | undefined => {
+  if (details?.rallyCharacteristics) {
+    return details.rallyCharacteristics
+  }
+  
+  // Basic rally analysis based on length and outcome
+  let type: RallyCharacteristics['type'] = 'baseline'
+  let character: RallyCharacteristics['character'] = 'neutral'
+  
+  if (rallyLength <= 2) {
+    type = pointOutcome === 'ace' ? 'serve-and-volley' : 'baseline'
+    character = 'aggressive'
+  } else if (rallyLength >= 8) {
+    character = 'grinding'
+  } else if (pointOutcome === 'winner') {
+    character = 'aggressive'
+  } else if (pointOutcome === 'forced_error') {
+    character = 'aggressive'
+  } else if (pointOutcome === 'unforced_error') {
+    character = 'defensive'
+  }
+  
+  if (lastShotType === 'volley' || lastShotType === 'overhead') {
+    type = 'net-play'
+    character = 'aggressive'
+  }
+  
+  return {
+    type,
+    character,
+    netApproaches: type === 'net-play' ? 1 : 0
+  }
+}
+
 // Helper function to calculate current winning streaks
 const calculateStreaks = (pointLog: PointDetail[]): { p1Streak: number; p2Streak: number } => {
   if (pointLog.length === 0) return { p1Streak: 0, p2Streak: 0 }
@@ -202,6 +523,104 @@ const calculateStreaks = (pointLog: PointDetail[]): { p1Streak: number; p2Streak
   }
   
   return { p1Streak, p2Streak }
+}
+
+// Helper function to update match conditions over time
+export const updateMatchConditions = (
+  currentConditions: MatchConditions | undefined,
+  matchDurationMinutes: number,
+  updates: Partial<MatchConditions> = {}
+): MatchConditions => {
+  const baseConditions: MatchConditions = {
+    time: {
+      matchDuration: matchDurationMinutes,
+      ...currentConditions?.time
+    },
+    fatigue: currentConditions?.fatigue || {
+      p1Level: matchDurationMinutes > 120 ? 3 : matchDurationMinutes > 60 ? 2 : 1,
+      p2Level: matchDurationMinutes > 120 ? 3 : matchDurationMinutes > 60 ? 2 : 1
+    },
+    weather: currentConditions?.weather,
+    surface: currentConditions?.surface
+  }
+  
+  return {
+    ...baseConditions,
+    ...updates
+  }
+}
+
+// Helper function to ensure backward compatibility for existing PointDetail objects
+export const normalizePointDetail = (point: Partial<PointDetail> & { winner: 'p1' | 'p2'; server: 'p1' | 'p2' }): PointDetail => {
+  // Ensure all required fields exist with defaults
+  const normalizedPoint: PointDetail = {
+    // Core required fields
+    id: point.id || `point-${Date.now()}`,
+    timestamp: point.timestamp || new Date().toISOString(),
+    pointNumber: point.pointNumber || 1,
+    setNumber: point.setNumber || 1,
+    gameNumber: point.gameNumber || 1,
+    gameScore: point.gameScore || '0-0',
+    winner: point.winner || 'p1',
+    server: point.server || 'p1',
+    
+    // Context flags
+    isBreakPoint: point.isBreakPoint || false,
+    isSetPoint: point.isSetPoint || false,
+    isMatchPoint: point.isMatchPoint || false,
+    isGameWinning: point.isGameWinning || false,
+    isSetWinning: point.isSetWinning || false,
+    isMatchWinning: point.isMatchWinning || false,
+    isTiebreak: point.isTiebreak || false,
+    
+    // Basic fields
+    serveType: point.serveType || 'first',
+    pointOutcome: point.pointOutcome || 'winner',
+    rallyLength: point.rallyLength || 1,
+    lastShotType: point.lastShotType,
+    lastShotPlayer: point.lastShotPlayer,
+    notes: point.notes,
+    courtPosition: point.courtPosition,
+    serveOutcome: point.serveOutcome,
+    
+    // Enhanced fields (optional, may be undefined for legacy points)
+    pressureContext: point.pressureContext,
+    clutchSituation: point.clutchSituation,
+    momentumContext: point.momentumContext,
+    comebackContext: point.comebackContext,
+    streakAnalysis: point.streakAnalysis,
+    tacticalContext: point.tacticalContext,
+    enhancedServeData: point.enhancedServeData,
+    enhancedReturnData: point.enhancedReturnData,
+    rallyCharacteristics: point.rallyCharacteristics,
+    matchConditions: point.matchConditions
+  }
+  
+  return normalizedPoint
+}
+
+// Helper function to check if enhanced data is available for a point
+export const hasEnhancedData = (point: PointDetail): boolean => {
+  return !!(
+    point.pressureContext ||
+    point.clutchSituation ||
+    point.momentumContext ||
+    point.enhancedServeData ||
+    point.enhancedReturnData ||
+    point.rallyCharacteristics
+  )
+}
+
+// Helper function to get the level of data enhancement for a match
+export const getMatchDataEnhancementLevel = (pointLog: PointDetail[]): 'basic' | 'partial' | 'enhanced' => {
+  if (pointLog.length === 0) return 'basic'
+  
+  const enhancedPoints = pointLog.filter(hasEnhancedData).length
+  const enhancementRatio = enhancedPoints / pointLog.length
+  
+  if (enhancementRatio >= 0.8) return 'enhanced'
+  if (enhancementRatio >= 0.3) return 'partial'
+  return 'basic'
 }
 
 // This function will be the single source of truth for score calculation.
@@ -249,7 +668,9 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   
   initializeMatch: (match) => {
     const score = match.score || initialScore
-    const pointLog = match.pointLog || []
+    const rawPointLog = match.pointLog || []
+    // Normalize point log for backward compatibility
+    const pointLog = rawPointLog.map(normalizePointDetail)
     let calculatedServer: 'p1' | 'p2' | null = null
     let startingServer: 'p1' | 'p2' = 'p1' // Default to p1 if not set
     
@@ -543,6 +964,32 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     // Debug logging available for troubleshooting
     // console.log('Store: Corrected lastShotPlayer for', outcomeToCheck, 'from', details.lastShotPlayer, 'to', correctedLastShotPlayer);
 
+    // Calculate enhanced contextual data for this point
+    const enhancedContext = calculateEnhancedContext(pointLog, previousScore, matchFormat, details)
+    
+    // Enhance serve data
+    const enhancedServeData = enhanceServeData(
+      details.serveType || 'first',
+      details.pointOutcome || 'winner',
+      details
+    )
+    
+    // Enhance return data
+    const enhancedReturnData = enhanceReturnData(
+      currentServer,
+      winner,
+      details.pointOutcome || 'winner',
+      details
+    )
+    
+    // Enhance rally characteristics
+    const rallyCharacteristics = enhanceRallyCharacteristics(
+      details.rallyLength || 1,
+      details.pointOutcome || 'winner',
+      details.lastShotType,
+      details
+    )
+
     const pointDetail: PointDetail = {
       ...details,
       id: `point-${pointLog.length + 1}`,
@@ -564,6 +1011,22 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       pointOutcome: details.pointOutcome || 'winner',
       rallyLength: details.rallyLength || 1,
       lastShotPlayer: correctedLastShotPlayer,
+      
+      // ===== ENHANCED CONTEXTUAL DATA =====
+      pressureContext: enhancedContext.pressureContext,
+      clutchSituation: enhancedContext.clutchSituation,
+      momentumContext: enhancedContext.momentumContext,
+      comebackContext: enhancedContext.comebackContext,
+      streakAnalysis: enhancedContext.streakAnalysis,
+      tacticalContext: enhancedContext.tacticalContext,
+      
+      // Enhanced serve, return, and rally data
+      enhancedServeData,
+      enhancedReturnData,
+      rallyCharacteristics,
+      
+      // Match conditions (optional - can be populated later)
+      matchConditions: details.matchConditions
     }
 
     const newPointLog = [...pointLog, pointDetail]

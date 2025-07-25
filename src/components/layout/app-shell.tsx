@@ -19,7 +19,8 @@ import {
   Moon,
   LogOut,
   Settings,
-  Shield
+  Shield,
+  BarChart3
 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
@@ -53,6 +54,12 @@ const navigation = [
     icon: Users,
     label: "Players",
     description: "Manage players"
+  },
+  {
+    href: "/statistics",
+    icon: BarChart3,
+    label: "Statistics",
+    description: "Detailed stats"
   }
 ]
 
@@ -115,6 +122,12 @@ export function AppShell({ children, user }: AppShellProps) {
       icon: Users,
       label: t('players'),
       description: t('managePlayers')
+    },
+    {
+      href: "/statistics",
+      icon: BarChart3,
+      label: t('statistics'),
+      description: t('detailedStats')
     }
   ]
 
