@@ -150,6 +150,12 @@
     "rallyType": "Rally Type",
     "rallyTypes": "Rally Types",
     "rallyTypeDistribution": "Rally Type Distribution",
-    "rallyTypeDistributionAndSuccess": "Rally Type Distribution & Success"
+    "rallyTypeDistributionAndSuccess": "Rally Type Distribution & Success",
+    "standard": "Standard",
+    "poor": "Poor",
+    "average": "Average",
+    "good": "Good",
+    "excellent": "Excellent",
+    "perfect": "Perfect"
   }
 }

@@ -666,9 +666,9 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                               try {
                                 const format = JSON.parse(match.matchFormat)
                                 return `${t('bestOf')} ${format.sets} ${format.noAd ? `(${t('noAd')})` : ''}`
-                              } catch {
-                                return "Standard"
-                              }
+                                                              } catch {
+                                  return t('standard')
+                                }
                             })()}
                           </span>
                         </div>

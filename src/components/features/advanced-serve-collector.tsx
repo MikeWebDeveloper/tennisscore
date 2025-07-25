@@ -55,11 +55,11 @@ export function AdvancedServeCollector({
   }
 
   const getQualityLabel = (quality: number) => {
-    if (quality <= 3) return "Poor"
-    if (quality <= 5) return "Average"
-    if (quality <= 7) return "Good"
-    if (quality <= 9) return "Excellent"
-    return "Perfect"
+    if (quality <= 3) return t('poor')
+    if (quality <= 5) return t('average')
+    if (quality <= 7) return t('good')
+    if (quality <= 9) return t('excellent')
+    return t('perfect')
   }
 
   const placementOptions = [
@@ -182,9 +182,9 @@ export function AdvancedServeCollector({
             className="w-full"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Poor (1)</span>
-            <span>Average (5)</span>
-            <span>Perfect (10)</span>
+            <span>{t('poor')} (1)</span>
+            <span>{t('average')} (5)</span>
+            <span>{t('perfect')} (10)</span>
           </div>
           
           {/* Quality indicators */}

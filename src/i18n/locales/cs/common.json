@@ -150,6 +150,12 @@
     "rallyType": "Typ výměny",
     "rallyTypes": "Typy výměn",
     "rallyTypeDistribution": "Rozdělení typů výměn",
-    "rallyTypeDistributionAndSuccess": "Rozdělení typů výměn a úspěšnost"
+    "rallyTypeDistributionAndSuccess": "Rozdělení typů výměn a úspěšnost",
+    "standard": "Standardní",
+    "poor": "Špatná",
+    "average": "Průměrná",
+    "good": "Dobrá",
+    "excellent": "Vynikající",
+    "perfect": "Perfektní"
   }
 }
