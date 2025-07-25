@@ -166,6 +166,25 @@
     "selectFirstServer": "Vyberte hráče, který bude podávat první hru",
     "unrated": "Nehodnocen",
     "startMatch": "Začít zápas",
-    "tipServeAlternates": "Tip: V tenise se podání střídá každou hru"
+    "tipServeAlternates": "Tip: V tenise se podání střídá každou hru",
+    "setsCompleted": "Dokončené sety",
+    "outcome": "Výsledek",
+    "firstServeShort": "1.",
+    "secondServeShort": "2.",
+    "statusInProgress": "Probíhá",
+    "statusCompleted": "Dokončeno",
+    "howDidTheyWin": "Jak vyhráli?",
+    "servePlacement": "Umístění podání",
+    "lastShotType": "Typ posledního úderu",
+    "shotDirection": "Směr úderu",
+    "wasItReturn": "Byl to return?",
+    "selectHowPointEnded": "Vyberte, jak bod skončil",
+    "pleaseCompleteMatchFormat": "Prosím dokončete formát zápasu",
+    "step": "Krok",
+    "watchLiveMatchText": "Sledujte tento živý tenisový zápas!",
+    "tapRefreshIfScoresNoUpdate": "Klepnout na obnovit, pokud se skóre neaktualizuje",
+    "liveUpdatesActive": "Živé aktualizace aktivní",
+    "followLiveMatch": "Sledujte tento živý tenisový zápas",
+    "followLiveMatchBetween": "Sledujte živý tenisový zápas mezi {player1} a {player2}"
   }
 }
