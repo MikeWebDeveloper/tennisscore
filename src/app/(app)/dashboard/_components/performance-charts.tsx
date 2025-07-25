@@ -26,7 +26,7 @@ interface PerformanceChartsProps {
 
 export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProps) {
   const [isClient, setIsClient] = useState(false)
-  const t = useTranslations()
+  const t = useTranslations('dashboard')
 
   // Ensure this only runs on the client to prevent hydration mismatches
   useEffect(() => {
@@ -72,7 +72,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
     const errorBreakdown = [
       { name: t('unforcedErrorsLabel'), value: 25, fill: 'rgb(var(--foreground))' },
       { name: t('forcedErrorsLabel'), value: 20, fill: 'rgb(var(--muted-foreground))' },
-      { name: 'Aces', value: 10, fill: 'rgb(var(--primary))' }
+      { name: t('acesLabel'), value: 10, fill: 'rgb(var(--primary))' }
     ]
 
     return errorBreakdown
@@ -116,8 +116,8 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="p-8 flex flex-col items-center justify-center text-center">
             <TrendingUp className="h-12 w-12 text-gray-600 dark:text-slate-600 mb-4" />
-            <p className="text-gray-700 dark:text-slate-500 mb-2">No performance data yet</p>
-            <p className="text-sm text-gray-600 dark:text-slate-600">Complete some matches to see your charts</p>
+            <p className="text-gray-700 dark:text-slate-500 mb-2">{t('noPerformanceDataYet')}</p>
+            <p className="text-sm text-gray-600 dark:text-slate-600">{t('completeSomeMatchesToSeeCharts')}</p>
           </CardContent>
         </Card>
       </div>
@@ -137,7 +137,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-slate-200">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Win Rate Trend
+              {t('winRateTrend')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -187,7 +187,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-slate-200">
               <Target className="h-5 w-5 text-primary" />
-              Point Breakdown
+              {t('pointBreakdown')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -243,7 +243,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
       >
         <Card className="h-full bg-slate-900/50 border-slate-800">
           <CardHeader className="pb-4">
-            <CardTitle className="text-gray-900 dark:text-slate-200">Recent Form</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-slate-200">{t('recentForm')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2 justify-center mb-4">
@@ -261,7 +261,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
               ))}
             </div>
             <p className="text-center text-xs text-gray-700 dark:text-slate-500">
-              Last {recentForm.length} matches
+              {t('lastXMatches', { count: recentForm.length })}
             </p>
           </CardContent>
         </Card>

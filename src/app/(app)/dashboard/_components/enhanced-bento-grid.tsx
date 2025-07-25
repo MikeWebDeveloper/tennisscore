@@ -30,7 +30,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { PerformanceCharts } from "./performance-charts"
 import { Match, Player, PointDetail } from "@/lib/types"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
 import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
 import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
@@ -237,7 +237,7 @@ function calculatePerformanceInsights(matches: Match[], mainPlayerId: string) {
       }
     })
     
-    const timeLabels = ['Early Morning', 'Morning', 'Afternoon', 'Evening', 'Night', 'Late Night']
+    const timeLabels = [t('earlyMorning'), t('morning'), t('afternoon'), t('evening'), t('night'), t('lateNight')]
     bestTimeOfDay = timeLabels[bestSlot]
   }
   
@@ -369,7 +369,7 @@ function calculateEnhancedStats(matches: Match[], mainPlayerId: string | undefin
 }
 
 export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProps) {
-  const t = useTranslations()
+  const t = useTranslations('dashboard')
   const [isCreatePlayerOpen, setCreatePlayerOpen] = useState(false)
   const [showAdvancedStats, setShowAdvancedStats] = useState(false)
   

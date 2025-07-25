@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "matches": "Partite",
+    "players": "Giocatori",
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "overviewStats": "Panoramica e Statistiche",
+    "matchHistory": "Cronologia Partite",
+    "managePlayers": "Gestisci Giocatori",
+    "expandNavigation": "Espandi navigazione",
+    "collapseNavigation": "Riduci navigazione",
+    "newMatchButton": "Nuova Partita",
+    "statistics": "Statistiche",
+    "detailedStats": "Statistiche Dettagliate",
+    "lightMode": "Modalità Chiara",
+    "darkMode": "Modalità Scura",
+    "signOut": "Disconnetti"
+  }
+}

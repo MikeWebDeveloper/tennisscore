@@ -33,7 +33,7 @@ export function PaginatedPlayersClient({
   initialTotal, 
   initialHasMore 
 }: PaginatedPlayersClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')

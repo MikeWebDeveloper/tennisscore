@@ -7,7 +7,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LanguageToggle } from "@/components/ui/language-toggle"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { 
   Home, 
   Trophy, 
@@ -101,7 +101,7 @@ export function AppShell({ children, user }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
-  const t = useTranslations()
+  const t = useTranslations('navigation')
 
   // Localized navigation
   const baseNavigation = [
@@ -126,8 +126,8 @@ export function AppShell({ children, user }: AppShellProps) {
     {
       href: "/statistics",
       icon: BarChart3,
-      label: t('statistics'),
-      description: t('detailedStats')
+      label: t('statistics') || 'Statistics',
+      description: t('detailedStats') || 'Detailed stats'
     }
   ]
 
@@ -217,7 +217,7 @@ export function AppShell({ children, user }: AppShellProps) {
                 <Button asChild className="w-full minimal-button font-medium shadow-sm">
                   <Link href="/matches/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    {t('newMatch')}
+                    {t('newMatchButton')}
                   </Link>
                 </Button>
               </div>
@@ -243,7 +243,7 @@ export function AppShell({ children, user }: AppShellProps) {
                   )}
                 </Button>
                 <div className="flex justify-center">
-                  <LanguageToggle />
+                  <LanguageSwitcher variant="dropdown" size="sm" showFlags={true} showNativeNames={false} />
                 </div>
               </div>
 
@@ -316,7 +316,7 @@ export function AppShell({ children, user }: AppShellProps) {
             </div>
 
             <div className="flex items-center space-x-2">
-              <LanguageToggle className="mr-1" />
+              <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} className="mr-1" />
               <Button
                 variant="ghost"
                 size="sm"
@@ -406,7 +406,7 @@ export function AppShell({ children, user }: AppShellProps) {
                       <Button asChild className="w-full minimal-button font-medium shadow-sm" onClick={() => setSidebarOpen(false)}>
                         <Link href="/matches/new">
                           <Plus className="h-4 w-4 mr-2" />
-                          {t('newMatch')}
+                          {t('newMatchButton')}
                         </Link>
                       </Button>
                     </div>

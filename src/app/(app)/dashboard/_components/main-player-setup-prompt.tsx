@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useTranslations } from "@/hooks/use-translations"
 
 export function MainPlayerSetupPrompt() {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return (
     <motion.div

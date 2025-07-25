@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "@/hooks/use-translations"
 
 export default function ClearSessionPage() {
   const router = useRouter()
-  const [status, setStatus] = useState("Clearing session...")
+  const t = useTranslations('auth')
+  const [status, setStatus] = useState(t('clearingSession'))
 
   useEffect(() => {
     // Clear all cookies for localhost
@@ -21,13 +23,13 @@ export default function ClearSessionPage() {
       method: "POST",
     })
     .then(() => {
-      setStatus("Session cleared! Redirecting to login...")
+      setStatus(t('sessionClearedRedirecting'))
       setTimeout(() => {
         router.push("/login")
       }, 2000)
     })
     .catch(() => {
-      setStatus("Session cleared! Redirecting to login...")
+      setStatus(t('sessionClearedRedirecting'))
       setTimeout(() => {
         router.push("/login")
       }, 2000)
@@ -37,7 +39,7 @@ export default function ClearSessionPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">TennisScore</h1>
+        <h1 className="text-2xl font-bold mb-4">{t('tennisScore')}</h1>
         <p className="text-muted-foreground">{status}</p>
         <div className="mt-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>

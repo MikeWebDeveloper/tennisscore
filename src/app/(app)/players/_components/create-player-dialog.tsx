@@ -17,7 +17,7 @@ interface CreatePlayerDialogProps {
 }
 
 export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   const handleCreatePlayer = async (formData: FormData) => {
@@ -169,7 +169,7 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
 }
 
 export function CreatePlayerTrigger({ onOpenDialog }: { onOpenDialog: () => void }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return (
     <Button className="w-full sm:w-auto" onClick={onOpenDialog}>

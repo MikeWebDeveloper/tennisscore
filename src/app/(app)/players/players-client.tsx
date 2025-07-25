@@ -27,7 +27,7 @@ const pageVariants = {
 type SortOrder = 'none' | 'asc' | 'desc'
 
 export function PlayersClient({ players }: PlayersClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('player')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')

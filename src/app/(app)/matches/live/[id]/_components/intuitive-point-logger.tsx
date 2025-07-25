@@ -34,7 +34,7 @@ export function IntuitivePointLogger({
   onSave, 
   pointContext
 }: IntuitivePointLoggerProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   // Validation
   const [validationError, setValidationError] = useState<string>("")

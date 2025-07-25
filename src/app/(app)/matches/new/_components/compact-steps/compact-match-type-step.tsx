@@ -10,7 +10,7 @@ interface CompactMatchTypeStepProps {
 }
 
 export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeStepProps & { onComplete: () => void }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [selected, setSelected] = useState<"singles" | "doubles" | null>(null)
 
   const handleSelect = (val: "singles" | "doubles") => {

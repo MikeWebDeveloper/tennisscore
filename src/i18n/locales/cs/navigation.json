@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "dashboard": "Nástěnka",
+    "matches": "Zápasy",
+    "players": "Hráči",
+    "profile": "Profil",
+    "settings": "Nastavení",
+    "statistics": "Statistiky",
+    "overviewStats": "Přehled a statistiky",
+    "matchHistory": "Historie zápasů",
+    "managePlayers": "Spravovat hráče",
+    "detailedStats": "Podrobné statistiky",
+    "expandNavigation": "Rozbalit navigaci",
+    "collapseNavigation": "Sbalit navigaci",
+    "newMatchButton": "Nový zápas",
+    "lightMode": "Světlý režim",
+    "darkMode": "Tmavý režim",
+    "signOut": "Odhlásit se"
+  }
+}

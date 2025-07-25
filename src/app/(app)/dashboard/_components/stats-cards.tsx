@@ -23,7 +23,7 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-  const t = useTranslations();
+  const t = useTranslations('common');
 
   const statsCards = [
     {

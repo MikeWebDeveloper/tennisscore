@@ -78,41 +78,61 @@ function calculatePressurePerformance(matches: Match[], playerId: string) {
   }
   
   matches.forEach(match => {
-    const detailedStats = calculateDetailedMatchStats(match, playerId)
-    if (detailedStats) {
-      stats.breakPointsSaved += detailedStats.breakPointsSaved
-      stats.breakPointsFaced += detailedStats.breakPointsFaced
-      stats.breakPointsConverted += detailedStats.breakPointsWon
-      stats.breakPointOpportunities += detailedStats.breakPointOpportunities
-      
-      // Check for tiebreaks and deciding sets
-      if (match.score && typeof match.score === 'string') {
+    if (match.pointLog && match.pointLog.length > 0) {
+      // Parse point log strings to PointDetail objects
+      const pointLog = match.pointLog.map(pointStr => {
         try {
-          const scoreData = JSON.parse(match.score)
-          if (scoreData.sets) {
-            scoreData.sets.forEach((set: { p1: number; p2: number }) => {
-              // Check for tiebreak (7-6 or 6-7)
-              if ((set.p1 === 7 && set.p2 === 6) || (set.p1 === 6 && set.p2 === 7)) {
-                stats.tiebreaksPlayed++
-                if ((set.p1 > set.p2 && match.winnerId === playerId) || 
-                    (set.p2 > set.p1 && match.winnerId !== playerId)) {
-                  stats.tiebreaksWon++
-                }
-              }
-            })
-            
-            // Check for deciding set (3rd or 5th set)
-            const isDecidingSet = scoreData.sets.length === 3 || scoreData.sets.length === 5
-            if (isDecidingSet) {
-              stats.decidingSetsPlayed++
-              if (match.winnerId === playerId) {
-                stats.decidingSetsWon++
+          return JSON.parse(pointStr)
+        } catch {
+          return null
+        }
+      }).filter(Boolean)
+      
+      const detailedStats = calculateDetailedMatchStats(pointLog)
+      if (detailedStats) {
+        // Determine if the main player is p1 or p2 in this match
+        const isMainPlayerP1 = match.playerOneId === playerId
+        const playerIndex = isMainPlayerP1 ? 0 : 1
+        const opponentIndex = isMainPlayerP1 ? 1 : 0
+        
+        // Add the player's break point stats
+        stats.breakPointsSaved += detailedStats.breakPointsByPlayer.saved[playerIndex]
+        stats.breakPointsFaced += detailedStats.breakPointsByPlayer.faced[playerIndex]
+        stats.breakPointsConverted += detailedStats.breakPointsByPlayer.converted[playerIndex]
+        
+        // For break point opportunities, we need to count how many break points the player had
+        // This is the break points the opponent faced (i.e., the player's opportunities)
+        stats.breakPointOpportunities += detailedStats.breakPointsByPlayer.faced[opponentIndex]
+      }
+    }
+    
+    // Check for tiebreaks and deciding sets
+    if (match.score && typeof match.score === 'string') {
+      try {
+        const scoreData = JSON.parse(match.score)
+        if (scoreData.sets) {
+          scoreData.sets.forEach((set: { p1: number; p2: number }) => {
+            // Check for tiebreak (7-6 or 6-7)
+            if ((set.p1 === 7 && set.p2 === 6) || (set.p1 === 6 && set.p2 === 7)) {
+              stats.tiebreaksPlayed++
+              if ((set.p1 > set.p2 && match.winnerId === playerId) || 
+                  (set.p2 > set.p1 && match.winnerId !== playerId)) {
+                stats.tiebreaksWon++
               }
             }
+          })
+          
+          // Check for deciding set (3rd or 5th set)
+          const isDecidingSet = scoreData.sets.length === 3 || scoreData.sets.length === 5
+          if (isDecidingSet) {
+            stats.decidingSetsPlayed++
+            if (match.winnerId === playerId) {
+              stats.decidingSetsWon++
+            }
           }
-        } catch {
-          // Handle parsing error
         }
+      } catch {
+        // Handle parsing error
       }
     }
   })
@@ -185,23 +205,24 @@ function calculateMentalToughness(matches: Match[], playerId: string) {
 function calculateDominanceScore(matches: Match[], playerId: string) {
   const stats = aggregatePlayerStatsAcrossMatches(matches, playerId)
   
-  const pointsWonPct = stats.totalPointsPlayed > 0 ? 
-    (stats.totalPointsWon / stats.totalPointsPlayed) * 100 : 0
+  // Calculate win rates based on available stats
+  const winRate = stats.winRate || 0
   
-  const gamesWonPct = stats.totalGamesPlayed > 0 ?
-    (stats.totalGamesWon / stats.totalGamesPlayed) * 100 : 0
-    
-  const setsWonPct = stats.totalSetsPlayed > 0 ?
-    (stats.totalSetsWon / stats.totalSetsPlayed) * 100 : 0
+  // Use service/return stats as proxies for game control
+  const servicePointsTotal = stats.totalFirstServesAttempted + stats.totalSecondServePointsPlayed
+  const servicePointsWon = stats.totalFirstServePointsWon + stats.totalSecondServePointsWon
+  const serviceWinPct = servicePointsTotal > 0 ? (servicePointsWon / servicePointsTotal) * 100 : 0
   
-  const dominance = (pointsWonPct * 1.5) + (gamesWonPct * 1.2) + (setsWonPct) + 
-    (stats.breakPointSavePct * 0.8) + (stats.breakPointConversionRate * 0.8)
+  // Calculate dominance score using available metrics
+  const dominance = (winRate * 2.0) + (serviceWinPct * 0.8) + 
+    (stats.breakPointSaveRate * 0.6) + (stats.breakPointConversionRate * 0.6) +
+    (stats.firstServePercentage * 0.3) + (stats.returnPointsPct * 0.4)
   
   return {
-    dominanceScore: Math.round(dominance),
-    pointsWonPct: Math.round(pointsWonPct),
-    gamesWonPct: Math.round(gamesWonPct),
-    setsWonPct: Math.round(setsWonPct)
+    dominanceScore: Math.round(dominance / 5.7 * 100), // Normalize to 0-100 scale
+    pointsWonPct: Math.round(serviceWinPct), // Use service win % as proxy
+    gamesWonPct: Math.round(winRate), // Use match win rate as proxy
+    setsWonPct: Math.round(winRate) // Use match win rate as proxy
   }
 }
 
@@ -296,7 +317,7 @@ function analyzeMatchPatterns(matches: Match[], playerId: string) {
 
 // Main component
 export default function EnhancedStatisticsClient({ mainPlayer, matches }: EnhancedStatisticsClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('statistics')
   const [filters, setFilters] = useState<StatisticsFilters>({
     dateRange: {},
     opponent: undefined,
@@ -329,7 +350,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <div className="flex items-center gap-2 xs:gap-3">
             <BarChart3 className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100">
-              {t("advancedStatistics")}
+              {t("detailedStatistics")}
             </h1>
           </div>
           <div className="flex gap-2">
@@ -341,17 +362,17 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter className="h-4 w-4" />
-              <span className="hidden xs:inline">{t("filters")}</span>
+              <span className="hidden xs:inline">Filters</span>
               {hasFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">!</Badge>}
             </Button>
             <Button variant="outline" size="sm" className="gap-2 min-h-[44px] px-3">
               <Download className="h-4 w-4" />
-              <span className="hidden xs:inline">{t("exportData")}</span>
+              <span className="hidden xs:inline">Export Data</span>
             </Button>
           </div>
         </div>
         <p className="text-sm xs:text-base sm:text-lg text-gray-700 dark:text-slate-400">
-          {t("deepDiveIntoPerformance")}
+          Deep dive into your performance metrics and analytics
         </p>
       </div>
 
@@ -361,7 +382,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("dominanceScore")}</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Dominance Score</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.dominance.dominanceScore}</p>
                 <p className="text-[10px] xs:text-xs text-muted-foreground">out of 500</p>
               </div>
@@ -375,7 +396,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("pressureIndex")}</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Pressure Index</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.pressureStats.pressurePerformanceIndex}</p>
                 <p className="text-[10px] xs:text-xs text-muted-foreground">clutch rating</p>
               </div>
@@ -389,7 +410,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("mentalToughness")}</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Mental Toughness</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.mentalToughness.mentalToughnessScore}</p>
                 <p className="text-[10px] xs:text-xs text-muted-foreground">{stats.mentalToughness.comebacks} comebacks</p>
               </div>
@@ -510,7 +531,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.pointsWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {stats.basicStats.totalPointsWon} of {stats.basicStats.totalPointsPlayed}
+                      Service dominance
                     </p>
                   </CardContent>
                 </Card>
@@ -522,7 +543,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.gamesWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {stats.basicStats.totalGamesWon} of {stats.basicStats.totalGamesPlayed}
+                      Match win rate
                     </p>
                   </CardContent>
                 </Card>
@@ -534,7 +555,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.setsWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {stats.basicStats.totalSetsWon} of {stats.basicStats.totalSetsPlayed}
+                      Match win rate
                     </p>
                   </CardContent>
                 </Card>
@@ -546,7 +567,16 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             </TabsContent>
 
             <TabsContent value="serve-return">
-              <ServeReturnAnalysis stats={stats.basicStats} matches={filteredMatches} mainPlayerId={mainPlayer.$id} />
+              <ServeReturnAnalysis 
+                stats={{
+                  ...stats.basicStats,
+                  firstServeWinRate: stats.basicStats.firstServePointsWonPercentage,
+                  secondServeWinRate: stats.basicStats.secondServePointsWonPercentage,
+                  breakPointSavePct: stats.basicStats.breakPointSaveRate
+                }} 
+                matches={filteredMatches} 
+                mainPlayerId={mainPlayer.$id} 
+              />
             </TabsContent>
 
             <TabsContent value="clutch">

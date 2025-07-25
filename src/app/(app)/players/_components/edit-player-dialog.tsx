@@ -38,7 +38,7 @@ export function EditPlayerDialog({
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
   const router = useRouter()
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   const [isMainPlayer, setIsMainPlayer] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)

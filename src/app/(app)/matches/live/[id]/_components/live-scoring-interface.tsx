@@ -29,7 +29,7 @@ import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"
@@ -118,27 +118,28 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
   matchId: string
   playerNames: { p1: string; p2: string }
 }) {
+  const t = useTranslations('match')
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/live/${matchId}` : ''
-  const shareText = `🎾 Live Tennis Match: ${playerNames.p1} vs ${playerNames.p2}`
+  const shareText = `🎾 ${t('liveTennisMatch')}: ${playerNames.p1} ${t('vs')} ${playerNames.p2}`
   const fullMessage = `${shareText}\n${shareUrl}`
 
   const shareOptions = [
     { 
-      name: "Copy Link", 
+      name: t('copyLink'), 
       icon: Copy, 
       action: async () => {
         try {
           await navigator.clipboard.writeText(shareUrl)
-          toast.success("Link copied to clipboard!")
+          toast.success(t('linkCopiedToClipboard'))
           onOpenChange(false)
         } catch {
-          toast.error("Failed to copy link")
+          toast.error(t('failedToCopyLink'))
         }
       },
       color: "bg-gray-900 dark:bg-gray-700"
     },
     { 
-      name: "WhatsApp", 
+      name: t('whatsApp'), 
       icon: MessageSquare, 
       action: () => {
         const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -151,7 +152,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
       color: "bg-green-500"
     },
     { 
-      name: "SMS", 
+      name: t('sms'), 
       icon: Mail, 
       action: () => {
         // SMS works differently on iOS vs Android
@@ -165,7 +166,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
       color: "bg-blue-500"
     },
     { 
-      name: "Facebook", 
+      name: t('facebook'), 
       icon: MessageCircle, 
       action: () => {
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
@@ -180,7 +181,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Live Match</DialogTitle>
+          <DialogTitle>{t('shareLiveMatch')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="text-sm text-foreground bg-muted dark:bg-gray-800 dark:text-gray-300 text-center p-3 rounded-lg break-all">
@@ -228,6 +229,7 @@ function PointEntry({
   p1Streak: number,
   p2Streak: number,
 }) {
+  const t = useTranslations('match')
   const getPointDisplay = (playerIndex: number) => {
     if (isTiebreak) {
       return score.tiebreakPoints?.[playerIndex] || 0
@@ -258,11 +260,11 @@ function PointEntry({
     
     switch (pointSituation.type) {
       case 'matchPoint':
-        return `${playerName} has match point`
+        return t('hasMatchPoint', { player: playerName })
       case 'setPoint':
-        return `${playerName} has set point`
+        return t('hasSetPoint', { player: playerName })
       case 'breakPoint':
-        return `${playerName} has break point`
+        return t('hasBreakPoint', { player: playerName })
       default:
         return null
     }
@@ -380,7 +382,8 @@ function PointEntry({
 
 export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
-  const t = useTranslations()
+  const t = useTranslations('match')
+  const tCommon = useTranslations('common')
   
   // Use match store
   const { 
@@ -671,7 +674,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Initializing match...</p>
+          <p className="text-muted-foreground">{t('initializingMatch')}</p>
         </div>
       </div>
     )
@@ -688,9 +691,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     const p2Points = score.points[1]
     
     if (p1Points >= 3 && p2Points >= 3) {
-      if (p1Points === p2Points) return "DEUCE"
-      if (p1Points > p2Points) return `AD-${playerNames.p1.split(' ')[0].toUpperCase()}`
-      return `AD-${playerNames.p2.split(' ')[0].toUpperCase()}`
+      if (p1Points === p2Points) return t('deuce')
+      if (p1Points > p2Points) return t('advantage', { player: playerNames.p1.split(' ')[0].toUpperCase() })
+      return t('advantage', { player: playerNames.p2.split(' ')[0].toUpperCase() })
     }
     
     const pointMap = ["0", "15", "30", "40"]
@@ -703,12 +706,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const handlePointWin = async (winner: "p1" | "p2") => {
     if (!currentServer || !score) {
       console.error("Match not properly initialized - missing server or score")
-      toast.error("Match not ready. Please refresh the page.")
+      toast.error(t('matchNotReady'))
       return
     }
     
     if (match.status === 'Completed') {
-      toast.error("Match is already complete and cannot be modified.")
+      toast.error(t('matchAlreadyComplete'))
       return
     }
 
@@ -821,7 +824,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         // Trigger celebratory confetti
         triggerMatchWinConfetti()
         
-        toast.success(`Match completed! ${winnerName} wins!`)
+        toast.success(t('matchCompletedWinner', { winner: winnerName }))
         
         // Navigate to match details after a short delay
         setTimeout(() => {
@@ -830,7 +833,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }
     } catch (error) {
       console.error("Failed to award point:", error)
-      toast.error("Failed to save point")
+      toast.error(t('failedToSavePoint'))
     }
   }
 
@@ -895,18 +898,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       playSound('undo')
       
       setIsInGame(result.newPointLog.length > 0)
-      toast.success("Point undone")
+      toast.success(t('pointUndone'))
     } catch (error) {
       console.error("Failed to undo point:", error)
       playSound('error')
-      toast.error("Failed to undo point")
+      toast.error(t('failedToUndoPoint'))
     }
   }
 
   const handleRetireMatch = async (reason: 'retired' | 'weather' | 'injury') => {
     try {
       if (!selectedWinner) {
-        toast.error("Please select which player won")
+        toast.error(t('pleaseSelectWinner'))
         return
       }
 
@@ -946,14 +949,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         ...updateData
       })
       
-      const reasonText = reason === 'retired' ? 'retirement' : 
-                        reason === 'weather' ? 'weather conditions' : 'injury'
+      const reasonText = reason === 'retired' ? t('retirement') : 
+                        reason === 'weather' ? t('weatherConditionsReason') : t('injury')
       const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
       
       // Trigger celebratory confetti for match completion
       triggerMatchWinConfetti()
       
-      toast.success(`Match ended due to ${reasonText}. ${winnerName} wins 1-0.`)
+      toast.success(t('matchEndedDueToReason', { reason: reasonText, winner: winnerName }))
       setShowRetireDialog(false)
       setRetireReason('')
       setSelectedWinner('')
@@ -964,7 +967,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }, 2000)
     } catch (error) {
       console.error("Failed to retire match:", error)
-      toast.error("Failed to end match")
+      toast.error(t('failedToEndMatch'))
     }
   }
 
@@ -982,7 +985,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           text: shareText,
           url: shareUrl
         })
-        toast.success("Match shared successfully!")
+        toast.success(t('matchSharedSuccessfully'))
         return
       } catch (err) {
         // User canceled or share failed
@@ -1049,10 +1052,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 size="sm"
                 disabled
                 className="opacity-50 cursor-not-allowed relative flex items-center gap-2 min-w-0"
-                title="Coming soon"
+                title={t('comingSoon')}
               >
                 <BarChart3 className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate min-w-0 hidden xs:block">Advanced Stats</span>
+                <span className="truncate min-w-0 hidden xs:block">{t('advancedStats')}</span>
               </Button>
               {/* Export Button - Show after first set is completed (icon + text) */}
               {score.sets.length > 0 && (
@@ -1083,10 +1086,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 size="sm"
                 onClick={() => setShowSettingsDialog(true)}
                 className="flex items-center gap-2 min-w-0"
-                aria-label={t('settings')}
+                aria-label={tCommon('settings')}
               >
                 <Settings className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate min-w-0 hidden xs:block">{t('settings')}</span>
+                <span className="truncate min-w-0 hidden xs:block">{tCommon('settings')}</span>
               </Button>
               {/* Share button: icon + text (truncate text if needed) */}
               <Button
@@ -1094,10 +1097,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 size="sm"
                 onClick={() => setShowShareDialog(true)}
                 className="flex items-center gap-2 min-w-0"
-                aria-label={t('share')}
+                aria-label={tCommon('share')}
               >
                 <Share2 className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate min-w-0 hidden xs:block">{t('share')}</span>
+                <span className="truncate min-w-0 hidden xs:block">{tCommon('share')}</span>
               </Button>
             </div>
           </div>
@@ -1170,7 +1173,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             className="flex items-center gap-2"
           >
             <Undo className="h-4 w-4" />
-            {t('undo')}
+            {tCommon('undo')}
           </Button>
 
           {/* Match Timer */}
@@ -1189,7 +1192,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 : 'text-muted-foreground'
             }`}>
               <Activity className="h-3 w-3" />
-              1st
+              {t('firstServe')}
             </span>
             <Switch
               id="serve-type"
@@ -1203,7 +1206,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 : 'text-muted-foreground'
             }`}>
               <Activity className="h-3 w-3" />
-              2nd
+              {t('secondServe')}
             </span>
           </div>
         </div>
@@ -1367,7 +1370,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             {retireReason && retireReason !== 'completed' && (
               <div>
                 <p className="text-muted-foreground mb-4">
-                  Which player should be declared the winner?
+                  {t('whichPlayerWon')}
                 </p>
                 
                 <div className="space-y-2">
@@ -1399,7 +1402,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 </div>
                 
                 <p className="text-xs text-muted-foreground mt-2">
-                  The final score will be recorded as 1-0 sets for the selected winner.
+                  {t('finalScoreWillBe')}
                 </p>
               </div>
             )}
@@ -1411,7 +1414,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               setRetireReason('')
               setSelectedWinner('')
             }}>
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button 
               onClick={() => {
@@ -1420,7 +1423,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 } else if (retireReason && selectedWinner) {
                   handleRetireMatch(retireReason as 'retired' | 'weather' | 'injury')
                 } else if (retireReason && !selectedWinner) {
-                  toast.error("Please select which player won")
+                  toast.error(t('pleaseSelectWinner'))
                 }
                 
                 if (retireReason === 'completed') {

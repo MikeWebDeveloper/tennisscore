@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { useTranslations } from "@/i18n"
 
 interface ServeSelectionProps {
   playerOne: Player
@@ -15,6 +16,7 @@ interface ServeSelectionProps {
 
 export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeSelectionProps) {
   const [selectedServer, setSelectedServer] = useState<"p1" | "p2" | null>(null)
+  const t = useTranslations('match')
 
   const handlePlayerSelect = (player: "p1" | "p2") => {
     setSelectedServer(player)
@@ -37,9 +39,9 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
       >
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Who Serves First?</h1>
+          <h1 className="text-2xl font-bold">{t('whoServesFirst')}</h1>
           <p className="text-muted-foreground">
-            Select the player who will serve the first game
+            {t('selectFirstServer')}
           </p>
         </div>
 
@@ -61,7 +63,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold text-lg">{getPlayerName(playerOne)}</h3>
-                  <p className="text-sm text-muted-foreground">{playerOne.rating || "Unrated"}</p>
+                  <p className="text-sm text-muted-foreground">{playerOne.rating || t('unrated')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -93,7 +95,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold text-lg">{getPlayerName(playerTwo)}</h3>
-                  <p className="text-sm text-muted-foreground">{playerTwo.rating || "Unrated"}</p>
+                  <p className="text-sm text-muted-foreground">{playerTwo.rating || t('unrated')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -117,13 +119,13 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
           className="w-full py-4 text-lg font-semibold"
           size="lg"
         >
-          Start Match
+          {t('startMatch')}
         </Button>
 
         {/* Tip */}
         <div className="text-center">
           <p className="text-xs text-muted-foreground">
-            Tip: In tennis, the server alternates every game
+            {t('tipServeAlternates')}
           </p>
         </div>
       </motion.div>

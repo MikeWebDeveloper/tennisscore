@@ -30,6 +30,7 @@ For browser testing and debugging:
 - **State Management**: Zustand stores
 - **Animation**: Framer Motion
 - **Charts**: Recharts
+- **Internationalization**: next-intl with 8 language support (en, cs, es, fr, de, it, pt, ru)
 
 ### Key Architectural Patterns
 
@@ -57,6 +58,15 @@ For browser testing and debugging:
 - Support for different match formats (3/5 sets, no-ad, super tiebreaks)
 - Match statistics calculations in `src/lib/utils/match-stats.ts`
 
+#### Internationalization (i18n)
+- **Next-intl System**: Modern i18n built for Next.js 15 App Router
+- **8 Supported Languages**: English, Czech, Spanish, French, German, Italian, Portuguese, Russian
+- **Namespace Organization**: Translations organized by domain (auth, match, statistics, dashboard, player, common, navigation)
+- **Server-Side Rendering**: SEO-optimized with locale-based URLs (`/es/dashboard`, `/fr/matches`)
+- **Type Safety**: Full TypeScript support with autocomplete for translation keys
+- **Tennis-Specific Formatters**: Specialized utilities for tennis terminology, scores, and statistics
+- **Configuration**: Located in `src/i18n/` with locale files in `src/i18n/locales/`
+
 ### Project Structure
 ```
 src/
@@ -71,6 +81,15 @@ src/
 │   ├── ui/                # shadcn/ui components
 │   ├── features/          # Domain-specific components
 │   └── shared/            # Reusable components
+├── i18n/                  # Internationalization system
+│   ├── config.ts          # next-intl configuration
+│   ├── navigation.ts      # Internationalized routing
+│   ├── request.ts         # Server-side locale detection
+│   ├── utils.ts           # Tennis-specific formatters
+│   └── locales/           # Translation files (en, cs, es, fr, de, it, pt, ru)
+│       ├── en/            # English translations
+│       ├── cs/            # Czech translations
+│       └── [other]/       # Additional language directories
 ├── lib/
 │   ├── actions/           # Server Actions for DB operations
 │   ├── schemas/           # Zod validation schemas
@@ -102,6 +121,104 @@ Critical environment variables required:
 - Prefer Server Components; use Client Components only when needed
 - Use Server Actions for database operations
 - Follow mobile-first responsive design
+
+#### Multilingual Development (CRITICAL)
+**🚨 ABSOLUTE RULE: NO HARDCODED ENGLISH STRINGS ALLOWED 🚨**
+
+All user-facing text MUST use the internationalization system. This is a fundamental requirement for this application.
+
+**Mandatory Practices:**
+- **Import translations**: Always use `import { useTranslations } from '@/i18n'`
+- **Use proper namespaces**: Choose appropriate namespace (auth, match, statistics, dashboard, player, common, navigation)
+- **Add translation keys**: All new text must be added to translation files in ALL supported languages
+- **Test in multiple languages**: Verify components work in English, Czech, and other supported languages
+
+**Supported Languages (8 total):**
+- English (en) - Primary language
+- Czech (cs) - Secondary language  
+- Spanish (es) - European and Latin American markets
+- French (fr) - France and French-speaking countries
+- German (de) - Germany, Austria, Switzerland
+- Italian (it) - Italy
+- Portuguese (pt) - Brazil and Portugal
+- Russian (ru) - Russia and Eastern Europe
+
+**Component Usage Patterns:**
+```tsx
+// ✅ CORRECT - Using translation system
+import { useTranslations } from '@/i18n'
+
+export function MyComponent() {
+  const t = useTranslations('match') // Use appropriate namespace
+  
+  return (
+    <div>
+      <h1>{t('liveScoring')}</h1>
+      <button>{t('common.save')}</button>
+    </div>
+  )
+}
+
+// ❌ INCORRECT - Hardcoded English
+export function MyComponent() {
+  return (
+    <div>
+      <h1>Live Scoring</h1>  {/* NEVER DO THIS */}
+      <button>Save</button>   {/* NEVER DO THIS */}
+    </div>
+  )
+}
+```
+
+**Namespace Guidelines:**
+- `auth` - Authentication, login, signup, errors
+- `match` - Match creation, live scoring, match details, tennis terminology
+- `statistics` - Performance analytics, charts, data visualization
+- `dashboard` - Main dashboard, overview, performance summaries
+- `player` - Player management, profiles, player-related actions
+- `common` - Shared UI elements (buttons, labels, states, actions)
+- `navigation` - Menu items, page titles, routing
+
+**Tennis-Specific Considerations:**
+- Use proper tennis terminology for each language
+- Leverage tennis formatters from `src/i18n/utils.ts` for scores, durations, statistics
+- Consider cultural differences in tennis terminology (e.g., "deuce" vs "iguales")
+- Maintain consistency with international tennis standards
+
+**Error Handling & Validation:**
+- All form validation messages must be translated
+- Error messages in Server Actions must use translation keys
+- Toast notifications must use the translation system
+- Loading states and empty states must be translated
+
+**Adding New Translations:**
+1. **Add keys to English file first**: `src/i18n/locales/en/[namespace].json`
+2. **Translate to all other languages**: Maintain consistency across all 8 languages
+3. **Use descriptive key names**: `statisticsNeedMainPlayer` not `stats1`
+4. **Group related keys**: Organize by feature/component
+5. **Test in all languages**: Verify UI works correctly with different text lengths
+
+**Testing Requirements:**
+- Every new component must be tested with multiple languages
+- Check text overflow/truncation with longer translations (German, French)
+- Verify right-to-left layout if adding RTL languages
+- Test date/number formatting across different locales
+
+**Development Workflow:**
+1. **Design component** with translations in mind
+2. **Import translation hook** with appropriate namespace
+3. **Add translation keys** to ALL language files
+4. **Use translation keys** in component
+5. **Test in multiple languages** during development
+6. **Build and verify** no hardcoded strings remain
+
+**Enforcement:**
+- Build process should fail if hardcoded strings are detected
+- Code reviews must verify translation usage
+- All UI text must be translatable
+- No exceptions for "temporary" or "internal" text
+
+This is not optional - multilingual support is a core feature of this application.
 
 #### Tennis Scoring
 - All scoring logic should use the centralized tennis-scoring utils

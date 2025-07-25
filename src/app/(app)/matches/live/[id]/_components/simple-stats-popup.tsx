@@ -36,7 +36,7 @@ export function SimpleStatsPopup({
   pointContext 
 }: SimpleStatsPopupProps) {
   const { winner, server, serveType, playerNames } = pointContext
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   // Conditional logic for disabled buttons
   const isAceDisabled = winner !== server

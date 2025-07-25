@@ -15,7 +15,7 @@ interface PlayerCardProps {
 }
 
 export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return (
     <Card className={`relative group hover:shadow-md transition-all duration-200 w-full ${player.isMainPlayer ? 'bg-primary/10 border-2 border-primary' : ''}`}>

@@ -44,7 +44,7 @@ export function CompactPlayersStep({
   onAnonymousChange,
   onComplete
 }: CompactPlayersStepProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const { mainPlayerId } = useUserStore()
   const [showCreatePlayerDialog, setShowCreatePlayerDialog] = useState(false)
 

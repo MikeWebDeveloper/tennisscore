@@ -16,12 +16,27 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signInAction } from "@/lib/actions/auth"
 import { toast } from "sonner"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useTranslations } from "@/hooks/use-translations"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
-  const t = useTranslations()
+  const t = useTranslations('auth')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // During SSR, show default English text to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <Button type="submit" className="w-full" aria-disabled={pending}>
+        {pending ? 'Signing in...' : 'Sign In'}
+      </Button>
+    )
+  }
+
   return (
     <Button type="submit" className="w-full" aria-disabled={pending}>
       {pending ? t('signingIn') : t('signIn')}
@@ -31,7 +46,12 @@ function SubmitButton() {
 
 export function LoginForm() {
   const [state, formAction] = useActionState(signInAction, undefined)
-  const t = useTranslations()
+  const t = useTranslations('auth')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (state?.error) {
@@ -39,8 +59,74 @@ export function LoginForm() {
     }
   }, [state])
 
+  // During SSR and initial render, show English text to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              TennisScore
+            </h1>
+            <p className="text-muted-foreground">
+              Your digital tennis companion
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome back</CardTitle>
+              <CardDescription>
+                Sign in to your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action={formAction} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+
+                <SubmitButton />
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Link
+                    href="/signup"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4" suppressHydrationWarning>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

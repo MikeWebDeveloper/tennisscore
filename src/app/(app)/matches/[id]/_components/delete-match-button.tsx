@@ -30,7 +30,7 @@ interface DeleteMatchButtonProps {
 export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   const handleDelete = async () => {
     setIsDeleting(true)

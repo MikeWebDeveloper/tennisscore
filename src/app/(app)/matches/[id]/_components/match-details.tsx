@@ -94,7 +94,7 @@ function PlayerDetailsLine({ yearOfBirth, rating, club }: { yearOfBirth?: number
 export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   // Parse match format
   const parsedFormat = (() => {
@@ -201,8 +201,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const getTeamName = (team: "team1" | "team2") => {
     if (!isDoubles) {
       return team === "team1" 
-        ? (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player")
-        : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+        ? (match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer'))
+        : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'))
     }
     
     return team === "team1"
@@ -256,8 +256,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     events: []
                   }}
                   playerNames={[
-                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
-                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'))
                   ]}
                   variant="outline"
                   size="sm"
@@ -283,21 +283,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 {isDoubles ? (
                   <>
                     <h1 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"} / {match.playerThree ? formatPlayerFromObject(match.playerThree) : "Unknown Player"}
+                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')} / {match.playerThree ? formatPlayerFromObject(match.playerThree) : t('unknownPlayer')}
                     </h1>
                     <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
                     <h2 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"} / {match.playerFour ? formatPlayerFromObject(match.playerFour) : "Unknown Player"}
+                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')} / {match.playerFour ? formatPlayerFromObject(match.playerFour) : t('unknownPlayer')}
                     </h2>
                   </>
                 ) : (
                   <>
                     <h1 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"}
+                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')}
                     </h1>
                     <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
                     <h2 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player"}
+                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')}
                     </h2>
                   </>
                 )}
@@ -379,8 +379,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     events: []
                   }}
                   playerNames={[
-                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : "Unknown Player"),
-                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : "Unknown Player")
+                    isDoubles ? getTeamName("team1") : (match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')),
+                    isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'))
                   ]}
                   variant="outline"
                   size="sm"

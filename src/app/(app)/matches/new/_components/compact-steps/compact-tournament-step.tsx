@@ -15,7 +15,7 @@ interface CompactTournamentStepProps {
 }
 
 export function CompactTournamentStep({ value, onChange, onSkip, onComplete }: CompactTournamentStepProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [inputValue, setInputValue] = useState(value)
 
   const handleInputChange = (inputValue: string) => {

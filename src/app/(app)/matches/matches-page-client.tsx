@@ -28,7 +28,7 @@ export function MatchesPageClient({ matches, hasError }: {
   matches: EnhancedMatch[], 
   hasError: boolean 
 }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')
 
   const sortedMatches = useMemo(() => {

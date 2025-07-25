@@ -23,7 +23,7 @@ export function CompactFormatStep({
   onFinalSetChange,
   onComplete
 }: CompactFormatStepProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const advanceScheduledRef = useRef(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 

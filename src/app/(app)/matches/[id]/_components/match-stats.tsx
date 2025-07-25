@@ -139,7 +139,7 @@ function StatRow({
 }
 
 export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsComponentProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return (
     <motion.div 
@@ -288,7 +288,7 @@ export function MatchStatsComponentSimple({
   playerNames: { p1: string; p2: string }
   detailLevel: "points" | "simple" | "complex" | "detailed"
 }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   const hasPoints = stats.totalPoints > 0
   
@@ -496,7 +496,7 @@ export function MatchStatsComponentSimpleFixed({
   detailLevel: "points" | "simple" | "detailed" | "custom" | "complex"
   pointLog?: PointDetail[]
 }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   // State for expandable stats
   const [expandedStat, setExpandedStat] = useState<'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults' | null>(null)

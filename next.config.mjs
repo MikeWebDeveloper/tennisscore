@@ -1,3 +1,7 @@
+// import createNextIntlPlugin from 'next-intl/plugin' // Temporarily disabled
+
+// const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts') // Temporarily disabled
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable experimental features for better performance
@@ -107,4 +111,6 @@ const nextConfig = {
   },
 };
 
+// Temporarily disabled until app structure is migrated for i18n
+// export default withNextIntl(nextConfig);
 export default nextConfig; 

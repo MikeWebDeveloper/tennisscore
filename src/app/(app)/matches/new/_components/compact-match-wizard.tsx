@@ -27,7 +27,7 @@ interface CompactMatchWizardProps {
 
 export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const router = useRouter()
-  const t = useTranslations()
+  const t = useTranslations('common')
   const containerRef = useRef<HTMLDivElement>(null)
   
   // Wizard state

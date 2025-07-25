@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,12 @@ import { useTranslations } from "@/hooks/use-translations"
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false)
-  const t = useTranslations()
+  const [mounted, setMounted] = useState(false)
+  const t = useTranslations('auth')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
@@ -28,7 +33,7 @@ export function SignupForm() {
     const confirmPassword = formData.get("confirmPassword") as string
     
     if (password !== confirmPassword) {
-      toast.error(t('passwordsDoNotMatch'))
+      toast.error(mounted ? t('passwordsDoNotMatch') : "Passwords do not match")
       setIsLoading(false)
       return
     }
@@ -40,14 +45,108 @@ export function SignupForm() {
         toast.error(result.error)
       }
     } catch {
-      toast.error(t('unexpectedError'))
+      toast.error(mounted ? t('unexpectedError') : "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // During SSR and initial render, show English text to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              TennisScore
+            </h1>
+            <p className="text-muted-foreground">
+              Your digital tennis companion
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Create your account</CardTitle>
+              <CardDescription>
+                Get started with TennisScore
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your name"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Create password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link
+                    href="/login"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4" suppressHydrationWarning>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

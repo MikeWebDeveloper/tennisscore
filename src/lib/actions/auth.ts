@@ -4,6 +4,11 @@ import { redirect } from "next/navigation"
 import { ID, AppwriteException } from "node-appwrite"
 import { createAdminClient } from "../appwrite-server"
 import { createSession, deleteSession } from "../session"
+// Direct error messages for server actions
+const errorMessages = {
+  unexpectedError: "An unexpected error occurred",
+  invalidCredentials: "Invalid credentials. Please check the email and password."
+}
 
 // Type for form state
 type FormState = {
@@ -34,11 +39,12 @@ export async function signUp(formData: FormData) {
     
     return { success: true }
   } catch (error) {
+    // Error handling
     if (error instanceof AppwriteException) {
       return { error: error.message }
     }
     
-    return { error: "An unexpected error occurred" }
+    return { error: errorMessages.unexpectedError }
   }
   
   redirect("/dashboard")
@@ -70,11 +76,12 @@ export async function signIn(formData: FormData) {
     
     return { success: true }
   } catch (error) {
+    // Error handling
     if (error instanceof AppwriteException) {
       return { error: error.message }
     }
     
-    return { error: "Invalid credentials. Please check the email and password." }
+    return { error: errorMessages.invalidCredentials }
   }
   
   redirect("/dashboard")
@@ -89,7 +96,8 @@ export async function signUpAction(state: FormState, formData: FormData): Promis
     if (error instanceof Error && error.message === "NEXT_REDIRECT") {
       return { success: true }
     }
-    return { error: "An unexpected error occurred" }
+    // Error handling
+    return { error: errorMessages.unexpectedError }
   }
 }
 
@@ -101,7 +109,8 @@ export async function signInAction(state: FormState, formData: FormData): Promis
     if (error instanceof Error && error.message === "NEXT_REDIRECT") {
       return { success: true }
     }
-    return { error: "An unexpected error occurred" }
+    // Error handling
+    return { error: errorMessages.unexpectedError }
   }
 }
 

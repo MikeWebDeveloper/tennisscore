@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Users, ArrowRight, Star } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "@/i18n"
 
 export function StatisticsSetupPrompt() {
+  const t = useTranslations('statistics')
   
   return (
     <motion.div
@@ -23,16 +25,16 @@ export function StatisticsSetupPrompt() {
             </div>
           </div>
           <CardTitle className="text-xl text-gray-900 dark:text-slate-200">
-            Statistics Need a Main Player
+            {t('statisticsNeedMainPlayer')}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">
           <div className="space-y-2">
             <p className="text-gray-800 dark:text-slate-300">
-              To view personalized statistics and track your performance, you need to set yourself as the main player.
+              {t('personalizedStatsDescription')}
             </p>
             <p className="text-sm text-gray-700 dark:text-slate-400">
-              Please go to the Players page to select your main player.
+              {t('goToPlayersPage')}
             </p>
           </div>
           
@@ -40,7 +42,7 @@ export function StatisticsSetupPrompt() {
             <Button asChild className="min-w-[140px]">
               <Link href="/players">
                 <Users className="h-4 w-4 mr-2" />
-                Manage Players
+                {t('managePlayers')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
@@ -49,7 +51,7 @@ export function StatisticsSetupPrompt() {
           <div className="text-xs text-gray-600 dark:text-slate-500 space-y-1">
             <div className="flex items-center justify-center gap-2">
               <Star className="h-3 w-3 text-amber-500" />
-              <span>Your main player will show personalized statistics</span>
+              <span>{t('personalizedStatsHint')}</span>
             </div>
           </div>
         </CardContent>

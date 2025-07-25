@@ -24,7 +24,7 @@ const pageVariants = {
 }
 
 export default function StatisticsClient({ mainPlayer, matches }: StatisticsClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('statistics')
   const [filters, setFilters] = useState<StatisticsFilters>({
     dateRange: {},
     opponent: undefined,
@@ -64,11 +64,11 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
         <div className="flex items-center gap-3">
           <Activity className="h-8 w-8 text-primary" />
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100">
-            {t("statisticsTitle")}
+            {t("statistics")}
           </h1>
         </div>
         <p className="text-lg text-gray-700 dark:text-slate-400">
-          {t("statisticsSubtitle")}
+          Analyze your tennis performance with detailed match statistics
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
               <p className="text-3xl font-bold">{stats.totalMatches}</p>
               {hasFilters && (
                 <p className="text-xs text-muted-foreground">
-                  {matches.length} {t("total")}
+                  {matches.length} total
                 </p>
               )}
             </div>
@@ -96,7 +96,7 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
               <div className="flex items-center gap-1">
                 <TrendingUp className="h-3 w-3 text-green-500" />
                 <p className="text-xs text-green-500">
-                  {stats.matchesWon} {t("won")}
+                  {stats.matchesWon} won
                 </p>
               </div>
             </div>
@@ -106,9 +106,9 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
         <Card>
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">{t("avgMatchDuration")}</p>
+              <p className="text-sm text-muted-foreground">Avg. Duration</p>
               <p className="text-3xl font-bold">
-                {stats.avgMatchDuration ? `${stats.avgMatchDuration}m` : "N/A"}
+                N/A
               </p>
             </div>
           </CardContent>
@@ -117,7 +117,7 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
         <Card>
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">{t("lastPlayed")}</p>
+              <p className="text-sm text-muted-foreground">Last Played</p>
               <p className="text-lg font-medium">
                 {filteredMatches.length > 0 
                   ? new Date(filteredMatches[0].matchDate).toLocaleDateString()
@@ -172,11 +172,11 @@ export default function StatisticsClient({ mainPlayer, matches }: StatisticsClie
       {/* Performance Charts Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("performanceAnalysis")}</CardTitle>
+          <CardTitle>Performance Analysis</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            {t("chartsComingSoon")}
+            Performance charts and analytics coming soon...
           </div>
         </CardContent>
       </Card>

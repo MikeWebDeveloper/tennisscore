@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider";
+import { LocaleProvider } from "@/components/providers/locale-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,12 +67,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ServiceWorkerProvider>
-            {children}
-            <Toaster 
-              position="top-center"
-              richColors
-              closeButton
-            />
+            <LocaleProvider>
+              {children}
+              <Toaster 
+                position="top-center"
+                richColors
+                closeButton
+              />
+            </LocaleProvider>
           </ServiceWorkerProvider>
         </ThemeProvider>
       </body>

@@ -182,7 +182,7 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
 }
 
 export function PointByPointView({ pointLog, playerNames, playerObjects, detailLevel = "simple" }: PointByPointViewProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [detailedView, setDetailedView] = React.useState(false)
   // Group points by set (moved up for hook order)
   const pointsBySets = pointLog.reduce((acc, point) => {

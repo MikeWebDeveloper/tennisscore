@@ -1,4 +1,4 @@
-export type Locale = 'en' | 'cs'
+export type Locale = 'en' | 'cs' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru'
 
 export interface Translations {
   // Common
@@ -2299,9 +2299,13 @@ export type TranslationsKeys = keyof Translations
 
 // Small helper function to get translations with type safety
 export function getTranslations(locale: Locale): Translations {
-  return translations[locale]
+  // Fall back to English if the locale isn't available in the old system
+  const availableLocale = (locale in translations) ? locale as keyof typeof translations : 'en'
+  return translations[availableLocale]
 }
 
 export function t(locale: Locale, key: keyof Translations): string {
-  return translations[locale][key] || translations.en[key]
+  // Fall back to English if the locale isn't available in the old system
+  const availableLocale = (locale in translations) ? locale as keyof typeof translations : 'en'
+  return translations[availableLocale][key] || translations.en[key]
 }

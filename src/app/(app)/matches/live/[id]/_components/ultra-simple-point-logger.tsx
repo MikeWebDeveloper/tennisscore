@@ -34,7 +34,7 @@ export function UltraSimplePointLogger({
   onSave, 
   pointContext
 }: UltraSimplePointLoggerProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   // Flow state: 'outcome' -> 'serve-direction' (for ace/double fault) -> 'winner-type' -> 'shot-direction' -> 'return-type' (for receiving winners) -> done
   const [step, setStep] = useState<'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'return-type'>('outcome')

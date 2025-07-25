@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "dashboard": "Panel Principal",
+    "matches": "Partidos",
+    "players": "Jugadores",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "overviewStats": "Resumen y Estadísticas",
+    "matchHistory": "Historial de Partidos",
+    "managePlayers": "Gestionar Jugadores",
+    "expandNavigation": "Expandir navegación",
+    "collapseNavigation": "Contraer navegación",
+    "newMatchButton": "Nuevo Partido",
+    "statistics": "Estadísticas",
+    "detailedStats": "Estadísticas Detalladas",
+    "lightMode": "Modo Claro",
+    "darkMode": "Modo Oscuro",
+    "signOut": "Cerrar Sesión"
+  }
+}

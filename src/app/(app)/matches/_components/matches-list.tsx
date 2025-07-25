@@ -43,7 +43,7 @@ interface MatchesListProps {
 }
 
 export function MatchesList({ matches }: MatchesListProps) {
-  const t = useTranslations()
+  const t = useTranslations('match')
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [isFiltering, setIsFiltering] = useState(false)

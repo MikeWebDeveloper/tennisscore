@@ -29,7 +29,7 @@ interface MatchSettingsDialogProps {
 }
 
 export function MatchSettingsDialog({ isOpen, onOpenChange, match }: MatchSettingsDialogProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [loading, setLoading] = useState(false)
   
   // Parse match format from JSON string

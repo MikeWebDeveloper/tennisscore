@@ -24,7 +24,7 @@ export default function DashboardClient({
   mainPlayer,
   matches,
 }: DashboardClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('dashboard')
   const stats: DashboardStats = {
     totalMatches: matches.length,
     winRate: 0,

@@ -47,7 +47,7 @@ export function PointDetailSheet({
   pointContext
 }: PointDetailSheetProps) {
   // Translations hook must be at the top
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   const [serveType, setServeType] = useState<ServeType>("first")
   const [serveOutcome, setServeOutcome] = useState<PointOutcome>("winner")

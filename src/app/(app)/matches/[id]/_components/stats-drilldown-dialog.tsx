@@ -48,7 +48,7 @@ export function StatsDrilldownDialog({
   playerNames,
   pointLog
 }: StatsDrilldownDialogProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   if (!statType || !pointLog) return null
 

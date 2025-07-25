@@ -12,7 +12,7 @@ interface CompactDetailStepProps {
 }
 
 export function CompactDetailStep({ value, onChange, onStartMatch, loading }: CompactDetailStepProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   const options = [
     {

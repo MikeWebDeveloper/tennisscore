@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "dashboard": "Главная Панель",
+    "matches": "Матчи",
+    "players": "Игроки",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "overviewStats": "Обзор и Статистика",
+    "matchHistory": "История Матчей",
+    "managePlayers": "Управление Игроками",
+    "expandNavigation": "Развернуть навигацию",
+    "collapseNavigation": "Свернуть навигацию",
+    "newMatchButton": "Новый Матч",
+    "statistics": "Статистика",
+    "detailedStats": "Подробная Статистика",
+    "lightMode": "Светлый Режим",
+    "darkMode": "Тёмный Режим",
+    "signOut": "Выйти"
+  }
+}

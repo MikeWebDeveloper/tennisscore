@@ -158,7 +158,7 @@ export function PaginatedMatchesClient({
   players, 
   hasError 
 }: PaginatedMatchesClientProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const [matches, setMatches] = useState<EnhancedMatch[]>(initialMatches)
   const [total, setTotal] = useState(initialTotal)
   const [hasMore, setHasMore] = useState(initialHasMore)

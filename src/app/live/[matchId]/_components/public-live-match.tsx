@@ -164,7 +164,8 @@ const itemVariants = {
 }
 
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
-  const t = useTranslations()
+  const t = useTranslations('match')
+  const tCommon = useTranslations('common')
   const [match, setMatch] = useState(initialMatch)
   const [score, setScore] = useState<Score>(() => parseAndConvertScore(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
@@ -210,7 +211,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const shareMatch = async () => {
     const url = window.location.href
     const title = `${formatPlayerFromObject(match.playerOne)} ${t('vs')} ${formatPlayerFromObject(match.playerTwo)} - ${t('liveTennisMatch')}`
-    const text = "Watch this live tennis match!"
+    const text = t('watchLiveMatchText')
     
     // Check if we're on a mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -280,8 +281,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     
     if (error) return { status: "error", message: `Connection Error: ${error}` }
     if (!connected && retryCount > 0) return { status: "reconnecting", message: `Reconnecting... (${retryCount}/3)` }
-    if (!connected) return { status: "disconnected", message: isSafariMobile ? "Tap refresh if scores don't update" : "Connecting..." }
-    return { status: "connected", message: "Live updates active" }
+    if (!connected) return { status: "disconnected", message: isSafariMobile ? t('tapRefreshIfScoresNoUpdate') : tCommon('connecting') }
+    return { status: "connected", message: t('liveUpdatesActive') }
   }
 
   const connectionStatus = getConnectionStatus()
