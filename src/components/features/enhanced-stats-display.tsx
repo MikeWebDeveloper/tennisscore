@@ -65,7 +65,7 @@ export function EnhancedStatsDisplay({ stats }: EnhancedStatsDisplayProps) {
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span>Success Rate:</span>
+                          <span>{t('successRate')}:</span>
                           <span className="font-medium">{successRate}%</span>
                         </div>
                         {avgSpeed > 0 && (
@@ -227,7 +227,7 @@ export function EnhancedStatsDisplay({ stats }: EnhancedStatsDisplayProps) {
                           </div>
                         </div>
                         <div className="flex-1">
-                          <div className="text-xs text-muted-foreground mb-1">Success Rate</div>
+                          <div className="text-xs text-muted-foreground mb-1">{t('successRate')}</div>
                           <div className="bg-muted rounded-full h-2">
                             <div 
                               className="bg-green-500 h-2 rounded-full transition-all"

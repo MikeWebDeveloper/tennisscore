@@ -185,6 +185,10 @@
     "tapRefreshIfScoresNoUpdate": "Klepnout na obnovit, pokud se skóre neaktualizuje",
     "liveUpdatesActive": "Živé aktualizace aktivní",
     "followLiveMatch": "Sledujte tento živý tenisový zápas",
-    "followLiveMatchBetween": "Sledujte živý tenisový zápas mezi {player1} a {player2}"
+    "followLiveMatchBetween": "Sledujte živý tenisový zápas mezi {player1} a {player2}",
+    "status": "Stav",
+    "noMatchesFoundCriteria": "Nebyly nalezeny žádné zápasy odpovídající vašim kritériím",
+    "quickSetup": "Rychlé nastavení",
+    "estimatedAdditionalTime": "Odhadovaný dodatečný čas na bod"
   }
 }

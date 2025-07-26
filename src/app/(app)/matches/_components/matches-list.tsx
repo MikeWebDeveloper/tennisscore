@@ -44,6 +44,7 @@ interface MatchesListProps {
 
 export function MatchesList({ matches }: MatchesListProps) {
   const t = useTranslations('match')
+  const commonT = useTranslations('common')
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [isFiltering, setIsFiltering] = useState(false)
@@ -203,10 +204,10 @@ export function MatchesList({ matches }: MatchesListProps) {
           <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Select value={statusFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-[140px]" aria-label="Filter matches by status">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t('status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="all">{commonT('all')}</SelectItem>
               <SelectItem value="completed">{t('completed')}</SelectItem>
               <SelectItem value="in-progress">{t('inProgress')}</SelectItem>
             </SelectContent>
@@ -217,7 +218,7 @@ export function MatchesList({ matches }: MatchesListProps) {
       {/* Results Count */}
       {searchQuery || statusFilter !== "all" ? (
         <p className="text-sm text-muted-foreground">
-          {t("showingMatchesSummary").replace('{shown}', String(filteredMatches.length)).replace('{total}', String(matches.length))}
+          {t("showingMatchesSummary", { shown: filteredMatches.length, total: matches.length })}
         </p>
       ) : null}
 
@@ -230,7 +231,7 @@ export function MatchesList({ matches }: MatchesListProps) {
         </div>
       ) : filteredMatches.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">
-          {searchQuery || statusFilter !== "all" ? "No matches found matching your criteria" : t("noMatchesFound")}
+          {searchQuery || statusFilter !== "all" ? t("noMatchesFoundCriteria") : t("noMatchesFound")}
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -261,7 +262,7 @@ export function MatchesList({ matches }: MatchesListProps) {
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">{t("date")}:</span>
+                <span className="text-sm font-medium">{commonT("date")}:</span>
                 <span className="text-sm">{new Date(match.matchDate).toLocaleDateString()}</span>
               </div>
               
@@ -279,7 +280,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                 <Button variant="outline" size="sm" asChild className="flex-1 h-8 text-xs">
                   <Link href={`/matches/${match.$id}`}>
                     <Eye className="h-3 w-3 mr-1" />
-                    {t('view')}
+                    {commonT('view')}
                   </Link>
                 </Button>
                 

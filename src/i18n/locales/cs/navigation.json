@@ -15,6 +15,18 @@
     "newMatchButton": "Nový zápas",
     "lightMode": "Světlý režim",
     "darkMode": "Tmavý režim",
-    "signOut": "Odhlásit se"
+    "signOut": "Odhlásit se",
+    "adminLabel": "Administrátor",
+    "adminDescription": "Všechny zápasy",
+    "defaultUserName": "Uživatel",
+    "openNavigationMenu": "Otevřít navigační menu",
+    "switchToLightMode": "Přepnout na světlý režim",
+    "switchToDarkMode": "Přepnout na tmavý režim",
+    "mainContent": "Hlavní obsah",
+    "menu": "Menu",
+    "navigationOptions": "Možnosti navigace",
+    "navigateTo": "Přejít na {label}",
+    "createNewMatch": "Vytvořit nový zápas",
+    "new": "Nový"
   }
 }

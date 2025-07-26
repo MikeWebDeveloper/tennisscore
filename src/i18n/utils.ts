@@ -84,7 +84,7 @@ export class TennisFormatter {
       return this.t('common.thisMonth')
     }
     
-    return this.format.dateTime(date, 'short')
+    return this.format.dateTime(date, { dateStyle: 'short' })
   }
 
   // Format court side for tennis

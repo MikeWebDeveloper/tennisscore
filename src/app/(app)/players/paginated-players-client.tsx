@@ -33,7 +33,8 @@ export function PaginatedPlayersClient({
   initialTotal, 
   initialHasMore 
 }: PaginatedPlayersClientProps) {
-  const t = useTranslations('common')
+  const t = useTranslations('player')
+  const commonT = useTranslations('common')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')
@@ -69,7 +70,7 @@ export function PaginatedPlayersClient({
   }, [players, sortOrder, searchQuery])
 
   const handleDeletePlayer = async (playerId: string) => {
-    if (confirm(t("confirmDeletePlayer"))) {
+    if (confirm(commonT("confirmDeletePlayer"))) {
       const result = await deletePlayer(playerId)
       if (result.success) {
         // Remove player from local state instead of reloading page
@@ -204,13 +205,13 @@ export function PaginatedPlayersClient({
           <div>
             <h1 className="text-2xl md:text-4xl font-bold text-foreground">{t("players")}</h1>
             <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-              {t("managePlayersDescription")}
+              {t("managementDescription")}
             </p>
             {total > 0 && (
               <div className="flex items-center gap-2 mt-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {t("showingPlayersSummary").replace('{shown}', String(players.length)).replace('{total}', String(total))}
+                  {t("showingPlayersSummary", { shown: players.length, total: total })}
                 </span>
               </div>
             )}
@@ -225,7 +226,7 @@ export function PaginatedPlayersClient({
                 className="flex items-center gap-2"
               >
                 {getSortIcon()}
-                <span className="hidden sm:inline">{t("sort")}</span>
+                <span className="hidden sm:inline">{commonT("sort")}</span>
               </Button>
             )}
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
@@ -238,7 +239,7 @@ export function PaginatedPlayersClient({
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
               <Input
-                placeholder={t('searchPlayers')}
+                placeholder={commonT('searchPlayers')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -248,7 +249,7 @@ export function PaginatedPlayersClient({
             </div>
             {searchQuery && (
               <p className="text-sm text-muted-foreground">
-                {total} players found
+                {t("playersFound", { count: total })}
               </p>
             )}
           </div>
@@ -256,14 +257,14 @@ export function PaginatedPlayersClient({
 
         {players.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">{t("noPlayersYet")}</p>
+            <p className="text-muted-foreground mb-4">{commonT("noPlayersYet")}</p>
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
           </div>
         ) : sortedAndFilteredPlayers.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No players found matching your search</p>
+            <p className="text-muted-foreground mb-4">{t("noPlayersFoundSearch")}</p>
             <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Clear Search
+              {commonT("clearSearch")}
             </Button>
           </div>
         ) : (
@@ -290,11 +291,11 @@ export function PaginatedPlayersClient({
                         {isLoading ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            {t("loading")}
+                            {commonT("loading")}
                           </>
                         ) : (
                           <>
-                            Show More ({total - players.length} remaining)
+                            {t("showMore", { count: total - players.length })}
                           </>
                         )}
                       </Button>
@@ -308,7 +309,7 @@ export function PaginatedPlayersClient({
                         className="min-w-[120px]"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        View All ({total})
+                        {t("viewAll", { count: total })}
                       </Button>
                     )}
                   </div>
@@ -316,7 +317,7 @@ export function PaginatedPlayersClient({
                   // All Mode Controls
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-sm text-muted-foreground">
-                      Showing all players ({total})
+                      {t("showingAllPlayers", { count: total })}
                     </p>
                     <Button 
                       variant="outline" 
@@ -324,14 +325,14 @@ export function PaginatedPlayersClient({
                       onClick={resetToPaginated}
                       disabled={isLoading}
                     >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {t("loading")}
-                        </>
-                      ) : (
-                        "Back to Paginated"
-                      )}
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            {commonT("loading")}
+                          </>
+                        ) : (
+                          t("backToPaginated")
+                        )}
                     </Button>
                   </div>
                 )}
@@ -339,7 +340,7 @@ export function PaginatedPlayersClient({
                 {/* No More Players Message */}
                 {!hasMore && viewMode === 'paginated' && players.length > 20 && (
                   <div className="text-center text-sm text-muted-foreground">
-                    All players loaded
+                    {t("allPlayersLoaded")}
                   </div>
                 )}
               </div>

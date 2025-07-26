@@ -68,7 +68,7 @@ const sidebarVariants = {
   open: {
     x: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 300,
       damping: 30
     }
@@ -76,7 +76,7 @@ const sidebarVariants = {
   closed: {
     x: "-100%",
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 300,
       damping: 30
     }
@@ -136,8 +136,8 @@ export function AppShell({ children, user }: AppShellProps) {
     ? [...baseNavigation, {
         href: "/admin",
         icon: Shield,
-        label: "Admin",
-        description: "All matches"
+        label: t("adminLabel"),
+        description: t("adminDescription")
       }]
     : baseNavigation
 
@@ -258,7 +258,7 @@ export function AppShell({ children, user }: AppShellProps) {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {user.name || "User"}
+                      {user.name || t("defaultUserName")}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
@@ -422,7 +422,7 @@ export function AppShell({ children, user }: AppShellProps) {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">
-                            {user.name || "User"}
+                            {user.name || t("defaultUserName")}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         </div>
@@ -461,7 +461,7 @@ export function AppShell({ children, user }: AppShellProps) {
           </main>
 
           {/* Enhanced Collapsible Mobile Bottom Navigation */}
-          <CollapsibleMobileNav navigation={navigation} />
+          <CollapsibleMobileNav navigation={localizedNavigation} />
         </div>
       </div>
     </HydrationErrorBoundary>

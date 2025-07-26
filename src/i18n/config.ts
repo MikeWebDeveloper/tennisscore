@@ -1,5 +1,5 @@
 // Temporary config without next-intl
-// import { getRequestConfig } from 'next-intl/server'
+import { getRequestConfig } from 'next-intl/server'
 
 // Supported locales
 export const locales = ['en', 'cs', 'es', 'fr', 'de', 'it', 'pt', 'ru'] as const
@@ -10,7 +10,7 @@ export const defaultLocale: Locale = 'en'
 
 // Temporary export - commented out next-intl config
 // When next-intl is re-enabled, uncomment the following:
-/*
+
 export default getRequestConfig(async ({ locale }) => {
   // Validate that the incoming `locale` parameter is valid
   const validatedLocale = locale && locales.includes(locale as Locale) ? locale : defaultLocale
@@ -25,6 +25,7 @@ export default getRequestConfig(async ({ locale }) => {
       ...(await import(`./locales/${validatedLocale}/dashboard.json`)).default,
       ...(await import(`./locales/${validatedLocale}/player.json`)).default,
       ...(await import(`./locales/${validatedLocale}/statistics.json`)).default,
+      ...(await import(`./locales/${validatedLocale}/admin.json`)).default,
     },
     // Enable fallback to default locale
     defaultTranslationValues: {
@@ -67,7 +68,3 @@ export default getRequestConfig(async ({ locale }) => {
     timeZone: 'UTC',
   }
 })
-*/
-
-// Placeholder export to satisfy imports
-export default {}

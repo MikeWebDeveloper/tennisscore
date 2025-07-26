@@ -21,6 +21,7 @@ import {
 import { Match, Player } from "@/lib/types"
 import { TrendingUp, TrendingDown, Users } from "lucide-react"
 import { aggregatePlayerStatsAcrossMatches } from "@/lib/utils/match-stats"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface HeadToHeadAnalysisProps {
   matches: Match[]
@@ -30,6 +31,7 @@ interface HeadToHeadAnalysisProps {
 const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6']
 
 export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysisProps) {
+  const t = useTranslations('statistics')
 
   // Group matches by opponent
   const opponentData = useMemo(() => {
@@ -160,7 +162,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
     const surfaces = new Map<string, { wins: number, total: number }>()
     
     selectedOpponentStats.matches.forEach(match => {
-      const surface = match.surface || "Unknown"
+      const surface = "Unknown" // Surface property doesn't exist in Match type
       if (!surfaces.has(surface)) {
         surfaces.set(surface, { wins: 0, total: 0 })
       }
@@ -198,7 +200,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
       {/* Opponent Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Opponent Overview</CardTitle>
+          <CardTitle>{t('opponentOverview')}</CardTitle>
           <CardDescription>
             Your performance against regular opponents
           </CardDescription>
@@ -209,10 +211,10 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
               <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                    {stats.opponent?.name?.charAt(0) || "?"}
+                    {(stats.opponent?.firstName?.charAt(0) || "") + (stats.opponent?.lastName?.charAt(0) || "") || "?"}
                   </div>
                   <div>
-                    <p className="font-medium">{stats.opponent?.name || "Unknown Player"}</p>
+                    <p className="font-medium">{stats.opponent ? `${stats.opponent.firstName} ${stats.opponent.lastName}`.trim() : "Unknown Player"}</p>
                     <p className="text-sm text-muted-foreground">
                       {stats.totalMatches} matches • Last match: {stats.recentForm}
                     </p>
@@ -247,7 +249,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
             <Card>
               <CardHeader>
                 <CardTitle>
-                  vs {selectedOpponentStats.opponent?.name}
+                  vs {selectedOpponentStats.opponent ? `${selectedOpponentStats.opponent.firstName} ${selectedOpponentStats.opponent.lastName}`.trim() : ""}
                 </CardTitle>
                 <CardDescription>
                   Key metrics comparison
@@ -263,7 +265,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="you" fill="#22c55e" name="You" />
-                    <Bar dataKey="opponent" fill="#ef4444" name={selectedOpponentStats.opponent?.name || "Opponent"} />
+                    <Bar dataKey="opponent" fill="#ef4444" name={selectedOpponentStats.opponent ? `${selectedOpponentStats.opponent.firstName} ${selectedOpponentStats.opponent.lastName}`.trim() : "Opponent"} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -273,9 +275,9 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
             {/* Match History */}
             <Card>
               <CardHeader>
-                <CardTitle>Match History</CardTitle>
+                <CardTitle>{t('matchHistory')}</CardTitle>
                 <CardDescription>
-                  Results trend vs {selectedOpponentStats.opponent?.name}
+                  Results trend vs {selectedOpponentStats.opponent ? `${selectedOpponentStats.opponent.firstName} ${selectedOpponentStats.opponent.lastName}`.trim() : ""}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -339,7 +341,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
             {/* Key Stats */}
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle className="text-base">Key Stats vs {selectedOpponentStats.opponent?.name}</CardTitle>
+                <CardTitle className="text-base">Key Stats vs {selectedOpponentStats.opponent ? `${selectedOpponentStats.opponent.firstName} ${selectedOpponentStats.opponent.lastName}`.trim() : ""}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">

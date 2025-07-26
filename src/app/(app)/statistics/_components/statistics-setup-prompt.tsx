@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Users, ArrowRight, Star } from "lucide-react"
 import Link from "next/link"
-import { useTranslations } from "@/i18n"
+import { useTranslations } from "@/hooks/use-translations"
 
 export function StatisticsSetupPrompt() {
   const t = useTranslations('statistics')

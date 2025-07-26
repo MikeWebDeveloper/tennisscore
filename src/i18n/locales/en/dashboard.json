@@ -64,6 +64,23 @@
     "night": "Night",
     "lateNight": "Late Night",
     "unforcedErrorsLabel": "Unforced Errors",
-    "forcedErrorsLabel": "Forced Errors"
+    "forcedErrorsLabel": "Forced Errors",
+    "viewMoreStats": "View More Stats",
+    "showLess": "Show Less",
+    "performanceInsights": "Performance Insights",
+    "advancedAnalytics": "Advanced Analytics",
+    "recentForm": "Recent Form",
+    "last5Matches": "Last 5 matches",
+    "courtTime": "Court Time",
+    "totalPlayingTime": "Total playing time",
+    "peakPerformance": "Peak Performance",
+    "bestPlayingTime": "Best playing time",
+    "avgDuration": "Avg Duration",
+    "perMatch": "Per match",
+    "fhBhRatio": "FH/BH Ratio",
+    "forehandPreference": "Forehand preference",
+    "vs": "vs",
+    "player1": "Player 1",
+    "player2": "Player 2"
   }
 }

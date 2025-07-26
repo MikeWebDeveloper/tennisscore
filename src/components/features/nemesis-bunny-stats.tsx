@@ -150,7 +150,7 @@ export function NemesisBunnyStats({
               $id: record.opponentId,
               firstName: record.opponentName.split(' ')[0] || '',
               lastName: record.opponentName.split(' ').slice(1).join(' ') || '',
-              profilePicture: record.opponentAvatar
+              profilePictureUrl: record.opponentAvatar
             }} 
             className="h-10 w-10" 
           />

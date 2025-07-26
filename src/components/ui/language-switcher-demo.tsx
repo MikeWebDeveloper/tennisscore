@@ -25,8 +25,8 @@ export function LanguageSwitcherDemo() {
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Select Variant</h3>
         <div className="flex items-center space-x-4">
-          <LanguageSwitcher variant="select" size="sm" />
-          <LanguageSwitcher variant="select" size="md" />
+          <LanguageSwitcher variant="dropdown" size="sm" />
+          <LanguageSwitcher variant="dropdown" size="md" />
         </div>
       </div>
 

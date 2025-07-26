@@ -347,7 +347,7 @@ export async function getMatch(matchId: string): Promise<Match> {
   
   try {
     const match = await withRetry(() =>
-      databases.getDocument(
+      databases.getDocument<Match>(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         matchId
@@ -358,7 +358,7 @@ export async function getMatch(matchId: string): Promise<Match> {
     return {
       ...match,
       setDurations: match.setDurations ? (match.setDurations as unknown as string[]).map(duration => parseInt(duration, 10)) : [],
-    } as Match
+    }
   } catch (error: unknown) {
     console.error("Error fetching match:", error)
     
@@ -1040,7 +1040,7 @@ async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>
     const { databases } = await createAdminClient()
     
     const response = await withRetry(() =>
-      databases.listDocuments(
+      databases.listDocuments<Player>(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         [
@@ -1052,8 +1052,7 @@ async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>
     
     const playersMap = new Map<string, Player>()
     response.documents.forEach((player) => {
-      const playerData = player as Player
-      playersMap.set(player.$id, playerData)
+      playersMap.set(player.$id, player)
     })
     
     return playersMap

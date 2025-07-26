@@ -4,9 +4,10 @@ import { useTranslations } from "@/hooks/use-translations"
 import { useLocaleStore } from "@/stores/localeStore"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 export default function TestI18nPage() {
-  const { locale } = useLocaleStore()
+  const { locale, setLocale } = useLocaleStore()
   const tAuth = useTranslations('auth')
   const tCommon = useTranslations('common')
   const tNav = useTranslations('navigation')
@@ -18,6 +19,14 @@ export default function TestI18nPage() {
       
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Current Locale: {locale}</h2>
+        <div className="flex gap-2 mb-4">
+          <Button onClick={() => setLocale('en')} variant={locale === 'en' ? 'default' : 'outline'}>
+            English
+          </Button>
+          <Button onClick={() => setLocale('cs')} variant={locale === 'cs' ? 'default' : 'outline'}>
+            Czech
+          </Button>
+        </div>
         <LanguageSwitcher variant="dropdown" size="md" showFlags={true} />
       </div>
       
@@ -54,15 +63,30 @@ export default function TestI18nPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Navigation Translations</CardTitle>
+            <CardTitle>Navigation Translations (Key Issues Testing)</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              <li><strong>dashboard:</strong> {tNav('dashboard')}</li>
-              <li><strong>matches:</strong> {tNav('matches')}</li>
-              <li><strong>players:</strong> {tNav('players')}</li>
-              <li><strong>statistics:</strong> {tNav('statistics')}</li>
-              <li><strong>settings:</strong> {tNav('settings')}</li>
+              <li><strong>navigation.dashboard:</strong> {tNav('dashboard')}</li>
+              <li><strong>navigation.matches:</strong> {tNav('matches')}</li>
+              <li><strong>navigation.players:</strong> {tNav('players')}</li>
+              <li><strong>navigation.statistics:</strong> {tNav('statistics')}</li>
+              <li><strong>navigation.settings:</strong> {tNav('settings')}</li>
+            </ul>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Match Translations (Problematic Keys)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li><strong>match.showingMatchesSummary:</strong> {tMatch('showingMatchesSummary', { shown: 5, total: 10 })}</li>
+              <li><strong>match.winner:</strong> {tMatch('winner')}</li>
+              <li><strong>match.newMatch:</strong> {tMatch('newMatch')}</li>
+              <li><strong>match.vs:</strong> {tMatch('vs')}</li>
+              <li><strong>match.completed:</strong> {tMatch('completed')}</li>
             </ul>
           </CardContent>
         </Card>

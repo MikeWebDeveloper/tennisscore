@@ -63,6 +63,14 @@
     "defaultName4": "Player 4",
     "playerNumber": "Player {number}",
     "players": "Players",
-    "createNewPlayer": "Create New Player"
+    "createNewPlayer": "Create New Player",
+    "playersFound": "{count} players found",
+    "noPlayersFoundSearch": "No players found matching your search",
+    "clearSearch": "Clear Search",
+    "showMore": "Show More ({count} remaining)",
+    "viewAll": "View All ({count})",
+    "showingAllPlayers": "Showing all players ({count})",
+    "backToPaginated": "Back to Paginated",
+    "allPlayersLoaded": "All players loaded"
   }
 }

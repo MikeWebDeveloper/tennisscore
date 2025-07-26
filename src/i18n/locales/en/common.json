@@ -139,6 +139,7 @@
     "backToMatches": "Back to Matches",
     "shareResults": "Share Results",
     "doublesMatch": "Doubles Match",
+    "final": "Final",
     "aces": "Aces",
     "totalPointsPlayed": "Total Points Played",
     "breakPointsCreated": "Break Points Created",
@@ -156,6 +157,16 @@
     "average": "Average",
     "good": "Good",
     "excellent": "Excellent",
-    "perfect": "Perfect"
+    "perfect": "Perfect",
+    "serveQuality": "Serve Quality",
+    "serveSpeed": "Serve Speed",
+    "serveAnalytics": "Serve Analytics",
+    "servePlacement": "Serve Placement",
+    "servePlacementDistribution": "Serve Placement Distribution",
+    "speedAnalytics": "Speed Analytics",
+    "avgMph": "Avg mph",
+    "successRate": "Success Rate",
+    "avgSpeed": "Avg Speed",
+    "serves": "serves"
   }
 }

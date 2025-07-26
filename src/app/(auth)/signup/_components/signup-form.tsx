@@ -33,7 +33,7 @@ export function SignupForm() {
     const confirmPassword = formData.get("confirmPassword") as string
     
     if (password !== confirmPassword) {
-      toast.error(mounted ? t('passwordsDoNotMatch') : "Passwords do not match")
+      toast.error(t('passwordsDoNotMatch'))
       setIsLoading(false)
       return
     }
@@ -45,7 +45,7 @@ export function SignupForm() {
         toast.error(result.error)
       }
     } catch {
-      toast.error(mounted ? t('unexpectedError') : "An unexpected error occurred")
+      toast.error(t('unexpectedError'))
     } finally {
       setIsLoading(false)
     }

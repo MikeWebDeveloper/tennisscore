@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { formatPlayerFromObject } from "@/lib/utils"
-import { useTranslations } from "@/i18n"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface ServeSelectionProps {
   playerOne: Player

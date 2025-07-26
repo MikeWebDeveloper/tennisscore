@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslations } from '@/i18n'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -80,6 +81,7 @@ const CATEGORIES = {
 export function CustomModeDialog({ open, onOpenChange }: CustomModeDialogProps) {
   const { customMode, setCustomMode } = useMatchStore()
   const [localConfig, setLocalConfig] = useState<CustomModeConfig>(customMode)
+  const t = useTranslations('match')
 
   const handlePresetSelect = (preset: typeof PRESETS[keyof typeof PRESETS]) => {
     setLocalConfig({
@@ -179,7 +181,7 @@ export function CustomModeDialog({ open, onOpenChange }: CustomModeDialogProps) 
 
               {/* Presets */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Quick Setup</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('quickSetup')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {Object.entries(PRESETS).map(([key, preset]) => (
                     <Card 
@@ -277,7 +279,7 @@ export function CustomModeDialog({ open, onOpenChange }: CustomModeDialogProps) 
               <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4" />
-                  <span className="font-medium">Estimated additional time per point:</span>
+                  <span className="font-medium">{t('estimatedAdditionalTime')}:</span>
                   <Badge variant="outline">{getEstimatedTime()}</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">

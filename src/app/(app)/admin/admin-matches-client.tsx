@@ -8,6 +8,7 @@ import { AdminMatchCard } from "@/components/shared/admin-match-card"
 import { getAllMatchesWithPlayers } from "@/lib/actions/matches"
 import { Match, Player } from "@/lib/types"
 import { useDebounce } from "@/hooks/use-debounce"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface AdminMatchesClientProps {
   initialMatches: (Match & {
@@ -30,6 +31,7 @@ export function AdminMatchesClient({
   initialTotal, 
   initialHasMore 
 }: AdminMatchesClientProps) {
+  const t = useTranslations('admin')
   const [matches, setMatches] = useState(initialMatches)
   const [total, setTotal] = useState(initialTotal)
   const [hasMore, setHasMore] = useState(initialHasMore)
@@ -93,9 +95,9 @@ export function AdminMatchesClient({
     <div className="p-4 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">All Matches (Admin View)</h1>
+        <h1 className="text-2xl font-bold mb-2">{t("allMatchesTitle")}</h1>
         <p className="text-muted-foreground text-sm">
-          View all matches created by all users. This section is only accessible to privileged users.
+          {t("allMatchesDescription")}
         </p>
       </div>
 
@@ -104,7 +106,7 @@ export function AdminMatchesClient({
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by player names, tournament, or creator email..."
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -117,12 +119,13 @@ export function AdminMatchesClient({
         {isLoading ? (
           <div className="flex items-center space-x-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Searching...</span>
+            <span>{t("searching")}</span>
           </div>
         ) : (
           <span>
-            Showing {matches.length} of {total} matches
-            {debouncedSearchTerm && ` for "${debouncedSearchTerm}"`}
+            {debouncedSearchTerm
+              ? t("showingMatchesFor", { shown: matches.length, total, searchTerm: debouncedSearchTerm })
+              : t("showingMatches", { shown: matches.length, total })}
           </span>
         )}
       </div>
@@ -132,7 +135,7 @@ export function AdminMatchesClient({
         {matches.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-muted-foreground">
-              {debouncedSearchTerm ? "No matches found matching your search." : "No matches found."}
+              {debouncedSearchTerm ? t("noMatchesFoundSearch") : t("noMatchesFound")}
             </div>
           </div>
         ) : (
@@ -154,10 +157,10 @@ export function AdminMatchesClient({
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading...
+                {t("loading")}
               </>
             ) : (
-              `Load More Matches (${total - matches.length} remaining)`
+              t("loadMore", { remaining: total - matches.length })
             )}
           </Button>
         </div>

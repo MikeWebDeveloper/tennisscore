@@ -75,31 +75,31 @@ export function LoginForm() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Welcome back</CardTitle>
+              <CardTitle>{t('welcomeBackAuth')}</CardTitle>
               <CardDescription>
-                Sign in to your account
+                {t('signInToYourAccount')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form action={formAction} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t('enterYourEmail')}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   <Input
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder={t('enterYourPassword')}
                     required
                   />
                 </div>

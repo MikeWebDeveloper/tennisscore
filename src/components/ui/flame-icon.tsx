@@ -24,7 +24,7 @@ export function FlameIcon({ className = "", size = 16, streak = 0 }: FlameIconPr
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: "easeInOut"
+        ease: "easeInOut" as const
       }
     },
     exit: {
@@ -72,7 +72,7 @@ export function FlameIcon({ className = "", size = 16, streak = 0 }: FlameIconPr
           transition={{
             duration: 1.5,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut" as const
           }}
         />
       )}

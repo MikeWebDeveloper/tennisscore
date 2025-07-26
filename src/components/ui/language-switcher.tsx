@@ -60,7 +60,7 @@ export function LanguageSwitcher({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size={size} className={className}>
+          <Button variant="ghost" size={size === 'md' ? 'default' : size} className={className}>
             {showFlags ? languageFlags[locale] : locale.toUpperCase()}
           </Button>
         </DropdownMenuTrigger>
@@ -83,7 +83,7 @@ export function LanguageSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={size} className={`gap-2 ${className}`}>
+        <Button variant="ghost" size={size === 'md' ? 'default' : size} className={`gap-2 ${className}`}>
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">
             {showFlags && `${languageFlags[locale]} `}

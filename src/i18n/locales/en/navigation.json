@@ -27,6 +27,8 @@
     "navigationOptions": "Navigation options",
     "navigateTo": "Navigate to {label}",
     "createNewMatch": "Create new match",
-    "new": "New"
+    "new": "New",
+    "userRole": "User Role",
+    "userRoleAdmin": "Admin"
   }
 }

@@ -362,17 +362,17 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter className="h-4 w-4" />
-              <span className="hidden xs:inline">Filters</span>
+              <span className="hidden xs:inline">{t("filters")}</span>
               {hasFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">!</Badge>}
             </Button>
             <Button variant="outline" size="sm" className="gap-2 min-h-[44px] px-3">
               <Download className="h-4 w-4" />
-              <span className="hidden xs:inline">Export Data</span>
+              <span className="hidden xs:inline">{t("exportData")}</span>
             </Button>
           </div>
         </div>
         <p className="text-sm xs:text-base sm:text-lg text-gray-700 dark:text-slate-400">
-          Deep dive into your performance metrics and analytics
+          {t("deepDiveAnalytics")}
         </p>
       </div>
 
@@ -382,9 +382,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Dominance Score</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("dominanceScore")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.dominance.dominanceScore}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">out of 500</p>
+                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("outOf", { value: 500 })}</p>
               </div>
               <Trophy className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-yellow-500 flex-shrink-0" />
             </div>
@@ -396,9 +396,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Pressure Index</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("pressureIndex")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.pressureStats.pressurePerformanceIndex}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">clutch rating</p>
+                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("clutchRating")}</p>
               </div>
               <Target className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-500 flex-shrink-0" />
             </div>
@@ -410,9 +410,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">Mental Toughness</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("mentalToughness")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.mentalToughness.mentalToughnessScore}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{stats.mentalToughness.comebacks} comebacks</p>
+                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("comebacks", { count: stats.mentalToughness.comebacks })}</p>
               </div>
               <Brain className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-purple-500 flex-shrink-0" />
             </div>
@@ -426,7 +426,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("winRate")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.basicStats.winRate}%</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{stats.basicStats.matchesWon} of {stats.basicStats.totalMatches}</p>
+                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("ofMatches", { won: stats.basicStats.matchesWon, total: stats.basicStats.totalMatches })}</p>
               </div>
               <Activity className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-green-500 flex-shrink-0" />
             </div>
@@ -454,7 +454,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold">Filters</h2>
+                <h2 className="text-lg font-semibold">{t("filters")}</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -494,23 +494,23 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               <div className="overflow-x-auto scrollbar-hide">
                 <TabsList className="flex w-max xs:w-full xs:grid xs:grid-cols-5 gap-1">
                   <TabsTrigger value="overview" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[80px] xs:min-w-0 whitespace-nowrap">
-                    <span className="xs:hidden">Overview</span>
-                    <span className="hidden xs:inline sm:hidden">View</span>
-                    <span className="hidden sm:inline">Overview</span>
+                    <span className="xs:hidden">{t("overview")}</span>
+                    <span className="hidden xs:inline sm:hidden">{t("overviewShort")}</span>
+                    <span className="hidden sm:inline">{t("overview")}</span>
                   </TabsTrigger>
                   <TabsTrigger value="trends" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[70px] xs:min-w-0 whitespace-nowrap">
-                    Trends
+                    {t("trends")}
                   </TabsTrigger>
                   <TabsTrigger value="serve-return" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[60px] xs:min-w-0 whitespace-nowrap">
-                    <span className="sm:hidden">S/R</span>
-                    <span className="hidden sm:inline">Serve/Return</span>
+                    <span className="sm:hidden">{t("serveReturnShort")}</span>
+                    <span className="hidden sm:inline">{t("serveReturn")}</span>
                   </TabsTrigger>
                   <TabsTrigger value="clutch" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[70px] xs:min-w-0 whitespace-nowrap">
-                    Clutch
+                    {t("clutch")}
                   </TabsTrigger>
                   <TabsTrigger value="head-to-head" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[60px] xs:min-w-0 whitespace-nowrap">
-                    <span className="sm:hidden">H2H</span>
-                    <span className="hidden sm:inline">Head-to-Head</span>
+                    <span className="sm:hidden">{t("headToHeadShort")}</span>
+                    <span className="hidden sm:inline">{t("headToHead")}</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -526,36 +526,36 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4">
                 <Card>
                   <CardHeader className="pb-2 xs:pb-3 px-3 xs:px-4 pt-3 xs:pt-4">
-                    <CardTitle className="text-sm xs:text-base sm:text-lg">Points Won</CardTitle>
+                    <CardTitle className="text-sm xs:text-base sm:text-lg">{t("pointsWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.pointsWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      Service dominance
+                      {t("serviceDominance")}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2 xs:pb-3 px-3 xs:px-4 pt-3 xs:pt-4">
-                    <CardTitle className="text-sm xs:text-base sm:text-lg">Games Won</CardTitle>
+                    <CardTitle className="text-sm xs:text-base sm:text-lg">{t("gamesWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.gamesWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      Match win rate
+                      {t("matchWinRate")}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="col-span-1 xs:col-span-2 sm:col-span-1">
                   <CardHeader className="pb-2 xs:pb-3 px-3 xs:px-4 pt-3 xs:pt-4">
-                    <CardTitle className="text-sm xs:text-base sm:text-lg">Sets Won</CardTitle>
+                    <CardTitle className="text-sm xs:text-base sm:text-lg">{t("setsWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
                     <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.setsWonPct}%</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      Match win rate
+                      {t("matchWinRate")}
                     </p>
                   </CardContent>
                 </Card>

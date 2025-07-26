@@ -185,6 +185,10 @@
     "tapRefreshIfScoresNoUpdate": "Tap refresh if scores don't update",
     "liveUpdatesActive": "Live updates active",
     "followLiveMatch": "Follow this live tennis match",
-    "followLiveMatchBetween": "Follow the live tennis match between {player1} and {player2}"
+    "followLiveMatchBetween": "Follow the live tennis match between {player1} and {player2}",
+    "status": "Status",
+    "noMatchesFoundCriteria": "No matches found matching your criteria",
+    "quickSetup": "Quick Setup",
+    "estimatedAdditionalTime": "Estimated additional time per point"
   }
 }

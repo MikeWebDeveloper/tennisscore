@@ -29,7 +29,7 @@ import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useTranslations } from "@/i18n"
+import { useTranslations } from "@/hooks/use-translations"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/(app)/matches/[id]/_components/match-stats"

@@ -1,9 +1,13 @@
+"use client"
+
 import { CacheManager } from "@/components/features/cache-manager"
 import { SoundSettings } from "@/components/ui/sound-settings"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Settings, Database, Volume2 } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 export default function SettingsPage() {
+  const t = useTranslations('settings')
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -11,11 +15,11 @@ export default function SettingsPage() {
         <div className="flex items-center gap-3">
           <Settings className="h-8 w-8 text-primary" />
           <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
-            Settings
+            {t('settings')}
           </h1>
         </div>
         <p className="text-lg text-slate-400">
-          Manage your app preferences and cache settings
+          {t('managePreferences')}
         </p>
       </div>
 
@@ -24,7 +28,7 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2">
           <Database className="h-6 w-6 text-primary" />
           <h2 className="text-xl font-semibold text-slate-200">
-            Cache & Updates
+            {t('cacheAndUpdates')}
           </h2>
         </div>
         
@@ -38,7 +42,7 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2">
           <Volume2 className="h-6 w-6 text-primary" />
           <h2 className="text-xl font-semibold text-slate-200">
-            Sound Effects
+            {t('soundSettings')}
           </h2>
         </div>
         
@@ -50,28 +54,28 @@ export default function SettingsPage() {
       {/* Information Card */}
       <Card className="max-w-4xl">
         <CardHeader>
-          <CardTitle>About Cache Management</CardTitle>
+          <CardTitle>{t('aboutCacheManagement')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground space-y-2">
             <p>
-              <strong>Why use cache management?</strong>
+              <strong>{t('whyUseCacheManagement')}</strong>
             </p>
             <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Fixes issues with outdated app versions</li>
-              <li>Resolves problems with stale data</li>
-              <li>Improves app performance and reliability</li>
-              <li>Forces fresh data from servers when needed</li>
+              <li>{t('fixesOutdated')}</li>
+              <li>{t('resolvesStaleData')}</li>
+              <li>{t('improvesPerformance')}</li>
+              <li>{t('forcesFreshData')}</li>
             </ul>
             
             <p className="mt-4">
-              <strong>When to use these features:</strong>
+              <strong>{t('whenToUseFeatures')}</strong>
             </p>
             <ul className="list-disc list-inside space-y-1 ml-4">
-              <li><strong>Clear Cache:</strong> When experiencing data inconsistencies or old information</li>
-              <li><strong>Force Reload:</strong> When the app seems stuck or not updating properly</li>
-              <li><strong>Check Updates:</strong> To manually check for new app versions</li>
-              <li><strong>Install App:</strong> For better performance and offline access</li>
+              <li>{t('clearCacheDescription')}</li>
+              <li>{t('forceReloadDescription')}</li>
+              <li>{t('checkUpdatesDescription')}</li>
+              <li>{t('installAppDescription')}</li>
             </ul>
           </div>
         </CardContent>

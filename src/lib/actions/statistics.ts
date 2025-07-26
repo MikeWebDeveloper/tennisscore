@@ -13,7 +13,7 @@ export async function getMatchesWithStats(playerId: string): Promise<Match[]> {
     const { databases } = await createAdminClient()
     
     // Get all matches where the player participated
-    const matchesResponse = await databases.listDocuments(
+    const matchesResponse = await databases.listDocuments<Match>(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
       [
@@ -40,14 +40,14 @@ export async function getMatchesWithStats(playerId: string): Promise<Match[]> {
     // Fetch all players in one query
     const playersMap = new Map<string, Player>()
     if (playerIds.size > 0) {
-      const playersResponse = await databases.listDocuments(
+      const playersResponse = await databases.listDocuments<Player>(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
         [Query.equal("$id", Array.from(playerIds))]
       )
       
       playersResponse.documents.forEach(player => {
-        playersMap.set(player.$id, player as Player)
+        playersMap.set(player.$id, player)
       })
     }
 
@@ -58,7 +58,7 @@ export async function getMatchesWithStats(playerId: string): Promise<Match[]> {
       playerTwo: match.playerTwoId ? playersMap.get(match.playerTwoId) : undefined,
       playerThree: match.playerThreeId ? playersMap.get(match.playerThreeId) : undefined,
       playerFour: match.playerFourId ? playersMap.get(match.playerFourId) : undefined,
-    })) as Match[]
+    }))
   } catch (error) {
     console.error("Error fetching matches with stats:", error)
     return []

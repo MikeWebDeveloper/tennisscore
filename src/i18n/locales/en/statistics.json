@@ -167,6 +167,22 @@
     "playMoreMatches": "Play more matches against the same opponents for detailed analysis",
     "comingSoon": "Performance charts and analytics coming soon...",
     "filters": "Filters",
-    "exportData": "Export Data"
+    "exportData": "Export Data",
+    "deepDiveAnalytics": "Deep dive into your performance metrics and analytics",
+    "ofMatches": "{won} of {total}",
+    "overviewShort": "View",
+    "serveReturnShort": "S/R",
+    "allOpponents": "All opponents",
+    "allMatches": "All matches",
+    "allFormats": "All formats",
+    "enterMinimumMatches": "Enter minimum matches",
+    "matchStatus": "Match Status",
+    "completedOnly": "Completed only",
+    "opponentOverview": "Opponent Overview",
+    "mentalToughnessProfile": "Mental Toughness Profile",
+    "clutchSituations": "Clutch Situations",
+    "pressureTrend": "Pressure Trend",
+    "breakPointPerformance": "Break Point Performance",
+    "headToHeadShort": "H2H"
   }
 }

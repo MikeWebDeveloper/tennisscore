@@ -177,9 +177,9 @@ export function VirtualMatchesList({ matches, mainPlayerId }: VirtualMatchesList
                           </div>
 
                           {/* Score */}
-                          {match.status === 'completed' && match.finalScore && (
+                          {match.status === 'completed' && match.score && (
                             <div className="text-sm font-mono">
-                              {formatMatchScore(match.finalScore)}
+                              {formatMatchScore(match.score)}
                             </div>
                           )}
                         </div>

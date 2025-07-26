@@ -20,6 +20,7 @@ import {
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Match, Player } from "@/lib/types"
+import { useTranslations } from "@/hooks/use-translations"
 
 export interface StatisticsFilters {
   dateRange: {
@@ -49,6 +50,8 @@ export function StatisticsFiltersComponent({
   isCollapsed = false,
   onToggleCollapse
 }: StatisticsFiltersProps) {
+  const t = useTranslations('statistics')
+  const tCommon = useTranslations('common')
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>(filters.dateRange)
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 
@@ -242,10 +245,10 @@ export function StatisticsFiltersComponent({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="All opponents" />
+                <SelectValue placeholder={t('allOpponents')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All opponents</SelectItem>
+                <SelectItem value="all">{t('allOpponents')}</SelectItem>
                 {opponents.map(opponent => (
                   <SelectItem key={opponent.$id} value={opponent.$id}>
                     <div className="flex items-center gap-2">
@@ -270,12 +273,12 @@ export function StatisticsFiltersComponent({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="All matches" />
+                <SelectValue placeholder={t('allMatches')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All matches</SelectItem>
-                <SelectItem value="completed">Completed only</SelectItem>
-                <SelectItem value="in-progress">In progress</SelectItem>
+                <SelectItem value="all">{t('allMatches')}</SelectItem>
+                <SelectItem value="completed">{t('completedOnly')}</SelectItem>
+                <SelectItem value="in-progress">{tCommon('inProgress')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -292,10 +295,10 @@ export function StatisticsFiltersComponent({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="All formats" />
+                <SelectValue placeholder={t('allFormats')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All formats</SelectItem>
+                <SelectItem value="all">{t('allFormats')}</SelectItem>
                 <SelectItem value="singles">Singles</SelectItem>
                 <SelectItem value="doubles">Doubles</SelectItem>
               </SelectContent>
@@ -316,7 +319,7 @@ export function StatisticsFiltersComponent({
               onChange={(e) => 
                 handleFilterChange('minMatches', e.target.value ? parseInt(e.target.value) : undefined)
               }
-              placeholder="Enter minimum matches"
+              placeholder={t('enterMinimumMatches')}
               className="text-sm"
             />
           </div>

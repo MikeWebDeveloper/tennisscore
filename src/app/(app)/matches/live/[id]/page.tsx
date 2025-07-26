@@ -21,7 +21,8 @@ const createFallbackPlayer = (id: string, name: string): Player => ({
   $createdAt: new Date().toISOString(),
   $updatedAt: new Date().toISOString(),
   $permissions: [],
-})
+  $sequence: 0,
+} as Player)
 
 export default async function LiveScoringPage({ params }: LiveScoringPageProps) {
   const { id } = await params

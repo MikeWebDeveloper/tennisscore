@@ -23,6 +23,7 @@ import {
 } from "recharts"
 import { Match } from "@/lib/types"
 import { Trophy, Target, Brain, Flame, Heart } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface ClutchPerformanceProps {
   pressureStats: {
@@ -58,6 +59,7 @@ export function ClutchPerformance({
   matches, 
   mainPlayerId 
 }: ClutchPerformanceProps) {
+  const t = useTranslations('statistics')
 
   // Calculate clutch performance by score situation
   const clutchByScore = useMemo(() => {
@@ -249,7 +251,7 @@ export function ClutchPerformance({
       {/* Mental Toughness Radar */}
       <Card>
         <CardHeader>
-          <CardTitle>Mental Toughness Profile</CardTitle>
+          <CardTitle>{t('mentalToughnessProfile')}</CardTitle>
           <CardDescription>
             Performance under pressure across key metrics
           </CardDescription>
@@ -279,7 +281,7 @@ export function ClutchPerformance({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Clutch Situations</CardTitle>
+            <CardTitle>{t('clutchSituations')}</CardTitle>
             <CardDescription>
               Success rate in key situations
             </CardDescription>
@@ -301,7 +303,7 @@ export function ClutchPerformance({
 
         <Card>
           <CardHeader>
-            <CardTitle>Pressure Trend</CardTitle>
+            <CardTitle>{t('pressureTrend')}</CardTitle>
             <CardDescription>
               Recent match pressure performance
             </CardDescription>

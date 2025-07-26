@@ -56,6 +56,21 @@
     "pleaseSelectImage": "Prosím vyberte obrázek.",
     "failedToReadFile": "Nepodařilo se přečíst soubor.",
     "failedToProcessCroppedImage": "Nepodařilo se zpracovat oříznutý obrázek.",
-    "pleaseSelectImageFile": "Prosím nejprve vyberte obrázek."
+    "pleaseSelectImageFile": "Prosím nejprve vyberte obrázek.",
+    "defaultName1": "Hráč 1",
+    "defaultName2": "Hráč 2",
+    "defaultName3": "Hráč 3",
+    "defaultName4": "Hráč 4",
+    "playerNumber": "Hráč {number}",
+    "players": "Hráči",
+    "createNewPlayer": "Vytvořit nového hráče",
+    "playersFound": "Nalezeno {count} hráčů",
+    "noPlayersFoundSearch": "Nebyli nalezeni žádní hráči odpovídající vašemu vyhledávání",
+    "clearSearch": "Vymazat vyhledávání",
+    "showMore": "Zobrazit více ({count} zbývá)",
+    "viewAll": "Zobrazit vše ({count})",
+    "showingAllPlayers": "Zobrazeni všichni hráči ({count})",
+    "backToPaginated": "Zpět na stránkovaný pohled",
+    "allPlayersLoaded": "Všichni hráči načteni"
   }
 }

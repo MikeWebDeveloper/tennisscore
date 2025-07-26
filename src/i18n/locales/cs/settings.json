@@ -1,0 +1,20 @@
+{
+  "settings": {
+    "settings": "Nastavení",
+    "managePreferences": "Spravujte své preference a nastavení mezipaměti",
+    "cacheAndUpdates": "Mezipaměť a aktualizace",
+    "aboutCacheManagement": "O správě mezipaměti",
+    "whyUseCacheManagement": "Proč používat správu mezipaměti?",
+    "fixesOutdated": "Opravuje problémy se zastaralými verzemi aplikace",
+    "resolvesStaleData": "Řeší problémy se zastaralými daty",
+    "improvesPerformance": "Zlepšuje výkon a spolehlivost aplikace",
+    "forcesFreshData": "Vynutí čerstvá data ze serverů v případě potřeby",
+    "whenToUseFeatures": "Kdy použít tyto funkce:",
+    "clearCacheDescription": "Vymazat mezipaměť: Při nesrovnalostech v datech nebo po aktualizaci aplikace",
+    "forceReloadDescription": "Vynutit obnovení: Když se aplikace zdá zaseklá nebo nereaguje",
+    "checkUpdatesDescription": "Zkontrolovat aktualizace: Pro ruční kontrolu nových verzí aplikace",
+    "installAppDescription": "Instalovat aplikaci: Pro lepší výkon a offline přístup",
+    "soundSettings": "Nastavení zvuku",
+    "customizeAudioPreferences": "Přizpůsobte si zvukové preference pro bodování zápasů"
+  }
+}

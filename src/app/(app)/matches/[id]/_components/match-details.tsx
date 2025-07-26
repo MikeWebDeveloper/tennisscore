@@ -832,14 +832,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <CardContent>
                   <PointByPointView 
                     pointLog={pointDetails}
-                    playerObjects={Object.assign(
-                      {
-                        p1: match.playerOne ? match.playerOne : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] },
-                        p2: match.playerTwo ? match.playerTwo : { firstName: '', lastName: '', $id: '', userId: '', $createdAt: '', $updatedAt: '', $collectionId: '', $databaseId: '', $permissions: [] }
-                      },
-                      match.playerThree ? { p3: match.playerThree } : {},
-                      match.playerFour ? { p4: match.playerFour } : {}
-                    )}
+                    playerObjects={match.playerOne && match.playerTwo ? {
+                      p1: match.playerOne,
+                      p2: match.playerTwo,
+                      ...(match.playerThree ? { p3: match.playerThree } : {}),
+                      ...(match.playerFour ? { p4: match.playerFour } : {})
+                    } : undefined}
                   />
                 </CardContent>
               </Card>
