@@ -1,7 +1,8 @@
 'use client'
 
-import { useLocaleStore } from '@/stores/localeStore'
-import { locales, type Locale } from '@/i18n/config'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useLocale } from 'next-intl'
+import { routing } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,26 +12,16 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ChevronDown, Globe } from 'lucide-react'
 
+type Locale = 'en' | 'cs'
+
 const languageNames: Record<Locale, string> = {
   en: 'English',
   cs: 'Čeština',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  it: 'Italiano',
-  pt: 'Português',
-  ru: 'Русский',
 }
 
 const languageFlags: Record<Locale, string> = {
   en: '🇬🇧',
   cs: '🇨🇿',
-  es: '🇪🇸',
-  fr: '🇫🇷',
-  de: '🇩🇪',
-  it: '🇮🇹',
-  pt: '🇵🇹',
-  ru: '🇷🇺',
 }
 
 interface LanguageSwitcherProps {
@@ -48,12 +39,12 @@ export function LanguageSwitcher({
   showNativeNames = true,
   className
 }: LanguageSwitcherProps) {
-  const { locale, setLocale } = useLocaleStore()
+  const locale = useLocale() as Locale
+  const router = useRouter()
+  const pathname = usePathname()
 
   const handleLocaleChange = (newLocale: Locale) => {
-    setLocale(newLocale)
-    // Store preference in localStorage for persistence
-    localStorage.setItem('preferred-locale', newLocale)
+    router.replace(pathname, { locale: newLocale })
   }
 
   if (variant === 'compact') {
@@ -65,7 +56,7 @@ export function LanguageSwitcher({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[150px]">
-          {locales.map((loc) => (
+          {routing.locales.map((loc) => (
             <DropdownMenuItem
               key={loc}
               onClick={() => handleLocaleChange(loc)}
@@ -96,14 +87,14 @@ export function LanguageSwitcher({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[150px]">
-        {locales.map((loc) => (
+        {routing.locales.map((loc) => (
           <DropdownMenuItem
             key={loc}
-            onClick={() => handleLocaleChange(loc)}
+            onClick={() => handleLocaleChange(loc as Locale)}
             className={locale === loc ? 'bg-accent' : ''}
           >
-            {showFlags && `${languageFlags[loc]} `}
-            {showNativeNames ? languageNames[loc] : loc.toUpperCase()}
+            {showFlags && `${languageFlags[loc as Locale]} `}
+            {showNativeNames ? languageNames[loc as Locale] : loc.toUpperCase()}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

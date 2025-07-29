@@ -1,20 +1,14 @@
 'use client'
 
 import { 
-  useTranslations, 
-  useTennisTranslations,
-  useCommonTranslations,
-  useLocaleSwitch 
+  useTranslations,
 } from '@/i18n'
 
 // Example component showing new i18n usage
 export function ExampleI18nUsage() {
   const t = useTranslations('common')
-  const tennis = useTennisTranslations()
-  const common = useCommonTranslations()
-  const { currentLocale, switchToEnglish, switchToCzech } = useLocaleSwitch()
 
-  // Example of formatting tennis data
+  // Example of tennis data
   const exampleMatch = {
     duration: 125, // minutes
     sets: [[6, 4], [3, 6], [6, 2]],
@@ -32,51 +26,24 @@ export function ExampleI18nUsage() {
       <div>
         <h3 className="font-semibold">Basic Translations:</h3>
         <p>{t('loading')}</p>
-        <p>{common.save}</p>
-        <p>{common.cancel}</p>
+        <p>{t('save')}</p>
+        <p>{t('cancel')}</p>
       </div>
 
-      {/* Tennis-specific formatting */}
+      {/* Example data display */}
       <div>
-        <h3 className="font-semibold">Tennis Formatting:</h3>
-        <p>Duration: {tennis.formatDuration(exampleMatch.duration)}</p>
-        <p>Score: {tennis.formatScore(exampleMatch.sets)}</p>
-        <p>Win Rate: {tennis.formatWinPercentage(exampleMatch.player1Wins, exampleMatch.totalMatches)}</p>
-        <p>Ace: {tennis.formatStat(85, 'percentage')}</p>
-      </div>
-
-      {/* Locale switching */}
-      <div>
-        <h3 className="font-semibold">Current Locale: {currentLocale}</h3>
-        <div className="space-x-2">
-          <button 
-            onClick={switchToEnglish}
-            className="px-3 py-1 bg-blue-500 text-white rounded"
-          >
-            English
-          </button>
-          <button 
-            onClick={switchToCzech}
-            className="px-3 py-1 bg-green-500 text-white rounded"
-          >
-            Čeština
-          </button>
-        </div>
+        <h3 className="font-semibold">Example Match Data:</h3>
+        <p>Duration: {exampleMatch.duration} minutes</p>
+        <p>Sets: {exampleMatch.sets.map(set => `${set[0]}-${set[1]}`).join(', ')}</p>
+        <p>Wins: {exampleMatch.player1Wins}/{exampleMatch.totalMatches}</p>
       </div>
 
       {/* Namespace usage */}
       <div>
         <h3 className="font-semibold">Namespaced Translations:</h3>
-        <p>Match: {tennis.t('match.newMatch')}</p>
-        <p>Player: {tennis.t('player.firstName')}</p>
-        <p>Dashboard: {tennis.t('dashboard.welcomeBack')}</p>
-      </div>
-
-      {/* Parameter interpolation */}
-      <div>
-        <h3 className="font-semibold">Parameter Interpolation:</h3>
-        <p>{tennis.t('dashboard.matchVsOpponent', { opponentName: 'John Doe' })}</p>
-        <p>{tennis.t('dashboard.inProgressWithCount', { count: 3 })}</p>
+        <p>Common Save: {t('save')}</p>
+        <p>Common Cancel: {t('cancel')}</p>
+        <p>Common Loading: {t('loading')}</p>
       </div>
     </div>
   )
@@ -84,8 +51,6 @@ export function ExampleI18nUsage() {
 
 // Server component example
 export function ServerI18nExample() {
-  // In server components, you'll use next-intl directly
-  // This is just for demonstration - actual server usage would be different
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold">
@@ -98,22 +63,23 @@ export function ServerI18nExample() {
 
 // Backward compatibility example
 export function LegacyCompatibilityExample() {
-  const t = useTranslations()
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('navigation')
+  const tMatch = useTranslations('match')
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold">Legacy Compatibility</h2>
       
-      {/* These old-style keys will be automatically mapped */}
-      <p>{t('loading')}</p>
-      <p>{t('dashboard')}</p>
-      <p>{t('newMatch')}</p>
-      <p>{t('firstName')}</p>
+      {/* Basic keys */}
+      <p>{tCommon('loading')}</p>
+      <p>{tCommon('save')}</p>
+      <p>{tCommon('cancel')}</p>
       
-      {/* New namespaced keys also work */}
-      <p>{t('common.save')}</p>
-      <p>{t('navigation.matches')}</p>
-      <p>{t('match.liveScoring')}</p>
+      {/* Namespaced keys */}
+      <p>{tCommon('save')}</p>
+      <p>{tNav('matches')}</p>
+      <p>{tMatch('liveScoring')}</p>
     </div>
   )
 }

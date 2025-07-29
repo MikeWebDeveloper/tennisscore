@@ -1,0 +1,22 @@
+[
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "location": {
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js",
+      "lineNumber": 25581,
+      "columnNumber": 16
+    },
+    "timestamp": "2025-07-29T00:19:59.028Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "location": {
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js",
+      "lineNumber": 25581,
+      "columnNumber": 16
+    },
+    "timestamp": "2025-07-29T00:19:59.366Z"
+  }
+]

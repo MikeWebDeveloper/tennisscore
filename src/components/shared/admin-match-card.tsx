@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge"
 import { ExternalLink, Users, Trophy, Clock } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
-import Link from "next/link"
-import { useTranslations } from "@/hooks/use-translations"
+import { Link } from "@/i18n/navigation"
+import { useTranslations } from "@/i18n"
+import { useParams } from "next/navigation"
 
 interface AdminMatchCardProps {
   match: Match & {
@@ -24,6 +25,8 @@ interface AdminMatchCardProps {
 
 export function AdminMatchCard({ match }: AdminMatchCardProps) {
   const t = useTranslations()
+  const params = useParams()
+  const locale = params.locale as string
   
   // Parse score to show current/final score
   const getMatchScore = () => {
@@ -41,11 +44,11 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
   const getStatusBadge = () => {
     switch (match.status) {
       case "completed":
-        return <Badge variant="secondary" className="text-xs">{t('completedStatus')}</Badge>
+        return <Badge variant="secondary" className="text-xs">{t('matchStatus.completedStatus')}</Badge>
       case "in-progress":
-        return <Badge variant="default" className="text-xs bg-green-600">{t('liveStatus')}</Badge>
+        return <Badge variant="default" className="text-xs bg-green-600">{t('matchStatus.liveStatus')}</Badge>
       case "retired":
-        return <Badge variant="destructive" className="text-xs">{t('retiredStatus')}</Badge>
+        return <Badge variant="destructive" className="text-xs">{t('matchStatus.retiredStatus')}</Badge>
       default:
         return <Badge variant="outline" className="text-xs">{match.status}</Badge>
     }
@@ -55,13 +58,13 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
     if (match.isDoubles) {
       return {
         icon: <Users className="h-3.5 w-3.5" />,
-        label: t('doublesType'),
+        label: t('matchTypes.doublesType'),
         players: `${match.playerOneName} & ${match.playerThreeName || t('unknownPlayer')} ${t('vs')} ${match.playerTwoName} & ${match.playerFourName || t('unknownPlayer')}`
       }
     }
     return {
       icon: <Users className="h-3.5 w-3.5" />,
-      label: t('singlesType'), 
+      label: t('matchTypes.singlesType'), 
       players: `${match.playerOneName} ${t('vs')} ${match.playerTwoName}`
     }
   }
@@ -115,15 +118,15 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
 
             {/* Live link */}
             <div>
-              <Link 
-                href={`/live/${match.$id}`}
+              <a 
+                href={`/${locale}/live/${match.$id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                className="inline-flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors cursor-pointer"
               >
                 <span>{t('watchLive')}</span>
                 <ExternalLink className="h-3 w-3" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

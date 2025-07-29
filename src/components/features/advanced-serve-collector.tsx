@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ServeStats } from "@/lib/schemas/match"
 import { Zap, Target, TrendingUp } from "lucide-react"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 interface AdvancedServeCollectorProps {
   onServeStats: (stats: ServeStats) => void

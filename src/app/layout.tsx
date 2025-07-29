@@ -1,20 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider";
-import { LocaleProvider } from "@/components/providers/locale-provider";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-});
 
 export const metadata: Metadata = {
   title: "TennisScore - Tennis Scoring & Statistics",
@@ -56,28 +44,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body 
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-        suppressHydrationWarning
-      >
-        <ThemeProvider>
-          <ServiceWorkerProvider>
-            <LocaleProvider>
-              {children}
-              <Toaster 
-                position="top-center"
-                richColors
-                closeButton
-              />
-            </LocaleProvider>
-          </ServiceWorkerProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+  return children;
 }

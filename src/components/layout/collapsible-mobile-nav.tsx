@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { usePathname } from "next/navigation"
+import { Link, usePathname } from "@/i18n/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Plus, ChevronUp } from "lucide-react"
 

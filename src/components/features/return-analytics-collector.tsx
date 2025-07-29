@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ReturnStats } from "@/lib/schemas/match"
 import { CornerDownLeft, Crosshair, Shield } from "lucide-react"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 interface ReturnAnalyticsCollectorProps {
   onReturnStats: (stats: ReturnStats) => void

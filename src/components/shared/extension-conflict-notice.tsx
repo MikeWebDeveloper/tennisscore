@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { detectInterferingExtensions, cleanupExtensionAttributes, type ExtensionDetection } from "@/lib/utils/browser-extension-detector"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 export function ExtensionConflictNotice() {
   const [detection, setDetection] = useState<ExtensionDetection | null>(null)

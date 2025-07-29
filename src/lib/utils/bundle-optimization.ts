@@ -376,22 +376,22 @@ export const monitorChunkPerformance = (chunkName: string): void => {
 import React from 'react'
 
 export const LazyDashboard = lazyLoadComponent(
-  () => import('@/app/(app)/dashboard/page'),
+  () => import('@/app/[locale]/(app)/dashboard/page'),
   'dashboard'
 )
 
 export const LazyMatches = lazyLoadComponent(
-  () => import('@/app/(app)/matches/page'),
+  () => import('@/app/[locale]/(app)/matches/page'),
   'matches'
 )
 
 export const LazyPlayers = lazyLoadComponent(
-  () => import('@/app/(app)/players/page'),
+  () => import('@/app/[locale]/(app)/players/page'),
   'players'
 )
 
 export const LazyAdmin = lazyLoadComponent(
-  () => import('@/app/(app)/admin/page'),
+  () => import('@/app/[locale]/(app)/admin/page'),
   'admin'
 )
 

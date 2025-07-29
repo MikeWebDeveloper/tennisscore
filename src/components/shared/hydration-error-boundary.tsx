@@ -5,7 +5,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cleanupExtensionAttributes } from "@/lib/utils/browser-extension-detector"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 interface Props {
   children: ReactNode

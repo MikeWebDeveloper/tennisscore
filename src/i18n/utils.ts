@@ -1,17 +1,5 @@
-// import { useTranslations, useLocale, useFormatter } from 'next-intl' // Temporarily disabled
+import { useTranslations, useLocale, useFormatter } from 'next-intl'
 import { Locale, defaultLocale } from './config'
-
-// Temporary mocks while next-intl is disabled
-const useTranslations = () => (key: string) => key
-const useLocale = () => defaultLocale
-const useFormatter = () => ({
-  number: (value: number, options?: Intl.NumberFormatOptions) => {
-    return new Intl.NumberFormat(defaultLocale, options).format(value)
-  },
-  dateTime: (date: Date, options?: Intl.DateTimeFormatOptions) => {
-    return new Intl.DateTimeFormat(defaultLocale, options).format(date)
-  }
-})
 
 // Tennis-specific formatting utilities
 export class TennisFormatter {
@@ -30,78 +18,92 @@ export class TennisFormatter {
     const remainingMinutes = minutes % 60
     
     if (remainingMinutes === 0) {
-      return `${hours} ${this.t('common.hours')}`
+      return `${hours}${this.t('common.hours')}`
     }
-    
-    return `${hours} ${this.t('common.hours')} ${remainingMinutes} ${this.t('common.minutes')}`
+    return `${hours}${this.t('common.hours')} ${remainingMinutes}${this.t('common.minutes')}`
   }
 
-  // Format score display
-  formatScore(sets: number[][]): string {
-    if (!sets.length) return '0-0'
-    
-    return sets.map(set => `${set[0]}-${set[1]}`).join(', ')
+  // Format tennis score
+  formatScore(score: { player1: number; player2: number }): string {
+    return `${score.player1} : ${score.player2}`
   }
 
-  // Format win percentage
-  formatWinPercentage(wins: number, total: number): string {
+  // Format serve statistics
+  formatServePercentage(made: number, total: number): string {
     if (total === 0) return '0%'
-    const percentage = Math.round((wins / total) * 100)
-    return this.format.number(percentage / 100, { style: 'percent', maximumFractionDigits: 0 })
+    const percentage = Math.round((made / total) * 100)
+    return `${percentage}% (${made}/${total})`
   }
 
-  // Format tennis statistics
-  formatStat(value: number, type: 'percentage' | 'decimal' | 'integer' = 'integer'): string {
-    switch (type) {
-      case 'percentage':
-        return this.format.number(value / 100, { style: 'percent', maximumFractionDigits: 1 })
-      case 'decimal':
-        return this.format.number(value, { maximumFractionDigits: 2 })
-      default:
-        return this.format.number(value, { maximumFractionDigits: 0 })
+  // Format break point statistics
+  formatBreakPoints(converted: number, opportunities: number): string {
+    if (opportunities === 0) return this.t('statistics.noneOffered')
+    const percentage = Math.round((converted / opportunities) * 100)
+    return `${converted}/${opportunities} (${percentage}%)`
+  }
+
+  // Format rally length
+  formatRallyLength(length: number): string {
+    return this.t('statistics.rallyLength', { length })
+  }
+
+  // Format point outcome
+  formatPointOutcome(outcome: string): string {
+    const outcomeMap: Record<string, string> = {
+      'winner': this.t('match.winner'),
+      'forced_error': this.t('match.forcedError'),
+      'unforced_error': this.t('match.unforcedError'),
+      'ace': this.t('match.ace'),
+      'double_fault': this.t('match.doubleFault'),
+      'return_winner': this.t('match.returnWinner'),
+      'service_winner': this.t('match.serviceWinner')
     }
+    return outcomeMap[outcome] || outcome
   }
 
-  // Format match result
-  formatMatchResult(player1Score: number[], player2Score: number[], winner: 1 | 2): string {
-    const score = player1Score.map((s, i) => `${s}-${player2Score[i]}`).join(' ')
-    const winnerName = winner === 1 ? 'Player 1' : 'Player 2' // This should be actual player names
-    return `${winnerName} ${this.t('common.wins')} ${score}`
-  }
-
-  // Format relative time for matches
-  formatRelativeTime(date: Date): string {
-    const now = new Date()
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (diffInDays === 0) {
-      return this.t('common.today')
-    } else if (diffInDays === 1) {
-      return this.t('common.yesterday')
-    } else if (diffInDays <= 7) {
-      return this.t('common.thisWeek')
-    } else if (diffInDays <= 30) {
-      return this.t('common.thisMonth')
+  // Format court position
+  formatCourtPosition(position: string): string {
+    const positionMap: Record<string, string> = {
+      'forehand': this.t('match.forehand'),
+      'backhand': this.t('match.backhand'),
+      'net': this.t('match.net'),
+      'baseline': this.t('match.baseline')
     }
-    
-    return this.format.dateTime(date, { dateStyle: 'short' })
-  }
-
-  // Format court side for tennis
-  formatCourtSide(side: 'deuce' | 'ad'): string {
-    return side === 'deuce' ? this.t('match.deuce') : this.t('match.advantage')
+    return positionMap[position] || position
   }
 
   // Format shot type
-  formatShotType(shot: string): string {
+  formatShotType(shotType: string): string {
     const shotMap: Record<string, string> = {
-      'forehand': 'Forehand',
-      'backhand': 'Backhand', 
-      'serve': 'Serve',
-      'volley': 'Volley',
-      'overhead': 'Overhead'
+      'serve': this.t('match.serve'),
+      'return': this.t('match.return'),
+      'groundstroke': this.t('match.groundstroke'),
+      'volley': this.t('match.volley'),
+      'overhead': this.t('match.overhead'),
+      'drop_shot': this.t('match.dropShot'),
+      'lob': this.t('match.lob')
     }
-    return shotMap[shot] || shot
+    return shotMap[shotType] || shotType
+  }
+
+  // Format momentum
+  formatMomentum(momentum: number): string {
+    if (momentum > 0.7) return this.t('statistics.strongMomentum')
+    if (momentum > 0.3) return this.t('statistics.slightMomentum')
+    if (momentum > -0.3) return this.t('statistics.neutral')
+    if (momentum > -0.7) return this.t('statistics.slightlyBehind')
+    return this.t('statistics.stronglyBehind')
+  }
+
+  // Format match status
+  formatMatchStatus(status: string): string {
+    const statusMap: Record<string, string> = {
+      'in_progress': this.t('match.inProgress'),
+      'completed': this.t('match.completed'),
+      'scheduled': this.t('match.scheduled'),
+      'cancelled': this.t('match.cancelled')
+    }
+    return statusMap[status] || status
   }
 }
 
@@ -114,162 +116,79 @@ export function useTennisFormatter() {
   return new TennisFormatter(t, format, locale)
 }
 
-// Migration helpers for backward compatibility
-export class MigrationHelpers {
-  constructor(private locale: Locale) {}
-
-  // Map old translation keys to new namespaced keys
-  mapLegacyKey(oldKey: string): string {
-    const keyMappings: Record<string, string> = {
-      // Common mappings
-      'loading': 'common.loading',
-      'save': 'common.save',
-      'cancel': 'common.cancel',
-      'delete': 'common.delete',
-      'edit': 'common.edit',
-      'create': 'common.create',
-      'share': 'common.share',
-      'back': 'common.back',
-      
-      // Navigation mappings
-      'dashboard': 'navigation.dashboard',
-      'matches': 'navigation.matches',
-      'players': 'navigation.players',
-      'profile': 'navigation.profile',
-      'settings': 'navigation.settings',
-      
-      // Match mappings
-      'newMatch': 'match.newMatch',
-      'liveScoring': 'match.liveScoring',
-      'matchCompleted': 'match.matchCompleted',
-      'winner': 'match.winner',
-      'score': 'match.score',
-      'sets': 'match.sets',
-      'games': 'match.games',
-      'points': 'match.points',
-      
-      // Player mappings
-      'firstName': 'player.firstName',
-      'lastName': 'player.lastName',
-      'yearOfBirth': 'player.yearOfBirth',
-      'rating': 'player.rating',
-      'club': 'player.club',
-      'playingHand': 'player.playingHand',
-      
-      // Statistics mappings
-      'statistics': 'statistics.statistics',
-      'totalPoints': 'statistics.totalPoints',
-      'winners': 'statistics.winners',
-      'unforcedErrors': 'statistics.unforcedErrors',
-      'aces': 'statistics.aces',
-      'doubleFaults': 'statistics.doubleFaults',
-      
-      // Dashboard mappings
-      'welcomeBack': 'dashboard.welcomeBack',
-      'welcomeToTennisScore': 'dashboard.welcomeToTennisScore',
-      'performanceTrackingStarts': 'dashboard.performanceTrackingStarts',
-      'winRate': 'dashboard.winRate',
-      'completedMatches': 'dashboard.completedMatches',
-      'totalMatches': 'dashboard.totalMatches',
-      
-      // Auth mappings
-      'signIn': 'auth.signIn',
-      'signUp': 'auth.signUp',
-      'email': 'auth.email',
-      'password': 'auth.password',
-      'createAccount': 'auth.createAccount'
-    }
-
-    return keyMappings[oldKey] || oldKey
-  }
-
-  // Get fallback value for missing translations
-  getFallbackTranslation(key: string): string {
-    // Return the key itself as fallback, or attempt English
-    return key.split('.').pop() || key
-  }
-
-  // Check if a key exists in new system
-  isLegacyKey(key: string): boolean {
-    return !key.includes('.')
+// Enhanced statistics formatting
+export function formatStatistic(
+  t: ReturnType<typeof useTranslations>,
+  statType: string,
+  value: number,
+  total?: number
+): string {
+  switch (statType) {
+    case 'percentage':
+      return `${Math.round(value)}%`
+    case 'ratio':
+      return total ? `${value}/${total}` : `${value}`
+    case 'time':
+      return `${Math.round(value)}min`
+    case 'count':
+      return value.toString()
+    default:
+      return value.toString()
   }
 }
 
-// Hook for migration helpers
+// Migration helpers for legacy components
 export function useMigrationHelpers() {
-  const locale = useLocale() as Locale
-  return new MigrationHelpers(locale)
+  const t = useTranslations()
+  
+  return {
+    // Helper for components that need both old and new translation patterns
+    safeTranslate: (key: string, fallback?: string) => {
+      try {
+        const result = t(key)
+        // If the result is the same as the key, it might be missing
+        return result === key ? (fallback || key) : result
+      } catch {
+        return fallback || key
+      }
+    },
+    
+    // Helper for dynamic translation keys
+    translateDynamic: (baseKey: string, suffix: string) => {
+      const fullKey = `${baseKey}.${suffix}`
+      return t(fullKey)
+    }
+  }
 }
 
-// Utility to safely get nested translation values
+// Safe translation helper for error handling
 export function safeTranslation(
   t: ReturnType<typeof useTranslations>,
   key: string,
   fallback?: string
 ): string {
   try {
-    const value = t(key as never)
-    if (typeof value === 'string' && value !== key) {
-      return value
-    }
-    return fallback || key
+    const result = t(key)
+    return result === key ? (fallback || key) : result
   } catch {
-    console.warn(`Translation key not found: ${key}`)
     return fallback || key
   }
 }
 
-// Format interpolated messages
-export function formatMessage(
-  message: string,
-  params: Record<string, string | number>
+// Format tennis-specific messages
+export function formatTennisMessage(
+  t: ReturnType<typeof useTranslations>,
+  messageType: 'score' | 'gameStatus' | 'matchResult',
+  data: Record<string, any>
 ): string {
-  return Object.keys(params).reduce((result, key) => {
-    const placeholder = `{${key}}`
-    return result.replace(new RegExp(placeholder, 'g'), String(params[key]))
-  }, message)
-}
-
-// Validate message parameters
-export function validateMessageParams(
-  message: string,
-  params: Record<string, string | number>
-): boolean {
-  const placeholders = message.match(/\{(\w+)\}/g) || []
-  const requiredKeys = placeholders.map(p => p.slice(1, -1))
-  
-  return requiredKeys.every(key => key in params)
-}
-
-// Tennis-specific date formatting
-export function formatMatchDate(date: Date, locale: Locale): string {
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
-
-// Format numbers in a tennis context
-export function formatTennisNumber(
-  value: number,
-  type: 'score' | 'percentage' | 'duration' | 'count',
-  locale: Locale
-): string {
-  const formatter = new Intl.NumberFormat(locale)
-  
-  switch (type) {
+  switch (messageType) {
     case 'score':
-      return value.toString()
-    case 'percentage':
-      return `${Math.round(value)}%`
-    case 'duration':
-      return `${Math.round(value)}min`
-    case 'count':
-      return formatter.format(value)
+      return t('match.currentScore', data)
+    case 'gameStatus':
+      return t('match.gameStatus', data)
+    case 'matchResult':
+      return t('match.matchResult', data)
     default:
-      return formatter.format(value)
+      return ''
   }
 }

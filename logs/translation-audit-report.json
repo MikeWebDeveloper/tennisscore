@@ -1,0 +1,317 @@
+{
+  "summary": {
+    "totalPages": 22,
+    "pagesWithErrors": 0,
+    "totalErrors": 0
+  },
+  "pageResults": [
+    {
+      "name": "English Home",
+      "path": "/en",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Home",
+      "path": "/cs",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Login",
+      "path": "/en/login",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/login\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Login",
+      "path": "/cs/login",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/login\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Signup",
+      "path": "/en/signup",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/signup\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/signup\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Signup",
+      "path": "/cs/signup",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/signup\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/signup\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Dashboard",
+      "path": "/en/dashboard",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/dashboard\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Dashboard",
+      "path": "/cs/dashboard",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/dashboard\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Matches",
+      "path": "/en/matches",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/matches\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/matches\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Matches",
+      "path": "/cs/matches",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/matches\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/matches\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English New Match",
+      "path": "/en/matches/new",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/matches/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/matches/new\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech New Match",
+      "path": "/cs/matches/new",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/matches/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/matches/new\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Players",
+      "path": "/en/players",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/players\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/players\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Players",
+      "path": "/cs/players",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/players\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/players\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Statistics",
+      "path": "/en/statistics",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/statistics\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/statistics\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Statistics",
+      "path": "/cs/statistics",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/statistics\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/statistics\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Admin",
+      "path": "/en/admin",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/admin\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/admin\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Admin",
+      "path": "/cs/admin",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/admin\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/admin\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Settings",
+      "path": "/en/settings",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/settings\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/settings\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Settings",
+      "path": "/cs/settings",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/settings\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/settings\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "English Auth Error",
+      "path": "/en/auth-error",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/en/auth-error\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/en/auth-error\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    },
+    {
+      "name": "Czech Auth Error",
+      "path": "/cs/auth-error",
+      "status": "navigation_error",
+      "errors": [
+        {
+          "type": "navigation",
+          "text": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/cs/auth-error\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/cs/auth-error\", waiting until \"networkidle\"\u001b[22m\n",
+          "location": null
+        }
+      ],
+      "screenshots": [],
+      "translationIssues": []
+    }
+  ]
+}

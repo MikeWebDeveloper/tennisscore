@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AdvancedMatchStats } from "@/lib/utils/match-stats"
 import { BarChart3, Target, Zap, Activity } from "lucide-react"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 interface EnhancedStatsDisplayProps {
   stats: AdvancedMatchStats

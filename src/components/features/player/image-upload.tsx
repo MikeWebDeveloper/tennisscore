@@ -11,7 +11,7 @@ import ReactCrop, {
 } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import { Button } from "@/components/ui/button"
-import { useTranslations } from "@/hooks/use-translations"
+import { useTranslations } from "@/i18n"
 
 interface ImageUploadProps {
   onFileChange: (file: File | null) => void

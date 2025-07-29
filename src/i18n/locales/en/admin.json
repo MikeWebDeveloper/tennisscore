@@ -1,8 +1,16 @@
 {
-  "admin": {
-    "title": "Administration",
-    "description": "System management",
-    "allMatches": "All matches",
-    "systemOverview": "System overview"
-  }
+  "title": "Administration",
+  "description": "System management",
+  "allMatches": "All matches",
+  "systemOverview": "System overview",
+  "allMatchesTitle": "All Matches",
+  "allMatchesDescription": "View and manage all matches across the system",
+  "searchPlaceholder": "Search by player name, tournament, or email...",
+  "searching": "Searching...",
+  "showingMatchesFor": "Showing {{shown}} of {{total}} matches for \"{{searchTerm}}\"",
+  "showingMatches": "Showing {{shown}} of {{total}} matches",
+  "noMatchesFoundSearch": "No matches found for your search",
+  "noMatchesFound": "No matches found",
+  "loading": "Loading...",
+  "loadMore": "Load more ({{remaining}} remaining)"
 }

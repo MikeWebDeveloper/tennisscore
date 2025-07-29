@@ -1,0 +1,32 @@
+{
+  "Czech Dashboard": {
+    "url": "http://localhost:3000/cs/dashboard",
+    "totalMessages": 2,
+    "errorMessages": [],
+    "success": true
+  },
+  "English Dashboard": {
+    "url": "http://localhost:3000/en/dashboard",
+    "totalMessages": 1,
+    "errorMessages": [],
+    "success": true
+  },
+  "Czech Matches": {
+    "url": "http://localhost:3000/cs/matches",
+    "totalMessages": 1,
+    "errorMessages": [],
+    "success": true
+  },
+  "Czech Players": {
+    "url": "http://localhost:3000/cs/players",
+    "totalMessages": 1,
+    "errorMessages": [],
+    "success": true
+  },
+  "Czech Statistics": {
+    "url": "http://localhost:3000/cs/statistics",
+    "totalMessages": 1,
+    "errorMessages": [],
+    "success": true
+  }
+}

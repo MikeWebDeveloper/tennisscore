@@ -40,7 +40,7 @@ import {
 } from '@/lib/utils/match-export'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { useTranslations } from '@/hooks/use-translations'
+import { useTranslations } from '@/i18n'
 
 interface MatchExportDialogProps {
   match: Match
@@ -94,26 +94,26 @@ export function MatchExportDialog({
       switch (action) {
         case 'download':
           downloadPDF(blob, title)
-          toast.success('Match report downloaded successfully!')
+          toast.success(t('matchReportDownloadedSuccessfully'))
           break
         case 'share':
           await shareMatchReport(blob, title)
-          toast.success('Match report shared successfully!')
+          toast.success(t('matchReportSharedSuccessfully'))
           break
         case 'whatsapp':
           shareToWhatsApp(blob, title)
-          toast.success('Opening WhatsApp to share report...')
+          toast.success(t('openingWhatsAppToShare'))
           break
         case 'email':
           shareToEmail(blob, title)
-          toast.success('Opening email to share report...')
+          toast.success(t('openingEmailToShare'))
           break
       }
       
       setIsOpen(false)
     } catch (error) {
       console.error('Export failed:', error)
-      toast.error('Failed to export match report. Please try again.')
+      toast.error(t('failedToExportMatchReport'))
     } finally {
       setIsExporting(false)
     }
@@ -133,10 +133,10 @@ export function MatchExportDialog({
       pointByPoint: exportOptions.includePointByPoint,
       template: exportOptions.template,
       sections: exportOptions.template === 'detailed' 
-        ? ['Match Overview', 'Core Statistics', 'Advanced Statistics', 'Tactical Analysis', 'Pressure Points', 'Set Analysis', 'Point-by-Point']
+        ? [t('matchOverview'), t('coreStatistics'), t('advancedStatistics'), t('tacticalAnalysis'), t('pressurePoints'), t('setAnalysis'), t('pointByPoint')]
         : exportOptions.template === 'professional'
-        ? ['Match Overview', 'Core Statistics', 'Advanced Statistics', 'Set Analysis', 'Point-by-Point']
-        : ['Match Overview', 'Core Statistics', 'Set Analysis']
+        ? [t('matchOverview'), t('coreStatistics'), t('advancedStatistics'), t('setAnalysis'), t('pointByPoint')]
+        : [t('matchOverview'), t('coreStatistics'), t('setAnalysis')]
     }
   }
 
@@ -151,10 +151,10 @@ export function MatchExportDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Export {exportType === 'live_set' ? `Set ${setNumber}` : 'Match'} Report
+            {exportType === 'live_set' ? t('exportSetReport', { setNumber: setNumber || 0 }) : t('exportMatchReport')}
           </DialogTitle>
           <DialogDescription>
-            Generate a professional tennis match report with statistics and analysis
+            {t('generateProfessionalTennisReport')}
           </DialogDescription>
         </DialogHeader>
 
@@ -162,24 +162,24 @@ export function MatchExportDialog({
           {/* Match Info */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Match Information</CardTitle>
+              <CardTitle className="text-lg">{t('matchInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Players:</span>
+                <span className="text-sm text-muted-foreground">{t('players')}:</span>
                 <span className="text-sm font-medium">{playerNames[0]} vs {playerNames[1]}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Date:</span>
+                <span className="text-sm text-muted-foreground">{t('date')}:</span>
                 <span className="text-sm font-medium">{format(new Date(match.matchDate), 'MMMM d, yyyy')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Format:</span>
+                <span className="text-sm text-muted-foreground">{t('format')}:</span>
                 <span className="text-sm font-medium">{t('bestOf')} {match.matchFormat.sets}</span>
               </div>
               {match.status === 'Completed' && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Winner:</span>
+                  <span className="text-sm text-muted-foreground">{t('winner')}:</span>
                   <span className="text-sm font-medium">
                     {match.winnerId === match.playerOneId ? playerNames[0] : playerNames[1]}
                   </span>
@@ -191,13 +191,13 @@ export function MatchExportDialog({
           {/* Export Options */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Export Options</CardTitle>
-              <CardDescription>Choose what to include in your report</CardDescription>
+              <CardTitle className="text-lg">{t('exportOptions')}</CardTitle>
+              <CardDescription>{t('chooseWhatToInclude')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Template Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Report Template</Label>
+                <Label className="text-sm font-medium">{t('reportTemplate')}</Label>
                 <RadioGroup
                   value={exportOptions.template}
                   onValueChange={(value: 'professional' | 'basic' | 'detailed') => 
@@ -206,23 +206,23 @@ export function MatchExportDialog({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="professional" id="professional" />
-                    <Label htmlFor="professional" className="text-sm">Professional</Label>
+                    <Label htmlFor="professional" className="text-sm">{t('professional')}</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Modern design with core statistics and set analysis
+                      {t('professionalDescription')}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="detailed" id="detailed" />
-                    <Label htmlFor="detailed" className="text-sm">Detailed</Label>
+                    <Label htmlFor="detailed" className="text-sm">{t('detailed')}</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Complete analysis with serve patterns, tactical insights, pressure points
+                      {t('detailedDescription')}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="basic" id="basic" />
-                    <Label htmlFor="basic" className="text-sm">Basic</Label>
+                    <Label htmlFor="basic" className="text-sm">{t('basic')}</Label>
                     <span className="text-xs text-muted-foreground ml-2">
-                      Clean, minimalist format with key match statistics
+                      {t('basicDescription')}
                     </span>
                   </div>
                 </RadioGroup>
@@ -232,7 +232,7 @@ export function MatchExportDialog({
 
               {/* Content Options */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Include Content</Label>
+                <Label className="text-sm font-medium">{t('includeContent')}</Label>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -242,7 +242,7 @@ export function MatchExportDialog({
                         handleExportOption('includePointByPoint', checked as boolean)
                       }
                     />
-                    <Label htmlFor="pointByPoint" className="text-sm">Point-by-point log</Label>
+                    <Label htmlFor="pointByPoint" className="text-sm">{t('pointByPointLog')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -252,7 +252,7 @@ export function MatchExportDialog({
                         handleExportOption('includeAdvancedStats', checked as boolean)
                       }
                     />
-                    <Label htmlFor="advancedStats" className="text-sm">Advanced statistics</Label>
+                    <Label htmlFor="advancedStats" className="text-sm">{t('advancedStatistics')}</Label>
                   </div>
                   <div className="flex items-center space-x-2 opacity-50">
                     <Checkbox
@@ -263,8 +263,8 @@ export function MatchExportDialog({
                       }
                       disabled
                     />
-                    <Label htmlFor="charts" className="text-sm">Charts & visualizations</Label>
-                    <span className="text-xs text-muted-foreground">(Coming soon)</span>
+                    <Label htmlFor="charts" className="text-sm">{t('chartsAndVisualizations')}</Label>
+                    <span className="text-xs text-muted-foreground">({t('comingSoon')})</span>
                   </div>
                   <div className="flex items-center space-x-2 opacity-50">
                     <Checkbox
@@ -275,8 +275,8 @@ export function MatchExportDialog({
                       }
                       disabled
                     />
-                    <Label htmlFor="trends" className="text-sm">Momentum trends</Label>
-                    <span className="text-xs text-muted-foreground">(Coming soon)</span>
+                    <Label htmlFor="trends" className="text-sm">{t('momentumTrends')}</Label>
+                    <span className="text-xs text-muted-foreground">({t('comingSoon')})</span>
                   </div>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export function MatchExportDialog({
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Activity className="h-4 w-4" />
-                Export Preview
+                {t('exportPreview')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -296,22 +296,22 @@ export function MatchExportDialog({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Target className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm">Points: {preview.points}</span>
+                    <span className="text-sm">{t('points')}: {preview.points}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-yellow-500" />
-                    <span className="text-sm">Sets: {preview.sets}</span>
+                    <span className="text-sm">{t('sets')}: {preview.sets}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">Statistics: ✓</span>
+                    <span className="text-sm">{t('statistics')}: ✓</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-purple-500" />
                     <span className="text-sm">
-                      Advanced: {preview.advanced ? '✓' : '✗'}
+                      {t('advanced')}: {preview.advanced ? '✓' : '✗'}
                     </span>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export function MatchExportDialog({
               <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
                 <div className="flex items-center gap-2 text-gray-700 mb-2">
                   <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">{preview.template.charAt(0).toUpperCase() + preview.template.slice(1)} Template Sections</span>
+                  <span className="text-sm font-medium">{t('templateSections', { template: preview.template.charAt(0).toUpperCase() + preview.template.slice(1) })}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {preview.sections.map((section, index) => (
@@ -336,10 +336,10 @@ export function MatchExportDialog({
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 text-blue-700">
                     <Clock className="h-4 w-4" />
-                    <span className="text-sm font-medium">Live Set Export</span>
+                    <span className="text-sm font-medium">{t('liveSetExport')}</span>
                   </div>
                   <p className="text-xs text-blue-600 mt-1">
-                    This will export data from Set {setNumber} only. Full match data will be available after completion.
+                    {t('liveSetExportDescription', { setNumber: setNumber || 0 })}
                   </p>
                 </div>
               )}
@@ -357,7 +357,7 @@ export function MatchExportDialog({
                 className="flex-1"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                {t('downloadPDF')}
               </Button>
               <Button
                 onClick={() => handleExport('share')}
@@ -366,7 +366,7 @@ export function MatchExportDialog({
                 className="flex-1"
               >
                 <Share className="h-4 w-4 mr-2" />
-                Share
+                {t('share')}
               </Button>
             </div>
             
@@ -379,7 +379,7 @@ export function MatchExportDialog({
                 size="sm"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                WhatsApp
+                {t('whatsApp')}
               </Button>
               <Button
                 onClick={() => handleExport('email')}
@@ -388,7 +388,7 @@ export function MatchExportDialog({
                 size="sm"
               >
                 <Mail className="h-4 w-4 mr-2" />
-                Email
+                {t('email')}
               </Button>
             </div>
           </div>
@@ -410,6 +410,7 @@ export function LiveSetExportButton({
   setNumber: number
   className?: string
 }) {
+  const t = useTranslations('common')
   const canExport = match.score.sets.length >= setNumber
 
   return (
@@ -427,7 +428,7 @@ export function LiveSetExportButton({
           className={className}
         >
           <FileText className="h-4 w-4 mr-2" />
-          Export Set {setNumber}
+          {t('exportSet', { setNumber: setNumber || 0 })}
         </Button>
       }
     />
@@ -447,6 +448,7 @@ export function FullMatchExportButton({
   size?: 'default' | 'sm' | 'lg'
   className?: string
 }) {
+  const t = useTranslations('common')
   const canExport = (match.pointLog && match.pointLog.length > 0) || (match.score && match.score.sets && match.score.sets.length > 0)
 
   return (
@@ -463,7 +465,7 @@ export function FullMatchExportButton({
           className={className}
         >
           <FileText className="h-4 w-4 mr-2" />
-          Export Match Report
+          {t('exportMatchReport')}
         </Button>
       }
     />

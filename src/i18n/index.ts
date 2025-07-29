@@ -7,37 +7,15 @@ export type { Messages, MessageKeys } from './types'
 export { Link, redirect, usePathname, useRouter } from './navigation'
 export type { Pathnames, Pathname } from './navigation'
 
-// Client-side hooks
+// Re-export all next-intl functions
 export {
   useTranslations,
-  useTennisTranslations,
-  useTranslationsLegacy,
-  useNextIntl,
-  useLocaleSwitch,
-  useCommonTranslations,
-  useNavigationTranslations,
-  useMatchTranslations,
-} from './client-hooks'
-
-// Utilities
-export {
-  TennisFormatter,
-  useTennisFormatter,
-  MigrationHelpers,
-  useMigrationHelpers,
-  safeTranslation,
-  formatMessage,
-  validateMessageParams,
-  formatMatchDate,
-  formatTennisNumber,
-} from './utils'
-
-// Re-export next-intl server functions for server components - temporarily disabled
-// export { useTranslations as useServerTranslations, useLocale as useServerLocale } from 'next-intl'
-
-// Temporary mock exports
-export const useServerTranslations = () => (key: string) => key
-export const useServerLocale = () => 'en'
+  useLocale,
+  useNow,
+  useTimeZone,
+  useFormatter,
+  useMessages,
+} from 'next-intl'
 
 // Configuration exports
 export { default as i18nConfig } from './config'

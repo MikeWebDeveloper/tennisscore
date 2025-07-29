@@ -1,20 +1,18 @@
 {
-  "settings": {
-    "settings": "Settings",
-    "managePreferences": "Manage your app preferences and cache settings",
-    "cacheAndUpdates": "Cache & Updates",
-    "aboutCacheManagement": "About Cache Management",
-    "whyUseCacheManagement": "Why use cache management?",
-    "fixesOutdated": "Fixes issues with outdated app versions",
-    "resolvesStaleData": "Resolves problems with stale data",
-    "improvesPerformance": "Improves app performance and reliability",
-    "forcesFreshData": "Forces fresh data from servers when needed",
-    "whenToUseFeatures": "When to use these features:",
-    "clearCacheDescription": "Clear Cache: When experiencing data inconsistencies or after app updates",
-    "forceReloadDescription": "Force Reload: When the app seems stuck or unresponsive",
-    "checkUpdatesDescription": "Check Updates: To manually check for new app versions",
-    "installAppDescription": "Install App: For better performance and offline access",
-    "soundSettings": "Sound Settings",
-    "customizeAudioPreferences": "Customize your audio preferences for match scoring"
-  }
+  "settings": "Settings",
+  "managePreferences": "Manage your app preferences and cache settings",
+  "cacheAndUpdates": "Cache & Updates",
+  "aboutCacheManagement": "About Cache Management",
+  "whyUseCacheManagement": "Why use cache management?",
+  "fixesOutdated": "Fixes issues with outdated app versions",
+  "resolvesStaleData": "Resolves problems with stale data",
+  "improvesPerformance": "Improves app performance and reliability",
+  "forcesFreshData": "Forces fresh data from servers when needed",
+  "whenToUseFeatures": "When to use these features:",
+  "clearCacheDescription": "Clear Cache: When experiencing data inconsistencies or after app updates",
+  "forceReloadDescription": "Force Reload: When the app seems stuck or unresponsive",
+  "checkUpdatesDescription": "Check Updates: To manually check for new app versions",
+  "installAppDescription": "Install App: For better performance and offline access",
+  "soundSettings": "Sound Settings",
+  "customizeAudioPreferences": "Customize your audio preferences for match scoring"
 }

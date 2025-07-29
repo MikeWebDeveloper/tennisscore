@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { decrypt } from "@/lib/session"
-// import createIntlMiddleware from 'next-intl/middleware' // Temporarily disabled
-import { locales, defaultLocale } from '@/i18n/config'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from '@/i18n/routing'
 
 // Admin user emails
 const ADMIN_EMAILS = [
@@ -9,19 +9,15 @@ const ADMIN_EMAILS = [
   "mareklatal@seznam.cz"
 ]
 
-// Temporarily disabled next-intl middleware
-// const intlMiddleware = createIntlMiddleware({
-//   locales,
-//   defaultLocale,
-//   localePrefix: 'as-needed'
-// })
+// Create next-intl middleware
+const intlMiddleware = createIntlMiddleware(routing)
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
 
   // Extract locale from pathname if present
-  const pathnameHasLocale = locales.some(
+  const pathnameHasLocale = routing.locales.some(
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
 
@@ -107,18 +103,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
-  // Temporarily skip intl middleware until app structure is migrated
-  // const response = intlMiddleware(request)
+  // Apply intl middleware
+  const response = intlMiddleware(request)
   
-  // // Add locale information to headers for server components
-  // if (response) {
-  //   const locale = response.headers.get('x-middleware-request-x-matched-locale') || defaultLocale
-  //   response.headers.set('x-locale', locale)
-  // }
+  // Add locale information to headers for server components
+  if (response) {
+    const locale = response.headers.get('x-middleware-request-x-matched-locale') || routing.defaultLocale
+    response.headers.set('x-locale', locale)
+  }
 
-  // return response
-  
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
@@ -129,12 +123,13 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - live (public live match page)
      * - clear-session (session clearing page)
      * - sw.js (service worker)
      * - manifest.json (PWA manifest)
      * - icons (PWA icons)
+     * - fonts (custom fonts)
+     * - test-i18n (test routes)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|live|clear-session|auth-error|sw.js|manifest.json|icons).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|clear-session|sw.js|manifest.json|icons|fonts|test-i18n|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.gif|.*\\.webp).*)",
   ],
-} 
+}

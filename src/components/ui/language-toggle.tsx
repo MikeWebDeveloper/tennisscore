@@ -1,15 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useLocaleStore } from "@/stores/localeStore"
+import { useRouter, usePathname } from "@/i18n/navigation"
+import { useLocale, useTranslations } from "next-intl"
 import { Button } from "./button"
 import { cn } from "@/lib/utils"
-import { useTranslations } from "@/hooks/use-translations"
 
 export function LanguageToggle({ className }: { className?: string }) {
-  const { locale, setLocale } = useLocaleStore()
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   useEffect(() => {
     setMounted(true)
@@ -39,7 +41,8 @@ export function LanguageToggle({ className }: { className?: string }) {
   }
 
   const toggleLanguage = () => {
-    setLocale(locale === 'en' ? 'cs' : 'en')
+    const newLocale = locale === 'en' ? 'cs' : 'en'
+    router.replace(pathname, { locale: newLocale })
   }
 
   return (
