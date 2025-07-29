@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { cn } from "@/lib/utils"
 import { TrendingDown, TrendingUp, Skull, Heart, Users, Target, Zap } from "lucide-react"
+import { useTranslations } from "@/i18n"
 
 export interface OpponentRecord {
   opponentId: string
@@ -38,6 +39,7 @@ export function NemesisBunnyStats({
   className = ""
 }: NemesisBunnyStatsProps) {
   const [showAll, setShowAll] = useState(false)
+  const t = useTranslations('statistics')
 
   // Sort and analyze opponent records
   const { nemeses, bunnies, rivalries } = useMemo(() => {
@@ -114,11 +116,11 @@ export function NemesisBunnyStats({
     const getTypeTitle = () => {
       switch (type) {
         case 'nemesis':
-          return `#${rank} Nemesis`
+          return `#${rank} ${t('nemeses')}`
         case 'bunny':
-          return `#${rank} Bunny`
+          return `#${rank} ${t('bunnies')}`
         case 'rivalry':
-          return `#${rank} Rivalry`
+          return `#${rank} ${t('rivalries')}`
       }
     }
 
@@ -164,7 +166,7 @@ export function NemesisBunnyStats({
 
         {/* Recent form indicator */}
         <div className="flex items-center gap-1 mb-2">
-          <span className="text-xs text-muted-foreground">Recent form:</span>
+          <span className="text-xs text-muted-foreground">{t('recentForm')}:</span>
           <div className="flex gap-1">
             {record.matchHistory.slice(-5).map((match, idx) => (
               <div
@@ -191,7 +193,7 @@ export function NemesisBunnyStats({
               <TrendingDown className="h-3 w-3 text-red-500" />
             )}
             <span className={getWinRateColor(record.winRate)}>
-              {record.winRate > 0.5 ? 'Favorable' : 'Challenging'}
+              {record.winRate > 0.5 ? t('favorable') : t('challenging')}
             </span>
           </div>
         </div>
@@ -205,14 +207,14 @@ export function NemesisBunnyStats({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Opponent Analysis
+            {t('opponentAnalysis')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground">
-              No opponent data available yet. Play more matches to see your nemeses and bunnies!
+              {t('noOpponentData')}
             </p>
           </div>
         </CardContent>
@@ -226,11 +228,11 @@ export function NemesisBunnyStats({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Opponent Analysis
+            {t('opponentAnalysis')}
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {opponentRecords.length} opponents
+              {opponentRecords.length} {t('opponents')}
             </Badge>
             {(nemeses.length > 3 || bunnies.length > 3 || rivalries.length > 2) && (
               <Button
@@ -239,7 +241,7 @@ export function NemesisBunnyStats({
                 onClick={() => setShowAll(!showAll)}
                 className="text-xs"
               >
-                {showAll ? 'Show Less' : 'Show All'}
+                {showAll ? t('showLess') : t('showAll')}
               </Button>
             )}
           </div>
@@ -252,10 +254,10 @@ export function NemesisBunnyStats({
             <div className="flex items-center gap-2 mb-4">
               <Skull className="h-5 w-5 text-red-500" />
               <h3 className="font-semibold text-red-700 dark:text-red-400">
-                Your Nemeses
+                {t('yourNemeses')}
               </h3>
               <Badge variant="destructive" className="text-xs">
-                Tough Opponents
+                {t('toughOpponents')}
               </Badge>
             </div>
             <div className="grid gap-3">
@@ -277,10 +279,10 @@ export function NemesisBunnyStats({
             <div className="flex items-center gap-2 mb-4">
               <Zap className="h-5 w-5 text-blue-500" />
               <h3 className="font-semibold text-blue-700 dark:text-blue-400">
-                Close Rivalries
+                {t('closeRivalries')}
               </h3>
               <Badge variant="secondary" className="text-xs">
-                Competitive Matches
+                {t('competitiveMatches')}
               </Badge>
             </div>
             <div className="grid gap-3">
@@ -302,10 +304,10 @@ export function NemesisBunnyStats({
             <div className="flex items-center gap-2 mb-4">
               <Heart className="h-5 w-5 text-green-500" />
               <h3 className="font-semibold text-green-700 dark:text-green-400">
-                Your Bunnies
+                {t('yourBunnies')}
               </h3>
               <Badge variant="default" className="text-xs bg-green-500 hover:bg-green-600">
-                Favorable Matchups
+                {t('favorableMatchups')}
               </Badge>
             </div>
             <div className="grid gap-3">
@@ -326,15 +328,15 @@ export function NemesisBunnyStats({
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-red-500">{nemeses.length}</div>
-              <div className="text-xs text-muted-foreground">Nemeses</div>
+              <div className="text-xs text-muted-foreground">{t('nemeses')}</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-blue-500">{rivalries.length}</div>
-              <div className="text-xs text-muted-foreground">Rivalries</div>
+              <div className="text-xs text-muted-foreground">{t('rivalries')}</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-500">{bunnies.length}</div>
-              <div className="text-xs text-muted-foreground">Bunnies</div>
+              <div className="text-xs text-muted-foreground">{t('bunnies')}</div>
             </div>
           </div>
         </div>
