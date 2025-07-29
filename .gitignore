@@ -43,3 +43,48 @@ next-env.d.ts
 
 # Local MCP config for Appwrite
 .mcp.json
+
+# Documentation and analysis files
+/docs/
+/temp_translation_analysis/
+/logs/
+*.md
+!README.md
+!CLAUDE.md
+
+# IDE and editor configurations
+/.cursor/
+/.claude/
+/.vscode/
+.cursor/
+.claude/
+*.swp
+*.swo
+*~
+
+# MCP configurations (may contain API keys)
+mcp.json
+.mcp.json
+cursor/mcp.json
+.cursor/mcp.json
+.claude/mcp.json
+
+# Testing artifacts
+/playwright-report/
+/test-results/
+/visual-baseline/
+/visual-current/
+/visual-diff/
+
+# Temporary files and scripts
+*.log
+*.tmp
+/scripts/
+/spec/
+cookies.txt
+read-config.txt
+screenshot-*.png
+routing-debug.png
+
+# Build artifacts
+tsconfig.tsbuildinfo
