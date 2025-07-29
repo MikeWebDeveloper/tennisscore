@@ -79,5 +79,25 @@
   "forehandPreference": "Forehand preference",
   "vs": "vs",
   "player1": "Player 1",
-  "player2": "Player 2"
+  "player2": "Player 2",
+  "whatsNew": "What's New",
+  "stayTunedForMoreUpdates": "Stay tuned for more updates and improvements!",
+  "whatsNewUpdates": {
+    "enhancedTranslationSystem": {
+      "title": "Enhanced Translation System",
+      "description": "Complete Czech language support with improved tennis terminology and better user experience across all pages."
+    },
+    "advancedPointLogging": {
+      "title": "Advanced Point Logging", 
+      "description": "Detailed point-by-point tracking with serve types, return analytics, and rally patterns for comprehensive match analysis."
+    },
+    "improvedMatchStatistics": {
+      "title": "Improved Match Statistics",
+      "description": "Enhanced statistics display with better quality assessment ratings and more intuitive performance metrics."
+    },
+    "componentQualityFixes": {
+      "title": "Component Quality Fixes",
+      "description": "Resolved various UI inconsistencies and improved component reliability across the application."
+    }
+  }
 }

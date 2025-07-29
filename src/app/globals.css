@@ -492,3 +492,19 @@ h1, h2, h3, h4, h5, h6 {
   contain: layout;
   will-change: contents;
 }
+
+/* Browser extension attribute cleanup - subtle approach */
+*[bis_skin_checked] {
+  /* Ensure browser extension attributes don't cause major layout issues */
+  /* Removed !important to prevent CSS fighting */
+}
+
+/* Minimal extension interference prevention */
+@layer base {
+  /* Only target critical elements that could affect hydration */
+  html[bis_skin_checked],
+  body[bis_skin_checked] {
+    /* Very minimal reset - only what's necessary */
+    contain: layout;
+  }
+}

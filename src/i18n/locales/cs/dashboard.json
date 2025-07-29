@@ -79,5 +79,25 @@
   "forehandPreference": "Preference forhendu",
   "vs": "proti",
   "player1": "Hráč 1",
-  "player2": "Hráč 2"
+  "player2": "Hráč 2",
+  "whatsNew": "Co je nového",
+  "stayTunedForMoreUpdates": "Zůstaňte naladěni na další aktualizace a vylepšení!",
+  "whatsNewUpdates": {
+    "enhancedTranslationSystem": {
+      "title": "Vylepšený překladový systém",
+      "description": "Kompletní podpora českého jazyka s vylepšenou tenisovou terminologií a lepšími uživatelskými zkušenostmi na všech stránkách."
+    },
+    "advancedPointLogging": {
+      "title": "Pokročilé zaznamenávání bodů",
+      "description": "Detailní sledování bod za bodem se servisními typy, analýzou returnů a vzory výměn pro komplexní analýzu zápasu."
+    },
+    "improvedMatchStatistics": {
+      "title": "Vylepšené statistiky zápasů",
+      "description": "Vylepšené zobrazení statistik s lepším hodnocením kvality a intuitivnějšími metrikami výkonu."
+    },
+    "componentQualityFixes": {
+      "title": "Opravy kvality komponentů",
+      "description": "Vyřešeny různé nekonzistence v UI a vylepšena spolehlivost komponentů v celé aplikaci."
+    }
+  }
 }

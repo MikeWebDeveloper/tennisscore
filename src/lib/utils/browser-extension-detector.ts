@@ -83,7 +83,7 @@ export function detectInterferingExtensions(): ExtensionDetection {
 export function cleanupExtensionAttributes(element?: Element): void {
   if (typeof window === 'undefined') return
 
-  const targetElement = element || document.body
+  const targetElement = element || document.documentElement
   const interferingAttributes = [
     'bis_skin_checked',
     'data-adblock',
@@ -91,17 +91,35 @@ export function cleanupExtensionAttributes(element?: Element): void {
     'cz-shortcut-listen'
   ]
 
-  // Remove interfering attributes from all descendants
+  // Remove interfering attributes from all descendants including the target element itself
   interferingAttributes.forEach(attr => {
+    // Remove from target element itself
+    if (targetElement.hasAttribute(attr)) {
+      targetElement.removeAttribute(attr)
+    }
+    
+    // Remove from all descendants
     const elements = targetElement.querySelectorAll(`[${attr}]`)
     elements.forEach(el => {
       el.removeAttribute(attr)
     })
   })
+
+  // Special handling for bis_skin_checked on common problematic elements
+  const commonProblematicSelectors = [
+    'div', 'html', 'body', 'main', 'section', 'article', 'nav', 'header', 'footer'
+  ]
+  
+  commonProblematicSelectors.forEach(selector => {
+    const elements = document.querySelectorAll(`${selector}[bis_skin_checked]`)
+    elements.forEach(el => {
+      el.removeAttribute('bis_skin_checked')
+    })
+  })
 }
 
 /**
- * Hook to monitor and handle extension interference
+ * Hook to monitor and handle extension interference (simplified to prevent layout jumping)
  */
 export function useExtensionDetection() {
   if (typeof window === 'undefined') {
@@ -114,23 +132,46 @@ export function useExtensionDetection() {
 
   const detection = detectInterferingExtensions()
 
-  // Set up a mutation observer to clean up extension attributes
+  // Only set up minimal monitoring if extensions are actually interfering
   if (detection.hasInterferingExtensions) {
+    let lastCleanup = 0
+    const CLEANUP_THROTTLE = 2000 // Only allow cleanup every 2 seconds
+
+    const throttledCleanup = () => {
+      const now = Date.now()
+      if (now - lastCleanup > CLEANUP_THROTTLE) {
+        lastCleanup = now
+        // Use requestAnimationFrame for smoother updates
+        requestAnimationFrame(() => {
+          cleanupExtensionAttributes()
+        })
+      }
+    }
+
+    // Much more conservative observer - only for critical hydration issues
     const observer = new MutationObserver((mutations) => {
+      let needsCleanup = false
+      
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes') {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'bis_skin_checked') {
           const target = mutation.target as Element
-          if (target.hasAttribute('bis_skin_checked')) {
-            target.removeAttribute('bis_skin_checked')
+          // Only clean up if it's on critical elements that affect hydration
+          if (target.tagName === 'DIV' || target.tagName === 'BODY' || target.tagName === 'HTML') {
+            needsCleanup = true
           }
         }
       })
+
+      if (needsCleanup) {
+        throttledCleanup()
+      }
     })
 
+    // Only observe critical areas
     observer.observe(document.body, {
       attributes: true,
-      subtree: true,
-      attributeFilter: ['bis_skin_checked', 'data-adblock', 'data-extension']
+      subtree: false, // Don't observe deep changes
+      attributeFilter: ['bis_skin_checked'] // Only the most problematic attribute
     })
 
     // Cleanup function

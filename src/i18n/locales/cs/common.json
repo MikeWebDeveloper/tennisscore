@@ -682,5 +682,13 @@
   "gamesLostOnServe": "Hry ztracené na servisu",
   "perfectServiceRecord": "Perfektní servisový záznam",
   "pointDistributionAnalysis": "Analýza rozložení bodů",
-  "performanceInsights": "Poznatky o výkonu"
+  "performanceInsights": "Poznatky o výkonu",
+  "install": "Instalovat",
+  "later": "Později",
+  "new": "Nové",
+  "improved": "Vylepšeno",
+  "fixed": "Opraveno",
+  "update": "Aktualizace",
+  "won": "Vyhráno",
+  "lost": "Prohráno"
 }

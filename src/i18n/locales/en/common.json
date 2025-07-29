@@ -682,5 +682,13 @@
   "gamesLostOnServe": "Games Lost on Serve",
   "perfectServiceRecord": "Perfect service record",
   "pointDistributionAnalysis": "Point Distribution Analysis",
-  "performanceInsights": "Performance Insights"
+  "performanceInsights": "Performance Insights",
+  "install": "Install",
+  "later": "Later",
+  "new": "New",
+  "improved": "Improved",
+  "fixed": "Fixed",
+  "update": "Update",
+  "won": "Won",
+  "lost": "Lost"
 }
