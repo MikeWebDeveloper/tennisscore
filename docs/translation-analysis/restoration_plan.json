@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "createdAt": "2025-07-29T14:08:28.740Z",
+    "totalMissingKeys": 732,
+    "criticalNamespaces": [
+      "common",
+      "match",
+      "navigation",
+      "auth"
+    ],
+    "supportedLocales": [
+      "en",
+      "cs"
+    ]
+  },
+  "phases": [
+    {
+      "name": "PHASE 2: Critical Component Translation Restoration",
+      "priority": "HIGH",
+      "description": "Restore missing keys for core functionality (common, match, navigation)",
+      "estimatedKeys": 716,
+      "namespaces": [
+        "common",
+        "match",
+        "navigation"
+      ],
+      "tasks": [
+        {
+          "namespace": "common",
+          "missingKeys": {
+            "en": 338,
+            "cs": 338
+          },
+          "examples": [
+            " ",
+            ",",
+            "-",
+            "/",
+            "/dashboard"
+          ]
+        },
+        {
+          "namespace": "match",
+          "missingKeys": {
+            "en": 20,
+            "cs": 20
+          },
+          "examples": [
+            "match.backhand",
+            "match.baseline",
+            "match.cancelled",
+            "match.currentScore",
+            "match.dropShot"
+          ]
+        },
+        {
+          "namespace": "navigation",
+          "missingKeys": {
+            "en": 0,
+            "cs": 0
+          },
+          "examples": []
+        }
+      ]
+    },
+    {
+      "name": "PHASE 3: Secondary Component Translation Restoration",
+      "priority": "MEDIUM",
+      "description": "Restore missing keys for secondary functionality",
+      "estimatedKeys": 16,
+      "namespaces": [
+        "statistics",
+        "player",
+        "dashboard",
+        "auth"
+      ],
+      "tasks": [
+        {
+          "namespace": "statistics",
+          "missingKeys": {
+            "en": 7,
+            "cs": 7
+          },
+          "examples": [
+            "statistics.neutral",
+            "statistics.noneOffered",
+            "statistics.rallyLength",
+            "statistics.slightMomentum",
+            "statistics.slightlyBehind"
+          ]
+        },
+        {
+          "namespace": "player",
+          "missingKeys": {
+            "en": 1,
+            "cs": 1
+          },
+          "examples": [
+            "player.anonymous"
+          ]
+        },
+        {
+          "namespace": "dashboard",
+          "missingKeys": {
+            "en": 0,
+            "cs": 0
+          },
+          "examples": []
+        },
+        {
+          "namespace": "auth",
+          "missingKeys": {
+            "en": 0,
+            "cs": 0
+          },
+          "examples": []
+        }
+      ]
+    }
+  ]
+}

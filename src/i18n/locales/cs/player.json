@@ -70,5 +70,15 @@
   "viewAll": "Zobrazit vše ({count})",
   "showingAllPlayers": "Zobrazeni všichni hráči ({count})",
   "backToPaginated": "Zpět na stránkovaný pohled",
-  "allPlayersLoaded": "Všichni hráči načteni"
+  "allPlayersLoaded": "Všichni hráči načteni",
+  "sort": "Seřadit",
+  "canvas": "Plátno",
+  "2d": "2D",
+  "upload": "Nahrát",
+  "cancel": "Zrušit",
+  "fileSizeExceeded": "Velikost souboru nesmí překročit 10 MB",
+  "selectCropArea": "Před použitím vyberte oblast pro oříznutí.",
+  "failedToCropImage": "Nepodařilo se zpracovat oříznutý obrázek. Zkuste to znovu.",
+  "errorProcessingImage": "Chyba při zpracování obrázku. Zkuste to znovu.",
+  "anonymous": "Anonymní"
 }

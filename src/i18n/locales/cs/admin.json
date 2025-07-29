@@ -7,10 +7,10 @@
   "allMatchesDescription": "Zobrazit a spravovat všechny zápasy v systému",
   "searchPlaceholder": "Hledat podle jména hráče, turnaje nebo e-mailu...",
   "searching": "Hledání...",
-  "showingMatchesFor": "Zobrazeno {{shown}} z {{total}} zápasů pro \"{{searchTerm}}\"",
-  "showingMatches": "Zobrazeno {{shown}} z {{total}} zápasů",
+  "showingMatchesFor": "Zobrazeno {shown} z {total} zápasů pro \"{searchTerm}\"",
+  "showingMatches": "Zobrazeno {shown} z {total} zápasů",
   "noMatchesFoundSearch": "Pro vaše vyhledávání nebyly nalezeny žádné zápasy",
   "noMatchesFound": "Žádné zápasy nenalezeny",
   "loading": "Načítání...",
-  "loadMore": "Načíst další (zbývá {{remaining}})"
+  "loadMore": "Načíst další (zbývá {remaining})"
 }

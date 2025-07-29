@@ -12,7 +12,7 @@ export function ExtensionConflictNotice() {
   const [detection, setDetection] = useState<ExtensionDetection | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const t = useTranslations()
+  const t = useTranslations('common')
 
   useEffect(() => {
     setMounted(true)

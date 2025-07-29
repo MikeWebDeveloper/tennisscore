@@ -1,12 +1,14 @@
-import { useTranslations, useLocale, useFormatter } from 'next-intl'
-import { Locale, defaultLocale } from './config'
+import { useLocale, useFormatter } from 'next-intl'
+import { useTranslations } from '@/i18n'
+import { routing } from './routing'
+import type { SupportedLocale } from './routing'
 
 // Tennis-specific formatting utilities
 export class TennisFormatter {
   constructor(
     private t: ReturnType<typeof useTranslations>,
     private format: ReturnType<typeof useFormatter>,
-    private locale: Locale
+    private locale: SupportedLocale
   ) {}
 
   // Format match duration
@@ -109,9 +111,9 @@ export class TennisFormatter {
 
 // Hook to get tennis formatter
 export function useTennisFormatter() {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const format = useFormatter()
-  const locale = useLocale() as Locale
+  const locale = useLocale() as SupportedLocale
   
   return new TennisFormatter(t, format, locale)
 }
@@ -139,7 +141,7 @@ export function formatStatistic(
 
 // Migration helpers for legacy components
 export function useMigrationHelpers() {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return {
     // Helper for components that need both old and new translation patterns

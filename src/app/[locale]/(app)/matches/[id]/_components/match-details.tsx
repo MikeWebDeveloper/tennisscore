@@ -490,11 +490,9 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               } else if (match.startTime && match.status === "In Progress") {
                 const durationMs = Date.now() - Date.parse(match.startTime)
                 const totalMinutes = Math.floor(durationMs / (1000 * 60))
-                console.log('Ongoing duration calculation:', { durationMs, totalMinutes })
-                return formatDuration(totalMinutes) + " (ongoing)"
+                return formatDuration(totalMinutes) + ` (${t('ongoing')})`
               }
               
-              console.log('No timing data available, falling back')
               return pointDetails.length > 0 ? `${pointDetails.length} points` : "No data"
             }
 
@@ -674,7 +672,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Type</span>
-                          <span className="text-sm font-medium">{isDoubles ? "Doubles" : "Singles"}</span>
+                          <span className="text-sm font-medium">{isDoubles ? t('doubles') : t('singles')}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -685,7 +683,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
-                        {isDoubles ? "Teams" : "Players"}
+                        {isDoubles ? t('teams') : t('players')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -940,22 +938,22 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-sm mb-2 text-blue-900">MATCH SUMMARY</h4>
+                          <h4 className="font-semibold text-sm mb-2 text-blue-900">{t('matchSummary')}</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('totalPointsPlayed')}</span>
                               <span className="font-semibold">{totalPoints}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Sets Completed</span>
+                              <span className="text-muted-foreground">{t('setsCompleted')}</span>
                               <span className="font-semibold">{setsPlayed}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Service Games</span>
+                              <span className="text-muted-foreground">{t('serviceGames')}</span>
                               <span className="font-semibold">{serviceGames}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Breaks of Serve</span>
+                              <span className="text-muted-foreground">{t('breaksOfServe')}</span>
                               <span className="font-semibold text-red-600">{breaksOfServe}</span>
                             </div>
                           </div>
@@ -964,9 +962,9 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-sm mb-2 text-purple-900">MOMENTUM TRACKER</h4>
+                          <h4 className="font-semibold text-sm mb-2 text-purple-900">{t('momentumTracker')}</h4>
                           <div className="space-y-2">
-                            <div className="text-xs text-muted-foreground mb-1">Last 10 Points</div>
+                            <div className="text-xs text-muted-foreground mb-1">{t('lastTenPoints')}</div>
                             <div className="flex gap-1 mb-2">
                               {lastTenPoints.map((point, index) => (
                                 <div
@@ -999,13 +997,13 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
                     <CardHeader>
-                      <CardTitle className="text-orange-900 text-lg">Break Point Pressure</CardTitle>
+                      <CardTitle className="text-orange-900 text-lg">{t('breakPointPressure')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-orange-900">{breakPointConversion.toFixed(0)}%</div>
-                          <div className="text-sm text-orange-600">Conversion Rate</div>
+                          <div className="text-sm text-orange-600">{t('conversionRate')}</div>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
@@ -1030,7 +1028,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
                   <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
                     <CardHeader>
-                      <CardTitle className="text-green-900 text-lg">Service Dominance</CardTitle>
+                      <CardTitle className="text-green-900 text-lg">{t('serviceDominance')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
@@ -1038,21 +1036,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           <div className="text-3xl font-bold text-green-900">
                             {serviceGames > 0 ? ((serviceGames - breaksOfServe) / serviceGames * 100).toFixed(0) : 0}%
                           </div>
-                          <div className="text-sm text-green-600">Service Games Held</div>
+                          <div className="text-sm text-green-600">{t('serviceGamesHeld')}</div>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Total Service Games</span>
+                            <span className="text-muted-foreground">{t('totalServiceGames')}</span>
                             <span className="font-semibold">{serviceGames}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Games Lost on Serve</span>
+                            <span className="text-muted-foreground">{t('gamesLostOnServe')}</span>
                             <span className="font-semibold text-red-600">{breaksOfServe}</span>
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {breaksOfServe === 0
-                            ? "Perfect service record - no breaks of serve"
+                            ? t('perfectServiceRecord')
                             : breaksOfServe < serviceGames * 0.2
                             ? "Strong service games - rarely broken"
                             : "Service games under pressure"}
@@ -1067,7 +1065,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5" />
-                      Point Distribution Analysis
+                      {t('pointDistributionAnalysis')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

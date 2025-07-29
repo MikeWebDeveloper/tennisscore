@@ -58,6 +58,71 @@ const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail
 // Helper to check if a point has isTiebreak property
 const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
 
+// Helper to get detailed point information for detailed mode
+const getDetailedPointInfo = (point: PointDetail, t: (key: string) => string, detailLevel?: string) => {
+  let outcome = ''
+  switch (point.pointOutcome) {
+    case 'winner': outcome = t('winner'); break
+    case 'unforced_error': outcome = t('unforcedError'); break
+    case 'forced_error': outcome = t('forcedError'); break
+    case 'ace': outcome = t('ace'); break
+    case 'double_fault': outcome = t('doubleFault'); break
+    default: outcome = point.pointOutcome
+  }
+
+  // For detailed mode, add shot type and direction information
+  if (detailLevel === 'detailed') {
+    const details = []
+    
+    // Add shot type if available
+    if (point.lastShotType && point.lastShotType !== 'serve') {
+      let shotType = ''
+      switch (point.lastShotType) {
+        case 'forehand': shotType = t('forehand'); break
+        case 'backhand': shotType = t('backhand'); break
+        case 'volley': shotType = t('volley'); break
+        case 'overhead': shotType = t('overhead'); break
+        default: shotType = point.lastShotType
+      }
+      details.push(shotType)
+    }
+    
+    // Add shot direction if available
+    if (point.shotDirection) {
+      let direction = ''
+      switch (point.shotDirection) {
+        case 'cross': direction = t('crossCourt'); break
+        case 'line': direction = t('downTheLine'); break
+        case 'body': direction = t('bodyShot'); break
+        case 'long': direction = t('long'); break
+        case 'wide': direction = t('wide'); break
+        case 'net': direction = t('net'); break
+        default: direction = point.shotDirection
+      }
+      details.push(direction)
+    }
+    
+    // Add serve placement for aces and double faults
+    if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
+      let placement = ''
+      switch (point.servePlacement) {
+        case 'wide': placement = t('wide'); break
+        case 'body': placement = t('bodyShot'); break
+        case 't': placement = t('tDownTheMiddle'); break
+        default: placement = point.servePlacement
+      }
+      details.push(placement)
+    }
+    
+    // Combine outcome with details
+    if (details.length > 0) {
+      return `${outcome} (${details.join(', ')})`
+    }
+  }
+  
+  return outcome
+}
+
 // Helper to determine BP/SP/MP for a given point, reconstructing context up to that point
 function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
   // Only consider points up to and including this one
@@ -479,7 +544,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                           <div className="text-left">{t('score')}</div>
                           <div className="text-center">{t('player')}</div>
                           <div className="text-right">{t('serveType')}</div>
-                          <div className="text-right">Outcome</div>
+                          <div className="text-right">{detailLevel === 'detailed' ? t('detailedOutcome') : 'Outcome'}</div>
                         </div>
                         <div className="flex flex-col items-center gap-1 mt-2 w-full">
                           {(() => {
@@ -512,15 +577,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                               }
                             }
                             const serveTypeShort = gameWinningPoint.serveType === 'first' ? '1st' : '2nd'
-                            let outcome = ''
-                            switch (gameWinningPoint.pointOutcome) {
-                              case 'winner': outcome = t('winner'); break
-                              case 'unforced_error': outcome = t('unforcedError'); break
-                              case 'forced_error': outcome = t('forcedError'); break
-                              case 'ace': outcome = t('ace'); break
-                              case 'double_fault': outcome = t('doubleFault'); break
-                              default: outcome = gameWinningPoint.pointOutcome
-                            }
+                            const outcome = getDetailedPointInfo(gameWinningPoint, t, detailLevel)
                             return (
                               <>
                                 <div
@@ -572,15 +629,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                       }
                                     }
                                     const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
-                                    let outcome = ''
-                                    switch (point.pointOutcome) {
-                                      case 'winner': outcome = t('winner'); break
-                                      case 'unforced_error': outcome = t('unforcedError'); break
-                                      case 'forced_error': outcome = t('forcedError'); break
-                                      case 'ace': outcome = t('ace'); break
-                                      case 'double_fault': outcome = t('doubleFault'); break
-                                      default: outcome = point.pointOutcome
-                                    }
+                                    const outcome = getDetailedPointInfo(point, t, detailLevel)
                                     // --- BADGE LOGIC ---
                                     const pointIdx = pointLog.findIndex(p => p.id === point.id)
                                     const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
@@ -661,15 +710,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                     }
                                   }
                                   const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
-                                  let outcome = ''
-                                  switch (point.pointOutcome) {
-                                    case 'winner': outcome = t('winner'); break
-                                    case 'unforced_error': outcome = t('unforcedError'); break
-                                    case 'forced_error': outcome = t('forcedError'); break
-                                    case 'ace': outcome = t('ace'); break
-                                    case 'double_fault': outcome = t('doubleFault'); break
-                                    default: outcome = point.pointOutcome
-                                  }
+                                  const outcome = getDetailedPointInfo(point, t, detailLevel)
                                   // --- BADGE LOGIC ---
                                   const pointIdx = pointLog.findIndex(p => p.id === point.id)
                                   const badge = getPointBadgeForLogIndex(pointIdx, pointLog)

@@ -2,12 +2,11 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { PointDetail, PointOutcome, ShotType } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
 
 interface UltraSimplePointLoggerProps {
   open: boolean
@@ -55,14 +54,13 @@ export function UltraSimplePointLogger({
   const handleOutcomeClick = (selectedOutcome: PointOutcome) => {
     setOutcome(selectedOutcome)
     
-    // If it's ace or double fault, go to serve direction
+    // For ace/double fault, collect serve placement first
     if (selectedOutcome === 'ace' || selectedOutcome === 'double_fault') {
       setStep('serve-direction')
-      return
+    } else {
+      // For winners and errors, skip serve placement and go to shot type
+      setStep('winner-type')
     }
-    
-    // For other outcomes, go to winner type
-    setStep('winner-type')
   }
 
   const handleServeDirectionClick = (direction: 'wide' | 'body' | 't') => {
@@ -82,7 +80,11 @@ export function UltraSimplePointLogger({
       onSave(pointDetail)
       onOpenChange(false)
       resetState()
+      return
     }
+    
+    // For other outcomes, continue to shot type selection
+    setStep('winner-type')
   }
 
   const handleWinnerTypeClick = (shotType: ShotType) => {
@@ -109,7 +111,8 @@ export function UltraSimplePointLogger({
     const pointDetail: Partial<PointDetail> = {
       serveType: pointContext.serveType,
       serveOutcome: outcome === 'ace' ? 'ace' : outcome === 'double_fault' ? 'double_fault' : 'winner',
-      servePlacement: "wide", // Default serve placement
+      // Only include serve placement if it was collected (for ace/double fault)
+      ...(serveDirection && { servePlacement: serveDirection }),
       rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 3,
       pointOutcome: outcome,
       lastShotType: winnerType,
@@ -140,41 +143,45 @@ export function UltraSimplePointLogger({
     setReturnType(null)
   }
 
+  // Conditional logic matching SimpleStatsPopup exactly
+  const isAceDisabled = pointContext.winner !== pointContext.server
+  const isDoubleFaultDisabled = pointContext.serveType === 'first' || pointContext.winner === pointContext.server
+
   const outcomes = [
-    {
-      id: 'ace' as const,
-      label: t('ace'),
-      color: 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600',
-      textColor: 'text-white',
-      disabled: pointContext.winner !== pointContext.server
-    },
     {
       id: 'winner' as const,
       label: t('winner'),
-      color: 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600',
-      textColor: 'text-white',
+      description: t('cleanWinner'),
+      color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20',
       disabled: false
+    },
+    {
+      id: 'ace' as const,
+      label: t('aces'),
+      description: t('unreturnableServe'),
+      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20',
+      disabled: isAceDisabled
     },
     {
       id: 'forced_error' as const,
       label: t('forcedError'),
-      color: 'bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600',
-      textColor: 'text-white',
+      description: t('opponentForcedIntoError'),
+      color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20',
       disabled: false
     },
     {
       id: 'unforced_error' as const,
       label: t('unforcedError'),
-      color: 'bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600',
-      textColor: 'text-white',
+      description: t('unforcedMistake'),
+      color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20',
       disabled: false
     },
     {
       id: 'double_fault' as const,
-      label: t('doubleFault'),
-      color: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700',
-      textColor: 'text-white',
-      disabled: pointContext.serveType !== "second" || pointContext.winner === pointContext.server
+      label: t('doubleFaults'),
+      description: t('twoConsecutiveFaults'),
+      color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20',
+      disabled: isDoubleFaultDisabled
     }
   ]
 
@@ -183,26 +190,22 @@ export function UltraSimplePointLogger({
     {
       id: 'forehand' as const,
       label: t('forehand'),
-      color: 'bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600',
-      textColor: 'text-white'
+      color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
     },
     {
       id: 'backhand' as const,
       label: t('backhand'),
-      color: 'bg-gradient-to-r from-red-400 to-rose-500 hover:from-red-500 hover:to-rose-600',
-      textColor: 'text-white'
+      color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
     },
     {
       id: 'volley' as const,
       label: t('volley'),
-      color: 'bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600',
-      textColor: 'text-white'
+      color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
     },
     {
       id: 'overhead' as const,
       label: t('overhead'),
-      color: 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600',
-      textColor: 'text-white'
+      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
     }
   ]
 
@@ -211,20 +214,17 @@ export function UltraSimplePointLogger({
     {
       id: 'wide' as const,
       label: t('wide'),
-      color: 'bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600',
-      textColor: 'text-white'
+      color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
     },
     {
       id: 'body' as const,
       label: t('body'),
-      color: 'bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600',
-      textColor: 'text-white'
+      color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20'
     },
     {
       id: 't' as const,
       label: t('tDownTheMiddle'),
-      color: 'bg-gradient-to-r from-violet-400 to-purple-500 hover:from-violet-500 hover:to-purple-600',
-      textColor: 'text-white'
+      color: 'bg-violet-500/10 text-violet-500 border-violet-500/20 hover:bg-violet-500/20'
     }
   ]
 
@@ -234,20 +234,17 @@ export function UltraSimplePointLogger({
         {
           id: 'cross' as const,
           label: t('crossCourt'),
-          color: 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600',
-          textColor: 'text-white'
+          color: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20 hover:bg-cyan-500/20'
         },
         {
           id: 'line' as const,
           label: t('downTheLine'),
-          color: 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600',
-          textColor: 'text-white'
+          color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
         },
         {
           id: 'body' as const,
           label: t('bodyShot'),
-          color: 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600',
-          textColor: 'text-white'
+          color: 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20'
         }
       ]
     } else if (outcome === 'unforced_error' || outcome === 'forced_error') {
@@ -255,20 +252,17 @@ export function UltraSimplePointLogger({
         {
           id: 'long' as const,
           label: t('long'),
-          color: 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600',
-          textColor: 'text-white'
+          color: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20 hover:bg-cyan-500/20'
         },
         {
           id: 'wide' as const,
           label: t('wide'),
-          color: 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600',
-          textColor: 'text-white'
+          color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
         },
         {
           id: 'net' as const,
           label: t('net'),
-          color: 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600',
-          textColor: 'text-white'
+          color: 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20'
         }
       ]
     }
@@ -279,35 +273,46 @@ export function UltraSimplePointLogger({
     switch (step) {
       case 'outcome':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">{t('howDidTheyWin')}</h3>
-              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
-                {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </span>
+              <h3 className="text-lg font-semibold mb-2">{t('howDidTheyWin')}</h3>
+              <div className="text-sm text-muted-foreground">
+                <Badge variant="outline" className="mr-2">
+                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                </Badge>
+                <Badge variant="secondary">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                </Badge>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            
+            <div className="grid grid-cols-1 gap-2">
               {outcomes.map((outcome) => (
-                <motion.div
+                <Button
                   key={outcome.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  variant="outline"
+                  size="lg"
+                  disabled={outcome.disabled}
+                  className={cn(
+                    "h-auto p-4 flex flex-col items-start text-left transition-all",
+                    !outcome.disabled && outcome.color,
+                    outcome.disabled && "opacity-50 cursor-not-allowed"
+                  )}
+                  onClick={() => !outcome.disabled && handleOutcomeClick(outcome.id)}
                 >
-                  <Button
-                    size="lg"
-                    disabled={outcome.disabled}
-                    className={cn(
-                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                      outcome.color,
-                      outcome.textColor,
-                      outcome.disabled && "opacity-50 cursor-not-allowed"
+                  <div className="font-medium">{outcome.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {outcome.description}
+                    {outcome.disabled && (
+                      <span className="text-red-500 ml-2">
+                        {outcome.id === 'ace' && t('serverMustWinForAce')}
+                        {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
+                      </span>
                     )}
-                    onClick={() => handleOutcomeClick(outcome.id)}
-                  >
-                    {outcome.label}
-                  </Button>
-                </motion.div>
+                  </div>
+                </Button>
               ))}
             </div>
           </div>
@@ -315,33 +320,35 @@ export function UltraSimplePointLogger({
 
       case 'serve-direction':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">{t('servePlacement')}</h3>
-              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
-                {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </span>
+              <h3 className="text-lg font-semibold mb-2">{t('servePlacement')}</h3>
+              <div className="text-sm text-muted-foreground">
+                <Badge variant="outline" className="mr-2">
+                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                </Badge>
+                <Badge variant="secondary">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                </Badge>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            
+            <div className="grid grid-cols-1 gap-2">
               {serveDirections.map((direction) => (
-                <motion.div
+                <Button
                   key={direction.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  variant="outline"
+                  size="lg"
+                  className={cn(
+                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    direction.color
+                  )}
+                  onClick={() => handleServeDirectionClick(direction.id)}
                 >
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                      direction.color,
-                      direction.textColor
-                    )}
-                    onClick={() => handleServeDirectionClick(direction.id)}
-                  >
-                    {direction.label}
-                  </Button>
-                </motion.div>
+                  <div className="font-medium">{direction.label}</div>
+                </Button>
               ))}
             </div>
           </div>
@@ -349,33 +356,35 @@ export function UltraSimplePointLogger({
 
       case 'winner-type':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">{t('lastShotType')}</h3>
-              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
-                {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </span>
+              <h3 className="text-lg font-semibold mb-2">{t('lastShotType')}</h3>
+              <div className="text-sm text-muted-foreground">
+                <Badge variant="outline" className="mr-2">
+                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                </Badge>
+                <Badge variant="secondary">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                </Badge>
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            
+            <div className="grid grid-cols-2 gap-2">
               {winnerTypes.map((type) => (
-                <motion.div
+                <Button
                   key={type.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  variant="outline"
+                  size="lg"
+                  className={cn(
+                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    type.color
+                  )}
+                  onClick={() => handleWinnerTypeClick(type.id)}
                 >
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                      type.color,
-                      type.textColor
-                    )}
-                    onClick={() => handleWinnerTypeClick(type.id)}
-                  >
-                    {type.label}
-                  </Button>
-                </motion.div>
+                  <div className="font-medium">{type.label}</div>
+                </Button>
               ))}
             </div>
           </div>
@@ -383,33 +392,35 @@ export function UltraSimplePointLogger({
 
       case 'shot-direction':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">{t('shotDirection')}</h3>
-              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
-                {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </span>
+              <h3 className="text-lg font-semibold mb-2">{t('shotDirection')}</h3>
+              <div className="text-sm text-muted-foreground">
+                <Badge variant="outline" className="mr-2">
+                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                </Badge>
+                <Badge variant="secondary">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                </Badge>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            
+            <div className="grid grid-cols-1 gap-2">
               {getShotDirections().map((direction) => (
-                <motion.div
+                <Button
                   key={direction.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  variant="outline"
+                  size="lg"
+                  className={cn(
+                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    direction.color
+                  )}
+                  onClick={() => handleShotDirectionClick(direction.id)}
                 >
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                      direction.color,
-                      direction.textColor
-                    )}
-                    onClick={() => handleShotDirectionClick(direction.id)}
-                  >
-                    {direction.label}
-                  </Button>
-                </motion.div>
+                  <div className="font-medium">{direction.label}</div>
+                </Button>
               ))}
             </div>
           </div>
@@ -417,47 +428,44 @@ export function UltraSimplePointLogger({
 
       case 'return-type':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">{t('wasItReturn')}</h3>
-              <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mt-1">
-                {pointContext.playerNames[pointContext.winner]} {t('wins')}
-              </span>
+              <h3 className="text-lg font-semibold mb-2">{t('wasItReturn')}</h3>
+              <div className="text-sm text-muted-foreground">
+                <Badge variant="outline" className="mr-2">
+                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                </Badge>
+                <Badge variant="secondary">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                </Badge>
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-auto p-4 flex items-center justify-center text-center transition-all",
+                  "bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
+                )}
+                onClick={() => handleReturnTypeClick('regular')}
               >
-                <Button
-                  size="lg"
-                  className={cn(
-                    "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                    "bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600",
-                    "text-white"
-                  )}
-                  onClick={() => handleReturnTypeClick('regular')}
-                >
-                  {t('regular')}
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                <div className="font-medium">{t('regular')}</div>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-auto p-4 flex items-center justify-center text-center transition-all",
+                  "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20"
+                )}
+                onClick={() => handleReturnTypeClick('return')}
               >
-                <Button
-                  size="lg"
-                  className={cn(
-                    "w-full h-16 text-lg font-semibold shadow-lg transition-all duration-200",
-                    "bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600",
-                    "text-white"
-                  )}
-                  onClick={() => handleReturnTypeClick('return')}
-                >
-                  {t('return')}
-                </Button>
-              </motion.div>
+                <div className="font-medium">{t('return')}</div>
+              </Button>
             </div>
           </div>
         )
@@ -468,23 +476,22 @@ export function UltraSimplePointLogger({
   }
 
   return (
-    <Sheet open={open} onOpenChange={(open) => {
+    <Dialog open={open} onOpenChange={(open) => {
       onOpenChange(open)
       if (!open) resetState()
     }}>
-      <SheetContent side="bottom" className="h-[80vh]">
-        <SheetHeader className="pb-2">
-          <SheetTitle className="sr-only">
-            {t('pointDetails')}
-          </SheetTitle>
-        </SheetHeader>
-
-        <Card className="border-0 shadow-none">
-          <CardContent className="p-6">
-            {renderStep()}
-          </CardContent>
-        </Card>
-      </SheetContent>
-    </Sheet>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">
+            {t('point')} #{pointContext.pointNumber} {t('details')}
+          </DialogTitle>
+          <DialogDescription className="text-center text-sm text-muted-foreground space-y-1">
+            <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
+          </DialogDescription>
+        </DialogHeader>
+        
+        {renderStep()}
+      </DialogContent>
+    </Dialog>
   )
 }

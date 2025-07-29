@@ -103,7 +103,7 @@ export function ImageUpload({
   onFileChange,
   initialImageUrl,
 }: ImageUploadProps) {
-  const t = useTranslations()
+  const t = useTranslations('player')
   const [originalImageSrc, setOriginalImageSrc] = useState<string | null>(null)
   const [croppedImageSrc, setCroppedImageSrc] = useState<string | null>(initialImageUrl || null)
   const [crop, setCrop] = useState<CropType>()

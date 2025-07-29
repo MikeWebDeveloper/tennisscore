@@ -26,5 +26,7 @@
   "navigationOptions": "Možnosti navigace",
   "navigateTo": "Přejít na {label}",
   "createNewMatch": "Vytvořit nový zápas",
-  "new": "Nový"
+  "new": "Nový",
+  "userRole": "Role uživatele",
+  "userRoleAdmin": "Administrátor"
 }

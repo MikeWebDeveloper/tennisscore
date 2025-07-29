@@ -70,5 +70,15 @@
   "viewAll": "View All ({count})",
   "showingAllPlayers": "Showing all players ({count})",
   "backToPaginated": "Back to Paginated",
-  "allPlayersLoaded": "All players loaded"
+  "allPlayersLoaded": "All players loaded",
+  "sort": "Sort",
+  "canvas": "Canvas",
+  "2d": "2D",
+  "upload": "Upload",
+  "cancel": "Cancel",
+  "fileSizeExceeded": "File size cannot exceed 10MB",
+  "selectCropArea": "Please make sure to select a crop area before applying.",
+  "failedToCropImage": "Failed to process the cropped image. Please try again.",
+  "errorProcessingImage": "Error processing image. Please try again.",
+  "anonymous": "Anonymous"
 }

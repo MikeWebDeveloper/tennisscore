@@ -429,8 +429,8 @@ export function MatchStatsComponentSimple({
         </Card>
       )}
 
-      {/* Service Section (Simple and Complex Stats) - ALWAYS SHOW FOR SIMPLE/COMPLEX */}
-      {(detailLevel === 'simple' || detailLevel === 'complex') && (
+      {/* Service Section (Simple, Detailed and Complex Stats) - ALWAYS SHOW FOR SIMPLE/DETAILED/COMPLEX */}
+      {(detailLevel === 'simple' || detailLevel === 'detailed' || detailLevel === 'complex') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">

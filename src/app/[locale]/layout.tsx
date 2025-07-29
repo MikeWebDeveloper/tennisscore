@@ -2,7 +2,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import { notFound } from "next/navigation"
 import { getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
-import { locales } from "@/i18n/config"
+import { routing } from "@/i18n/routing"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider"
 import { Toaster } from "@/components/ui/sonner"
@@ -28,7 +28,7 @@ export default async function LocaleLayout({
   const { locale } = await params
 
   // Validate locale
-  if (!locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as any)) {
     notFound()
   }
 
@@ -59,5 +59,5 @@ export default async function LocaleLayout({
 }
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }))
+  return routing.locales.map((locale) => ({ locale }))
 }

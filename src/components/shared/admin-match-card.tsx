@@ -24,7 +24,7 @@ interface AdminMatchCardProps {
 }
 
 export function AdminMatchCard({ match }: AdminMatchCardProps) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   const params = useParams()
   const locale = params.locale as string
   

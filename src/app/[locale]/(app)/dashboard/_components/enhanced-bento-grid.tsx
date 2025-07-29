@@ -976,4 +976,4 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
       )}
     </motion.div>
   )
-} 
+}

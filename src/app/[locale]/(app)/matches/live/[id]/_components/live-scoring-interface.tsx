@@ -715,12 +715,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
-    // Debug logging to understand detailLevel issues
-    console.log('Detail level check:', { 
-      detailLevel, 
-      parsedMatchFormat, 
-      matchFormatString: match.matchFormat 
-    })
 
     // For "Points Only", create a minimal point object and save it immediately
     if (detailLevel === 'points') {
@@ -740,6 +734,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       console.log('Simple mode - opening stats popup')
       setPendingPointWinner(winner)
       setShowSimpleStats(true)
+      return
+    }
+
+    // For 'detailed' mode, use the ultra simple point logger with detailed flow
+    if (detailLevel === 'detailed') {
+      setPendingPointWinner(winner)
+      setShowPointDetail(true)
       return
     }
 

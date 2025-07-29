@@ -252,5 +252,15 @@
   "crucialMomentsInMatches": "Rozhodující momenty v zápasech",
   "basedOnPerformanceInClutchSituations": "Na základě výkonu v rozhodujících situacích",
   "unknownPlayer": "Neznámý hráč",
-  "unknownSurface": "Neznámý"
+  "unknownSurface": "Neznámý",
+  "overviewShort": "Přehled",
+  "serveReturnShort": "Podání/Příjem",
+  "bestPerformanceInTime": "Nejlepší výkon {time} s úspěšností {winRate}%",
+  "neutral": "Neutrální",
+  "noneOffered": "Žádné nabídnuté",
+  "rallyLength": "Délka výměny",
+  "slightMomentum": "Mírná převaha",
+  "slightlyBehind": "Mírně pozadu",
+  "strongMomentum": "Silná převaha",
+  "stronglyBehind": "Výrazně pozadu"
 }

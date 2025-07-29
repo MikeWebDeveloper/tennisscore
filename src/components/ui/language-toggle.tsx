@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "@/i18n/navigation"
-import { useLocale, useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
+import { useTranslations } from "@/i18n"
 import { Button } from "./button"
 import { cn } from "@/lib/utils"
 

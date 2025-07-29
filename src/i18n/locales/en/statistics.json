@@ -254,5 +254,15 @@
   "crucialMomentsInMatches": "Crucial moments in matches",
   "basedOnPerformanceInClutchSituations": "Based on performance in clutch situations",
   "unknownPlayer": "Unknown Player",
-  "unknownSurface": "Unknown"
+  "unknownSurface": "Unknown",
+  "overviewShort": "Overview",
+  "serveReturnShort": "Serve/Return",
+  "bestPerformanceInTime": "Best performance {time} with {winRate}% success rate",
+  "neutral": "Neutral",
+  "noneOffered": "None offered",
+  "rallyLength": "Rally Length",
+  "slightMomentum": "Slight momentum",
+  "slightlyBehind": "Slightly behind",
+  "strongMomentum": "Strong momentum",
+  "stronglyBehind": "Strongly behind"
 }

@@ -1,4 +1,4 @@
-import type { Locale } from '@/i18n/config'
+import type { SupportedLocale } from '@/i18n/routing'
 
 // Import English translation files
 import enCommon from '@/i18n/locales/en/common.json'
@@ -53,11 +53,11 @@ const translations = namespacedTranslations
 
 export type TranslationKeys = keyof typeof translations.en
 
-export function getTranslations(locale: Locale) {
+export function getTranslations(locale: SupportedLocale) {
   return translations[locale] || translations.en
 }
 
-export function getNestedTranslation(locale: Locale, path: string): string {
+export function getNestedTranslation(locale: SupportedLocale, path: string): string {
   const messages = getTranslations(locale)
   const keys = path.split('.')
   

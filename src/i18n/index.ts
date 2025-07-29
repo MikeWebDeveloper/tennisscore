@@ -1,6 +1,6 @@
 // Main exports for the i18n system
-export { locales, defaultLocale } from './config'
-export type { Locale } from './config'
+export { routing } from './routing'
+export type { SupportedLocale } from './routing'
 export type { Messages, MessageKeys } from './types'
 
 // Navigation exports
@@ -18,4 +18,4 @@ export {
 } from 'next-intl'
 
 // Configuration exports
-export { default as i18nConfig } from './config'
+export { default as i18nConfig } from './request'

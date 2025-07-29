@@ -17,11 +17,11 @@ import { LiveScoreboard } from "@/components/shared/live-scoreboard"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "@/app/[locale]/(app)/matches/live/[id]/_components/MatchTimerDisplay"
 import { MomentumBar } from "@/components/ui/momentum-bar"
-import { formatPlayerFromObject } from "@/lib/utils"
+import { formatPlayerFromObject, formatDate } from "@/lib/utils"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
-import { useTranslations } from "@/i18n"
+import { useTranslations, useLocale } from "@/i18n"
 
 type Score = import("@/stores/matchStore").Score
 
@@ -166,6 +166,7 @@ const itemVariants = {
 export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
+  const locale = useLocale()
   const [match, setMatch] = useState(initialMatch)
   const [score, setScore] = useState<Score>(() => parseAndConvertScore(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
@@ -379,7 +380,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             </Button>
             <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
               <RefreshCw className="w-4 h-4 mr-2" />
-              {isSafariMobile ? "Refresh" : "Reload"}
+              {tCommon('refresh')}
             </Button>
           </div>
         </motion.div>
@@ -552,7 +553,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
               }
             </h2>
             <div className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
-              {new Date(match.matchDate).toLocaleDateString()}
+              {formatDate(match.matchDate, locale)}
             </div>
           </div>
         </motion.div>

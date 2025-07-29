@@ -1,17 +1,21 @@
 import { getRequestConfig } from 'next-intl/server'
-import { routing } from './routing'
+import { 
+  validateLocale, 
+  loadNamespaceTranslations, 
+  createI18nConfig 
+} from './shared-config'
 
+/**
+ * Next.js i18n request configuration using shared logic
+ * This ensures consistency with the client-side configuration
+ */
 export default getRequestConfig(async ({ requestLocale }) => {
-  // This typically corresponds to the `[locale]` segment
-  let locale = await requestLocale
-
-  // Ensure that the incoming locale is valid
-  if (!locale || !routing.locales.includes(locale as any)) {
-    locale = routing.defaultLocale
-  }
-
-  return {
-    locale,
-    messages: (await import(`./messages/${locale}.json`)).default,
-  }
+  // Validate and normalize the incoming locale
+  const locale = validateLocale(await requestLocale)
+  
+  // Load all namespace translations using shared logic
+  const messages = await loadNamespaceTranslations(locale)
+  
+  // Return standardized configuration
+  return createI18nConfig(locale, messages)
 })

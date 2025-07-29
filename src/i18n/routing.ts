@@ -10,3 +10,6 @@ export const routing = defineRouting({
   // Always show locale in URL
   localePrefix: 'always'
 });
+
+// Export the supported locale type
+export type SupportedLocale = typeof routing.locales[number];

@@ -113,9 +113,9 @@ export function formatDuration(duration: number | null | undefined): string {
   return `${minutes}m`
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date, locale: string = 'en-US'): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric'

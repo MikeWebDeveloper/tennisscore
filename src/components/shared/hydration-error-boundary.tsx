@@ -87,7 +87,7 @@ function HydrationErrorUI({
   onRetry: () => void
   error?: Error
 }) {
-  const t = useTranslations()
+  const t = useTranslations('common')
   
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
