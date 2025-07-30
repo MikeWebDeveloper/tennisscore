@@ -216,27 +216,27 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
             Import from Czech Tennis Rankings
             {isIndexLoading && <Loader2 className="h-4 w-4 animate-spin" />}
           </DialogTitle>
-          <DialogDescription className="space-y-1">
-            <div>Search and import players from Czech U12 Girls Rankings (1,382 players available)</div>
-            {searchStats.totalResults > 0 && (
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>{searchStats.totalResults} results</span>
-                <span>•</span>
-                <span>{searchStats.enhancedResults} enhanced</span>
-                <span>•</span>
-                <span>{Math.round(searchStats.searchTime)}ms</span>
-                {searchStats.enhancedResults > 0 && (
-                  <>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Zap className="h-3 w-3" />
-                      Progressive loading
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
+          <DialogDescription>
+            Search and import players from Czech U12 Girls Rankings (1,382 players available)
           </DialogDescription>
+          {searchStats.totalResults > 0 && (
+            <div className="flex items-center gap-4 text-xs text-muted-foreground -mt-2 px-6">
+              <span>{searchStats.totalResults} results</span>
+              <span>•</span>
+              <span>{searchStats.enhancedResults} enhanced</span>
+              <span>•</span>
+              <span>{Math.round(searchStats.searchTime)}ms</span>
+              {searchStats.enhancedResults > 0 && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Zap className="h-3 w-3" />
+                    Progressive loading
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </DialogHeader>
         
         <div className="flex-shrink-0 space-y-4">
