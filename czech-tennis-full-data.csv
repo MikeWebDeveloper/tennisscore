@@ -1,0 +1,1383 @@
+-- ,cž,Příjmení,Jméno,nar.,klubová příslušnost,dvouhra,čtyřhry,suma,BH,rCŽ,",J",
+1,1,Kurylová,Nicole,2013,TK Sparta Praha,1705/20,956/16,2661,60,1,https://cztenis.cz/hrac/1052476,1052476
+1,2,Vychodilová,Tereza,2013,TK AGROFERT Prostějov,1447/18,753/15,2200,60,2,https://cztenis.cz/hrac/1056994,1056994
+2,3,Balej,Vanessa,2014,TK AGROFERT Prostějov,1306/19,821/17,2127,60,3,https://cztenis.cz/hrac/1059456,1059456
+3,4,Špačková,Sára,2013,TJ Žďár nad Sázavou,1139/22,790/22,1929,60,4,https://cztenis.cz/hrac/1056943,1056943
+2,5,Kubíková,Kateřina,2012,I.ČLTK Praha,1115/7,609/5,1724,,,https://cztenis.cz/hrac/1054771,1054771
+4,6,Bačíková,Monika,2013,TK AGROFERT Prostějov,951/19,616/16,1567,60,5,https://cztenis.cz/hrac/1054847,1054847
+1,7,Pospíšilová,Anna,2014,TK PRECHEZA Přerov o.s.,943/22,591/20,1534,45,6,https://cztenis.cz/hrac/1056619,1056619
+3,8,Svoboda,Adéla,2012,TK Olymp Praha,919/8,555/8,1474,,,https://cztenis.cz/hrac/1050814,1050814
+4,9,Jiráková,Sofie,2012,I.ČLTK Praha,852/4,539/5,1391,,,https://cztenis.cz/hrac/1048811,1048811
+5,10,Hertlová,Izabela,2013,I.ČLTK Praha,775/24,543/20,1318,45,7,https://cztenis.cz/hrac/1059075,1059075
+2,11,Kolaříková,Štěpánka,2013,TK PRECHEZA Přerov o.s.,814/17,497/17,1311,45,8,https://cztenis.cz/hrac/1056280,1056280
+6,12,Marešová,Beata,2012,TK Sparta Praha,868/4,383/2,1251,,,https://cztenis.cz/hrac/1049391,1049391
+7,13,Nováková,Karolína,2013,TK Sparta Praha,647/21,584/22,1231,45,9,https://cztenis.cz/hrac/1052682,1052682
+8,14,Robová,Barbora,2013,I.ČLTK Praha,682/16,498/17,1180,45,10,https://cztenis.cz/hrac/1059309,1059309
+1,15,Suchánková,Nikol,2012,TK Neridé,779/5,395/5,1174,,,https://cztenis.cz/hrac/1055276,1055276
+3,16,Felux,Elizabeth,2013,SKT Frýdlant n.O.,715/23,448/15,1163,45,11,https://cztenis.cz/hrac/1055663,1055663
+5,17,Maturová,Sonia,2012,TK AGROFERT Prostějov,612/8,515/9,1127,,,https://cztenis.cz/hrac/1059700,1059700
+9,18,Nikodymová,Kristýna,2012,TK Sparta Praha,630/4,495/3,1125,,,https://cztenis.cz/hrac/1057709,1057709
+1,19,Zeidlerová,Elisabeth,2013,LTK Liberec,730/15,326/11,1056,45,12,https://cztenis.cz/hrac/1053936,1053936
+6,20,Kalousková,Eliška,2013,TK AGROFERT Prostějov,616/19,414/21,1030,35,13,https://cztenis.cz/hrac/1059460,1059460
+10,21,Dušková,Diana,2012,LTC Modřany 2005,530/8,469/6,999,,,https://cztenis.cz/hrac/1053341,1053341
+2,22,Skalická,Eliška,2013,Slavoj Žiželice,612/14,384/15,996,35,14,https://cztenis.cz/hrac/1051080,1051080
+11,23,Strachová,Eliška,2013,I.ČLTK Praha,579/23,409/16,988,35,15,https://cztenis.cz/hrac/1057755,1057755
+12,24,Mabouka,Sofia,2012,TC ESO Praha z.s.,561/7,426/5,987,,,https://cztenis.cz/hrac/1053504,1053504
+13,25,Dudlová,Denisa,2012,TK Sparta Praha,512/6,442/5,954,,,https://cztenis.cz/hrac/1055159,1055159
+3,26,Šturmová,Lilien,2014,TO Sokol Nehvizdy,546/25,394/21,940,35,16,https://cztenis.cz/hrac/1055820,1055820
+7,27,Bukalová,Emily,2013,SK Tenis Tišnov,480/13,442/13,922,35,17,https://cztenis.cz/hrac/1052581,1052581
+8,28,Vomelová,Ema,2012,HTK Třebíč,649/8,271/6,920,,,https://cztenis.cz/hrac/1050546,1050546
+9,29,Stejskalová,Julie,2014,TK AGROFERT Prostějov,533/18,339/16,872,35,18,https://cztenis.cz/hrac/1056797,1056797
+14,30,Nettlová,Ema,2013,LTC Modřany 2005,512/19,334/18,846,35,19,https://cztenis.cz/hrac/1059723,1059723
+15,31,Burešová,Ella,2014,TK Sparta Praha,475/26,353/26,828,35,20,https://cztenis.cz/hrac/1052587,1052587
+10,32,Kazíková,Eliška,2013,TC Brno.,463/14,357/16,820,35,21,https://cztenis.cz/hrac/1052663,1052663
+1,33,Fiedlerová,Enola,2012,Tenis klub Jindřichův Hradec z.s.,473/9,344/9,817,,,https://cztenis.cz/hrac/1048491,1048491
+4,34,Grénarová,Eliška,2013,TK Milo Olomouc,474/27,340/21,814,30,22,https://cztenis.cz/hrac/1058467,1058467
+1,35,Krystková,Nela,2013,TK Lokomotiva Plzeň z.s.,455/19,334/18,789,30,23,https://cztenis.cz/hrac/1056056,1056056
+11,36,Žišková,Adéla,2014,ŽLTC Brno,465/20,312/17,777,30,24,https://cztenis.cz/hrac/1056343,1056343
+16,37,Koulová,Anna,2013,TK Olymp Praha,373/16,390/15,763,30,25,https://cztenis.cz/hrac/1055641,1055641
+17,38,Bernas,Skrollan,2014,TK Olymp Praha,487/18,262/13,749,30,26,https://cztenis.cz/hrac/1056407,1056407
+2,39,Křížová,Alexandria,2014,TK Lokomotiva Plzeň z.s.,423/18,321/21,744,30,27,https://cztenis.cz/hrac/1059487,1059487
+18,40,Burešová,Karolína,2012,TK Sparta Praha,434/8,289/7,723,,,https://cztenis.cz/hrac/1050834,1050834
+19,41,Sudková,Dorota,2013,LTC Modřany 2005,389/24,286/21,675,30,28,https://cztenis.cz/hrac/1055607,1055607
+20,42,Slobodová,Markéta,2014,"SK HAMR, z.s.",406/26,266/23,672,30,29,https://cztenis.cz/hrac/1055947,1055947
+4,43,Šimková,Viktorie,2012,Pliskova Tennis Academy-Říčany,413/8,247/10,660,,,https://cztenis.cz/hrac/1056444,1056444
+1,44,Nováková,Lucie,2014,"TC Dvůr Králové, z.s.",395/14,248/10,643,30,30,https://cztenis.cz/hrac/1054751,1054751
+12,44,Švecová,Lena,2012,TENIS SLOVÁCKO z.s.,338/3,305/4,643,,,https://cztenis.cz/hrac/1051648,1051648
+21,46,Hugová,Kateřina,2012,LTC Modřany 2005,284/4,339/7,623,,,https://cztenis.cz/hrac/1053038,1053038
+22,47,Kabrhelová,Nela,2013,"SK HAMR, z.s.",373/13,244/14,617,30,31,https://cztenis.cz/hrac/1052324,1052324
+23,48,Svoboda,Iva,2015,TK Sparta Praha,361/13,212/12,573,30,32,https://cztenis.cz/hrac/1058460,1058460
+2,49,Bardovcy,Kristýna,2012,TK Chomutov,371/7,186/6,557,,,https://cztenis.cz/hrac/1045920,1045920
+5,50,Kvapíková,Eliška,2013,TJ TO Sokol Stará Bělá,328/17,225/15,553,30,33,https://cztenis.cz/hrac/1056012,1056012
+2,51,Votavová,Hana,2012,"LTC VITON České Budějovice,z.s.",312/5,222/5,534,,,https://cztenis.cz/hrac/1055881,1055881
+24,52,Davis,Eva,2014,I.ČLTK Praha,338/22,195/21,533,25,34,https://cztenis.cz/hrac/1060513,1060513
+5,53,Hávová,Tereza,2014,Tenis Dobříš,359/29,163/21,522,25,35,https://cztenis.cz/hrac/1060335,1060335
+3,54,Kolčavová,Viktorie,2013,"ČLTK Bižuterie Jablonec n. N., z. s.",341/14,177/14,518,25,36,https://cztenis.cz/hrac/1059993,1059993
+25,55,Žáková,Nikol,2013,"SK HAMR, z.s.",331/19,185/16,516,25,37,https://cztenis.cz/hrac/1060956,1060956
+6,56,Janoušková,Karolína,2012,LTC Houštka,297/10,217/8,514,,,https://cztenis.cz/hrac/1055259,1055259
+7,57,Fejfarová,Nicol,2013,Pliskova Tennis Academy-Říčany,311/24,202/22,513,25,38,https://cztenis.cz/hrac/1063534,1063534
+6,58,Pečonková,Viola,2014,TK SC OSTRAVA,268/15,243/12,511,25,39,https://cztenis.cz/hrac/1055639,1055639
+7,59,Hrazdílková,Eliška,2012,SK Vitality Slezsko o.s.,360/5,144/3,504,,,https://cztenis.cz/hrac/1059755,1059755
+26,59,Novotná,Andrea,2012,"SK HAMR, z.s.",308/7,196/5,504,,,https://cztenis.cz/hrac/1063485,1063485
+2,61,Gralton,Cerys,2014,SK HIT Hradec Králové z.s.,320/27,180/22,500,25,39,https://cztenis.cz/hrac/1049094,1049094
+8,61,Michálková,Daniela,2012,Tenis Dobříš,259/9,241/7,500,,,https://cztenis.cz/hrac/1055294,1055294
+27,63,Moravčíková,Silvie,2013,TK Ruzyně Praha,315/19,180/17,495,25,41,https://cztenis.cz/hrac/1058207,1058207
+28,64,Poulíčková,Sofie,2013,Tenisová škola Lucie Hradecké z.s.,311/29,179/15,490,25,42,https://cztenis.cz/hrac/1059746,1059746
+3,65,Klementova,Veronika,2014,TENIS-CENTRUM DTJ HK,336/22,152/14,488,25,43,https://cztenis.cz/hrac/1057328,1057328
+4,66,Štrofová,Anna,2013,Tenisový klub Eden HK,323/16,163/12,486,25,44,https://cztenis.cz/hrac/1061561,1061561
+29,67,Kožuská,Ráchel,2014,TK Sparta Praha,311/25,166/18,477,25,45,https://cztenis.cz/hrac/1064531,1064531
+3,68,Řezáčová,Ella,2013,TK Lokomotiva Plzeň z.s.,263/18,208/15,471,25,46,https://cztenis.cz/hrac/1058321,1058321
+13,69,Blažejová,Nela,2013,TC BORS CLUB,356/10,110/7,466,25,47,https://cztenis.cz/hrac/1055863,1055863
+5,70,Freylichová,Aneta,2013,Tenisový klub Eden HK,276/18,176/14,452,25,48,https://cztenis.cz/hrac/1059985,1059985
+3,70,Hakrová,Elen,2013,TK Strakonice,278/21,174/17,452,25,48,https://cztenis.cz/hrac/1059571,1059571
+14,72,Brňovjáková,Kateřina,2014,TK AGROFERT Prostějov,288/20,159/20,447,25,50,https://cztenis.cz/hrac/1056182,1056182
+9,73,Pechová,Anna,2014,Lokomotiva Zdice,292/25,154/19,446,25,51,https://cztenis.cz/hrac/1055713,1055713
+8,74,Trčalová,Alena,2014,SKT Frýdlant n.O.,287/20,156/16,443,25,52,https://cztenis.cz/hrac/1059790,1059790
+4,75,Cunniffe,Mia,2013,TJ Slavoj Chodová Planá,280/26,157/26,437,25,53,https://cztenis.cz/hrac/1053182,1053182
+30,76,Kocandová,Marie,2013,TJ Spoje Praha,275/13,159/13,434,25,54,https://cztenis.cz/hrac/1054370,1054370
+10,77,Vrbatova,Lilian,2014,TK SPORTCENTRUM Mladá Boleslav,288/24,136/21,424,25,55,https://cztenis.cz/hrac/1061076,1061076
+15,78,Havlat,Tereza,2012,ŽLTC Brno,263/4,155/4,418,,,https://cztenis.cz/hrac/1057917,1057917
+31,78,Holejšovská,Julie,2014,I.ČLTK Praha,250/32,168/23,418,25,55,https://cztenis.cz/hrac/1062622,1062622
+4,78,Kochlíková,Valentýna,2013,LTK Liberec,281/9,137/8,418,25,55,https://cztenis.cz/hrac/1052974,1052974
+32,81,Michna,Lisa,2012,TK Olymp Praha,247/2,168/3,415,,,https://cztenis.cz/hrac/1048576,1048576
+4,82,Svobodová,Tereza,2012,"LTC VITON České Budějovice,z.s.",326/6,85/2,411,,,https://cztenis.cz/hrac/1059695,1059695
+16,83,Sanitráková,Eva,2013,Jiskra Otrokovice,237/17,172/13,409,25,58,https://cztenis.cz/hrac/1057007,1057007
+33,84,Bártková,Karolina,2015,TK Sparta Praha,247/13,161/13,408,25,59,https://cztenis.cz/hrac/1058463,1058463
+5,85,Bínová,Natálie,2013,TK Slavia Plzeň,239/19,168/19,407,25,60,https://cztenis.cz/hrac/1056141,1056141
+11,86,Mondoková,Anna,2014,Tenis Dobříš,278/32,128/31,406,20,61,https://cztenis.cz/hrac/1060659,1060659
+9,87,Michníková,Ester,2014,Tennis Hill Havířov o.s.,261/17,140/16,401,20,62,https://cztenis.cz/hrac/1061259,1061259
+12,88,Repšová,Gabriela,2014,TK Mnichovo Hradiště,245/20,138/18,383,20,63,https://cztenis.cz/hrac/1064002,1064002
+17,89,Dostálová,Erika,2013,TK AGROFERT Prostějov,276/8,103/6,379,20,64,https://cztenis.cz/hrac/1055652,1055652
+17,89,Hryha,Julie,2014,BLTC Brno,248/25,131/19,379,20,64,https://cztenis.cz/hrac/1062585,1062585
+10,91,Pavlišová,Eveline,2014,"SK Vítkovice 1926-Ridera, z.s.",226/23,151/13,377,20,66,https://cztenis.cz/hrac/1058506,1058506
+6,92,Janouchová,Nikola,2013,TENIS-CENTRUM DTJ HK,238/9,138/5,376,20,67,https://cztenis.cz/hrac/1056644,1056644
+34,93,Halamová,Barbora,2013,TJ Spoje Praha,251/15,123/14,374,20,68,https://cztenis.cz/hrac/1061543,1061543
+11,94,Suszkova,Julie,2015,SK Vitality Slezsko o.s.,279/10,94/9,373,20,69,https://cztenis.cz/hrac/1061446,1061446
+35,95,Kubátová,Valerie,2015,TC ESO Praha z.s.,237/16,134/13,371,20,70,https://cztenis.cz/hrac/1060417,1060417
+19,96,Kubincová,Anna,2015,TK Spartak Jihlava,236/12,128/12,364,20,71,https://cztenis.cz/hrac/1063274,1063274
+6,97,Zedníková,Amálie,2013,TK Slavia Plzeň,212/15,145/17,357,20,72,https://cztenis.cz/hrac/1060256,1060256
+20,98,Bartošová,Veronika,2013,TJ Sokol Uherský Brod,214/15,135/11,349,20,73,https://cztenis.cz/hrac/1062099,1062099
+36,99,Podlahová,Anna,2013,I.ČLTK Praha,225/13,123/8,348,20,74,https://cztenis.cz/hrac/1054975,1054975
+5,100,Schwarzová,Kateřina,2014,TK Most,198/25,149/20,347,20,75,https://cztenis.cz/hrac/1062403,1062403
+37,101,Hájková,Karolína,2014,TK Sparta Praha,198/22,147/20,345,20,76,https://cztenis.cz/hrac/1059915,1059915
+21,102,Čechová,Ellen,2012,TK Spartak Jihlava,217/5,125/5,342,,,https://cztenis.cz/hrac/1049054,1049054
+13,103,Gollová,Elizabeth,2013,LTC Slovan Kladno,221/23,120/24,341,20,77,https://cztenis.cz/hrac/1064770,1064770
+12,104,Zajarošová,Vanessa,2013,SKT Frýdlant n.O.,185/18,155/13,340,20,78,https://cztenis.cz/hrac/1058529,1058529
+38,105,Tesárková,Nikol,2015,I.ČLTK Praha,241/13,98/13,339,20,79,https://cztenis.cz/hrac/1060268,1060268
+13,106,Šimáková,Silvie,2013,TJ Zbrojovka Vsetín,219/17,119/15,338,20,80,https://cztenis.cz/hrac/1062799,1062799
+22,107,Bubelíny,Ema,2014,TENIS SLOVÁCKO z.s.,187/25,149/22,336,20,81,https://cztenis.cz/hrac/1063305,1063305
+23,108,Langová,Sofie,2013,HTK Třebíč,225/10,110/8,335,20,82,https://cztenis.cz/hrac/1059034,1059034
+7,109,Cajthamlová,Anežka,2012,TK Slavia Plzeň,229/2,105/1,334,,,https://cztenis.cz/hrac/1050921,1050921
+14,109,Riessová,Natálie,2013,Tennis Hill Havířov o.s.,220/16,114/13,334,20,82,https://cztenis.cz/hrac/1057586,1057586
+7,111,Macháčková,Tereza,2013,SK Týniště nad Orlicí,207/11,124/8,331,20,84,https://cztenis.cz/hrac/1055350,1055350
+15,112,Ševčíková,Beáta,2014,"Pašťa tenis, z.s.",201/21,129/16,330,20,85,https://cztenis.cz/hrac/1062422,1062422
+8,113,Adamcová,Valérie,2014,TO SK Žamberk,196/17,132/20,328,20,86,https://cztenis.cz/hrac/1052616,1052616
+39,114,Kodrová,Lucie,2014,I.ČLTK Praha,183/26,144/22,327,20,87,https://cztenis.cz/hrac/1057899,1057899
+16,115,Gvožďová,Adéla,2012,Tennis Hill Havířov o.s.,180/6,143/7,323,,,https://cztenis.cz/hrac/1057589,1057589
+40,116,Šolcová,Zuzana,2012,Tempo Praha,223/8,97/6,320,,,https://cztenis.cz/hrac/1059987,1059987
+41,117,Kardoš,Karla,2013,TC ESO Praha z.s.,204/22,114/19,318,20,88,https://cztenis.cz/hrac/1060729,1060729
+41,117,Kontsevaia,Monika,2013,"SK HAMR, z.s.",185/18,133/14,318,20,88,https://cztenis.cz/hrac/1060570,1060570
+43,119,Zámečník,Emili,2014,TK Sparta Praha,244/8,73/5,317,15,90,https://cztenis.cz/hrac/1064530,1064530
+44,120,Bucharová,Mia,2013,LTC Modřany 2005,186/24,130/21,316,15,91,https://cztenis.cz/hrac/1060710,1060710
+5,121,Dovrtělová,Kristýna,2013,LTC Humpolec,158/15,153/12,311,15,92,https://cztenis.cz/hrac/1056255,1056255
+45,121,Kontsevaia,Milana,2013,"SK HAMR, z.s.",185/19,126/11,311,15,92,https://cztenis.cz/hrac/1060569,1060569
+6,123,Holeksová,Valentýna,2014,TK Strakonice,170/18,136/19,306,15,94,https://cztenis.cz/hrac/1059575,1059575
+9,124,Teclová,Simona,2013,"Tenisový klub Havlíčkův Brod,z.s.",174/17,127/15,301,15,95,https://cztenis.cz/hrac/1059679,1059679
+46,125,Neubergová,Natálie,2012,"LOB S.A. Bohnice, z.s.",179/13,120/13,299,,,https://cztenis.cz/hrac/1051037,1051037
+8,126,Nečová,Anežka,2014,TCG Karlovy Vary,180/18,118/18,298,15,96,https://cztenis.cz/hrac/1065310,1065310
+24,127,Kučerová,Elena,2012,TK Uherské Hradiště,180/7,115/5,295,,,https://cztenis.cz/hrac/1060195,1060195
+25,128,Hrbáčová,Viktorie,2013,TJ Sokol Uherský Brod,189/21,105/16,294,15,97,https://cztenis.cz/hrac/1052497,1052497
+25,128,Valová,Bibiane,2014,ŽLTC Brno,183/16,111/12,294,15,97,https://cztenis.cz/hrac/1058170,1058170
+47,130,Čápová,Victoria,2014,TJ Spoje Praha,156/26,135/27,291,15,99,https://cztenis.cz/hrac/1055753,1055753
+9,131,Vágai,Adéla,2013,TCG Karlovy Vary,159/27,130/24,289,15,100,https://cztenis.cz/hrac/1062117,1062117
+48,132,Kmochová,Aneta,2013,TJ Sokol Liboc,168/13,118/12,286,15,101,https://cztenis.cz/hrac/1059079,1059079
+17,132,Lušovská,Terezie,2015,Rožnovský tenisový klub,208/16,78/16,286,15,101,https://cztenis.cz/hrac/1063873,1063873
+18,134,Kostková,Kateřina,2014,SK Vitality Slezsko o.s.,180/21,105/18,285,15,101,https://cztenis.cz/hrac/1058648,1058648
+18,134,Kubas,Klaudie,2012,"TK Havířov, z.s.",150/7,135/7,285,,,https://cztenis.cz/hrac/1062072,1062072
+27,136,Svobodová,Adéla,2013,HTK Třebíč,183/10,101/11,284,15,104,https://cztenis.cz/hrac/1053171,1053171
+49,137,Svobodová,Sofie,2013,"SK HAMR, z.s.",169/19,114/21,283,15,104,https://cztenis.cz/hrac/1060951,1060951
+14,137,Števová,Elena,2012,Lokomotiva Zdice,183/3,100/2,283,,,https://cztenis.cz/hrac/1051458,1051458
+50,139,Čapková,Tereza,2013,Tenisová škola Lucie Hradecké z.s.,153/10,128/12,281,15,106,https://cztenis.cz/hrac/1056146,1056146
+10,140,Hybnerová,Kristýna,2014,TCG Karlovy Vary,149/15,129/18,278,15,107,https://cztenis.cz/hrac/1064570,1064570
+10,140,Kašprišin,Sofia,2015,TENIS-CENTRUM DTJ HK,169/11,109/13,278,15,107,https://cztenis.cz/hrac/1060575,1060575
+15,142,Holanova,Sofie,2014,Pliskova Tennis Academy-Říčany,162/27,110/26,272,15,109,https://cztenis.cz/hrac/1058267,1058267
+51,142,Holíková,Klára,2013,TK Písnice,161/18,111/18,272,15,109,https://cztenis.cz/hrac/1063944,1063944
+28,144,Jurková,Valerie,2015,TK Třebíč,178/15,91/12,269,15,111,https://cztenis.cz/hrac/1057781,1057781
+29,145,Fiala,Li,2013,ŽLTC Brno,188/7,80/5,268,15,112,https://cztenis.cz/hrac/1063725,1063725
+20,146,Galetková,Tereza,2013,TJ Zbrojovka Vsetín,186/13,81/7,267,15,113,https://cztenis.cz/hrac/1062734,1062734
+52,146,Irgl,Viktoria,2014,"SK HAMR, z.s.",154/20,113/18,267,15,113,https://cztenis.cz/hrac/1062724,1062724
+16,148,Braunová,Emily,2012,SK Tenis Kladno,185/5,79/5,264,,,https://cztenis.cz/hrac/1055197,1055197
+30,149,Blahutiaková,Isabella,2013,TK Znojmo,239/9,24-Jan,263,15,115,https://cztenis.cz/hrac/1069812,1069812
+53,149,Hašková,Jana,2013,TK Horní Měcholupy,163/18,100/11,263,15,115,https://cztenis.cz/hrac/1062663,1062663
+31,151,Vaňková,Vanessa,2015,TJ Brno-Komín,167/14,95/14,262,15,117,https://cztenis.cz/hrac/1060069,1060069
+11,152,Kovalovská,Luisa,2013,SK HIT Hradec Králové z.s.,137/12,123/13,260,15,118,https://cztenis.cz/hrac/1058696,1058696
+21,153,Dvořáčková,Sofie,2012,"TK Havířov, z.s.",180/5,79/3,259,,,https://cztenis.cz/hrac/1057595,1057595
+6,154,Černíková,Terezie,2014,LTC Litvínov,169/24,85/16,254,15,119,https://cztenis.cz/hrac/1060651,1060651
+12,155,Holešovská,Emma,2013,"TJ Slovan Moravská Třebová,z.s.",161/17,89/15,250,15,120,https://cztenis.cz/hrac/1059583,1059583
+17,156,Kozáková,Charlota,2014,TK Hrušov,114/9,134/24,248,15,121,https://cztenis.cz/hrac/1066900,1066900
+17,156,Šebková,Marie,2013,LTC Mladá Boleslav z.s.,146/14,102/13,248,15,121,https://cztenis.cz/hrac/1064154,1064154
+19,158,Šperková,Amálie,2014,TJ LTC Poděbrady,123/32,124/34,247,15,123,https://cztenis.cz/hrac/1066570,1066570
+54,159,Lukešová,Kristýna,2013,TK Sparta Praha,157/15,89/14,246,15,124,https://cztenis.cz/hrac/1056458,1056458
+55,160,Juránková,Karolína,2012,TC ESO Praha z.s.,103/3,142/2,245,,,https://cztenis.cz/hrac/1052339,1052339
+32,160,Kubátová,Adriana,2014,TK Zlín,128/20,117/13,245,15,125,https://cztenis.cz/hrac/1059727,1059727
+33,162,Kubová,Rozálie,2012,LTC Velen Boskovice,151/9,92/10,243,,,https://cztenis.cz/hrac/1057220,1057220
+11,163,Brandtová,Michaela,2012,TK Lokomotiva Plzeň z.s.,172/3,70/1,242,,,https://cztenis.cz/hrac/1054940,1054940
+56,164,Vanerová,Nela,2014,TJ Spoje Praha,137/9,104/12,241,15,126,https://cztenis.cz/hrac/1056719,1056719
+22,165,Holleschová,Linda,2014,SK JC Sport Opava,146/18,93/17,239,15,127,https://cztenis.cz/hrac/1063469,1063469
+20,165,Jelínková,Bára,2013,Tsport VOTICE o.s.,163/10,76/7,239,15,127,https://cztenis.cz/hrac/1064808,1064808
+7,165,Vyžralová,Viktorie,2014,LTC Velešín z.s.,129/19,110/22,239,15,127,https://cztenis.cz/hrac/1062352,1062352
+13,168,Mrkvičková,Josefína,2014,TK Hlinsko,137/8,101/7,238,15,130,https://cztenis.cz/hrac/1055828,1055828
+57,169,Koulová,Stella,2015,TK Olymp Praha,112/14,124/13,236,12,131,https://cztenis.cz/hrac/1058681,1058681
+7,170,Čekanová,Zoe,2015,TK Litvínov z.s.,149/13,86/14,235,12,132,https://cztenis.cz/hrac/1061995,1061995
+14,171,Šlosrová,Elena,2014,TK SB Světlá n.Sáz.,132/18,102/17,234,12,133,https://cztenis.cz/hrac/1056358,1056358
+23,171,Tomášová,Emma,2013,TJ TO Sokol Stará Bělá,164/13,70/7,234,12,133,https://cztenis.cz/hrac/1059799,1059799
+58,171,Zdražilová,Julie,2012,-,155/6,79/4,234,,,https://cztenis.cz/hrac/1056272,1056272
+34,174,Bartošková,Edita,2014,TENIS SLOVÁCKO z.s.,203/6,29-Apr,232,12,135,https://cztenis.cz/hrac/1071125,1071125
+34,174,Horehleďová,Julie,2013,TJ Sokol Uherský Brod,120/24,112/22,232,12,135,https://cztenis.cz/hrac/1064017,1064017
+59,174,Krausová,Sophie,2013,"SK HAMR, z.s.",173/10,59/8,232,12,135,https://cztenis.cz/hrac/1058757,1058757
+59,174,Pírková,Ema,2012,"SK HAMR, z.s.",111/2,121/3,232,,,https://cztenis.cz/hrac/1052882,1052882
+8,178,Fialová,Kristýna,2013,TK Strakonice,136/10,95/9,231,12,138,https://cztenis.cz/hrac/1064245,1064245
+36,178,Jurčíková,Veronika,2014,TK Znojmo,131/11,100/9,231,12,138,https://cztenis.cz/hrac/1055919,1055919
+9,180,Frommová,Emma,2012,"LTC VITON České Budějovice,z.s.",140/4,90/2,230,,,https://cztenis.cz/hrac/1055684,1055684
+37,181,Kvasničková,Ella,2013,BLTC Brno,168/12,60/4,228,12,140,https://cztenis.cz/hrac/1054522,1054522
+24,182,Čecháková,Nell,2014,TK PRECHEZA Přerov o.s.,124/17,103/11,227,12,141,https://cztenis.cz/hrac/1058296,1058296
+21,183,Horová,Johana,2014,LTC Houštka,128/26,98/29,226,12,142,https://cztenis.cz/hrac/1064255,1064255
+21,183,Koudelová,Sabina,2014,Pliskova Tennis Academy-Říčany,134/22,92/16,226,12,142,https://cztenis.cz/hrac/1055661,1055661
+61,183,Kovařík,Emily,2015,I.ČLTK Praha,105/17,121/17,226,12,142,https://cztenis.cz/hrac/1064401,1064401
+23,186,Hendrichová,Klára,2015,LTC Rakovník,132/15,92/13,224,12,145,https://cztenis.cz/hrac/1065223,1065223
+25,186,Kováčová,Eliška,2014,Tennis Hill Havířov o.s.,143/16,81/10,224,12,145,https://cztenis.cz/hrac/1061344,1061344
+12,186,Žemličková,Emma,2014,TK Škoda Plzeň z.s.,145/15,79/11,224,12,145,https://cztenis.cz/hrac/1063292,1063292
+13,189,Sedláčková,Karla,2014,TK Slavia Plzeň,124/16,99/16,223,12,148,https://cztenis.cz/hrac/1059013,1059013
+15,190,Chárová,Kristýna,2013,TO SK Žamberk,143/16,78/12,221,12,149,https://cztenis.cz/hrac/1054965,1054965
+24,191,Pešková,Erika,2015,LTC Houštka,143/16,76/14,219,12,150,https://cztenis.cz/hrac/1061532,1061532
+16,192,Štrofová,Kristýna,2015,Tenisový klub Eden HK,119/14,98/14,217,12,151,https://cztenis.cz/hrac/1060031,1060031
+26,193,Telnarová,Ema,2014,"TJ Start Ostrava - Poruba, z.s.",125/16,91/11,216,12,152,https://cztenis.cz/hrac/1058607,1058607
+25,194,Karlíková,Magdalena,2012,CTA Rudná,127/7,86/6,213,,,https://cztenis.cz/hrac/1060206,1060206
+27,195,Beli,Christina,2015,TK PRECHEZA Přerov o.s.,124/14,88/12,212,12,152,https://cztenis.cz/hrac/1066484,1066484
+26,195,Šindelová,Tereza,2012,Lokomotiva Zdice,122/4,90/4,212,,,https://cztenis.cz/hrac/1058678,1058678
+38,197,Kalhausová,Nela,2013,BLTC Brno,110/20,99/21,209,12,154,https://cztenis.cz/hrac/1057788,1057788
+39,198,Lorencová,Sofie,2012,TK Spartak Jihlava,129/5,79/3,208,,,https://cztenis.cz/hrac/1054569,1054569
+40,199,Janíčková,Markéta,2014,TK Moravský Krumlov z.s.,149/14,58/11,207,12,155,https://cztenis.cz/hrac/1056638,1056638
+27,200,Arpa,Sophia,2012,Pliskova Tennis Academy-Říčany,84/2,122/2,206,,,https://cztenis.cz/hrac/1061593,1061593
+41,201,Filkuková,Emma,2015,HTK Třebíč,134/14,68/14,202,12,156,https://cztenis.cz/hrac/1065056,1065056
+28,202,Lušovská,Natálie,2012,Rožnovský tenisový klub,117/7,84/5,201,,,https://cztenis.cz/hrac/1063377,1063377
+42,202,Mahdalová,Alžběta,2015,TC Brno.,120/14,81/14,201,12,156,https://cztenis.cz/hrac/1061397,1061397
+43,204,Křivánková,Eliška,2013,"TK Brno Bosonohy,z.s.",110/21,89/12,199,12,158,https://cztenis.cz/hrac/1064762,1064762
+29,205,Davidová,Klaudie,2015,SK LAMA o.s.,101/16,97/14,198,12,159,https://cztenis.cz/hrac/1059552,1059552
+17,205,Francová,Nela,2012,LTC Pardubice,146/7,52/3,198,,,https://cztenis.cz/hrac/1057665,1057665
+29,205,Šigutová,Viktorie,2012,TC Třinec,123/8,75/7,198,,,https://cztenis.cz/hrac/1059751,1059751
+62,208,Pěchovičová,Lily,2015,TK Olymp Praha,105/15,92/16,197,12,160,https://cztenis.cz/hrac/1063518,1063518
+63,209,Filipová,Nikola,2013,Sokol Smíchov I.,112/16,84/18,196,12,161,https://cztenis.cz/hrac/1061816,1061816
+8,209,Šalatová,Viktorie,2015,LTC Panorama Teplice,121/11,75/9,196,12,161,https://cztenis.cz/hrac/1062096,1062096
+31,211,Ondrášková,Barbora,2012,SK JC Sport Opava,131/3,63/3,194,,,https://cztenis.cz/hrac/1058680,1058680
+44,212,Miklíková,Ella,2014,TK Kunštát,116/16,76/14,192,12,163,https://cztenis.cz/hrac/1059615,1059615
+45,213,Kůsová,Anna,2013,TJ Brno-Komín,90/10,100/12,190,12,164,https://cztenis.cz/hrac/1060581,1060581
+28,214,Dolečková,Darija,2014,LTC Houštka,114/12,74/11,188,12,164,https://cztenis.cz/hrac/1061522,1061522
+64,214,Ivánková,Aneta,2015,I.ČLTK Praha,121/12,67/12,188,12,164,https://cztenis.cz/hrac/1066764,1066764
+46,214,Sehnalová,Klára,2012,TENIS SLOVÁCKO z.s.,122/5,66/4,188,,,https://cztenis.cz/hrac/1055420,1055420
+47,217,Nejezchlebová,Veronika,2012,TC-MJ TENIS Líšeň,119/3,68/2,187,,,https://cztenis.cz/hrac/1059469,1059469
+65,217,Raeva,Emma,2015,TJ Radlice z.s.,137/13,50/10,187,12,164,https://cztenis.cz/hrac/1061391,1061391
+32,217,Segeťová,Anežka,2012,TK Bílovec,114/5,73/5,187,,,https://cztenis.cz/hrac/1056791,1056791
+29,217,Tůmová,Magdalena,2012,TO SK Mělník,111/14,76/12,187,,,https://cztenis.cz/hrac/1062796,1062796
+66,221,Srnková,Johana,2014,Sportcentrum Uhříněves,99/16,87/16,186,12,168,https://cztenis.cz/hrac/1068249,1068249
+10,221,Vaková,Leticie,2013,"LTC VITON České Budějovice,z.s.",136/11,50/6,186,12,168,https://cztenis.cz/hrac/1059421,1059421
+67,223,Janulíková,Jasmína,2015,TK Sparta Praha,109/12,76/11,185,12,170,https://cztenis.cz/hrac/1058959,1058959
+33,224,Konderlová,Karolína,2012,SK Vitality Slezsko o.s.,103/4,81/3,184,,,https://cztenis.cz/hrac/1056434,1056434
+33,224,Titkova,Viktorie,2014,TJ Zbrojovka Vsetín,103/10,81/8,184,12,170,https://cztenis.cz/hrac/1061468,1061468
+48,226,Barteková,Zara,2015,TENIS SLOVÁCKO z.s.,145/9,37/8,182,12,172,https://cztenis.cz/hrac/1066742,1066742
+68,227,Nováková,Eliška,2013,TK Start Praha-Topolka,117/9,64/6,181,12,173,https://cztenis.cz/hrac/1061896,1061896
+35,228,Dostálová,Sofie,2012,TK PRECHEZA Přerov o.s.,141/4,39/1,180,,,https://cztenis.cz/hrac/1049414,1049414
+69,229,Svobodová,Viktorie,2012,TK Písnice,112/8,66/4,178,,,https://cztenis.cz/hrac/1051893,1051893
+70,230,Vaňková,Lucie,2015,TK Sparta Praha,106/14,71/16,177,12,174,https://cztenis.cz/hrac/1061692,1061692
+11,231,Horáková,Marie,2013,TK Strakonice,111/7,65/5,176,12,175,https://cztenis.cz/hrac/1059573,1059573
+71,231,Šarovská,Rozálie,2013,TCD Donovalská,113/20,63/11,176,12,175,https://cztenis.cz/hrac/1064915,1064915
+30,231,Žambochová,Laura,2012,"LTC Beroun, z.s.",127/6,49/3,176,,,https://cztenis.cz/hrac/1055178,1055178
+31,234,Vaňková,Michaela,2013,TJ TK Neratovice,99/13,76/11,175,12,175,https://cztenis.cz/hrac/1060384,1060384
+12,234,Vyžralová,Karolína,2012,LTC Velešín z.s.,96/6,79/7,175,,,https://cztenis.cz/hrac/1057803,1057803
+18,236,Doležalová,Stella,2015,TK SB Světlá n.Sáz.,128/12,46/11,174,12,178,https://cztenis.cz/hrac/1058536,1058536
+49,236,Chovancová,Isabel,2014,SK Uherský Brod,99/15,75/14,174,12,178,https://cztenis.cz/hrac/1060438,1060438
+9,236,Wünschová,Ella,2012,Slavoj Litoměřice,126/8,48/4,174,,,https://cztenis.cz/hrac/1050964,1050964
+14,239,Karlíková,Ema,2014,Tenis klub Nýrsko,94/17,79/14,173,12,178,https://cztenis.cz/hrac/1066416,1066416
+13,239,Uhlíková,Jana,2012,TK Pelhřimov,116/11,57/5,173,,,https://cztenis.cz/hrac/1057221,1057221
+32,241,Starnovská,Lucie,2014,TJ TK Neratovice,94/14,78/10,172,12,181,https://cztenis.cz/hrac/1062336,1062336
+50,242,Corkery,Hana,2012,TK Spartak Jihlava,79/3,92/3,171,,,https://cztenis.cz/hrac/1060164,1060164
+50,242,Marjanovič,Natalija,2013,BTK Brno,95/21,76/17,171,12,182,https://cztenis.cz/hrac/1069380,1069380
+50,242,Pařízková,Noemi,2013,HTK Třebíč,69/8,102/9,171,12,182,https://cztenis.cz/hrac/1054970,1054970
+36,245,Hybnerová,Nela,2012,TK PRECHEZA Přerov o.s.,82/1,88/1,170,,,https://cztenis.cz/hrac/1049445,1049445
+15,245,Taušnerová,Eliška,2012,Tenisklub Cheb,104/5,66/5,170,,,https://cztenis.cz/hrac/1061724,1061724
+53,247,Jindřichová,Nela,2015,TK Zlín,66/10,103/10,169,12,184,https://cztenis.cz/hrac/1067292,1067292
+72,248,Kahounová,Sofie,2015,TK Sparta Praha,116/13,52/6,168,12,185,https://cztenis.cz/hrac/1058272,1058272
+37,249,Kubátová,Michaela,2012,TK PRECHEZA Přerov o.s.,97/4,70/5,167,,,https://cztenis.cz/hrac/1060393,1060393
+54,250,Holubová,Elena,2013,TC Bajda Kroměříž,81/4,85/4,166,12,186,https://cztenis.cz/hrac/1057703,1057703
+19,251,Schejbalová,Klára,2013,TK Pernštýn 1897 Pardubice,93/13,71/12,164,12,187,https://cztenis.cz/hrac/1060192,1060192
+19,251,Vránová,Štěpánka,2013,TENIS-CENTRUM DTJ HK,106/16,58/11,164,12,187,https://cztenis.cz/hrac/1050887,1050887
+14,253,Mallátová,Barbora,2013,"LTC VITON České Budějovice,z.s.",128/6,35/4,163,12,189,https://cztenis.cz/hrac/1062102,1062102
+14,253,Šimková,Edita,2014,TK SK Dobrá Voda u Č.B.,103/12,60/11,163,12,189,https://cztenis.cz/hrac/1064286,1064286
+38,255,Sasinka,Ella,2013,"TJ Start Ostrava - Poruba, z.s.",133/10,28-Apr,161,12,191,https://cztenis.cz/hrac/1063865,1063865
+55,256,Dolanská,Kateřina,2012,ŽLTC Brno,76/6,83/7,159,,,https://cztenis.cz/hrac/1060678,1060678
+73,256,Kohoutková,Adéla,2013,Sokol Smíchov I.,83/9,76/9,159,12,191,https://cztenis.cz/hrac/1060487,1060487
+74,258,Slobodová,Gabriela,2012,"SK HAMR, z.s.",102/4,55/3,157,,,https://cztenis.cz/hrac/1053342,1053342
+39,259,Šindlerová,Anežka,2012,TC BIOCEL Vratimov z.s.,118/7,37/3,155,,,https://cztenis.cz/hrac/1058885,1058885
+75,260,Látalová,Sofie,2015,"SK HAMR, z.s.",77/12,76/19,153,12,193,https://cztenis.cz/hrac/1063926,1063926
+75,260,Linková,Leontina,2014,TK Horní Měcholupy,73/17,80/19,153,12,193,https://cztenis.cz/hrac/1055764,1055764
+75,260,Ugliano,Valeria,2015,I.ČLTK Praha,100/17,53/12,153,12,193,https://cztenis.cz/hrac/1067300,1067300
+56,263,Horváthová,Zuzana,2012,BLTC Brno,93/4,59/4,152,,,https://cztenis.cz/hrac/1057360,1057360
+78,263,Zralá,Natálie,2013,Tenisová škola Lucie Hradecké z.s.,84/16,68/15,152,12,196,https://cztenis.cz/hrac/1063662,1063662
+21,265,Klimešova,Monika,2012,"TC Dvůr Králové, z.s.",74/2,77/2,151,,,https://cztenis.cz/hrac/1045925,1045925
+16,266,Kubíková,Aneta,2014,TK Lokomotiva Plzeň z.s.,107/12,43/10,150,12,197,https://cztenis.cz/hrac/1061879,1061879
+57,267,Grombířová,Liliana,2014,TENIS SLOVÁCKO z.s.,88/14,61/12,149,12,198,https://cztenis.cz/hrac/1064083,1064083
+10,267,Mládková,Týna,2015,LTK Liberec,100/13,49/12,149,12,198,https://cztenis.cz/hrac/1063976,1063976
+79,269,Kořínková,Adéla,2013,Sportcentrum Uhříněves,61/13,87/15,148,12,200,https://cztenis.cz/hrac/1068247,1068247
+33,270,Chlustinová,Viktorie,2014,Lokomotiva Zdice,87/11,60/8,147,9,201,https://cztenis.cz/hrac/1060230,1060230
+80,270,Chrástová,Zuzana,2012,TO Bohemians Praha,113/7,34/4,147,,,https://cztenis.cz/hrac/1061631,1061631
+34,272,Dvořaková,Barbora,2014,Tenisový klub Benátky nad Jizerou,81/5,65/3,146,9,202,https://cztenis.cz/hrac/1061335,1061335
+81,273,Cuninghame,Sophia,2012,TK Sparta Praha,15/0,130/0,145,,,https://cztenis.cz/hrac/1064075,1064075
+17,273,Sovová,Matylda,2012,TK Slavia Plzeň,80/3,65/3,145,,,https://cztenis.cz/hrac/1053982,1053982
+40,273,Zhuk,Sofie,2014,SK LAMA o.s.,122/11,23-Apr,145,9,202,https://cztenis.cz/hrac/1064101,1064101
+58,276,Jančí,Anna,2012,TJ Sokol Bedřichov Jihlava,82/4,62/4,144,,,https://cztenis.cz/hrac/1048798,1048798
+82,277,Bartoňová,Alena,2014,TK Sparta Praha,91/16,52/14,143,9,204,https://cztenis.cz/hrac/1063967,1063967
+83,278,Tomíšková,Denisa,2012,TENIS Klánovice,59/2,77/2,136,,,https://cztenis.cz/hrac/1051959,1051959
+35,279,Kolářová,Michaela,2012,TO Sokol Nehvizdy,81/3,54/3,135,,,https://cztenis.cz/hrac/1052508,1052508
+59,280,Králíčková,Nikola,2014,TJ Žďár nad Sázavou,73/13,61/14,134,9,205,https://cztenis.cz/hrac/1064264,1064264
+41,280,Šindelová,Lenka,2012,TJ TO Sokol Stará Bělá,64/1,70/2,134,,,https://cztenis.cz/hrac/1059084,1059084
+84,282,Hugová,Karolína,2014,LTC Modřany 2005,64/19,69/17,133,9,206,https://cztenis.cz/hrac/1060869,1060869
+36,282,Strnadová,Elin,2015,TK SPORTCENTRUM Mladá Boleslav,100/10,33/9,133,9,206,https://cztenis.cz/hrac/1061801,1061801
+60,284,Hálová,Natálie,2015,TK Zlín,101/10,31/9,132,9,208,https://cztenis.cz/hrac/1055667,1055667
+85,284,Polášková,Andrea,2012,TK Písnice,76/10,56/6,132,,,https://cztenis.cz/hrac/1067127,1067127
+42,284,Procner,Hanna,2013,SK Vitality Slezsko o.s.,101/17,31/6,132,9,208,https://cztenis.cz/hrac/1067887,1067887
+85,284,Zídková,Tereza,2015,"SK HAMR, z.s.",92/16,40/16,132,9,208,https://cztenis.cz/hrac/1058434,1058434
+16,288,Pávková,Marie,2012,LTC Český Krumlov,88/2,43/2,131,,,https://cztenis.cz/hrac/1057493,1057493
+11,288,Viedemannová,Lucie,2013,TK Litvínov z.s.,127/4,4-Jan,131,9,208,https://cztenis.cz/hrac/1053243,1053243
+87,290,Plzáková,Dominika,2012,LTC Modřany 2005,61/2,69/2,130,,,https://cztenis.cz/hrac/1057935,1057935
+88,291,Hanjalič,Selma,2014,TK Sparta Praha,113/10,16-Mar,129,9,212,https://cztenis.cz/hrac/1070349,1070349
+61,292,Tománková,Beáta,2014,TK Zlín,103/8,25-Mar,128,9,213,https://cztenis.cz/hrac/1058156,1058156
+62,293,Daňková,Dominika,2013,TC Austerlitz,69/9,58/7,127,9,214,https://cztenis.cz/hrac/1055877,1055877
+17,294,Šebístková,Tereza,2012,LTC Humpolec,51/2,75/2,126,,,https://cztenis.cz/hrac/1050289,1050289
+89,294,Trnečková,Anna,2014,Tenis Cibulka,87/19,39/17,126,9,215,https://cztenis.cz/hrac/1067212,1067212
+18,296,Luhanová,Karolína,2012,"TCF Schicht Mariánské Lázně,z.s.",91/2,34/1,125,,,https://cztenis.cz/hrac/1059407,1059407
+18,296,Pavlisová,Kristýna,2014,TK Lokomotiva Plzeň z.s.,91/14,34/7,125,9,215,https://cztenis.cz/hrac/1057384,1057384
+18,296,Poláková,Julie,2012,TK Škoda Plzeň z.s.,82/2,43/2,125,,,https://cztenis.cz/hrac/1050440,1050440
+21,299,Svárovská,Klára,2014,Tenisklub Cheb,69/7,55/7,124,9,217,https://cztenis.cz/hrac/1061713,1061713
+21,299,Švíková,Anna,2014,TK Lokomotiva Plzeň z.s.,84/8,40/6,124,9,217,https://cztenis.cz/hrac/1059757,1059757
+12,299,Třešňáková,Ela,2015,LTK Liberec,92/9,32/9,124,9,217,https://cztenis.cz/hrac/1056882,1056882
+43,302,Nováková,Adriana,2014,TK PRECHEZA Přerov o.s.,96/18,27-Jun,123,9,220,https://cztenis.cz/hrac/1061358,1061358
+63,302,Svobodová,Valentýna,2013,TC Brno.,76/10,47/6,123,9,220,https://cztenis.cz/hrac/1064760,1064760
+44,304,Kovářová,Gabriela,2014,TJ TO Sokol Stará Bělá,75/8,47/4,122,9,220,https://cztenis.cz/hrac/1058430,1058430
+64,304,Ostravská,Taťána,2012,TK Zlín,54/1,68/1,122,,,https://cztenis.cz/hrac/1050523,1050523
+64,304,Sedláková,Denisa,2012,TK Znojmo,76/2,46/1,122,,,https://cztenis.cz/hrac/1048930,1048930
+37,307,Pavlisková,Valerie,2014,Lokomotiva Beroun,87/17,34/14,121,9,220,https://cztenis.cz/hrac/1056009,1056009
+37,307,Pitliaková,Justýna,2012,"TENIS VLAŠIM,z.s.",70/3,51/2,121,,,https://cztenis.cz/hrac/1053733,1053733
+66,309,Berková,Ema,2013,TC Bajda Kroměříž,87/8,33/7,120,9,224,https://cztenis.cz/hrac/1057072,1057072
+66,309,Petrašovičová,Emma,2015,TK Třebíč,85/12,35/12,120,9,224,https://cztenis.cz/hrac/1055910,1055910
+66,309,Štrejbarová,Natálie,2013,Slavoj Třešť,58/6,62/6,120,9,224,https://cztenis.cz/hrac/1056525,1056525
+90,312,Gura,Alisa,2015,"SK HAMR, z.s.",65/14,54/13,119,9,227,https://cztenis.cz/hrac/1062058,1062058
+90,312,Poláčková,Natálie,2012,Sportcentrum Uhříněves,74/5,45/3,119,,,https://cztenis.cz/hrac/1062368,1062368
+92,314,Růžičková,Lucie,2012,TK Ruzyně Praha,39/1,79/3,118,,,https://cztenis.cz/hrac/1058265,1058265
+92,314,Vylitová,Veronika,2012,SK Aritma Praha,118/2,,118,,,https://cztenis.cz/hrac/1060315,1060315
+94,316,Brůnová,Adriana,2012,Pála Vízner Tennis z.s.,58/4,59/5,117,,,https://cztenis.cz/hrac/1062097,1062097
+22,317,Řeháková,Daniela,2015,Tenisový klub Eden HK,55/14,61/13,116,9,228,https://cztenis.cz/hrac/1060026,1060026
+95,318,Mindžaková,Julie,2013,TK Horní Měcholupy,71/6,44/5,115,9,229,https://cztenis.cz/hrac/1051907,1051907
+18,318,Vymyslická,Zoe,2014,"LTC VITON České Budějovice,z.s.",78/8,37/8,115,9,229,https://cztenis.cz/hrac/1061803,1061803
+96,320,Fajfrová,Eliška,2012,TC ESO Praha z.s.,45/1,69/1,114,,,https://cztenis.cz/hrac/1057162,1057162
+69,320,Krčková,Klára,2012,ŽLTC Brno,80/0,34/0,114,,,https://cztenis.cz/hrac/1053432,1053432
+96,320,Roušarová,Vanessa,2014,Lokomotiva Praha,65/10,49/8,114,9,229,https://cztenis.cz/hrac/1064132,1064132
+45,323,Bartlová,Ema,2014,"Pašťa tenis, z.s.",46/8,67/8,113,9,229,https://cztenis.cz/hrac/1059324,1059324
+45,323,Hanzlíková,Stela,2012,SK JC Sport Opava,58/2,55/3,113,,,https://cztenis.cz/hrac/1058059,1058059
+39,323,Malinová,Adéla,2013,Wilson tenis centrum z.s.,100/7,13-Feb,113,9,229,https://cztenis.cz/hrac/1065037,1065037
+19,323,Ondřejová,Vera,2012,Tenis klub Jindřichův Hradec z.s.,71/2,42/1,113,,,https://cztenis.cz/hrac/1060538,1060538
+70,323,Tomečková,Laura,2015,TK AGROFERT Prostějov,49/11,64/11,113,9,229,https://cztenis.cz/hrac/1058674,1058674
+23,328,Kopecká,Kristýna,2013,LTC Pardubice,49/9,62/11,111,9,235,https://cztenis.cz/hrac/1053647,1053647
+47,328,Kvapíková,Tereza,2014,TJ TO Sokol Stará Bělá,56/3,55/3,111,9,235,https://cztenis.cz/hrac/1059260,1059260
+71,330,Badinová,Eliška,2012,BLTC Brno,55/1,55/3,110,,,https://cztenis.cz/hrac/1059304,1059304
+24,330,Dušková,Sofie,2012,TENIS-CENTRUM DTJ HK,58/1,52/1,110,,,https://cztenis.cz/hrac/1055001,1055001
+71,330,Jonášová,Kristýna,2014,TK Kunštát,79/13,31/9,110,9,235,https://cztenis.cz/hrac/1066290,1066290
+13,333,Pištěková,Eliška,2014,LTC Litvínov,57/8,52/8,109,9,238,https://cztenis.cz/hrac/1061989,1061989
+48,333,Sikorová,Laura,2014,TJ TO Sokol Stará Bělá,73/12,36/5,109,9,238,https://cztenis.cz/hrac/1062281,1062281
+20,335,Chromá,Aneta,2012,Sokol TK Kaplice,69/2,39/2,108,,,https://cztenis.cz/hrac/1057268,1057268
+23,335,Matoušová,Karolína,2012,LTK Klatovy,74/4,34/3,108,,,https://cztenis.cz/hrac/1064549,1064549
+73,335,Šindelářová,Anna,2012,TJ Kraví Hora Brno,73/3,35/3,108,,,https://cztenis.cz/hrac/1062994,1062994
+25,338,Fleglová,Nikol,2013,Tenis Centrum Nová Paka o.s.,99/9,8-Feb,107,9,240,https://cztenis.cz/hrac/1065834,1065834
+14,338,Miklovičová,Ema,2013,SK Matchball Česká Lípa,70/4,37/3,107,9,240,https://cztenis.cz/hrac/1055747,1055747
+26,340,Sedláčková,Nikola,2014,SK Týniště nad Orlicí,77/9,29-Jun,106,9,242,https://cztenis.cz/hrac/1060009,1060009
+40,340,Vítová,Eliana,2012,Tenis Dobříš,62/3,44/2,106,,,https://cztenis.cz/hrac/1053343,1053343
+49,342,Kořístková,Eliška,2013,TJ Zbrojovka Vsetín,48/6,57/6,105,9,242,https://cztenis.cz/hrac/1069590,1069590
+98,342,Novická,Klára,2012,TJ Spoje Praha,49/2,56/2,105,,,https://cztenis.cz/hrac/1057029,1057029
+27,342,Pochobradská,Alice,2012,TO TJ Tesla Pardubice,53/1,52/1,105,,,https://cztenis.cz/hrac/1055840,1055840
+99,345,Janeček,Julie,2014,SK Aritma Praha,68/12,36/7,104,9,242,https://cztenis.cz/hrac/1061755,1061755
+50,345,Ševčíková,Anna,2012,TJ Sokol Dolní Lhota,66/4,38/2,104,,,https://cztenis.cz/hrac/1057284,1057284
+24,347,Formánková,Justýna,2014,TK Lokomotiva Plzeň z.s.,79/12,24-Sep,103,9,245,https://cztenis.cz/hrac/1065455,1065455
+24,347,Mottlová,Klaudie,2015,TK Slavia Plzeň,66/8,37/6,103,9,245,https://cztenis.cz/hrac/1060278,1060278
+26,349,Kováříková,Viktorie,2012,TK Slavia Plzeň,69/3,33/2,102,,,https://cztenis.cz/hrac/1046618,1046618
+100,349,Michelová,Ema,2015,I.ČLTK Praha,77/13,25-Aug,102,9,245,https://cztenis.cz/hrac/1064334,1064334
+101,351,Zámostná,Ema,2013,TENISCENTRUM HEAD,81/4,20-Feb,101,9,248,https://cztenis.cz/hrac/1063906,1063906
+21,352,Mottlová,Sabina,2014,LTC Tábor 1903,68/15,32/8,100,9,248,https://cztenis.cz/hrac/1069663,1069663
+74,352,Piková,Amelie,2012,TK Spartak Jihlava,79/3,21-Jan,100,,,https://cztenis.cz/hrac/1054570,1054570
+102,354,Černá,Marie,2015,Lokomotiva Praha,46/16,53/16,99,9,250,https://cztenis.cz/hrac/1067407,1067407
+75,355,Brtníčková,Markéta,2013,SK Tenis Tišnov,72/6,25-May,97,9,251,https://cztenis.cz/hrac/1053407,1053407
+22,355,Fárová,Kristýna,2014,"LTC VITON České Budějovice,z.s.",75/7,22-May,97,9,251,https://cztenis.cz/hrac/1066177,1066177
+51,355,Trochtová,Julie,2012,TJ Zbrojovka Vsetín,61/3,36/1,97,,,https://cztenis.cz/hrac/1057478,1057478
+52,358,Handlířová,Lilly,2012,TK Slavia Orlová,77/6,19-Jan,96,,,https://cztenis.cz/hrac/1053760,1053760
+52,358,Krainová,Kristýna,2015,SK Vitality Slezsko o.s.,67/9,29-Jun,96,9,253,https://cztenis.cz/hrac/1067287,1067287
+76,360,Sukupčáková,Melánia,2013,TJ Jiskra Strážnice,62/12,33/12,95,9,254,https://cztenis.cz/hrac/1069109,1069109
+15,361,Bernardová,Petra,2012,Slavoj Litoměřice,54/4,40/3,94,,,https://cztenis.cz/hrac/1055680,1055680
+77,361,Tomešová,Andrea,2013,Slavoj Třešť,46/8,48/8,94,9,254,https://cztenis.cz/hrac/1064526,1064526
+27,363,Szabó,Kristýna,2015,TK Lokomotiva Plzeň z.s.,63/5,30-May,93,9,256,https://cztenis.cz/hrac/1062838,1062838
+103,364,Šmejkalová,Elen,2013,"LOB S.A. Bohnice, z.s.",55/13,37/10,92,9,257,https://cztenis.cz/hrac/1058487,1058487
+54,365,Sítková,Elen,2013,TK Milo Olomouc,82/7,9-Jan,91,9,258,https://cztenis.cz/hrac/1065327,1065327
+41,366,Nováková,Berenika,2012,LTC Mladá Boleslav z.s.,50/1,40/1,90,,,https://cztenis.cz/hrac/1057173,1057173
+104,367,Kopecká,Barbora,2013,TJ Solidarita Praha 10,47/10,42/10,89,9,259,https://cztenis.cz/hrac/1062731,1062731
+28,368,Kováříková,Kristýna,2015,TK Slavia Plzeň,52/8,36/7,88,9,260,https://cztenis.cz/hrac/1059204,1059204
+42,369,Pospíšilová,Ester,2012,SK Tenis Kladno,55/3,30/2,85,,,https://cztenis.cz/hrac/1064956,1064956
+43,370,Červená,Vanessa,2012,TK Lány,43/3,41/3,84,,,https://cztenis.cz/hrac/1058412,1058412
+29,371,Nová,Veronika,2012,"TCF Schicht Mariánské Lázně,z.s.",39/3,44/4,83,,,https://cztenis.cz/hrac/1059408,1059408
+44,371,Takáčová,Karolína,2012,Slavoj Český Brod,46/3,37/2,83,,,https://cztenis.cz/hrac/1057545,1057545
+45,373,Doležalová,Ema,2015,Slavoj Žiželice,56/9,25-Sep,81,9,261,https://cztenis.cz/hrac/1064362,1064362
+45,373,Fröhlichová,Emma,2015,Pliskova Tennis Academy-Říčany,66/12,15-Oct,81,9,261,https://cztenis.cz/hrac/1062297,1062297
+78,373,Juřičková,Simona,2015,TJ Brno-Komín,53/12,28-Aug,81,9,261,https://cztenis.cz/hrac/1060070,1060070
+28,373,Kašparová,Adéla,2013,"Nespin, z.s.",56/12,25-Jun,81,9,261,https://cztenis.cz/hrac/1065637,1065637
+105,373,KNOPPOVÁ,Aneta,2015,"SK HAMR, z.s.",60/9,21-Aug,81,9,261,https://cztenis.cz/hrac/1060892,1060892
+78,373,Šrubařová,Sára,2012,TC Brno.,60/7,21-Feb,81,,,https://cztenis.cz/hrac/1067248,1067248
+29,379,Jahelková,Anežka,2013,TENIS-CENTRUM DTJ HK,57/5,23-Apr,80,9,266,https://cztenis.cz/hrac/1060517,1060517
+106,380,Baginská,Isabela,2014,"TJ Slavoj Tesla Hloubětín, z.s.",67/12,12-Jun,79,9,267,https://cztenis.cz/hrac/1067809,1067809
+55,380,Boot,Nathalia,2014,TK Na Dolině o.s.,49/10,30-May,79,9,267,https://cztenis.cz/hrac/1063135,1063135
+30,380,Fořtová,Eliška,2012,TK Lokomotiva Plzeň z.s.,57/2,22-Feb,79,,,https://cztenis.cz/hrac/1049377,1049377
+106,380,Hasmanová,Johana,2015,TK Sparta Praha,54/10,25-Sep,79,9,267,https://cztenis.cz/hrac/1063771,1063771
+55,380,Žídková,Ella,2012,TK PRECHEZA Přerov o.s.,30-Jan,49/1,79,,,https://cztenis.cz/hrac/1053385,1053385
+57,385,Kováčiková,Simona,2012,TK Gymnázium Uničov,51/4,27-Mar,78,,,https://cztenis.cz/hrac/1060218,1060218
+57,385,Remenárová,Laura,2012,TK PRECHEZA Přerov o.s.,34/3,44/4,78,,,https://cztenis.cz/hrac/1064252,1064252
+57,385,Tesaříková,Tereza,2012,TJ Zbrojovka Vsetín,31-Jan,47/2,78,,,https://cztenis.cz/hrac/1055649,1055649
+108,388,Forejtková,Esmira,2013,SK Aritma Praha,33/3,44/4,77,9,270,https://cztenis.cz/hrac/1058477,1058477
+80,388,Španělová,Emma,2014,TK AGROFERT Prostějov,60/5,17-Feb,77,9,270,https://cztenis.cz/hrac/1056599,1056599
+30,390,Bryndová,Eliška,2013,SK HIT Hradec Králové z.s.,45/12,31/11,76,9,272,https://cztenis.cz/hrac/1068542,1068542
+60,391,Jersáková,Julie,2012,"ITS Tennis Club, z.s.",44/0,30/0,74,,,https://cztenis.cz/hrac/1049404,1049404
+81,391,Raymonds,Emily,2013,LTC Hodonín,52/4,22-Apr,74,9,272,https://cztenis.cz/hrac/1070733,1070733
+23,391,Rychtářová,Terezie,2012,TK Strakonice,43/3,31/2,74,,,https://cztenis.cz/hrac/1062640,1062640
+82,394,Pelikánová,Ema,2012,TJ Žďár nad Sázavou,60/2,13-Feb,73,,,https://cztenis.cz/hrac/1054776,1054776
+47,394,Tvarůžková,Natálie,2015,LTC Rakovník,56/9,17-Jul,73,9,272,https://cztenis.cz/hrac/1063638,1063638
+109,396,Altergott,Larissa,2014,"SK HAMR, z.s.",55/4,17-Mar,72,9,275,https://cztenis.cz/hrac/1068243,1068243
+48,396,Klaudová,Vanda,2013,TK Čelákovice,63/3,9-Mar,72,9,275,https://cztenis.cz/hrac/1059737,1059737
+24,396,Vondrusová,Milena,2014,Tenis klub Jindřichův Hradec z.s.,27-Apr,45/5,72,9,275,https://cztenis.cz/hrac/1064364,1064364
+49,399,Bezoušková,Nela,2012,TJ LTC Poděbrady,31-Jan,40/2,71,,,https://cztenis.cz/hrac/1057450,1057450
+50,400,Čižinská,Mia,2012,TK SPORTCENTRUM Mladá Boleslav,44/1,26/0,70,,,https://cztenis.cz/hrac/1052345,1052345
+25,400,Uhlíková,Tereza,2014,TK Pelhřimov,47/11,23-Jul,70,9,275,https://cztenis.cz/hrac/1065035,1065035
+51,402,Koláčková,Kristýna,2014,LTC Mladá Boleslav z.s.,35/13,33/4,68,9,279,https://cztenis.cz/hrac/1064163,1064163
+61,402,Schreierová,Stella,2015,SK JC Sport Opava,45/5,23-Mar,68,9,279,https://cztenis.cz/hrac/1063471,1063471
+31,404,Hloušová,Julie,2014,TK Pernštýn 1897 Pardubice,47/10,20-Sep,67,9,281,https://cztenis.cz/hrac/1059244,1059244
+110,404,Hrbáčová,Maya,2013,"TK Konstruktiva, z.s.",39/12,28-Aug,67,9,281,https://cztenis.cz/hrac/1069346,1069346
+52,404,Záhradníková,Alexandra,2015,Pliskova Tennis Academy-Říčany,50/4,17-Mar,67,9,281,https://cztenis.cz/hrac/1067988,1067988
+62,407,Čiliaková,Ellisa,2012,TK SC OSTRAVA,56/5,10-Jan,66,,,https://cztenis.cz/hrac/1063679,1063679
+111,407,Hájková,Sofie,2015,TK Sparta Praha,43/11,23-Nov,66,9,281,https://cztenis.cz/hrac/1067365,1067365
+31,407,Havlíková,Marie,2014,TCG Karlovy Vary,44/8,22-Apr,66,9,281,https://cztenis.cz/hrac/1065527,1065527
+83,407,Macháčková,Vanesa,2012,TK Zlín,36/2,30/2,66,,,https://cztenis.cz/hrac/1058530,1058530
+112,411,Ondráčková,Andrea,2015,TJ Radlice z.s.,45/8,19-May,64,9,286,https://cztenis.cz/hrac/1066844,1066844
+63,411,Pape,Vanessa,2013,TK PRECHEZA Přerov o.s.,58/10,6-Mar,64,9,286,https://cztenis.cz/hrac/1068147,1068147
+32,413,Bálintová,Sára,2013,TCG Karlovy Vary,38/6,25-May,63,9,288,https://cztenis.cz/hrac/1062118,1062118
+113,413,Haskell,Mia,2012,TK Sparta Praha,24-Feb,39/3,63,,,https://cztenis.cz/hrac/1058385,1058385
+32,413,Ouřetská,Radka,2013,TK Choceň,37/8,26-Jul,63,9,288,https://cztenis.cz/hrac/1062481,1062481
+32,413,Rybová,Ellen,2012,TK Sokolov,36/3,27-Feb,63,,,https://cztenis.cz/hrac/1060631,1060631
+26,413,Šmrhová,Sara,2013,"LTC VITON České Budějovice,z.s.",53/6,10-Mar,63,9,288,https://cztenis.cz/hrac/1062177,1062177
+84,418,Hasilová,Kristýna,2014,Sokol Lanžhot,41/12,21-Jun,62,9,291,https://cztenis.cz/hrac/1065203,1065203
+16,418,Hrušková,Magdaléna,2014,LTK Liberec,42/10,20-Oct,62,9,291,https://cztenis.cz/hrac/1056878,1056878
+84,418,Kováčová,Kamila,2014,SK Tenis Tišnov,32/9,30-Oct,62,9,291,https://cztenis.cz/hrac/1066532,1066532
+114,418,Netrdová,Adéla,2012,TJ Horní Měcholupy,50/3,12-Jan,62,,,https://cztenis.cz/hrac/1052407,1052407
+64,422,Klačková,Denisa,2012,Tennis Hill Havířov o.s.,30/0,31/0,61,,,https://cztenis.cz/hrac/1052779,1052779
+115,422,Samková,Simona,2013,SK Aritma Praha,32/9,29-Sep,61,9,294,https://cztenis.cz/hrac/1058993,1058993
+33,422,Valentová,Nela,2015,"TC Dvůr Králové, z.s.",42/7,19-May,61,9,294,https://cztenis.cz/hrac/1061999,1061999
+86,422,Weissová,Simona,2013,TC-MJ TENIS Líšeň,36/0,25/0,61,9,294,https://cztenis.cz/hrac/1060843,1060843
+53,426,Dlouhá,Adéla,2012,TK Radošovice,40/1,20/0,60,,,https://cztenis.cz/hrac/1055156,1055156
+116,426,Kovandová,Veronika,2013,TK Sparta Praha,38/6,22-Mar,60,9,297,https://cztenis.cz/hrac/1056475,1056475
+65,426,Pfeilerová,Veronika,2012,TJ Zbrojovka Vsetín,25-Jan,35/2,60,,,https://cztenis.cz/hrac/1059620,1059620
+53,426,Vítová,Eva,2012,TK SPORTCENTRUM Mladá Boleslav,34/1,26-Jan,60,,,https://cztenis.cz/hrac/1052534,1052534
+87,430,Bolebruchová,Emma,2013,LTC Hodonín,45/1,14-Jan,59,9,297,https://cztenis.cz/hrac/1058692,1058692
+27,430,Hanzalová,Natálie,2014,"LTC VITON České Budějovice,z.s.",32/13,27-Jun,59,9,297,https://cztenis.cz/hrac/1060609,1060609
+117,430,Hotová,Veronika,2015,"SK HAMR, z.s.",28/18,31/17,59,9,297,https://cztenis.cz/hrac/1060886,1060886
+117,430,Volodina,Sofiia,2012,TC ESO Praha z.s.,28-Jan,31-Jan,59,,,https://cztenis.cz/hrac/1053213,1053213
+88,434,Bartáková,Ella,2012,TC Brno.,30/0,28/0,58,,,https://cztenis.cz/hrac/1069298,1069298
+55,434,Minaříková,Anna,2013,Tenisový klub Mníšek,37/11,21-Sep,58,6,301,https://cztenis.cz/hrac/1069908,1069908
+119,434,Pyška,Sofie,2012,"SK HAMR, z.s.",28-Feb,30-Mar,58,,,https://cztenis.cz/hrac/1060755,1060755
+34,434,Suková,Rozálie,2013,Lokomotiva Trutnov,36/3,22-Feb,58,6,301,https://cztenis.cz/hrac/1057446,1057446
+88,434,Vystrčilová,Viktorie,2015,HTK Třebíč,39/11,19-Nov,58,6,301,https://cztenis.cz/hrac/1063625,1063625
+90,439,Kizochjan,Adriana,2014,TC Brno.,44/8,13-Mar,57,6,304,https://cztenis.cz/hrac/1059228,1059228
+17,439,Kořínková,Adéla,2014,SK Matchball Česká Lípa,35/3,22-Feb,57,6,304,https://cztenis.cz/hrac/1052651,1052651
+56,439,Morozová,Mia,2013,Tenisový klub Benátky nad Jizerou,29-Mar,28-Jan,57,6,304,https://cztenis.cz/hrac/1055304,1055304
+90,439,Prekopp,Charlotte,2015,TK AGROFERT Prostějov,47/3,10-Feb,57,6,304,https://cztenis.cz/hrac/1064351,1064351
+56,439,Švarcová,Barbora,2015,TK Čelákovice,41/8,16-Jul,57,6,304,https://cztenis.cz/hrac/1065916,1065916
+17,439,Vomastová,Sára,2015,TK Chomutov,30-Mar,27-Mar,57,6,304,https://cztenis.cz/hrac/1065135,1065135
+19,445,Gajarská,Ema,2014,TO Meziboří,48/7,8-May,56,6,310,https://cztenis.cz/hrac/1058424,1058424
+66,445,Horáková,Ella,2014,Tennis Hill Havířov o.s.,31-May,25-May,56,6,310,https://cztenis.cz/hrac/1061749,1061749
+120,445,Polanská,Andrea,2014,-,56/5,,56,6,310,https://cztenis.cz/hrac/1070404,1070404
+92,445,Růžičková,Sofie,2015,TK AGROFERT Prostějov,45/10,11-Jul,56,6,310,https://cztenis.cz/hrac/1058955,1058955
+34,445,Velková,Verena,2014,TK Slavia Plzeň,42/2,14-Jan,56,6,310,https://cztenis.cz/hrac/1054438,1054438
+35,450,Adamcová,Veronika,2012,TO SK Žamberk,55/1,,55,,,https://cztenis.cz/hrac/1049036,1049036
+121,450,Podškubková,Alžběta,2014,"SK HAMR, z.s.",40/8,15-Jul,55,6,310,https://cztenis.cz/hrac/1060422,1060422
+67,450,Spáčilová,Lucie,2012,TK Milo Olomouc,19-Jan,36/3,55,,,https://cztenis.cz/hrac/1052571,1052571
+67,450,Šopková,Julie,2014,TK TENNISPOINT FM,21-Mar,34/2,55,6,310,https://cztenis.cz/hrac/1058612,1058612
+58,454,Beranová,Thea,2014,Tenisový klub Benátky nad Jizerou,44/7,10-Feb,54,6,310,https://cztenis.cz/hrac/1066707,1066707
+58,454,Janoušová,Nella,2012,"TENIS VLAŠIM,z.s.",28/0,26/0,54,,,https://cztenis.cz/hrac/1051877,1051877
+69,454,Jenáčková,Tereza,2012,TJ Zbrojovka Vsetín,33/1,21-Jan,54,,,https://cztenis.cz/hrac/1052331,1052331
+93,454,Kunovská,Alžběta,2014,TJ Sokol Uherský Brod,30-Sep,24-Apr,54,6,310,https://cztenis.cz/hrac/1059728,1059728
+122,454,Velíšková,Elen,2015,TENISCENTRUM HEAD,38/13,16-Jul,54,6,310,https://cztenis.cz/hrac/1064714,1064714
+94,459,Hodničová,Nikola,2014,TC-MJ TENIS Líšeň,23-Mar,30/2,53,6,320,https://cztenis.cz/hrac/1067665,1067665
+60,459,Huňáčková,Nikol,2012,TK Neridé,25-Jan,28-Jan,53,,,https://cztenis.cz/hrac/1055439,1055439
+60,459,Procházková,Julie,2014,TK Kročehlavy,45/7,8-Jan,53,6,320,https://cztenis.cz/hrac/1058055,1058055
+123,459,Vonásková,Naira,2015,Tenisová škola Lucie Hradecké z.s.,20-Dec,33/15,53,6,320,https://cztenis.cz/hrac/1068254,1068254
+36,459,Záhoříková,Eva,2015,Tenisový klub Eden HK,34/7,19-Jul,53,6,320,https://cztenis.cz/hrac/1063446,1063446
+124,464,Neubergová,Terezie,2015,"LOB S.A. Bohnice, z.s.",23/16,29/16,52,6,320,https://cztenis.cz/hrac/1061611,1061611
+70,464,Pensimusová,Anna,2013,TK Bílovec,25-Mar,27-Mar,52,6,320,https://cztenis.cz/hrac/1062283,1062283
+37,464,Zavadilová,Zuzana,2012,TK Pernštýn 1897 Pardubice,43/4,9/0,52,,,https://cztenis.cz/hrac/1065058,1065058
+71,467,Chlebková,Simona,2015,TK TENNISPOINT FM,44/11,7-Jul,51,6,326,https://cztenis.cz/hrac/1063257,1063257
+20,467,Kozlova,Sofija,2012,"ČLTK Bižuterie Jablonec n. N., z. s.",4/0,47/1,51,,,https://cztenis.cz/hrac/1054176,1054176
+71,467,Lazecká,Anna,2012,TJ Sokol Dolní Lhota,27-Feb,24-Jan,51,,,https://cztenis.cz/hrac/1057456,1057456
+35,467,Pechová,Nikol,2012,TK Škoda Plzeň z.s.,27-Jan,24-Jan,51,,,https://cztenis.cz/hrac/1050458,1050458
+73,471,Fabová,Agáta,2012,SK JC Sport Opava,27-Feb,23-Feb,50,,,https://cztenis.cz/hrac/1062963,1062963
+73,471,Franeková,Tamara,2013,SKT Frýdlant n.O.,26-Apr,24-Apr,50,6,327,https://cztenis.cz/hrac/1071429,1071429
+28,471,Nousková,Laura,2015,TK Sezimovo Ústí,30-May,20-Mar,50,6,327,https://cztenis.cz/hrac/1067648,1067648
+62,471,Tůmová,Anna,2013,Sport club Na Zámečku,28/14,22-Sep,50,6,327,https://cztenis.cz/hrac/1071119,1071119
+63,475,Kunstová,Aneta,2013,LTC Houštka,20-May,29-Apr,49,6,327,https://cztenis.cz/hrac/1068582,1068582
+75,475,Rozsypalová,Magdaléna,2012,Rožnovský tenisový klub,21-Feb,28/0,49,,,https://cztenis.cz/hrac/1056705,1056705
+21,475,Urbanová,Viktorie,2014,Slavoj Litoměřice,29-Sep,20-Jun,49,6,327,https://cztenis.cz/hrac/1068999,1068999
+63,475,Vidličková,Stella,2015,Pliskova Tennis Academy-Říčany,46/10,3-Apr,49,6,327,https://cztenis.cz/hrac/1066705,1066705
+38,475,Vondráčková,Tereza,2012,"TC Dvůr Králové, z.s.",21-Jan,28-Jan,49,,,https://cztenis.cz/hrac/1049635,1049635
+36,480,Martincová,Nicol,2014,TK Sokolov,33/4,15-Apr,48,6,327,https://cztenis.cz/hrac/1065311,1065311
+22,480,Štěpánková,Kateřina,2012,TK Frýdlant v Čechách,43/1,5/0,48,,,https://cztenis.cz/hrac/1057994,1057994
+95,482,Adámková,Nicole,2012,LTC Velen Boskovice,30/2,17-Feb,47,,,https://cztenis.cz/hrac/1065714,1065714
+76,482,Chybová,Terezie,2014,TK TENNISPOINT FM,25-Jul,22-Jun,47,6,327,https://cztenis.cz/hrac/1063258,1063258
+29,482,Kupsová,Marika,2012,LTC Český Krumlov,14-Jan,33/1,47,,,https://cztenis.cz/hrac/1067858,1067858
+95,482,Rašnerová,Victoria,2013,TK Spartak Jihlava,29/2,18-Jan,47,6,327,https://cztenis.cz/hrac/1054567,1054567
+23,486,Folbrová,Emma,2015,TO Meziboří,29-Apr,17-Apr,46,6,336,https://cztenis.cz/hrac/1064806,1064806
+65,486,Fraňková,Johana,2014,SPORT EDEN Beroun,29-Sep,17-Jun,46,6,336,https://cztenis.cz/hrac/1055732,1055732
+65,486,Havlíková,Ema,2015,TK SPORTCENTRUM Mladá Boleslav,34/6,12-Jun,46,6,336,https://cztenis.cz/hrac/1061073,1061073
+125,486,Hošková,Viktorie,2012,TJ Solidarita Praha 10,24-Feb,22-Mar,46,,,https://cztenis.cz/hrac/1059278,1059278
+97,486,Kaňková,Karolína,2012,HTK Třebíč,36/2,10/0,46,,,https://cztenis.cz/hrac/1051434,1051434
+125,486,Koutník,Sophia,2012,Tenis Cibulka,27-Jan,19-Jan,46,,,https://cztenis.cz/hrac/1058395,1058395
+97,486,Macháčková,Patricie,2014,TK Zlín,31-Mar,15-Feb,46,6,336,https://cztenis.cz/hrac/1059763,1059763
+77,486,Sobalová,Stela,2014,Tennis Hill Havířov o.s.,17-Jun,29-May,46,6,336,https://cztenis.cz/hrac/1061609,1061609
+67,494,Bernhardová,Miley,2014,SK Tenis Kladno,44/6,1-Jan,45,6,336,https://cztenis.cz/hrac/1058056,1058056
+30,494,Hejsková,Anežka,2012,SK TK Vodňany,22-Jan,23-Jan,45,,,https://cztenis.cz/hrac/1065948,1065948
+78,494,Hrudníková,Agáta,2012,"Pašťa tenis, z.s.",37/1,8-Jan,45,,,https://cztenis.cz/hrac/1061731,1061731
+37,494,Jezberová,Emma,2012,TK Slavia Plzeň,21/0,24/0,45,,,https://cztenis.cz/hrac/1054455,1054455
+30,494,Juračková,Sofie,2012,SKT Planá n.Luž.,28-Feb,17-Jan,45,,,https://cztenis.cz/hrac/1062290,1062290
+67,494,Kareš,Emma,2012,Tenis Club Mokropsy,27-Mar,18-Mar,45,,,https://cztenis.cz/hrac/1062875,1062875
+99,494,Kováčová,Marie,2015,SK Tenis Tišnov,26-Aug,19-Jul,45,6,336,https://cztenis.cz/hrac/1066531,1066531
+78,494,Trochtová,Beata,2015,TJ Zbrojovka Vsetín,36/6,9-Apr,45,6,336,https://cztenis.cz/hrac/1062887,1062887
+100,502,Coufalova,Claudia,2013,TK AGROFERT Prostějov,25-Feb,19-Jan,44,6,344,https://cztenis.cz/hrac/1056010,1056010
+80,502,Dratch,Nicole,2013,SKT Frýdlant n.O.,20-Feb,24-Feb,44,6,344,https://cztenis.cz/hrac/1065923,1065923
+100,502,Frolichová,Karolína,2013,TK Vyškov,35/6,9-Apr,44,6,344,https://cztenis.cz/hrac/1056212,1056212
+69,502,Chudomelová,Nicol,2013,TK Neridé,33/5,11-Feb,44,6,344,https://cztenis.cz/hrac/1063537,1063537
+80,502,Koníčková,Simona,2012,TK TENNISPOINT FM,19/0,25-Jan,44,,,https://cztenis.cz/hrac/1064026,1064026
+100,502,Svobodová,Karolína,2012,TK Tuřany,42/4,2/0,44,,,https://cztenis.cz/hrac/1063083,1063083
+127,508,Filjo,Victoria,2015,TK Olymp Praha,42/3,1-Jan,43,6,344,https://cztenis.cz/hrac/1058421,1058421
+39,508,Flešková,Karolína,2012,TC Chrudim z.s.,33/0,10/0,43,,,https://cztenis.cz/hrac/1056621,1056621
+24,508,Lehká,Laura,2012,TK Břízky Jablonec n.Nis.,33/1,10/0,43,,,https://cztenis.cz/hrac/1053967,1053967
+127,508,Machanová,Anika,2015,TO Bohemians Praha,21-Apr,22-May,43,6,344,https://cztenis.cz/hrac/1064600,1064600
+32,508,Mikešová,Kateřina,2013,TK Pelhřimov,35/6,8-Feb,43,6,344,https://cztenis.cz/hrac/1064901,1064901
+127,508,Pucci,Rosarie,2012,Pála Vízner Tennis z.s.,27-Feb,16-Feb,43,,,https://cztenis.cz/hrac/1056894,1056894
+82,508,Růčková,Ema,2013,TJ TO Sokol Stará Bělá,34/4,9-Jan,43,6,344,https://cztenis.cz/hrac/1058426,1058426
+130,515,Beau,Lea,2015,TK Sparta Praha,36/8,6-Jun,42,6,352,https://cztenis.cz/hrac/1061306,1061306
+130,515,Hausmann,Karlotta,2015,"SK HAMR, z.s.",32/2,10-Feb,42,6,352,https://cztenis.cz/hrac/1070636,1070636
+103,515,Laňková,Eliška,2013,TK Spartak Jihlava,27-May,15-Feb,42,6,352,https://cztenis.cz/hrac/1057892,1057892
+70,515,Maršálková,Natali,2012,TK Čelákovice,26-Jan,16-Jan,42,,,https://cztenis.cz/hrac/1056140,1056140
+103,515,Sichlerová,Ema,2012,BLTC Brno,24-Jan,18-Jan,42,,,https://cztenis.cz/hrac/1057710,1057710
+105,520,Cvachová,Eliška,2014,TK Spartak Jihlava,18-Jun,23-Jul,41,6,355,https://cztenis.cz/hrac/1068569,1068569
+83,520,Chvátalová,Veronika,2014,Family Tennis Ostrava,34/3,7-Jan,41,6,355,https://cztenis.cz/hrac/1063917,1063917
+132,520,Novická,Markéta,2012,TJ Spoje Praha,18-Jan,23-Feb,41,,,https://cztenis.cz/hrac/1057030,1057030
+132,520,Opielová,Adéla,2015,SK Aritma Praha,28-Nov,13-Sep,41,6,355,https://cztenis.cz/hrac/1067716,1067716
+40,520,Sládková,Alžběta,2013,TO SK Žamberk,18-Jun,23-Jun,41,6,355,https://cztenis.cz/hrac/1056579,1056579
+84,525,Havlíková,Andrea,2012,SKT Frýdlant n.O.,21-Jan,19-Jan,40,,,https://cztenis.cz/hrac/1052756,1052756
+38,525,Kreuzigerová,Viktorie,2014,TK Slavia Plzeň,18-Feb,22-Apr,40,6,359,https://cztenis.cz/hrac/1058465,1058465
+71,525,Kvasničková,Julie,2015,Tenisový klub Benátky nad Jizerou,28-Jun,12-May,40,6,359,https://cztenis.cz/hrac/1066691,1066691
+106,525,Lorencová,Monika,2013,TK TILIA Brno,33/4,7-Feb,40,6,359,https://cztenis.cz/hrac/1065579,1065579
+84,525,Luciaková,Nina,2013,SKT Frýdlant n.O.,17-Mar,23-Mar,40,6,359,https://cztenis.cz/hrac/1071599,1071599
+71,525,Oralová,Catarina,2015,CTA Rudná,40/1,,40,6,359,https://cztenis.cz/hrac/1065236,1065236
+84,525,Pyšná,Eliška,2013,TC BIOCEL Vratimov z.s.,24-Mar,16-Jan,40,6,359,https://cztenis.cz/hrac/1056617,1056617
+84,525,Tomisová,Barbora,2012,TC BIOCEL Vratimov z.s.,15/0,25-Feb,40,,,https://cztenis.cz/hrac/1056523,1056523
+41,525,Žoldáková,Adéla,2013,Lokomotiva Trutnov,18-Feb,22-Feb,40,6,359,https://cztenis.cz/hrac/1062171,1062171
+73,534,Červenková,Eliška,2012,TK Neridé,23-Jan,16/0,39,,,https://cztenis.cz/hrac/1054339,1054339
+134,534,Forejtková,Jasmína,2015,SK Aritma Praha,23/13,16-Oct,39,6,359,https://cztenis.cz/hrac/1058520,1058520
+88,534,Hlávková,Adéla,2012,SK JC Sport Opava,30/2,9/0,39,,,https://cztenis.cz/hrac/1054895,1054895
+33,534,Holubová,Eliška,2013,LTC Velešín z.s.,13-Jan,26-Feb,39,6,359,https://cztenis.cz/hrac/1061791,1061791
+39,534,Řehořová,Lola,2014,TK Lokomotiva Plzeň z.s.,10-Feb,29/2,39,6,359,https://cztenis.cz/hrac/1057041,1057041
+42,534,Tmějová,Nela,2012,TENIS-CENTRUM DTJ HK,12/0,27/0,39,,,https://cztenis.cz/hrac/1051301,1051301
+134,534,Trávníčková,Sára,2013,"Tenis Újezd nad Lesy, z.s.",31/2,8/0,39,6,359,https://cztenis.cz/hrac/1067640,1067640
+25,541,Plšková,Lenka,2012,SK Štětí,25-Jan,13/0,38,,,https://cztenis.cz/hrac/1065272,1065272
+107,541,Veselíková,Sofie,2012,BLTC Brno,19-Jan,19-Jan,38,,,https://cztenis.cz/hrac/1053121,1053121
+107,541,Vlčková,Sofie,2014,TC-MJ TENIS Líšeň,30-Oct,8-Jun,38,6,370,https://cztenis.cz/hrac/1063955,1063955
+74,544,Hrnčířová,Barbora,2015,Pliskova Tennis Academy-Říčany,24/13,13-Nov,37,6,371,https://cztenis.cz/hrac/1060646,1060646
+136,544,Osladilová,Sára,2014,SK OAZA Praha,32/4,5/0,37,6,371,https://cztenis.cz/hrac/1064148,1064148
+109,544,Přikrylová,Valentýna,2013,TK AGROFERT Prostějov,37/1,,37,6,371,https://cztenis.cz/hrac/1052630,1052630
+75,547,Doktorová,Natálie,2013,TJ LTC Poděbrady,13-Feb,23-Feb,36,6,374,https://cztenis.cz/hrac/1068747,1068747
+75,547,Doležalová,Erika,2013,Sparta Kutná Hora,28-Feb,8/0,36,6,374,https://cztenis.cz/hrac/1062449,1062449
+26,547,Semenyšínová,Šárka,2014,TO Meziboří,23-Mar,13-Mar,36,6,374,https://cztenis.cz/hrac/1060341,1060341
+137,547,Tomšíková,Aneta,2012,TJ Spoje Praha,24/0,12/0,36,,,https://cztenis.cz/hrac/1055778,1055778
+89,547,Trefilová,Jana,2013,TK DEZA Valašské Meziříčí,12-Jun,24-May,36,6,374,https://cztenis.cz/hrac/1065454,1065454
+75,547,Vindušková,Žaneta,2013,Tsport VOTICE o.s.,15-Jan,21-Jan,36,6,374,https://cztenis.cz/hrac/1064777,1064777
+27,553,Doležalová,Berta,2013,Tenisová akademie Březno u Loun,28-Feb,7-Jan,35,6,379,https://cztenis.cz/hrac/1064131,1064131
+138,553,Jakoubková,Eliška,2012,TJ Solidarita Praha 10,17-Jan,18-Feb,35,,,https://cztenis.cz/hrac/1059298,1059298
+43,553,Kuchová,Nela,2012,Energetik Chvaletice,21-Feb,14-Jan,35,,,https://cztenis.cz/hrac/1065912,1065912
+90,553,Kyselová,Julie,2012,TK Na Dolině o.s.,11-Jan,24-Feb,35,,,https://cztenis.cz/hrac/1058528,1058528
+34,553,Lhotská,Anna,2012,TK Pelhřimov,35/3,,35,,,https://cztenis.cz/hrac/1064902,1064902
+40,553,Luhanová,Ema,2014,"TCF Schicht Mariánské Lázně,z.s.",26-Mar,9-Jan,35,6,379,https://cztenis.cz/hrac/1067704,1067704
+138,553,Šimlovičová,Linnet,2015,LTC Praha,35/3,,35,6,379,https://cztenis.cz/hrac/1068904,1068904
+91,560,Golová,Terezie,2014,SKT Frýdlant n.O.,17-Mar,17-Jan,34,6,382,https://cztenis.cz/hrac/1055738,1055738
+35,560,Hůry,Sofie,2015,TK Pelhřimov,32/7,2-Feb,34,6,382,https://cztenis.cz/hrac/1064890,1064890
+110,560,Kapustíková,Zuzana,2015,TJ Sokol Uherský Brod,21-May,13-Mar,34,6,382,https://cztenis.cz/hrac/1071266,1071266
+140,560,Maťunina,Emilia,2014,Tenisová škola SMEČ,23-Jun,11-Apr,34,6,382,https://cztenis.cz/hrac/1067488,1067488
+140,560,Pačesová,Karolína,2014,Sokol Smíchov I.,22-Mar,12-Mar,34,6,382,https://cztenis.cz/hrac/1063033,1063033
+78,560,Peroutková,Kristýna,2012,Slavoj Český Brod,7/0,27-Jan,34,,,https://cztenis.cz/hrac/1065355,1065355
+78,560,Stehlíková,Viktorie,2012,"TK Bohutín, z.s.",32/1,2/0,34,,,https://cztenis.cz/hrac/1051191,1051191
+92,567,Hadamcziková,Laura,2014,SPORTOVNÍ KLUB KOUTY z.s.,30/2,3/0,33,6,387,https://cztenis.cz/hrac/1063011,1063011
+92,567,Hanzalová,Aneta,2013,TJ Zbrojovka Vsetín,8/0,25-Feb,33,6,387,https://cztenis.cz/hrac/1058432,1058432
+92,567,Kandzia,Amelia,2014,SK Vitality Slezsko o.s.,33/4,,33,6,387,https://cztenis.cz/hrac/1070632,1070632
+111,567,Luchetti,Giulia,2012,SK Tenis Tišnov,20/0,13/0,33,,,https://cztenis.cz/hrac/1070132,1070132
+44,567,Mynářová,Sabina,2013,"TC Dvůr Králové, z.s.",22-Jan,11/0,33,6,387,https://cztenis.cz/hrac/1056737,1056737
+95,572,Gontková,Renáta,2015,SKT Frýdlant n.O.,24-Oct,8-Sep,32,6,391,https://cztenis.cz/hrac/1067113,1067113
+112,572,Juřičková,Dominika,2013,TJ Brno-Komín,26-May,6-Apr,32,6,391,https://cztenis.cz/hrac/1060584,1060584
+36,572,Kalafutova,Adela,2015,TK Sezimovo Ústí,12-Mar,20-Mar,32,6,391,https://cztenis.cz/hrac/1066913,1066913
+95,572,Nezhodová,Anežka,2015,SKT Frýdlant n.O.,29-May,3-Apr,32,6,391,https://cztenis.cz/hrac/1065831,1065831
+142,572,Poborská,Rozárie,2014,TK Sparta Praha,26-Sep,6-May,32,6,391,https://cztenis.cz/hrac/1067801,1067801
+112,572,Zgodová,Sofie,2013,TC Bajda Kroměříž,14-May,18-Apr,32,6,391,https://cztenis.cz/hrac/1062657,1062657
+97,578,Benduliaková,Natália,2015,TJ Zbrojovka Vsetín,23-Jul,8-Mar,31,6,397,https://cztenis.cz/hrac/1067755,1067755
+80,578,Drahotová,Nella,2012,LTC Mladá Boleslav z.s.,21-Feb,10-Jan,31,,,https://cztenis.cz/hrac/1057199,1057199
+143,578,Germala,Sylvia,2015,"SK HAMR, z.s.",22-Apr,9-Mar,31,6,397,https://cztenis.cz/hrac/1055395,1055395
+143,578,Loogman,Juliet,2012,"TK DOMYNO P4, z.s.",16-Jan,15/0,31,,,https://cztenis.cz/hrac/1063960,1063960
+114,578,Pyšná,Tereza,2012,ŽLTC Brno,6/0,25/0,31,,,https://cztenis.cz/hrac/1053387,1053387
+80,578,Rezková,Ivana,2013,Tsport VOTICE o.s.,14-Feb,17-Feb,31,6,397,https://cztenis.cz/hrac/1064787,1064787
+45,578,Říhová,Tereza,2012,TO TJ Tesla Pardubice,12/0,19/0,31,,,https://cztenis.cz/hrac/1055804,1055804
+97,578,Svobodová,Sofie,2012,TK Gymnázium Uničov,21-Feb,10-Jan,31,,,https://cztenis.cz/hrac/1064792,1064792
+114,578,Žilinčíková,Zoe,2014,TENIS SLOVÁCKO z.s.,25-Feb,6-Jan,31,6,397,https://cztenis.cz/hrac/1061365,1061365
+145,587,Binderová,Barbora,2013,TK EMA o.s.,22-Sep,8-Aug,30,6,401,https://cztenis.cz/hrac/1067996,1067996
+99,587,Hubáčková,Jarmila,2013,TK Opava,30-Jan,,30,6,401,https://cztenis.cz/hrac/1069355,1069355
+116,587,Kasalová,Natálie,2013,TK Spartak Jihlava,22-Aug,8-May,30,6,401,https://cztenis.cz/hrac/1054563,1054563
+46,587,Molová,Jessika,2013,TK Turnov,20-Jan,10-Jan,30,6,401,https://cztenis.cz/hrac/1070177,1070177
+116,587,Mrštinová,Barbora,2013,Sokol Lanžhot,23-Mar,7/0,30,6,401,https://cztenis.cz/hrac/1068374,1068374
+116,587,Stehlíková,Anna,2012,TK Znojmo,7/0,23/0,30,,,https://cztenis.cz/hrac/1054797,1054797
+46,587,Zaňková,Veronika,2013,TO SK Žamberk,21-Feb,9-Jan,30,6,401,https://cztenis.cz/hrac/1054012,1054012
+119,594,Drápelová,Anežka,2012,TJ Žďár nad Sázavou,23-Feb,6-Jan,29,,,https://cztenis.cz/hrac/1069654,1069654
+146,594,Hessel,Lea,2015,-,19-Jan,10-Jan,29,6,401,https://cztenis.cz/hrac/1067288,1067288
+82,594,Hoblová,Magdaléna,2012,Sparta Kutná Hora,16-Jan,13-Jan,29,,,https://cztenis.cz/hrac/1057841,1057841
+100,594,Tomisová,Tereza,2014,TC BIOCEL Vratimov z.s.,17-Jan,12-Jan,29,6,401,https://cztenis.cz/hrac/1061579,1061579
+82,594,Vondráčková,Dominika,2015,Tenisový klub Benátky nad Jizerou,24-Aug,5-May,29,6,401,https://cztenis.cz/hrac/1066708,1066708
+48,599,Dusbabová,Kateřina,2012,TK Kvasiny,24-Feb,4/0,28,,,https://cztenis.cz/hrac/1047964,1047964
+101,599,Galková,Leona,2012,"TENIS TONDACH Hranice, z.s.",21-Feb,7/0,28,,,https://cztenis.cz/hrac/1065878,1065878
+84,599,Hájková,Viktorie,2012,Tsport VOTICE o.s.,12/0,16/0,28,,,https://cztenis.cz/hrac/1064918,1064918
+147,599,Suchánková,Denisa,2013,Sokol Čimice,13/0,15/0,28,6,410,https://cztenis.cz/hrac/1062131,1062131
+28,599,Šťastná,Ema,2015,LTK Liberec,17-Sep,11-Sep,28,6,410,https://cztenis.cz/hrac/1063199,1063199
+48,599,Valentová,Vanesa,2012,Tenisový klub Eden HK,10/0,18/0,28,,,https://cztenis.cz/hrac/1057144,1057144
+84,599,Zifčáková,Sophie,2015,Tenisový klub Mníšek,17-Jun,11-Jun,28,6,410,https://cztenis.cz/hrac/1066820,1066820
+86,606,Doušová,Barbora,2013,Tsport VOTICE o.s.,20-Jan,7/0,27,6,413,https://cztenis.cz/hrac/1066050,1066050
+102,606,Chrobáková,Natálie,2012,"SK Vítkovice 1926-Ridera, z.s.",18-Jan,9/0,27,,,https://cztenis.cz/hrac/1056763,1056763
+120,606,Lajdová,Nina,2015,SK Zlín-Mladcová,20-Jan,7-Jan,27,6,413,https://cztenis.cz/hrac/1071974,1071974
+29,606,Láníková,Nina,2013,ASK Lovosice,25-Jan,2/0,27,6,413,https://cztenis.cz/hrac/1069461,1069461
+37,606,Mrosko,Beáta,2012,LTC Tábor 1903,19/0,8/0,27,,,https://cztenis.cz/hrac/1059504,1059504
+29,606,Pálková,Elsie,2014,SK Matchball Česká Lípa,7-Feb,20-Feb,27,6,413,https://cztenis.cz/hrac/1056221,1056221
+102,606,Pohludková,Justýna,2013,Tennis Hill Havířov o.s.,25-Apr,2-Jan,27,6,413,https://cztenis.cz/hrac/1063551,1063551
+120,606,Polendová,Izabela,2013,TK TILIA Brno,13-Mar,14-Mar,27,6,413,https://cztenis.cz/hrac/1064761,1064761
+102,606,Rozmanithová,Laura,2012,TK Opava,13-Jan,14-Jan,27,,,https://cztenis.cz/hrac/1066583,1066583
+86,606,Smíšková,Ema,2014,TO Sokol Nehvizdy,18-Feb,9-Feb,27,6,413,https://cztenis.cz/hrac/1060001,1060001
+37,606,Střítecká,Amélie,2013,TJ TK Hluboká nad Vltavou,24-Apr,3-Mar,27,6,413,https://cztenis.cz/hrac/1066369,1066369
+105,617,Hronová,Viktorie,2014,TK TENNISPOINT FM,22-Feb,4-Feb,26,6,421,https://cztenis.cz/hrac/1065920,1065920
+50,617,Jedličková,Eva,2012,T.J.Nahořany n.M.,8/0,18/0,26,,,https://cztenis.cz/hrac/1059431,1059431
+31,617,Pokorná,Věra,2014,TK SLOVANKA Č. Lípa,16-Mar,10-Feb,26,6,421,https://cztenis.cz/hrac/1058191,1058191
+50,617,Stránská,Michaela,2014,Tenis Nová Paka,20-May,6-Mar,26,6,421,https://cztenis.cz/hrac/1070378,1070378
+148,621,Ali,Sofia,2014,TK EMA o.s.,17-Feb,8-Jan,25,6,424,https://cztenis.cz/hrac/1063841,1063841
+88,621,Ďuráčová,Dominika,2012,TK Mnichovo Hradiště,18-Jan,7/0,25,,,https://cztenis.cz/hrac/1054188,1054188
+148,621,Janoštíková,Klára,2015,TC ESO Praha z.s.,17-Oct,8-Mar,25,6,424,https://cztenis.cz/hrac/1060673,1060673
+122,621,Rodinová,Viktória,2013,TK Kunštát,24-Feb,1-Jan,25,6,424,https://cztenis.cz/hrac/1068710,1068710
+41,625,Edwards,Chloe,2014,TCG Karlovy Vary,11-Mar,13-Feb,24,6,424,https://cztenis.cz/hrac/1065540,1065540
+106,625,Moravcová,Karolína,2012,Ravelin Tennis Club,21-Feb,3/0,24,,,https://cztenis.cz/hrac/1069804,1069804
+106,625,Stehlíková,Nela,2012,SKT Frýdlant n.O.,7/0,17-Jan,24,,,https://cztenis.cz/hrac/1064653,1064653
+89,625,Šrámková,Nastasja,2014,Tenisový klub Benátky nad Jizerou,16-Feb,8-Jan,24,6,424,https://cztenis.cz/hrac/1061299,1061299
+90,629,Franková,Anna,2012,Tenisový klub Černošice,15-Jan,8-Jan,23,,,https://cztenis.cz/hrac/1066738,1066738
+150,629,Hršelová,Klaudie,2013,TK Ruzyně Praha,15/0,8/0,23,6,429,https://cztenis.cz/hrac/1068618,1068618
+52,629,Hrubá,Michaela,2012,Tenisový klub Eden HK,5-Jan,18-Jan,23,,,https://cztenis.cz/hrac/1051751,1051751
+32,629,Matějková,Veronika,2013,LTC Panorama Teplice,13-Feb,10-Feb,23,6,429,https://cztenis.cz/hrac/1062680,1062680
+123,629,Pešková,Nikol,2014,Slavoj Třešť,17-Jan,6-Jan,23,6,429,https://cztenis.cz/hrac/1061769,1061769
+52,629,Petružálková,Eliška,2014,TK Pernštýn 1897 Pardubice,21-Jun,2-Jan,23,6,429,https://cztenis.cz/hrac/1065304,1065304
+123,629,Raušerová,Emma,2013,TC Bajda Kroměříž,12-Mar,11-Mar,23,6,429,https://cztenis.cz/hrac/1062740,1062740
+42,629,Svárovská,Veronika,2012,Tenisklub Cheb,22-Feb,1/0,23,,,https://cztenis.cz/hrac/1061712,1061712
+108,629,Svítoková,Sophia,2015,TK Slavia Orlová,11-May,12-Apr,23,6,429,https://cztenis.cz/hrac/1067941,1067941
+91,638,Cikánková,Natálie,2012,TJ TK Neratovice,18-Feb,4-Jan,22,,,https://cztenis.cz/hrac/1060424,1060424
+91,638,Císařová,Štěpánka,2012,SPORT EDEN Beroun,21-Feb,1/0,22,,,https://cztenis.cz/hrac/1052744,1052744
+91,638,Fejfarová,Justýna,2012,TJ LTC Poděbrady,12-Jan,10-Jan,22,,,https://cztenis.cz/hrac/1060299,1060299
+33,638,Gregorová,Barbora,2015,LTK Liberec,20-May,2-Feb,22,6,429,https://cztenis.cz/hrac/1056875,1056875
+109,638,Jackowská,Mia,2015,Tennis Hill Havířov o.s.,16-Apr,6-Feb,22,6,429,https://cztenis.cz/hrac/1061711,1061711
+151,638,Jeníčková,Eliška,2014,Tenisová škola Lucie Hradecké z.s.,12-Dec,10-Jul,22,6,429,https://cztenis.cz/hrac/1068051,1068051
+91,638,Kliková,Lucie,2012,Sokol Říčany,11/0,11/0,22,,,https://cztenis.cz/hrac/1057047,1057047
+43,638,Kopúnová,Mariana,2014,Tenisklub Cheb,11-Jan,11-Jan,22,6,429,https://cztenis.cz/hrac/1061727,1061727
+91,638,Kuchařová,Vanesa,2013,TK PTA Kolín,9-Jan,13/0,22,6,429,https://cztenis.cz/hrac/1064525,1064525
+91,638,Míšková,Kristýna,2012,LTC Slovan Kladno,9/0,13/0,22,,,https://cztenis.cz/hrac/1054789,1054789
+151,638,Nazarenko,Sofiia,2013,Sokol Čimice,10-Jan,12-Jan,22,6,429,https://cztenis.cz/hrac/1069641,1069641
+91,638,Pavlíková,Adéla,2015,Slavoj Žiželice,19-Apr,3-Mar,22,6,429,https://cztenis.cz/hrac/1065638,1065638
+151,638,Rojová,Rebeka,2013,Tempo Praha,16-Feb,6/0,22,6,429,https://cztenis.cz/hrac/1062506,1062506
+91,638,Šimonovská,Ema,2012,Lokomotiva Zdice,10/0,12/0,22,,,https://cztenis.cz/hrac/1050641,1050641
+125,652,Abrahámková,Markéta,2013,TK Blansko,11-Jan,10-Jan,21,6,429,https://cztenis.cz/hrac/1059402,1059402
+125,652,Bártová,Julie,2013,TK Bystřice n.Pernštejnem,11/0,10/0,21,6,429,https://cztenis.cz/hrac/1056647,1056647
+54,652,Bejšovcová,Pavlína,2012,TJ Červený Kostelec,11/0,10/0,21,,,https://cztenis.cz/hrac/1051826,1051826
+154,652,Bilous,Margarita,2012,SK Meteor Praha,9/0,12/0,21,,,https://cztenis.cz/hrac/1066756,1066756
+125,652,Dobiášová,Elen,2012,SHARK Brno,11/0,10/0,21,,,https://cztenis.cz/hrac/1060647,1060647
+34,652,Filipi,Alena,2013,SK Matchball Česká Lípa,14-Jan,7/0,21,6,429,https://cztenis.cz/hrac/1056219,1056219
+154,652,Filipová,Ella,2015,Sokol Smíchov I.,14-Jun,7-Aug,21,6,429,https://cztenis.cz/hrac/1061817,1061817
+154,652,Klečková,Zuzana,2014,LTC Modřany 2005,21-Jun,,21,6,429,https://cztenis.cz/hrac/1060730,1060730
+34,652,Kozderková,Eliška,2012,"ČLTK Bižuterie Jablonec n. N., z. s.",17-Jan,4/0,21,,,https://cztenis.cz/hrac/1064289,1064289
+154,652,Pleskotová,Zuzana,2015,Sokol Smíchov I.,8-Sep,13-Sep,21,6,429,https://cztenis.cz/hrac/1061531,1061531
+39,652,Studničková,Karolína,2013,"TK Milevsko, z.s.",18-Mar,3-Feb,21,6,429,https://cztenis.cz/hrac/1069209,1069209
+34,652,Váchová,Ellen,2014,TO Meziboří,14-Feb,7-Feb,21,6,429,https://cztenis.cz/hrac/1058201,1058201
+39,652,Valová,Ema,2012,TK Písek,9/0,12/0,21,,,https://cztenis.cz/hrac/1060085,1060085
+110,665,Bialková,Lucie,2014,TK Opava,20-Jan,,20,6,429,https://cztenis.cz/hrac/1069377,1069377
+55,665,Chalupníková,Dorota,2012,Spartak Polička,12/0,8/0,20,,,https://cztenis.cz/hrac/1049656,1049656
+37,665,Jochmanová,Adéla,2014,TK Most,13-Mar,7-Feb,20,6,429,https://cztenis.cz/hrac/1060346,1060346
+41,665,Kalafutová,Aneta,2012,TK Sezimovo Ústí,12-Jan,8-Jan,20,,,https://cztenis.cz/hrac/1060459,1060459
+99,665,Kosinová,Michaela,2012,Slavoj Žiželice,11/0,9/0,20,,,https://cztenis.cz/hrac/1056093,1056093
+158,665,Lagomarsino,Rafaella,2012,TJ Sokol Liboc,10/0,10/0,20,,,https://cztenis.cz/hrac/1063958,1063958
+99,665,Mayerová,Karolína,2012,TK PTA Kolín,14-Jan,6/0,20,,,https://cztenis.cz/hrac/1069227,1069227
+110,665,Mazáčová,Anna,2014,TK Milo Olomouc,5-Jan,15-Jan,20,6,429,https://cztenis.cz/hrac/1063988,1063988
+37,665,Nováková,Mia,2014,LTK Liberec,17-Apr,3-Feb,20,6,429,https://cztenis.cz/hrac/1061431,1061431
+128,665,Salido,Uruchi,2015,ŽLTC Brno,17-May,3-Mar,20,6,429,https://cztenis.cz/hrac/1068242,1068242
+110,665,Semelová,Ema,2015,SK Véska,7-Jul,13-Apr,20,6,429,https://cztenis.cz/hrac/1065515,1065515
+110,665,Šedinová,Lucie,2014,"TK Mohelnice, z.s.",12-Sep,8-Mar,20,6,429,https://cztenis.cz/hrac/1061458,1061458
+114,677,Abrahamcziková,Nina,2015,SPORTOVNÍ KLUB KOUTY z.s.,14-Feb,5-Feb,19,6,458,https://cztenis.cz/hrac/1064558,1064558
+42,677,Babková,Daniela,2014,TK Strakonice,11-Feb,8-Feb,19,6,458,https://cztenis.cz/hrac/1065199,1065199
+101,677,Bubnová,Barbora,2012,Sokol Říčany,10/0,9/0,19,,,https://cztenis.cz/hrac/1059261,1059261
+42,677,Jiroušková,Vanessa,2015,"TK Milevsko, z.s.",15-Jul,4-Apr,19,6,458,https://cztenis.cz/hrac/1067118,1067118
+56,677,Kaválková,Kristýna,2014,TK Pernštýn 1897 Pardubice,13-Jan,6-Jan,19,6,458,https://cztenis.cz/hrac/1066104,1066104
+39,677,Krejčová,Laura,2015,TK Litvínov z.s.,16-Aug,3-Mar,19,6,458,https://cztenis.cz/hrac/1070340,1070340
+56,677,Masáková,Sofie,2013,Tenisový klub Eden HK,8/0,11/0,19,6,458,https://cztenis.cz/hrac/1063455,1063455
+114,677,Ostrý,Ema,2014,"TJ Start Ostrava - Poruba, z.s.",6/0,13/0,19,6,458,https://cztenis.cz/hrac/1066275,1066275
+39,677,Pilná,Magdaléna,2015,TK Litvínov z.s.,16-Apr,3-Mar,19,6,458,https://cztenis.cz/hrac/1067961,1067961
+101,677,Pípová,Eliška,2013,Sporttenis,14-Jan,5-Jan,19,6,458,https://cztenis.cz/hrac/1071875,1071875
+101,677,Vašutová,Stella,2012,Pliskova Tennis Academy-Říčany,10/0,9/0,19,,,https://cztenis.cz/hrac/1057694,1057694
+101,677,Vyletová,Štěpánka,2013,SK Tenis Kladno,11-Mar,8-Feb,19,6,458,https://cztenis.cz/hrac/1067849,1067849
+39,677,Zeráková,Eliška,2014,TK Rochlice Liberec,17-Feb,2-Jan,19,6,458,https://cztenis.cz/hrac/1059477,1059477
+44,677,Získalová,Rozálie,2014,Tenisklub Cheb,11-Jan,8-Jan,19,6,458,https://cztenis.cz/hrac/1064797,1064797
+114,677,Žingorová,Agáta,2013,"Tenis Nový Jičín,z.s.",7/0,12/0,19,6,458,https://cztenis.cz/hrac/1059893,1059893
+159,692,Antosikowa,Sofia,2014,,10-Feb,8-Feb,18,6,471,https://cztenis.cz/hrac/1071404,1071404
+105,692,Čížková,Anna,2014,Tenisový klub Černošice,16-Jun,2-Feb,18,6,471,https://cztenis.cz/hrac/1066892,1066892
+117,692,Hurtová,Anna,2013,TJ MEZ Vsetín,6/0,12/0,18,6,471,https://cztenis.cz/hrac/1059661,1059661
+117,692,Jordanová,Aneta,2013,TK Dolní Benešov,12/0,6/0,18,6,471,https://cztenis.cz/hrac/1058419,1058419
+159,692,KNOPPOVÁ,Ema,2015,"SK HAMR, z.s.",4-Apr,14-Feb,18,6,471,https://cztenis.cz/hrac/1060893,1060893
+58,692,Kopecká,Sára,2015,TK Pernštýn 1897 Pardubice,16-Apr,2-Feb,18,6,471,https://cztenis.cz/hrac/1067408,1067408
+129,692,Křikavová,Ema,2014,Slavoj Třešť,4/0,14/0,18,6,471,https://cztenis.cz/hrac/1062701,1062701
+159,692,Petrželková,Adéla,2014,TCD Donovalská,9-Mar,9-Feb,18,6,471,https://cztenis.cz/hrac/1064992,1064992
+159,692,Šimková,Sophie,2013,Sokol Smíchov I.,11-Jan,7-Jan,18,6,471,https://cztenis.cz/hrac/1060506,1060506
+45,692,Taušnerová,Veronika,2015,Tenisklub Cheb,17-Feb,1-Jan,18,6,471,https://cztenis.cz/hrac/1061725,1061725
+129,692,Tesařová,Lucie,2014,SK Tenis Tišnov,14-Mar,4-Feb,18,6,471,https://cztenis.cz/hrac/1063239,1063239
+105,692,Vintuniak,Mária,2013,TJ TK Neratovice,11-Apr,7-Mar,18,6,471,https://cztenis.cz/hrac/1065446,1065446
+42,692,Zákoucká,Liliana,2012,TK Břízky Jablonec n.Nis.,9/0,9/0,18,,,https://cztenis.cz/hrac/1053973,1053973
+117,692,Zapletalová,Michaela,2014,Ravelin Tennis Club,15-Mar,3-Mar,18,6,471,https://cztenis.cz/hrac/1069127,1069127
+131,706,Borck,Carina,2012,TJ Brno-Komín,17-Jan,,17,,,https://cztenis.cz/hrac/1060350,1060350
+43,706,Dvořáková,Anna,2014,SK Matchball Česká Lípa,10-Jan,7-Jan,17,6,471,https://cztenis.cz/hrac/1055744,1055744
+163,706,Frintova,Emma,2015,TC Spořilov Praha,13-May,4-Apr,17,6,471,https://cztenis.cz/hrac/1064704,1064704
+120,706,Harazimová,Melanie,2013,TK Opava,7-Jan,10-Jan,17,6,471,https://cztenis.cz/hrac/1069359,1069359
+107,706,Lamžová,Sabina,2012,Wilson tenis centrum z.s.,12/0,5/0,17,,,https://cztenis.cz/hrac/1057285,1057285
+43,706,Machová,Tereza,2014,TK Most,7-Jun,10-Feb,17,6,471,https://cztenis.cz/hrac/1066063,1066063
+120,706,Piekařová,Klára,2012,TC BIOCEL Vratimov z.s.,10/0,7/0,17,,,https://cztenis.cz/hrac/1056608,1056608
+107,706,Sirghi,Eliza,2012,TJ LTC Poděbrady,13/0,4/0,17,,,https://cztenis.cz/hrac/1055949,1055949
+59,706,Součková,Nela,2012,TJ Červený Kostelec,7/0,10/0,17,,,https://cztenis.cz/hrac/1063283,1063283
+107,706,Stulíková,Veronika,2013,Sport club Na Zámečku,7/0,10/0,17,6,471,https://cztenis.cz/hrac/1065394,1065394
+107,706,Šantorová,Nikola,2012,Tenis Dobříš,11-Jan,6/0,17,,,https://cztenis.cz/hrac/1063871,1063871
+44,706,Šindelářová,Johana,2015,"TK Milevsko, z.s.",14-Jun,3-Mar,17,6,471,https://cztenis.cz/hrac/1071107,1071107
+59,706,Víteková,Ella,2012,"TC Dvůr Králové, z.s.",6/0,11/0,17,,,https://cztenis.cz/hrac/1062702,1062702
+59,706,Vlčková,Agáta,2014,SK HIT Hradec Králové z.s.,10-Mar,7-Mar,17,6,471,https://cztenis.cz/hrac/1068547,1068547
+44,706,Vyhnalíková,Natálie,2015,Tenis klub Jindřichův Hradec z.s.,15-Mar,2-Mar,17,6,471,https://cztenis.cz/hrac/1067938,1067938
+107,706,Weidenborner,Anezka,2013,Sporttenis,12-Mar,5-Feb,17,6,471,https://cztenis.cz/hrac/1069096,1069096
+122,722,Bajgarová,Mariana,2014,TC Ostrava Nová Ves,10/0,6/0,16,6,493,https://cztenis.cz/hrac/1062273,1062273
+45,722,Hamplová,Sofie,2013,TK LTC Děčín,13-Jan,3/0,16,6,493,https://cztenis.cz/hrac/1068685,1068685
+112,722,Chalupová,Michaela,2012,LTC Bakov n.Jiz.,13-Jan,3/0,16,,,https://cztenis.cz/hrac/1069144,1069144
+122,722,Chlebková,Kateřina,2015,TK TENNISPOINT FM,8-Sep,8-Sep,16,6,493,https://cztenis.cz/hrac/1067507,1067507
+62,722,Kapalínová,Anna,2012,TENIS-CENTRUM DTJ HK,16-Feb,,16,,,https://cztenis.cz/hrac/1064249,1064249
+132,722,Kejíková,Agáta,2015,TK Drnovice,7-Aug,9-Mar,16,6,493,https://cztenis.cz/hrac/1064725,1064725
+46,722,Konkolová,Zora,2015,TK Škoda Plzeň z.s.,11-Jul,5-May,16,6,493,https://cztenis.cz/hrac/1059999,1059999
+132,722,Krčálová,Laura,2012,HTK Třebíč,8/0,8/0,16,,,https://cztenis.cz/hrac/1054989,1054989
+132,722,Malá,Viktorie,2014,SHARK Brno,6/0,10/0,16,6,493,https://cztenis.cz/hrac/1060682,1060682
+132,722,Pullmann,Nela,2014,Sokol Lanžhot,4/0,12-Jan,16,6,493,https://cztenis.cz/hrac/1065201,1065201
+112,722,Randarevic,Agatha,2013,CTA Rudná,13-Jan,3/0,16,6,493,https://cztenis.cz/hrac/1064335,1064335
+45,722,Ranušová,Markéta,2014,TK Most,7-Mar,9-Mar,16,6,493,https://cztenis.cz/hrac/1064795,1064795
+112,722,Sieglová,Veronika,2012,Slavoj Žiželice,6/0,10/0,16,,,https://cztenis.cz/hrac/1058440,1058440
+132,722,Štyrská,Thea,2013,TJ Žďár nad Sázavou,16-Feb,,16,6,493,https://cztenis.cz/hrac/1056944,1056944
+112,722,Uhrová,Antonie,2013,TJ TK Neratovice,6/0,10/0,16,6,493,https://cztenis.cz/hrac/1062834,1062834
+112,722,Vlastová,Anna,2013,LTC Mladá Boleslav z.s.,3/0,13/0,16,6,493,https://cztenis.cz/hrac/1057552,1057552
+112,722,Wasserburger,Anna,2015,TK Neridé,13-May,3-Mar,16,6,493,https://cztenis.cz/hrac/1060453,1060453
+122,722,Záleská,Elen,2014,TK Opava,1/0,15-Jan,16,6,493,https://cztenis.cz/hrac/1069376,1069376
+62,722,Zavřelová,Beáta,2013,"Tennis club Litomyšl, z.s.",12-Feb,4/0,16,6,493,https://cztenis.cz/hrac/1059957,1059957
+164,741,Franková,Kristýna,2013,Tempo Praha,9/0,6/0,15,6,508,https://cztenis.cz/hrac/1066665,1066665
+47,741,Kalábová,Viktorie,2014,Slavoj Litoměřice,4-Mar,11-Mar,15,6,508,https://cztenis.cz/hrac/1059587,1059587
+64,741,Kohlertová,Rozálie,2013,SK HIT Hradec Králové z.s.,10-Mar,5-Apr,15,6,508,https://cztenis.cz/hrac/1068545,1068545
+47,741,Koubová,Anežka,2015,TK Slavia Plzeň,12-Jun,3-Mar,15,6,508,https://cztenis.cz/hrac/1066510,1066510
+137,741,Maršálková,Dominika,2012,Sokol Letovice,13-Jan,2/0,15,,,https://cztenis.cz/hrac/1057638,1057638
+118,741,Melechovská,Viktorie,2014,Tenis Club Mokropsy,8-Feb,7/0,15,6,508,https://cztenis.cz/hrac/1068707,1068707
+118,741,Müllerová,Patricie,2013,Fit klub Lysá nad Labem,6/0,9/0,15,6,508,https://cztenis.cz/hrac/1068992,1068992
+125,741,Nováková,Magdaléna,2012,TK Dolní Benešov,6/0,9/0,15,,,https://cztenis.cz/hrac/1058658,1058658
+125,741,Pravdová,Valentýna,2014,SK Véska,5-Jan,10-Jan,15,6,508,https://cztenis.cz/hrac/1064529,1064529
+64,741,Štejnarová,Alžběta,2013,TK Holice,13-Feb,2/0,15,6,508,https://cztenis.cz/hrac/1059852,1059852
+164,741,Ventová,Ema,2012,TCD Donovalská,6/0,9/0,15,,,https://cztenis.cz/hrac/1060339,1060339
+47,741,Zázrivcová,Emma,2015,TK Sokolov,13-Mar,2-Feb,15,6,508,https://cztenis.cz/hrac/1070506,1070506
+127,753,Bestová,Viktorie,2012,TK Opava,14-Jan,,14,,,https://cztenis.cz/hrac/1060154,1060154
+120,753,Burgrová,Laura,2014,Tenis DLI Kladno,10-Jan,4/0,14,6,517,https://cztenis.cz/hrac/1061944,1061944
+66,753,Dostálová,Nela,2012,TK Hlinsko,14-Jan,,14,,,https://cztenis.cz/hrac/1052954,1052954
+66,753,Hejzlarová,Ella,2012,TK Dolní Dobrouč,8/0,6/0,14,,,https://cztenis.cz/hrac/1065835,1065835
+127,753,Hubáčková,Jasmína,2013,TK Opava,14-Jan,,14,6,517,https://cztenis.cz/hrac/1069356,1069356
+138,753,Kocábová,Magdaléna,2013,TK Tuřany,11-Jan,3-Jan,14,6,517,https://cztenis.cz/hrac/1063111,1063111
+166,753,Lašťovková,Valentýna,2015,Pála Vízner Tennis z.s.,13-Jan,1-Jan,14,6,517,https://cztenis.cz/hrac/1061675,1061675
+66,753,Lehká,Laura,2015,TO SK Žamberk,13-Jan,1-Jan,14,6,517,https://cztenis.cz/hrac/1059928,1059928
+49,753,Macho,Ema,2014,TK Škoda Plzeň z.s.,4-Mar,10-Feb,14,6,517,https://cztenis.cz/hrac/1068209,1068209
+48,753,Mikešová,Klára,2013,Slavoj Litoměřice,9-Apr,5-Apr,14,6,517,https://cztenis.cz/hrac/1065644,1065644
+120,753,Počárovská,Marie,2012,LTC Houštka,2/0,12/0,14,,,https://cztenis.cz/hrac/1057746,1057746
+127,753,Skopková,Ema,2014,SKT Frýdlant n.O.,5/0,9/0,14,6,517,https://cztenis.cz/hrac/1062385,1062385
+120,753,Smrž,Lilien,2015,Wilson tenis centrum z.s.,13-Jan,1-Jan,14,6,517,https://cztenis.cz/hrac/1066683,1066683
+138,753,Stojanová,Lilien,2013,BTK Brno,9/0,5/0,14,6,517,https://cztenis.cz/hrac/1065641,1065641
+49,753,Špindlerová,Elen,2015,TK Lokomotiva Plzeň z.s.,2-Feb,12-Feb,14,6,517,https://cztenis.cz/hrac/1059511,1059511
+138,753,Šplinarová,Klára,2012,Slavoj Třešť,6/0,8/0,14,,,https://cztenis.cz/hrac/1056533,1056533
+46,753,Špuláková,Nela,2013,TJ Lokomotiva Veselí n.L.,14-Feb,,14,6,517,https://cztenis.cz/hrac/1065876,1065876
+120,753,Štrofová,Klaudie,2013,TO SK Mělník,7/0,7-Jan,14,6,517,https://cztenis.cz/hrac/1061505,1061505
+66,753,Tomášková,Barbora,2012,TENIS-CENTRUM DTJ HK,,14/0,14,,,https://cztenis.cz/hrac/1061370,1061370
+48,753,Válková,Hana,2014,TCEN Hrádek nad Nisou,13-Apr,1-Jan,14,6,517,https://cztenis.cz/hrac/1067181,1067181
+120,753,Weeks,Anna,2012,Tenis Club Mokropsy,7/0,7/0,14,,,https://cztenis.cz/hrac/1065770,1065770
+127,753,Wolska,Oliwia,2013,TK SC OSTRAVA,7-Jan,7-Jan,14,6,517,https://cztenis.cz/hrac/1067384,1067384
+141,775,Divišová,Tina,2012,HTK Třebíč,5/0,8/0,13,,,https://cztenis.cz/hrac/1062552,1062552
+125,775,Doležalová,Stela,2012,SK Tenis Kladno,7/0,6/0,13,,,https://cztenis.cz/hrac/1049769,1049769
+70,775,Fišerová,Amálie,2013,TC Chrudim z.s.,7/0,6/0,13,6,517,https://cztenis.cz/hrac/1061453,1061453
+167,775,Hampel,Klára,2012,TK Sparta Praha,4/0,9/0,13,,,https://cztenis.cz/hrac/1056390,1056390
+131,775,Kociánová,Adéla,2012,TK Kopřivnice z.s.,7/0,6/0,13,,,https://cztenis.cz/hrac/1065613,1065613
+47,775,Konopová,Karolína,2014,Tenis klub Jindřichův Hradec z.s.,11-Feb,2-Feb,13,6,517,https://cztenis.cz/hrac/1064402,1064402
+70,775,Kopřivová,Anežka,2014,T.J. Sokol Jevíčko,6/0,7/0,13,6,517,https://cztenis.cz/hrac/1062635,1062635
+131,775,Máchová,Natálie,2013,SKT Frýdlant n.O.,6/0,7/0,13,6,517,https://cztenis.cz/hrac/1069123,1069123
+131,775,Mikesková,Vivien,2015,"Prime tennis club, z.s.",11-Mar,2-Feb,13,6,517,https://cztenis.cz/hrac/1067318,1067318
+167,775,Nguyen,Ha,2013,TK Písnice,6/0,7/0,13,6,517,https://cztenis.cz/hrac/1069676,1069676
+141,775,Polášková,Denisa,2013,BTK Brno,4/0,9/0,13,6,517,https://cztenis.cz/hrac/1069758,1069758
+125,775,Rampová,Kateřina,2013,Tenis Dobříš,6/0,7/0,13,6,517,https://cztenis.cz/hrac/1063870,1063870
+141,775,Sovjáková,Terezie,2014,TK Zlín,2-Feb,11-Feb,13,6,517,https://cztenis.cz/hrac/1059736,1059736
+70,775,Svobodová,Nela,2012,TK Turnov,10-Jan,3/0,13,,,https://cztenis.cz/hrac/1064511,1064511
+167,775,Šlaisová,Tereza,2012,"TK Konstruktiva, z.s.",8/0,5/0,13,,,https://cztenis.cz/hrac/1056059,1056059
+141,775,Šubrtová,Viktorie,2012,TKB Hrušovany z.s.,7/0,6/0,13,,,https://cztenis.cz/hrac/1047240,1047240
+125,775,Urválková,Adéla,2012,TK Mnichovo Hradiště,4/0,9/0,13,,,https://cztenis.cz/hrac/1051654,1051654
+70,775,Vodehnalová,Julie,2012,Spartak Polička,5/0,8/0,13,,,https://cztenis.cz/hrac/1054280,1054280
+131,775,Vyskočilová,Vanesa,2014,"Pašťa tenis, z.s.",6/0,7/0,13,6,517,https://cztenis.cz/hrac/1058333,1058333
+131,775,Zemanová,Adéla,2015,TK PRECHEZA Přerov o.s.,12-Apr,1-Jan,13,6,517,https://cztenis.cz/hrac/1061316,1061316
+145,795,Eliášová,Emma,2013,TKB Hrušovany z.s.,6/0,6/0,12,4,543,https://cztenis.cz/hrac/1054934,1054934
+145,795,Kotoučková,Ella,2013,LTC Velen Boskovice,4/0,8/0,12,4,543,https://cztenis.cz/hrac/1068944,1068944
+145,795,Machalová,Lucie,2012,"TK Dolní Dunajovice,spolek",6/0,6/0,12,,,https://cztenis.cz/hrac/1051220,1051220
+170,795,Mikulášková,Ella,2012,Sokol Smíchov I.,3/0,9/0,12,,,https://cztenis.cz/hrac/1060488,1060488
+136,795,Nádvorníková,Lucie,2015,SKT Frýdlant n.O.,11-Feb,1-Jan,12,4,543,https://cztenis.cz/hrac/1068594,1068594
+145,795,Nečasová,Isabela,2012,"TK Dolní Dunajovice,spolek",6/0,6/0,12,,,https://cztenis.cz/hrac/1058401,1058401
+128,795,Pohořelá,Anežka,2012,TK Benešov,10/0,2/0,12,,,https://cztenis.cz/hrac/1049382,1049382
+136,795,Rotterová,Eliška,2014,TC Ostrava Nová Ves,4/0,8/0,12,4,543,https://cztenis.cz/hrac/1062463,1062463
+51,795,Rybová,Vivien,2014,TK Sokolov,11-Feb,1-Jan,12,4,543,https://cztenis.cz/hrac/1060633,1060633
+50,795,Sádecká,Magdaléna,2012,TK Rochlice Liberec,8/0,4/0,12,,,https://cztenis.cz/hrac/1069766,1069766
+170,795,Sin,Stefania,2012,Sportcentrum Uhříněves,4/0,8/0,12,,,https://cztenis.cz/hrac/1068248,1068248
+74,795,Siváková,Vanessa,2014,TK Pernštýn 1897 Pardubice,7/0,5/0,12,4,543,https://cztenis.cz/hrac/1064953,1064953
+136,795,Strakošová,Elena,2012,TK Opava,1/0,11-Jan,12,,,https://cztenis.cz/hrac/1069353,1069353
+128,795,Šárová,Veronika,2014,TJ TK Neratovice,8-Mar,4-Jan,12,4,543,https://cztenis.cz/hrac/1067138,1067138
+136,795,Šubertová,Amálie,2012,TK PRECHEZA Přerov o.s.,5/0,7/0,12,,,https://cztenis.cz/hrac/1035634,1035634
+51,795,Tondlova,Daniela,2014,Tenisklub Cheb,11-Jan,1-Jan,12,4,543,https://cztenis.cz/hrac/1064661,1064661
+145,795,Veverová,Žofie,2014,TJ Sokol Bedřichov Jihlava,9-Mar,3-Mar,12,4,543,https://cztenis.cz/hrac/1066579,1066579
+48,795,Záhorková,Laura,2013,LTC Hroch Netolice,4/0,8/0,12,4,543,https://cztenis.cz/hrac/1069436,1069436
+140,813,Cieslarová,Nelly,2014,SK Vitality Slezsko o.s.,10-Feb,1-Jan,11,4,553,https://cztenis.cz/hrac/1067282,1067282
+150,813,Daniel,Mia,2015,TK Kyjov,4-Apr,7-Mar,11,4,553,https://cztenis.cz/hrac/1067943,1067943
+130,813,Holanová,Tereza,2013,Slavoj Žiželice,5/0,6/0,11,4,553,https://cztenis.cz/hrac/1063141,1063141
+130,813,Jelínková,Viktorie,2013,LTC Kolín,7/0,4/0,11,4,553,https://cztenis.cz/hrac/1063555,1063555
+172,813,Jusková,Anita,2012,Sokol Čimice,4/0,7/0,11,,,https://cztenis.cz/hrac/1048886,1048886
+172,813,Kopecká,Tereza,2015,TJ Solidarita Praha 10,3-Mar,8-Apr,11,4,553,https://cztenis.cz/hrac/1068651,1068651
+51,813,Krajníková,Anna,2013,TK Roudnice n.L.,7/0,4/0,11,4,553,https://cztenis.cz/hrac/1068550,1068550
+140,813,Kubinová,Dominika,2013,TJ Sokol Dolní Lhota,11-Feb,,11,4,553,https://cztenis.cz/hrac/1062957,1062957
+140,813,Mikuláštíková,Sabina,2015,TJ Zbrojovka Vsetín,10-Feb,1-Jan,11,4,553,https://cztenis.cz/hrac/1061489,1061489
+150,813,Musilová,Nela,2015,TJ Žďár nad Sázavou,10-Jan,1-Jan,11,4,553,https://cztenis.cz/hrac/1059606,1059606
+130,813,Pavlovska,Evelina,2012,"LTC Beroun, z.s.",6/0,5/0,11,,,https://cztenis.cz/hrac/1064931,1064931
+130,813,Pivcová,Marie,2014,Lokomotiva Beroun,5-Feb,6-Feb,11,4,553,https://cztenis.cz/hrac/1066086,1066086
+150,813,Podsedníková,Adéla,2012,TK Kunštát,2/0,9/0,11,,,https://cztenis.cz/hrac/1056829,1056829
+130,813,Sedláčková,Klára,2014,Sparta Kutná Hora,4/0,7/0,11,4,553,https://cztenis.cz/hrac/1062450,1062450
+130,813,Stuiber,Sarah,2012,I. ČLTPK Čerčany,5/0,6/0,11,,,https://cztenis.cz/hrac/1055245,1055245
+140,813,Šimková,Valentina,2012,I.NTC Olomouc,11/0,,11,,,https://cztenis.cz/hrac/1069150,1069150
+53,813,Švecová,Claudia,2013,TK Lokomotiva Plzeň z.s.,10-Jan,1/0,11,4,553,https://cztenis.cz/hrac/1060450,1060450
+140,813,Veverková,Nicol,2012,TK PRECHEZA Přerov o.s.,7/0,4/0,11,,,https://cztenis.cz/hrac/1057292,1057292
+53,813,Vondrašová,Natálie,2013,Tenisklub Cheb,11-Feb,,11,4,553,https://cztenis.cz/hrac/1061742,1061742
+145,832,Baletková,Eliška,2013,TJ Zbrojovka Vsetín,4/0,6/0,10,4,553,https://cztenis.cz/hrac/1062858,1062858
+136,832,Brzáková,Eliška,2012,TJ LTC Poděbrady,3/0,7/0,10,,,https://cztenis.cz/hrac/1060310,1060310
+75,832,Částková,Sabina,2014,DTK Skuteč,7-Mar,3/0,10,4,553,https://cztenis.cz/hrac/1059342,1059342
+136,832,Dušáková,Valerie,2012,TK PTA Kolín,3/0,7/0,10,,,https://cztenis.cz/hrac/1069228,1069228
+136,832,Franková,Kateřina,2014,Tenisový klub Černošice,2-Jan,8-Feb,10,4,553,https://cztenis.cz/hrac/1063777,1063777
+145,832,Hrtáňová,Darina,2013,"TJ Sokol Huslenky, z.s.",7/0,3/0,10,4,553,https://cztenis.cz/hrac/1059645,1059645
+136,832,Hyblerová,Kristýna,2013,LTC Mladá Boleslav z.s.,4/0,6/0,10,4,553,https://cztenis.cz/hrac/1052813,1052813
+49,832,Jágrová,Lucie,2012,TK Strakonice,10-Jan,,10,,,https://cztenis.cz/hrac/1062639,1062639
+174,832,Karásková,Laura,2013,TopTennis Xaverov s.r.o.,3/0,7/0,10,4,553,https://cztenis.cz/hrac/1063396,1063396
+49,832,Klasová,Ema,2015,TK Strakonice,9-Mar,1-Jan,10,4,553,https://cztenis.cz/hrac/1065608,1065608
+136,832,Kolaříková,Martina,2013,Tenis DLI Kladno,9/0,1/0,10,4,553,https://cztenis.cz/hrac/1064752,1064752
+145,832,Komárová,Nikola,2012,TK Bílovec,3/0,7/0,10,,,https://cztenis.cz/hrac/1057033,1057033
+174,832,Kračmarová,Nela,2012,Tempo Praha,4/0,6/0,10,,,https://cztenis.cz/hrac/1067024,1067024
+49,832,Krejčová,Kristýna,2013,TK Strakonice,8-Feb,2-Feb,10,4,553,https://cztenis.cz/hrac/1071218,1071218
+136,832,Mahdal,Melanie,2015,Pliskova Tennis Academy-Říčany,8-Nov,2-Mar,10,4,553,https://cztenis.cz/hrac/1068024,1068024
+174,832,Marwan,Selma,2015,TCD Donovalská,5-May,5-Feb,10,4,553,https://cztenis.cz/hrac/1067758,1067758
+55,832,Matoušková,Laura,2014,BATESTA Chodov,10-Jan,,10,4,553,https://cztenis.cz/hrac/1064835,1064835
+145,832,Melecká,Emma,2015,TK Bílovec,7-Jul,3-Mar,10,4,553,https://cztenis.cz/hrac/1067589,1067589
+75,832,Mojko,Viktorie,2012,Tenis Centrum Nová Paka o.s.,5/0,5/0,10,,,https://cztenis.cz/hrac/1066506,1066506
+52,832,Nejedlá,Tereza,2013,Start Liberec,5-Jan,5/0,10,4,553,https://cztenis.cz/hrac/1056920,1056920
+75,832,Novotná,Eliška,2014,DTK Skuteč,5/0,5/0,10,4,553,https://cztenis.cz/hrac/1059341,1059341
+174,832,Pavlíková,Viktorie,2014,Sokol Smíchov I.,2/0,8-Jan,10,4,553,https://cztenis.cz/hrac/1061840,1061840
+145,832,Pivodová,Anita,2014,TK PRECHEZA Přerov o.s.,3/0,7/0,10,4,553,https://cztenis.cz/hrac/1063265,1063265
+145,832,Poláková,Valerie,2014,"TJ Start Ostrava - Poruba, z.s.",5/0,5/0,10,4,553,https://cztenis.cz/hrac/1060420,1060420
+174,832,Roško,Natálie,2013,TJ Radlice z.s.,5-May,5-Feb,10,4,553,https://cztenis.cz/hrac/1067083,1067083
+136,832,Rusnáková,Nikola,2013,Tenis Dobříš,1-Jan,9-Jan,10,4,553,https://cztenis.cz/hrac/1060334,1060334
+145,832,Snášelová,Barbora,2012,TK Milo Olomouc,5/0,5/0,10,,,https://cztenis.cz/hrac/1064059,1064059
+174,832,Stehlíková,Linda,2012,TCD Donovalská,4/0,6/0,10,,,https://cztenis.cz/hrac/1065438,1065438
+153,832,Steinohová,Izabela,2012,"Gross Tenis Club Nová Ves, z.s.",4/0,6/0,10,,,https://cztenis.cz/hrac/1070088,1070088
+153,832,Šmídová,Monika,2013,BTK Brno,5/0,5/0,10,4,553,https://cztenis.cz/hrac/1065665,1065665
+55,832,Taušnerová,Monika,2015,Tenisklub Cheb,9-Mar,1-Jan,10,4,553,https://cztenis.cz/hrac/1061726,1061726
+136,832,Vahalíková,Zuzana,2012,TJ LTC Poděbrady,5/0,5-Jan,10,,,https://cztenis.cz/hrac/1068272,1068272
+145,832,Vičíková,Adéla,2012,SK Vitality Slezsko o.s.,5/0,5/0,10,,,https://cztenis.cz/hrac/1062471,1062471
+153,832,Vránová,Adriana,2014,TK Drnovice,6-Apr,4-Jan,10,4,553,https://cztenis.cz/hrac/1068541,1068541
+153,832,Zelníčková,Klára,2012,TK Moravský Krumlov z.s.,3/0,7/0,10,,,https://cztenis.cz/hrac/1052535,1052535
+136,832,Zemanová,Aneta,2012,TC VITALITY Březnice,9/0,1/0,10,,,https://cztenis.cz/hrac/1063686,1063686
+136,832,Žáková,Nela,2012,LTC Slaný,10-Jan,,10,,,https://cztenis.cz/hrac/1069707,1069707
+146,869,Akoury,Alexandra,2012,Pliskova Tennis Academy-Říčany,9-Jan,,9,,,https://cztenis.cz/hrac/1066171,1066171
+53,869,Eichlerová,Natálie,2013,TK Severní Terasa,7-Feb,2-Feb,9,4,553,https://cztenis.cz/hrac/1067870,1067870
+146,869,Fleischmannová,Jůlie,2012,T.J. Sokol Lety,9/0,,9,,,https://cztenis.cz/hrac/1063497,1063497
+157,869,Fůkalová,Karin,2013,Slovácký TK Břeclav,5/0,4/0,9,4,553,https://cztenis.cz/hrac/1068299,1068299
+78,869,Hečková,Agáta,2014,TJ Červený Kostelec,5/0,4/0,9,4,553,https://cztenis.cz/hrac/1063294,1063294
+78,869,Hoření,Mia,2014,Lokomotiva Trutnov,4/0,5/0,9,4,553,https://cztenis.cz/hrac/1062149,1062149
+146,869,Chrudimská,Julie,2013,TK Radošovice,5/0,4/0,9,4,553,https://cztenis.cz/hrac/1062719,1062719
+153,869,Kaimová,Tereza,2014,TC BIOCEL Vratimov z.s.,4/0,5/0,9,4,553,https://cztenis.cz/hrac/1062970,1062970
+146,869,Kastnerová,Tereza,2013,TK Mnichovo Hradiště,2/0,7/0,9,4,553,https://cztenis.cz/hrac/1066655,1066655
+57,869,Knorová,Anežka,2012,TK Lokomotiva Plzeň z.s.,1/0,8/0,9,,,https://cztenis.cz/hrac/1048091,1048091
+157,869,Kotačková,Karolína,2013,TJ Sokol Uherský Brod,2/0,7/0,9,4,553,https://cztenis.cz/hrac/1062104,1062104
+78,869,Kotalová,Monika,2013,TO TJ Svitavy,6/0,3/0,9,4,553,https://cztenis.cz/hrac/1062982,1062982
+146,869,Křiváčková,Sofie,2012,Tsport VOTICE o.s.,2/0,7/0,9,,,https://cztenis.cz/hrac/1068504,1068504
+78,869,Kunhartová,Nela,2012,DTK Skuteč,6/0,3/0,9,,,https://cztenis.cz/hrac/1051794,1051794
+153,869,Kvitová,Bela,2014,"Tenis Nový Jičín,z.s.",2/0,7/0,9,4,553,https://cztenis.cz/hrac/1061985,1061985
+146,869,Lušňáková,Šarlota,2013,"TENIS VLAŠIM,z.s.",7/0,2/0,9,4,553,https://cztenis.cz/hrac/1054928,1054928
+180,869,Mecová,Jasmine,2013,TK Sparta Praha,9-Feb,,9,4,553,https://cztenis.cz/hrac/1068352,1068352
+157,869,Navrátilová,Jana,2012,HTK Třebíč,3/0,6/0,9,,,https://cztenis.cz/hrac/1054956,1054956
+157,869,Pelíšková,Lucier,2013,TK Kunštát,3/0,6-Jan,9,4,553,https://cztenis.cz/hrac/1056823,1056823
+78,869,Pirklová,Lída,2014,SK Týniště nad Orlicí,3/0,6/0,9,4,553,https://cztenis.cz/hrac/1060793,1060793
+53,869,Pokorová,Lucie,2012,SK Matchball Česká Lípa,8-Jan,1/0,9,,,https://cztenis.cz/hrac/1066451,1066451
+153,869,Ponc,Klaudie,2013,TK Dolní Benešov,5/0,4/0,9,4,553,https://cztenis.cz/hrac/1058392,1058392
+146,869,Pozděnová,Barbora,2014,Lokomotiva Beroun,4/0,5/0,9,4,553,https://cztenis.cz/hrac/1064613,1064613
+146,869,Říhová,Beáta,2015,TK Neridé,8-Feb,1-Jan,9,4,553,https://cztenis.cz/hrac/1062132,1062132
+146,869,Skoupá,Natálie,2015,Pliskova Tennis Academy-Říčany,6-Jun,3-Mar,9,4,553,https://cztenis.cz/hrac/1070631,1070631
+146,869,Svobodová,Viktorie,2014,TK Radošovice,6/0,3/0,9,4,553,https://cztenis.cz/hrac/1062614,1062614
+146,869,Šimků,Ema,2012,"TK Bohutín, z.s.",7/0,2/0,9,,,https://cztenis.cz/hrac/1051858,1051858
+78,869,Špačková,Linda,2014,Lokomotiva Trutnov,4/0,5/0,9,4,553,https://cztenis.cz/hrac/1062071,1062071
+53,869,Šuberová,Leona,2012,TK Litvínov z.s.,5/0,4/0,9,,,https://cztenis.cz/hrac/1053377,1053377
+180,869,Topinková,Tereza,2013,LTC Radotín,1/0,8/0,9,4,553,https://cztenis.cz/hrac/1069978,1069978
+146,869,Trmalová,Laura,2013,TK Radošovice,6/0,3/0,9,4,553,https://cztenis.cz/hrac/1070282,1070282
+157,869,Vlachynská,Anna,2014,Tenisový klub Bzenec,9-Jun,,9,4,553,https://cztenis.cz/hrac/1067301,1067301
+146,869,Zrnová,Zdeňka,2013,"TENIS VLAŠIM,z.s.",7-Jan,2-Jan,9,4,553,https://cztenis.cz/hrac/1054019,1054019
+84,902,Balcarová,Nela,2014,TC Nové Město n. Metují,4/0,4/0,8,4,613,https://cztenis.cz/hrac/1062472,1062472
+182,902,Benčová,Stella,2013,"Tenis Újezd nad Lesy, z.s.",5-Feb,3/0,8,4,613,https://cztenis.cz/hrac/1056602,1056602
+84,902,Brožová,Katrin,2013,LTC Pardubice,6-Feb,2/0,8,4,613,https://cztenis.cz/hrac/1062820,1062820
+182,902,Brůnová,Laura,2014,Pála Vízner Tennis z.s.,,8-Jan,8,4,613,https://cztenis.cz/hrac/1066762,1066762
+156,902,Bučková,Šarlota,2013,TJ Zbrojovka Vsetín,4/0,4/0,8,4,613,https://cztenis.cz/hrac/1062859,1062859
+84,902,Ciprová,Lucie,2012,Tenisový klub Eden HK,1/0,7-Jan,8,,,https://cztenis.cz/hrac/1069859,1069859
+84,902,Crhová,Claudia,2014,TO TJ Svitavy,5/0,3/0,8,4,613,https://cztenis.cz/hrac/1054627,1054627
+182,902,Čumplová,Sofie,2012,TJ Sokol Liboc,3/0,5/0,8,,,https://cztenis.cz/hrac/1059076,1059076
+159,902,Dědičová,Barbora,2012,LTC Rakovník,2/0,6/0,8,,,https://cztenis.cz/hrac/1055693,1055693
+182,902,Gebertová,Emma,2014,TK Sparta Praha,2-Feb,6-Feb,8,4,613,https://cztenis.cz/hrac/1070893,1070893
+56,902,Hasmanová,Anna,2013,TK Most,2/0,6/0,8,4,613,https://cztenis.cz/hrac/1056992,1056992
+159,902,Hasoňová,Laura,2012,LTC Kolín,4/0,4/0,8,,,https://cztenis.cz/hrac/1069597,1069597
+182,902,Herynková,Sára,2014,Lokomotiva Praha,3/0,5/0,8,4,613,https://cztenis.cz/hrac/1068559,1068559
+159,902,Hlaváčková,Klára,2014,RADOST Králův Dvůr,5/0,3/0,8,4,613,https://cztenis.cz/hrac/1055959,1055959
+52,902,Holá,Laura,2013,TK Strakonice,1-Jan,7-Jan,8,4,613,https://cztenis.cz/hrac/1071186,1071186
+182,902,Holomečková,Nikola,2013,"Pliskova Tennis Academy, z.s.",4-Jan,4-Jan,8,4,613,https://cztenis.cz/hrac/1060338,1060338
+159,902,Chyle,Evelína,2014,TK Benešov,7-Jan,1-Jan,8,4,613,https://cztenis.cz/hrac/1068446,1068446
+156,902,Klusová,Hana,2013,SK Vitality Slezsko o.s.,3/0,5/0,8,4,613,https://cztenis.cz/hrac/1059766,1059766
+182,902,Kohoutková,Magdaléna,2015,Sokol Smíchov I.,4-Apr,4-Apr,8,4,613,https://cztenis.cz/hrac/1067482,1067482
+56,902,Kühnová,Zuzana,2012,TK Roudnice n.L.,8/0,,8,,,https://cztenis.cz/hrac/1066528,1066528
+182,902,Lehnerová,Nikol,2013,TJ Radlice z.s.,4-Jan,4-Jan,8,4,613,https://cztenis.cz/hrac/1062789,1062789
+162,902,Logajová,Eliška,2012,"TC Holešov, o.s.",6/0,2/0,8,,,https://cztenis.cz/hrac/1065852,1065852
+182,902,Lukešová,Leontina,2014,SK Aritma Praha,4-Apr,4-Apr,8,4,613,https://cztenis.cz/hrac/1068689,1068689
+56,902,Maršíková,Beata,2012,TO Meziboří,4/0,4/0,8,,,https://cztenis.cz/hrac/1061701,1061701
+182,902,Medo,Markéta,2012,Sportcentrum Uhříněves,6/0,2/0,8,,,https://cztenis.cz/hrac/1064202,1064202
+159,902,Michálková,Ela,2013,Sport club Na Zámečku,1/0,7/0,8,4,613,https://cztenis.cz/hrac/1065464,1065464
+56,902,Podzimková,Natálie,2014,TK Rochlice Liberec,6-Feb,2-Feb,8,4,613,https://cztenis.cz/hrac/1071350,1071350
+156,902,Pohanková,Julie,2012,TJ Zbrojovka Vsetín,2/0,6/0,8,,,https://cztenis.cz/hrac/1059621,1059621
+159,902,Pokorná,Zuzana,2015,TK Čelákovice,4-Apr,4-Apr,8,4,613,https://cztenis.cz/hrac/1065867,1065867
+159,902,Poláková,Anja,2014,"LTC Beroun, z.s.",4/0,4/0,8,4,613,https://cztenis.cz/hrac/1064930,1064930
+159,902,Rajnochová,Sofie,2013,1.TK Pacov,5/0,3/0,8,4,613,https://cztenis.cz/hrac/1062317,1062317
+159,902,Sedlářová,Agáta,2014,TO SK Mělník,,8/0,8,4,613,https://cztenis.cz/hrac/1069249,1069249
+182,902,Střihavková,Nikol,2012,"Tenis Újezd nad Lesy, z.s.",5/0,3/0,8,,,https://cztenis.cz/hrac/1062968,1062968
+159,902,Šebestová,Aneta,2012,Tenis Dobříš,4/0,4/0,8,,,https://cztenis.cz/hrac/1066607,1066607
+56,902,Šikolová,Ema,2012,TK Břízky Jablonec n.Nis.,3/0,5/0,8,,,https://cztenis.cz/hrac/1053971,1053971
+159,902,Švarcová,Kristýna,2014,TO Sokol Nehvizdy,6-Jan,2-Jan,8,4,613,https://cztenis.cz/hrac/1061589,1061589
+162,902,Valášková,Adéla,2015,BLTC Brno,4-Apr,4-Apr,8,4,613,https://cztenis.cz/hrac/1061529,1061529
+84,902,Vamberská,Olivia,2012,DTK Skuteč,5/0,3/0,8,,,https://cztenis.cz/hrac/1051797,1051797
+159,902,Veverková,Alice,2014,TK Čelákovice,7-Jan,1-Jan,8,4,613,https://cztenis.cz/hrac/1065908,1065908
+159,902,Weidenborner,Laura,2015,Sporttenis,1-Jan,7-Jan,8,4,613,https://cztenis.cz/hrac/1071880,1071880
+182,902,Zajíčková,Soňa,2013,TJ TK Březiněves,2/0,6/0,8,4,613,https://cztenis.cz/hrac/1060791,1060791
+159,902,Zlatohlávková,Lucie,2014,Tenisový klub Benátky nad Jizerou,4-Feb,4-Feb,8,4,613,https://cztenis.cz/hrac/1066700,1066700
+56,902,Živná,Barbora,2015,TK Kadaň,1-Jan,7-Jan,8,4,613,https://cztenis.cz/hrac/1062595,1062595
+194,945,Bálková,Kateřina,2013,"Tenis Akademie Bálek, z.s.",4/0,3/0,7,4,613,https://cztenis.cz/hrac/1052557,1052557
+159,945,Baronová,Nikol,2013,Městský tenisový klub Karviná,4-Mar,3-Mar,7,4,613,https://cztenis.cz/hrac/1068485,1068485
+173,945,Beranová,Daniela,2015,"TENIS VLAŠIM,z.s.",2-Feb,5-Jan,7,4,613,https://cztenis.cz/hrac/1066695,1066695
+164,945,Bouchnerová,Edita,2013,TC BORS CLUB,,7-Jan,7,4,613,https://cztenis.cz/hrac/1056196,1056196
+62,945,Brožková,Kateřina,2014,TK Most,7-Jan,,7,4,613,https://cztenis.cz/hrac/1056751,1056751
+159,945,Burianová,Klára,2014,SPORTOVNÍ KLUB KOUTY z.s.,2/0,5/0,7,4,613,https://cztenis.cz/hrac/1063007,1063007
+62,945,Čubová,Viktorie,2013,TK Rochlice Liberec,1/0,6/0,7,4,613,https://cztenis.cz/hrac/1057180,1057180
+89,945,Entlerová,Vilma,2014,TC Nové Město n. Metují,3/0,4/0,7,4,613,https://cztenis.cz/hrac/1062921,1062921
+173,945,Fejfarová,Karolína,2012,Tenisový klub Benátky nad Jizerou,,7/0,7,,,https://cztenis.cz/hrac/1066768,1066768
+164,945,Furchová,Viktorie,2014,SHARK Brno,2/0,5/0,7,4,613,https://cztenis.cz/hrac/1060685,1060685
+62,945,Havlová,Veronika,2015,"ČLTK Bižuterie Jablonec n. N., z. s.",7-Jan,,7,4,613,https://cztenis.cz/hrac/1068921,1068921
+58,945,Konkolová,Sára,2012,TK Škoda Plzeň z.s.,7-Jan,,7,,,https://cztenis.cz/hrac/1059997,1059997
+194,945,Kotková,Nela,2015,TCD Donovalská,4-Apr,3-Mar,7,4,613,https://cztenis.cz/hrac/1060836,1060836
+159,945,Kubíčková,Kristýna,2012,"TJ Tatran Litovel, z.s.",4/0,3/0,7,,,https://cztenis.cz/hrac/1059015,1059015
+164,945,Kvardová,Karolína,2012,"TK Dolní Dunajovice,spolek",3/0,4/0,7,,,https://cztenis.cz/hrac/1058402,1058402
+58,945,Lukášová,Nela,2012,Tenisklub Cheb,7-Jan,,7,,,https://cztenis.cz/hrac/1061707,1061707
+62,945,Martinková,Karolína,2013,SK Tenis Duchcov,6/0,1/0,7,4,613,https://cztenis.cz/hrac/1062235,1062235
+164,945,Mullerová,Alena,2012,TJ Nové Město na Moravě,3/0,4/0,7,,,https://cztenis.cz/hrac/1049303,1049303
+159,945,Nakládalová,Alice,2012,TK Na Dolině o.s.,3/0,4/0,7,,,https://cztenis.cz/hrac/1066841,1066841
+173,945,Plaštiaková,Ema,2015,"TENIS VLAŠIM,z.s.",2-Feb,5-Jan,7,4,613,https://cztenis.cz/hrac/1070087,1070087
+173,945,Podmolová,Lilien,2013,"TENIS VLAŠIM,z.s.",4/0,3/0,7,4,613,https://cztenis.cz/hrac/1064491,1064491
+159,945,Postulková,Nikol,2014,SPORTOVNÍ KLUB KOUTY z.s.,3/0,4/0,7,4,613,https://cztenis.cz/hrac/1066294,1066294
+58,945,Svobodová,Emily,2012,TK Slavia Plzeň,4/0,3/0,7,,,https://cztenis.cz/hrac/1052696,1052696
+173,945,Šimonová,Nela,2013,Sport club Na Zámečku,2/0,5/0,7,4,613,https://cztenis.cz/hrac/1069309,1069309
+53,945,Šneková,Veronika,2013,SKT Planá n.Luž.,,7/0,7,4,613,https://cztenis.cz/hrac/1068076,1068076
+89,945,Vraspírová,Bára,2013,"TK Česká Třebová, z.s.",6/0,1/0,7,4,613,https://cztenis.cz/hrac/1066120,1066120
+164,945,Wagnerova,Kristyna,2012,ŽLTC Brno,7-Jan,,7,,,https://cztenis.cz/hrac/1070483,1070483
+194,945,Záhorská,Ella,2012,Sokol Dolní Počernice z.s.,4/0,3/0,7,,,https://cztenis.cz/hrac/1067598,1067598
+91,973,Adamcová,Amálie,2013,TO SK Žamberk,2-Jan,4/0,6,4,661,https://cztenis.cz/hrac/1052891,1052891
+178,973,Bastařová,Sofie,2013,TJ Slavia Radonice,2-Feb,4-Jan,6,4,661,https://cztenis.cz/hrac/1069161,1069161
+66,973,Beranová,Eva,2013,SK Štětí,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1066115,1066115
+197,973,Blažková,Kateřina,2015,TJ Spoje Praha,4-Apr,2-Feb,6,4,661,https://cztenis.cz/hrac/1065144,1065144
+178,973,Buldrová,Zuzana,2013,Sport club Na Zámečku,5/0,1/0,6,4,661,https://cztenis.cz/hrac/1069027,1069027
+91,973,Burešová,Ema,2014,TK Hlinsko,,6/0,6,4,661,https://cztenis.cz/hrac/1063402,1063402
+178,973,Cikánková,Nela,2015,TJ TK Neratovice,2-Feb,4-Jan,6,4,661,https://cztenis.cz/hrac/1065178,1065178
+61,973,Dio,Amélie,2014,TK Horažďovice,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1066397,1066397
+178,973,Doubková,Žaneta,2013,"TJ Sokol Dolany, z.s.",1/0,5/0,6,4,661,https://cztenis.cz/hrac/1064916,1064916
+197,973,Hladová,Johanka,2014,Tempo Praha,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1058790,1058790
+66,973,Hlavsová,Anděla,2012,TK LTC Děčín,3/0,3/0,6,,,https://cztenis.cz/hrac/1068683,1068683
+178,973,Hrdličková,Linda,2014,Pliskova Tennis Academy-Říčany,4-Jan,2/0,6,4,661,https://cztenis.cz/hrac/1068661,1068661
+178,973,Husárová,Sára,2013,Tenis Dobříš,5/0,1/0,6,4,661,https://cztenis.cz/hrac/1066609,1066609
+164,973,Jelínková,Bella,2012,TK Na Dolině o.s.,1/0,5/0,6,,,https://cztenis.cz/hrac/1064199,1064199
+164,973,Klaclová,Alice,2014,"Pašťa tenis, z.s.",,6/0,6,4,661,https://cztenis.cz/hrac/1065335,1065335
+164,973,Klouparová,Valentýna,2013,TK SC OSTRAVA,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1055418,1055418
+54,973,Kostrůnková,Barbora,2012,SKT Planá n.Luž.,2/0,4/0,6,,,https://cztenis.cz/hrac/1062148,1062148
+197,973,Kotrčová,Johana,2012,SK OAZA Praha,1/0,5/0,6,,,https://cztenis.cz/hrac/1062087,1062087
+178,973,Krejsová,Sofie,2012,Tenisový klub Mníšek,3/0,3/0,6,,,https://cztenis.cz/hrac/1069909,1069909
+178,973,Kroupová,Josefína,2014,Fit klub Lysá nad Labem,4/0,2/0,6,4,661,https://cztenis.cz/hrac/1068991,1068991
+169,973,Křenková,Adéla,2014,TC Bajda Kroměříž,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1065308,1065308
+197,973,Kubičková,Leontýna,2014,TK Horní Měcholupy,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1064746,1064746
+91,973,Morbitzová,Adéla,2012,Energetik Chvaletice,3/0,3/0,6,,,https://cztenis.cz/hrac/1064816,1064816
+66,973,Němcová,Laura,2012,TC Mozkové lázně Doubice,3/0,3/0,6,,,https://cztenis.cz/hrac/1055740,1055740
+178,973,Nuslová,Adéla,2013,"TK Bohutín, z.s.",6/0,,6,4,661,https://cztenis.cz/hrac/1054389,1054389
+178,973,Pahorecká,Helena,2013,TK Roja Příbram z.s.,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1069524,1069524
+164,973,Paldusová,Silvie,2013,TK Slavia Orlová,,6/0,6,4,661,https://cztenis.cz/hrac/1062210,1062210
+164,973,Parzyk,Julie,2014,TC BIOCEL Vratimov z.s.,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1061746,1061746
+169,973,Pazderová,Daniela,2013,SK Tenis Tišnov,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1053608,1053608
+178,973,Ratajová,Emilie,2014,TK Radošovice,5/0,1/0,6,4,661,https://cztenis.cz/hrac/1065543,1065543
+66,973,Sedláčková,Veronika,2013,TK Frýdlant v Čechách,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1064161,1064161
+61,973,Seiferová,Agáta,2014,TK Horažďovice,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1065691,1065691
+178,973,Schmidová,Amálie,2013,TJ LTC Poděbrady,3/0,3/0,6,4,661,https://cztenis.cz/hrac/1068908,1068908
+197,973,Schubert,Beatrix,2012,Sokol Smíchov I.,1/0,5-Jan,6,,,https://cztenis.cz/hrac/1067498,1067498
+178,973,Siedemová,Laura,2013,1.TK Pacov,5/0,1/0,6,4,661,https://cztenis.cz/hrac/1065371,1065371
+169,973,Smejkalova,Michela,2013,ŽLTC Brno,3-Feb,3-Feb,6,4,661,https://cztenis.cz/hrac/1057182,1057182
+169,973,Svobodová,Tereza,2015,TK Třebíč,6-Mar,,6,4,661,https://cztenis.cz/hrac/1061261,1061261
+197,973,Sýkorová,Valentina,2014,TK Písnice,,6/0,6,4,661,https://cztenis.cz/hrac/1066629,1066629
+169,973,Šestáková,Nela,2014,Sokol Lanžhot,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1065202,1065202
+91,973,Škopková,Barbora,2013,TK Dolní Dobrouč,4/0,2/0,6,4,661,https://cztenis.cz/hrac/1062922,1062922
+197,973,Šnajdrová,Katka,2013,Sokol Dolní Počernice z.s.,4/0,2/0,6,4,661,https://cztenis.cz/hrac/1062025,1062025
+66,973,Švejdová,Magdalena,2012,TK Žatec,4/0,2/0,6,,,https://cztenis.cz/hrac/1069592,1069592
+164,973,Toroková,Abigail,2012,TK Slavia Orlová,2/0,4/0,6,,,https://cztenis.cz/hrac/1056509,1056509
+91,973,Vondráková,Eliška,2012,Tenis Centrum Nová Paka o.s.,1/0,5/0,6,,,https://cztenis.cz/hrac/1064999,1064999
+164,973,Wdówková,Adriana,2015,Ravelin Tennis Club,3-Mar,3-Mar,6,4,661,https://cztenis.cz/hrac/1071360,1071360
+164,973,Zdražila,Sarah,2014,TC Ostrava Nová Ves,1/0,5/0,6,4,661,https://cztenis.cz/hrac/1058427,1058427
+96,1019,Čadová,Nela,2013,TK Dolní Dobrouč,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1063264,1063264
+172,1019,Ficnarová,Natálie,2014,"TENIS TONDACH Hranice, z.s.",3/0,2/0,5,4,696,https://cztenis.cz/hrac/1065830,1065830
+96,1019,Fošumová,Tereza,2013,LTC Pardubice,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1054270,1054270
+191,1019,Gelječjan,Suzy,2013,Wilson tenis centrum z.s.,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1065479,1065479
+172,1019,Gyüreková,Nela,2014,TC Ostrava Nová Ves,,5/0,5,4,696,https://cztenis.cz/hrac/1062365,1062365
+96,1019,Havlíčková,Ema,2014,TK Ústí n. Orlicí,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1062013,1062013
+71,1019,Hniličková,Jana,2013,TCEN Hrádek nad Nisou,5-Jan,,5,4,696,https://cztenis.cz/hrac/1064830,1064830
+174,1019,Jabůrková,Terezie,2013,"Tenisový klub Vnorovy, z.s.",2/0,3/0,5,4,696,https://cztenis.cz/hrac/1069556,1069556
+174,1019,Jabůrková,Rozárie,2013,"Tenisový klub Vnorovy, z.s.",3/0,2/0,5,4,696,https://cztenis.cz/hrac/1069555,1069555
+174,1019,Kafková,Emily,2014,TK Moravský Krumlov z.s.,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1064120,1064120
+204,1019,Kainová,Johana,2014,LTC Praha,1/0,4/0,5,4,696,https://cztenis.cz/hrac/1066385,1066385
+204,1019,Kallmünzer,Leontýna,2014,Sokol Královice,,5/0,5,4,696,https://cztenis.cz/hrac/1068524,1068524
+174,1019,Klára,Janderková,2014,"Tenisový klub Mikulov, spolek",2/0,3/0,5,4,696,https://cztenis.cz/hrac/1069847,1069847
+204,1019,Koškina,Elizaveta,2015,TC Spořilov Praha,3-Mar,2-Feb,5,4,696,https://cztenis.cz/hrac/1064703,1064703
+204,1019,Koudelková,Lucie,2014,TSM Sokol Vysočany z.s.,2-Jan,3/0,5,4,696,https://cztenis.cz/hrac/1069743,1069743
+174,1019,Kubíková,Nikola,2014,TK Moravský Krumlov z.s.,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1059541,1059541
+174,1019,Lamáčková,Ema,2014,LTC Hodonín,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1060566,1060566
+172,1019,Maňáková,Beáta,2015,Rožnovský tenisový klub,3-Mar,2-Feb,5,4,696,https://cztenis.cz/hrac/1065738,1065738
+174,1019,Martinková,Lucie,2014,TK Kyjov,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1061974,1061974
+174,1019,Mittnerová,Eva,2013,TK Třebíč,4/0,1/0,5,4,696,https://cztenis.cz/hrac/1054801,1054801
+96,1019,Myslivcová,Ema,2014,Energetik Chvaletice,1/0,4/0,5,4,696,https://cztenis.cz/hrac/1065877,1065877
+96,1019,Novotná,Natálie,2013,LTC Pardubice,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1062832,1062832
+191,1019,Pánková,Stela,2013,Sportovní oddíl Týnec n/L z.s.,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1065107,1065107
+96,1019,Pavlová,Markéta,2014,TJ Červený Kostelec,1/0,4/0,5,4,696,https://cztenis.cz/hrac/1056977,1056977
+191,1019,Přinosilová,Ella,2014,TK Radošovice,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1063611,1063611
+71,1019,Pšeničková,Kristýna,2012,Start Liberec,1/0,4/0,5,,,https://cztenis.cz/hrac/1052943,1052943
+71,1019,Ptáčková,Klára,2014,LTC Panorama Teplice,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1066807,1066807
+191,1019,Rudolfová,Eliška,2014,Sokol Nové Strašecí,5/0,,5,4,696,https://cztenis.cz/hrac/1063573,1063573
+96,1019,Saifrtová,Viktorie,2014,SK HIT Hradec Králové z.s.,1/0,4-Jan,5,4,696,https://cztenis.cz/hrac/1068546,1068546
+174,1019,Smolková,Natálie,2014,"Tenisový klub Mikulov, spolek",1/0,4/0,5,4,696,https://cztenis.cz/hrac/1060359,1060359
+174,1019,Strachoňová,Kristýna,2012,TJ Sloup,3/0,2/0,5,,,https://cztenis.cz/hrac/1061705,1061705
+191,1019,Svobodová,Ella,2012,"LTC Beroun, z.s.",1/0,4/0,5,,,https://cztenis.cz/hrac/1053155,1053155
+172,1019,Šafaříková,Tereza,2014,SPORTOVNÍ KLUB KOUTY z.s.,,5/0,5,4,696,https://cztenis.cz/hrac/1065827,1065827
+174,1019,Tůmová,Eliška,2015,TJ Kraví Hora Brno,5-May,,5,4,696,https://cztenis.cz/hrac/1070410,1070410
+174,1019,Vavrečková,Kristýna,2012,SK Tenis Tišnov,3/0,2/0,5,,,https://cztenis.cz/hrac/1053336,1053336
+55,1019,Vedralová,Sofie,2014,TK Sezimovo Ústí,3/0,2/0,5,4,696,https://cztenis.cz/hrac/1067729,1067729
+191,1019,Vítová,Anika,2015,Tenis Dobříš,5-May,,5,4,696,https://cztenis.cz/hrac/1060859,1060859
+96,1019,Vonková,Matylda,2012,"Nespin, z.s.",2/0,3/0,5,,,https://cztenis.cz/hrac/1069017,1069017
+172,1019,Zhydkova,Polina,2014,"TENIS TONDACH Hranice, z.s.",,5/0,5,4,696,https://cztenis.cz/hrac/1069031,1069031
+191,1019,Zmátlová,Hana,2013,Sportovní oddíl Týnec n/L z.s.,2/0,3/0,5,4,696,https://cztenis.cz/hrac/1065108,1065108
+104,1059,Altenburgerová,Nela,2014,"TK Česká Třebová, z.s.",2/0,2/0,4,4,731,https://cztenis.cz/hrac/1065022,1065022
+186,1059,Badinová,Julie,2015,BLTC Brno,3-Mar,1-Jan,4,4,731,https://cztenis.cz/hrac/1065431,1065431
+186,1059,Bělíčková,Hana,2013,TK Zlín,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1061572,1061572
+198,1059,Borovičková,Kristýna,2012,Sportovní oddíl Týnec n/L z.s.,2/0,2/0,4,,,https://cztenis.cz/hrac/1059227,1059227
+208,1059,Braunová,Laura,2013,TJ Radlice z.s.,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1062788,1062788
+63,1059,Bundová,Stela,2012,Tenis klub Nýrsko,1/0,3/0,4,,,https://cztenis.cz/hrac/1047016,1047016
+198,1059,Doležalová,Tereza,2013,TC VITALITY Březnice,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1070153,1070153
+104,1059,Ducháčová,Šárka,2015,SK HIT Hradec Králové z.s.,2-Feb,2-Feb,4,4,731,https://cztenis.cz/hrac/1071417,1071417
+208,1059,Filipova,Stella,2015,TC ESO Praha z.s.,3-Mar,1-Jan,4,4,731,https://cztenis.cz/hrac/1065145,1065145
+177,1059,Fojtová,Nikola,2013,TK Milo Olomouc,3/0,1/0,4,4,731,https://cztenis.cz/hrac/1056183,1056183
+177,1059,Gelnarová,Sofie,2013,Městský tenisový klub Karviná,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1068482,1068482
+186,1059,Horáková,Natálie,2012,Slovácký TK Břeclav,3/0,1/0,4,,,https://cztenis.cz/hrac/1068305,1068305
+74,1059,Hourová,Eliška,2013,TK Chomutov,1-Jan,3/0,4,4,731,https://cztenis.cz/hrac/1068390,1068390
+186,1059,Janoušková,Aneta,2015,TJ Sokol Bedřichov Jihlava,3-Mar,1-Jan,4,4,731,https://cztenis.cz/hrac/1069987,1069987
+74,1059,Jánská,Jana,2012,LTC Litvínov,2/0,2/0,4,,,https://cztenis.cz/hrac/1065379,1065379
+74,1059,Jedličková,Aneta,2012,TK Roudnice n.L.,2/0,2/0,4,,,https://cztenis.cz/hrac/1066479,1066479
+104,1059,Jetmarová,Eliška,2012,TK Choceň,,4/0,4,,,https://cztenis.cz/hrac/1069307,1069307
+208,1059,Jůnová,Eliška,2014,"SK Újezd Praha 4, z.s.",1/0,3/0,4,4,731,https://cztenis.cz/hrac/1067946,1067946
+104,1059,Knollová,Timea,2013,T.J. Sokol Jevíčko,,4/0,4,4,731,https://cztenis.cz/hrac/1062634,1062634
+104,1059,Kočárníková,Viktorie,2014,Energetik Chvaletice,,4/0,4,4,731,https://cztenis.cz/hrac/1065699,1065699
+186,1059,Kočíková,Jolana,2013,TJ Nové Město na Moravě,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1056157,1056157
+198,1059,Kolomazníková,Dora,2013,Sportovní oddíl Týnec n/L z.s.,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1065106,1065106
+63,1059,Kovaříková,Elen,2013,TK Lokomotiva Plzeň z.s.,,4/0,4,4,731,https://cztenis.cz/hrac/1052862,1052862
+56,1059,Krejčová,Karolína,2013,TK Strakonice,2-Feb,2-Feb,4,4,731,https://cztenis.cz/hrac/1071219,1071219
+186,1059,Lančaričová,Tereza,2012,Orel jednota Uherský Brod,3/0,1/0,4,,,https://cztenis.cz/hrac/1069779,1069779
+198,1059,Landová,Chloe,2012,Tenis DLI Kladno,2/0,2/0,4,,,https://cztenis.cz/hrac/1065174,1065174
+198,1059,Marešová,Lilien,2014,TK Mnichovo Hradiště,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1069849,1069849
+186,1059,Mičková,Eliška,2015,TK TILIA Brno,4-Apr,,4,4,731,https://cztenis.cz/hrac/1067217,1067217
+104,1059,Mikulecká,Aneta,2013,TK Letohrad,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1065101,1065101
+177,1059,Moravčíková,Viktorie,2014,"Pašťa tenis, z.s.",2/0,2/0,4,4,731,https://cztenis.cz/hrac/1065779,1065779
+186,1059,Nekudová,Stella,2013,"D&M Tennis Academy, z.s.",2/0,2/0,4,4,731,https://cztenis.cz/hrac/1056269,1056269
+186,1059,Novotná,Nikol,2013,TK Kyjov,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1061963,1061963
+208,1059,Novotná,Laura,2013,"Tenis Újezd nad Lesy, z.s.",1-Jan,3/0,4,4,731,https://cztenis.cz/hrac/1067588,1067588
+186,1059,Palbuchtová,Karolína,2013,TK Kunštát,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1063250,1063250
+198,1059,Papáčková,Ela,2012,TK Radošovice,1/0,3/0,4,,,https://cztenis.cz/hrac/1069226,1069226
+186,1059,Petrželová,Claudie,2015,TENIS SLOVÁCKO z.s.,3-Mar,1-Jan,4,4,731,https://cztenis.cz/hrac/1064081,1064081
+177,1059,Petřeková,Nina,2014,TK DEZA Valašské Meziříčí,,4/0,4,4,731,https://cztenis.cz/hrac/1058448,1058448
+208,1059,Piková,Valerie,2014,Pála Vízner Tennis z.s.,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1066811,1066811
+104,1059,Pinkasová,Bára,2014,"Sportovní klub Třebechovice pod Orebem,z.s.",1/0,3/0,4,4,731,https://cztenis.cz/hrac/1068384,1068384
+198,1059,Pöschlová,Gabriela,2013,Tenis Dobříš,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1066605,1066605
+208,1059,Puchmeltrová,Karolína,2013,TK Ruzyně Praha,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1069680,1069680
+208,1059,Pylypchuk,Sofija,2013,TJ Solidarita Praha 10,4/0,,4,4,731,https://cztenis.cz/hrac/1055673,1055673
+186,1059,Ruibarová,Alice,2013,TK Moravský Krumlov z.s.,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1056687,1056687
+177,1059,Ryszková,Ema,2014,"TK Havířov, z.s.",2/0,2/0,4,4,731,https://cztenis.cz/hrac/1064768,1064768
+177,1059,Sedláčková,Sára,2012,Rožnovský tenisový klub,,4/0,4,,,https://cztenis.cz/hrac/1056716,1056716
+56,1059,Sedláková,Karolína,2013,TK Sezimovo Ústí,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1070121,1070121
+74,1059,Senta,Zoe,2012,Start Liberec,2/0,2/0,4,,,https://cztenis.cz/hrac/1068191,1068191
+177,1059,Slivková,Adéla,2013,TK Dolní Benešov,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1058183,1058183
+208,1059,Soukenková,Eliška,2012,TopTennis Xaverov s.r.o.,1/0,3/0,4,,,https://cztenis.cz/hrac/1065672,1065672
+208,1059,Stezková,Amálie,2012,"Tenis Újezd nad Lesy, z.s.",1/0,3/0,4,,,https://cztenis.cz/hrac/1070293,1070293
+208,1059,Stočesová,Stella,2015,"TK Konstruktiva, z.s.",4-Apr,,4,4,731,https://cztenis.cz/hrac/1069086,1069086
+177,1059,Strungová,Sára,2012,TC Ostrava Nová Ves,2/0,2/0,4,,,https://cztenis.cz/hrac/1058832,1058832
+177,1059,Surovčíková,Leontýna,2015,TJ Zbrojovka Vsetín,2-Mar,2-Feb,4,4,731,https://cztenis.cz/hrac/1062890,1062890
+198,1059,Šandová,Babeta,2013,Sokol Nové Strašecí,4/0,,4,4,731,https://cztenis.cz/hrac/1063574,1063574
+186,1059,Šindelková,Simona,2014,HTK Třebíč,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1065890,1065890
+198,1059,Špillerová,Nikol,2013,1.TK Pacov,4/0,,4,4,731,https://cztenis.cz/hrac/1062436,1062436
+177,1059,Václavíková,Tina,2013,"TJ Sokol Huslenky, z.s.",1/0,3/0,4,4,731,https://cztenis.cz/hrac/1059631,1059631
+186,1059,Valášková,Justýna,2014,TK Blansko,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1057001,1057001
+104,1059,Valentová,Ema,2013,SK HIT Hradec Králové z.s.,2-Feb,2-Feb,4,4,731,https://cztenis.cz/hrac/1070606,1070606
+74,1059,Váňová,Jolana,2014,TK Chomutov,1/0,3/0,4,4,731,https://cztenis.cz/hrac/1065158,1065158
+104,1059,Vařeková,Kristýna,2014,TO TJ Tesla Pardubice,2-Feb,2-Feb,4,4,731,https://cztenis.cz/hrac/1071071,1071071
+186,1059,Vašková,Alex,2015,TC BORS CLUB,2-Feb,2-Feb,4,4,731,https://cztenis.cz/hrac/1068313,1068313
+104,1059,Vítková,Adéla,2013,DTK Skuteč,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1063126,1063126
+177,1059,Vlachová,Ester,2013,TK Zašová,4/0,,4,4,731,https://cztenis.cz/hrac/1060100,1060100
+198,1059,Zimčíková,Ema,2013,TC Tachlovice,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1062882,1062882
+208,1059,Žahourová,Emma,2013,Sportcentrum Uhříněves,2/0,2/0,4,4,731,https://cztenis.cz/hrac/1068250,1068250
+79,1125,Barcalová,Barbora,2014,TK Doksy,3/0,,3,4,731,https://cztenis.cz/hrac/1056218,1056218
+219,1125,Bárová,Rozálie,2012,LTC Praha,1/0,2/0,3,,,https://cztenis.cz/hrac/1061871,1061871
+79,1125,Brunová,Ema,2014,TK Louny,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1062511,1062511
+114,1125,Čechlovská,Adriana,2012,DTK Skuteč,3/0,,3,,,https://cztenis.cz/hrac/1054969,1054969
+114,1125,Čepelková,Anděla,2013,TK Letohrad,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1054707,1054707
+208,1125,Červenková,Diana,2013,TC VITALITY Březnice,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1070155,1070155
+201,1125,Daňková,Claudia,2013,Sokol Brno Žabovřesky,,3/0,3,4,731,https://cztenis.cz/hrac/1066388,1066388
+188,1125,Dohnalová,Sofie,2013,TK Dolní Benešov,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1058182,1058182
+219,1125,Dubová,Sara,2012,Sportcentrum Uhříněves,1/0,2/0,3,,,https://cztenis.cz/hrac/1064993,1064993
+219,1125,Dvorská,Kateřina,2013,"TCM Dubeč, z.s.",3/0,,3,4,731,https://cztenis.cz/hrac/1059413,1059413
+114,1125,Ellová,Markéta,2014,"Sportovní klub Třebechovice pod Orebem,z.s.",1/0,2/0,3,4,731,https://cztenis.cz/hrac/1065206,1065206
+208,1125,Fürstová,Ella,2013,TK Radošovice,,3/0,3,4,731,https://cztenis.cz/hrac/1062751,1062751
+201,1125,Hamříková,Lucie,2013,"Gross Tenis Club Nová Ves, z.s.",,3/0,3,4,731,https://cztenis.cz/hrac/1070033,1070033
+201,1125,Hanzová,Esther,2012,"Tenisový klub Vnorovy, z.s.",1/0,2/0,3,,,https://cztenis.cz/hrac/1068423,1068423
+114,1125,Hegerová,Natálie,2013,"Tennis club Litomyšl, z.s.",1/0,2/0,3,4,731,https://cztenis.cz/hrac/1059969,1059969
+58,1125,Hroudová,Elena,2014,TK Strakonice,2-Feb,1-Jan,3,4,731,https://cztenis.cz/hrac/1071174,1071174
+201,1125,Chmelařová,Mariana,2013,"Tenisový klub Vnorovy, z.s.",,3/0,3,4,731,https://cztenis.cz/hrac/1056214,1056214
+114,1125,Chupíková,Charlotte,2014,"TK Česká Třebová, z.s.",1/0,2/0,3,4,731,https://cztenis.cz/hrac/1065023,1065023
+219,1125,Jandová,Karolína,2014,"Tenis Újezd nad Lesy, z.s.",2/0,1/0,3,4,731,https://cztenis.cz/hrac/1059255,1059255
+79,1125,Janotková,Elena,2012,TK Žatec,1/0,2/0,3,,,https://cztenis.cz/hrac/1069703,1069703
+201,1125,Janoušková,Veronika,2013,TJ Sokol Bedřichov Jihlava,2-Feb,1-Jan,3,4,731,https://cztenis.cz/hrac/1069986,1069986
+79,1125,Johannis,Leontýna,2015,TK Most,2-Feb,1-Jan,3,4,731,https://cztenis.cz/hrac/1068811,1068811
+208,1125,Jouglová,Denisa,2014,Slavoj Český Brod,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1057585,1057585
+208,1125,Katra,Sofie,2014,CTA Rudná,,3/0,3,4,731,https://cztenis.cz/hrac/1064522,1064522
+208,1125,Knoblochová,Veronika,2013,TK Stochov,,3/0,3,4,731,https://cztenis.cz/hrac/1066101,1066101
+188,1125,Kocurová,Michaela,2013,TK Hlučín,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1069056,1069056
+79,1125,Kokošková,Beáta,2013,Tenis Libochovice,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1063378,1063378
+79,1125,Králová,Klaudie,2013,TK Žatec,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1069596,1069596
+58,1125,Kukačková,Elena,2012,LTC Velešín z.s.,3/0,,3,,,https://cztenis.cz/hrac/1057777,1057777
+79,1125,Kunešová,Ellena,2014,TK SLOVANKA Č. Lípa,1-Jan,2-Jan,3,4,731,https://cztenis.cz/hrac/1056758,1056758
+219,1125,Kyselová,Karolína,2012,Sokol Dolní Počernice z.s.,3/0,,3,,,https://cztenis.cz/hrac/1054313,1054313
+219,1125,Langerová,Eliška,2015,TJ Radlice z.s.,2-Feb,1-Jan,3,4,731,https://cztenis.cz/hrac/1065895,1065895
+219,1125,Limberská,Eva,2012,"Tenis Akademie Bálek, z.s.",1/0,2/0,3,,,https://cztenis.cz/hrac/1062405,1062405
+219,1125,Ludvíková,Aneta,2014,SK OAZA Praha,,3/0,3,4,731,https://cztenis.cz/hrac/1068626,1068626
+208,1125,Mojžíšová,Kristýna,2013,TK Hořovice,3/0,,3,4,731,https://cztenis.cz/hrac/1057439,1057439
+114,1125,Moravcová,Adéla,2014,TK Holice,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1065031,1065031
+79,1125,Mykulin,Vanessa,2012,TK Rochlice Liberec,1/0,2/0,3,,,https://cztenis.cz/hrac/1070010,1070010
+201,1125,Osičková,Eliška,2014,Sokol Lanžhot,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1065204,1065204
+219,1125,Papáčková,Karolína,2012,Tempo Praha,3/0,,3,,,https://cztenis.cz/hrac/1058857,1058857
+114,1125,Pávková,Marie,2013,T.J. Sokol Jevíčko,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1062636,1062636
+188,1125,Pejznochová,Karla,2013,TK SC OSTRAVA,3/0,,3,4,731,https://cztenis.cz/hrac/1059451,1059451
+79,1125,Pilchova,Julie,2013,TK Severní Terasa,1-Jan,2-Jan,3,4,731,https://cztenis.cz/hrac/1067869,1067869
+201,1125,Prokešová,Dominika,2012,Slovácký TK Břeclav,2/0,1/0,3,,,https://cztenis.cz/hrac/1068302,1068302
+201,1125,Průšová,Kateřina,2012,"Gross Tenis Club Nová Ves, z.s.",,3/0,3,,,https://cztenis.cz/hrac/1070072,1070072
+208,1125,Rennerová,Kristýna,2014,Lokomotiva Beroun,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1066113,1066113
+188,1125,Schönová,Tereza,2013,"TJ Sokol Huslenky, z.s.",2/0,1/0,3,4,731,https://cztenis.cz/hrac/1062261,1062261
+201,1125,Skřičková,Adina,2014,TJ Kraví Hora Brno,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1052585,1052585
+219,1125,Soukupová,Nicol,2014,"TK Konstruktiva, z.s.",,3/0,3,4,731,https://cztenis.cz/hrac/1067504,1067504
+58,1125,Stiborová,Zuzana,2014,TJ Lokomotiva Veselí n.L.,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1068567,1068567
+201,1125,Strnadová,Jana,2013,TKB Hrušovany z.s.,,3/0,3,4,731,https://cztenis.cz/hrac/1054935,1054935
+208,1125,Suchá,Ella,2013,TC Tachlovice,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1069408,1069408
+114,1125,Suthard,Katie,2013,TK Hlinsko,1/0,2/0,3,4,731,https://cztenis.cz/hrac/1063425,1063425
+79,1125,Svitáková,Michaela,2013,TK Chomutov,3/0,,3,4,731,https://cztenis.cz/hrac/1067246,1067246
+114,1125,Svoboda,Sofie,2014,Energetik Chvaletice,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1069728,1069728
+79,1125,Šlapáková,Kristýna,2012,SK Štětí,,3/0,3,,,https://cztenis.cz/hrac/1066238,1066238
+188,1125,Štamposká,Nikola,2014,Rožnovský tenisový klub,2-Mar,1-Jan,3,4,731,https://cztenis.cz/hrac/1062811,1062811
+219,1125,Twardziková,Sára,2013,TO Bohemians Praha,2/0,1/0,3,4,731,https://cztenis.cz/hrac/1068965,1068965
+114,1125,Valentová,Aneta,2014,SK HIT Hradec Králové z.s.,2-Jan,1/0,3,4,731,https://cztenis.cz/hrac/1061384,1061384
+201,1125,Walter,Laureen,2014,Sokol Brno Žabovřesky,,3/0,3,4,731,https://cztenis.cz/hrac/1060478,1060478
+208,1125,Zelenková,Eliška,2012,TK Roja Příbram z.s.,,3/0,3,,,https://cztenis.cz/hrac/1054792,1054792
+124,1185,Amálie,Vomáčková,2013,"TC SANITINO Academy, z.s.",,2/0,2,3,829,https://cztenis.cz/hrac/1062735,1062735
+212,1185,Bártová,Nela,2014,TJ Žďár nad Sázavou,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1067183,1067183
+230,1185,Blažková,Dorota,2013,Sokol Smíchov I.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1063218,1063218
+90,1185,Brůnová,Claudia,2013,Slavoj Litoměřice,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1058146,1058146
+61,1185,Břízová,Eliška,2012,LTC Velešín z.s.,1/0,1/0,2,,,https://cztenis.cz/hrac/1057814,1057814
+193,1185,Cieslarová,Barbora,2015,Rožnovský tenisový klub,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1068854,1068854
+90,1185,Čápová,Karolína,2012,TK Evženie Klášterec n/O,2/0,,2,,,https://cztenis.cz/hrac/1068013,1068013
+212,1185,Čermáková,Michaela,2013,TJ Brno-Komín,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1069379,1069379
+90,1185,Černohouzová,Ella,2015,LTK Liberec,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1059162,1059162
+217,1185,Čmolíková,Ema,2014,TJ TK Neratovice,2/0,,2,3,829,https://cztenis.cz/hrac/1061969,1061969
+90,1185,Feiglová,Veronika,2013,TK Roudnice n.L.,,2/0,2,3,829,https://cztenis.cz/hrac/1068561,1068561
+230,1185,Freyová,Helena,2015,I. ČLTPK Čerčany,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1070250,1070250
+90,1185,Fryčová,Kateřina,2013,TK Rochlice Liberec,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1056881,1056881
+124,1185,Grossová,Beata,2013,TK Dolní Dobrouč,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1062930,1062930
+230,1185,Grytsenko,Viktoriia,2012,Sokol Dolní Počernice z.s.,1/0,1/0,2,,,https://cztenis.cz/hrac/1065265,1065265
+193,1185,Hartmanová,Natálie,2013,"Pašťa tenis, z.s.",,2/0,2,3,829,https://cztenis.cz/hrac/1062424,1062424
+124,1185,Havlíčková,Kristýna,2013,Energetik Chvaletice,2/0,,2,3,829,https://cztenis.cz/hrac/1065491,1065491
+230,1185,Hernychová,Luisa,2013,Sokol Dolní Počernice z.s.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1062920,1062920
+212,1185,Hloupá,Alexandra,2013,"TC Komárov, z.s.",2/0,,2,3,829,https://cztenis.cz/hrac/1068180,1068180
+217,1185,Horáková,Zuzana,2012,Sokol Říčany,,2/0,2,,,https://cztenis.cz/hrac/1066314,1066314
+217,1185,Hrubá,Linda,2015,Lokomotiva Nymburk,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1071640,1071640
+193,1185,Hudečková,Nikol,2012,TK Hlučín,2/0,,2,,,https://cztenis.cz/hrac/1069140,1069140
+65,1185,Hynčíková,Dora,2014,SK SPORTCENTRUM Roudná,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1066004,1066004
+90,1185,Chaloupková,Marie,2012,SK Tenis Duchcov,1/0,1/0,2,,,https://cztenis.cz/hrac/1056131,1056131
+217,1185,Janatová,Adéla,2014,Sparta Kutná Hora,,2/0,2,3,829,https://cztenis.cz/hrac/1065216,1065216
+65,1185,Jandová,Tereza,2012,LTC Domažlice,1/0,1/0,2,,,https://cztenis.cz/hrac/1064741,1064741
+61,1185,Jedlinská,Anna,2013,Tenis klub Jindřichův Hradec z.s.,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1069506,1069506
+90,1185,Ježková,Sára,2013,TK Žatec,,2/0,2,3,829,https://cztenis.cz/hrac/1066064,1066064
+65,1185,Josifková,Emma,2012,TK Kaznějov,1/0,1/0,2,,,https://cztenis.cz/hrac/1060695,1060695
+217,1185,Kašparová,Natálie,2014,TJ TK Neratovice,2-Feb,,2,3,829,https://cztenis.cz/hrac/1067632,1067632
+212,1185,Kloudová,Valerie,2015,TK Znojmo,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1058713,1058713
+212,1185,Knotková,Rozárie,2013,"Tenisový klub Vnorovy, z.s.",1/0,1/0,2,3,829,https://cztenis.cz/hrac/1069129,1069129
+217,1185,Kožíšková,Julie,2014,RADOST Králův Dvůr,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1055991,1055991
+193,1185,Králová,Johana,2014,SKT Frýdlant n.O.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1064842,1064842
+90,1185,Krumpová,Klaudie,2012,TK Severní Terasa,1/0,1/0,2,,,https://cztenis.cz/hrac/1067912,1067912
+193,1185,Krzestanová,Sofie,2012,SK JC Sport Opava,1/0,1/0,2,,,https://cztenis.cz/hrac/1058057,1058057
+193,1185,Křenková,Diana,2014,TJ Zbrojovka Vsetín,,2/0,2,3,829,https://cztenis.cz/hrac/1070041,1070041
+61,1185,Kubátová,Laura,2015,SK TK Vodňany,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1065952,1065952
+193,1185,Kučerková,Lucie,2014,TK PRECHEZA Přerov o.s.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1066326,1066326
+90,1185,Kučerová,Adéla,2014,LTC Litvínov,,2/0,2,3,829,https://cztenis.cz/hrac/1063058,1063058
+193,1185,Kuchejdová,Zuzana,2013,TK Hlučín,,2/0,2,3,829,https://cztenis.cz/hrac/1069051,1069051
+230,1185,Kvíčalová,Klára,2014,TJ Spoje Praha,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1062432,1062432
+90,1185,Lacková,Albina,2014,TK Severní Terasa,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1067905,1067905
+212,1185,Lamáčková,Anna,2014,LTC Hodonín,,2/0,2,3,829,https://cztenis.cz/hrac/1060567,1060567
+61,1185,Laube,Markéta,2014,SK TK Vodňany,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1065954,1065954
+65,1185,Lavičková,Anna,2014,Tenisklub Cheb,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1061734,1061734
+212,1185,Malotová,Zuzana,2015,Jiskra Otrokovice,2-Feb,,2,3,829,https://cztenis.cz/hrac/1065060,1065060
+124,1185,Maršíková,Zuzana,2015,TO SK Žamberk,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1065655,1065655
+193,1185,Matkovičová,Matea,2015,TJ Zbrojovka Vsetín,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1066138,1066138
+90,1185,Mayerová,Elena,2013,ASK Lovosice,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1069465,1069465
+124,1185,Menšíková,Nikola,2013,TJ Sparta Úpice,2/0,,2,3,829,https://cztenis.cz/hrac/1062543,1062543
+124,1185,Mikešová,Magdaléna,2015,Tenisový klub Eden HK,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1069854,1069854
+217,1185,Mináriková,Simona,2015,LTC Mladá Boleslav z.s.,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1058673,1058673
+212,1185,Mittnerová,Ina,2013,TK Třebíč,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1054800,1054800
+193,1185,Mrozovská,Agnes,2014,Tennis Hill Havířov o.s.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1061696,1061696
+193,1185,Musialková,Pavlína,2013,TJ Sokol Dolní Lhota,2-Feb,,2,3,829,https://cztenis.cz/hrac/1058891,1058891
+90,1185,Němcová,Daniela,2012,TK Břízky Jablonec n.Nis.,1/0,1/0,2,,,https://cztenis.cz/hrac/1065509,1065509
+230,1185,Niplová,Stella,2013,"TK DOMYNO P4, z.s.",1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1071558,1071558
+90,1185,Orucoglu,Deniz,2015,SK Matchball Česká Lípa,2-Feb,,2,3,829,https://cztenis.cz/hrac/1064465,1064465
+230,1185,Pácová,Terezie,2014,SK Meteor Praha,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1070189,1070189
+193,1185,Paszová,Agáta,2013,Městský tenisový klub Karviná,,2/0,2,3,829,https://cztenis.cz/hrac/1068319,1068319
+217,1185,Pěchová,Sára,2013,TC VITALITY Březnice,,2/0,2,3,829,https://cztenis.cz/hrac/1070196,1070196
+90,1185,Podaná,Tereza,2012,TK Evženie Klášterec n/O,1/0,1/0,2,,,https://cztenis.cz/hrac/1070225,1070225
+212,1185,Podhradská,Nikol,2014,BLTC Brno,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1070289,1070289
+193,1185,Polochová,Lucie,2015,"TK Petřvald,o.s.",1/0,1/0,2,3,829,https://cztenis.cz/hrac/1070272,1070272
+212,1185,Porubská,Amálie,2012,"TK Dolní Dunajovice,spolek",1/0,1/0,2,,,https://cztenis.cz/hrac/1065724,1065724
+212,1185,Prokešová,Darinka,2014,Slovácký TK Břeclav,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1068303,1068303
+217,1185,Příbramská,Sára,2013,TO Sokol Nehvizdy,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1055871,1055871
+217,1185,Pušková,Tereza,2014,I. ČLTPK Čerčany,0/1,2/0,2,3,829,https://cztenis.cz/hrac/1063730,1063730
+124,1185,Řeháková,Barbora,2012,"TK Česká Třebová, z.s.",1/0,1/0,2,,,https://cztenis.cz/hrac/1066390,1066390
+90,1185,Sacharová,Nela,2014,TK Louny,,2/0,2,3,829,https://cztenis.cz/hrac/1069664,1069664
+212,1185,Schmidová,Gabriela,2014,TK Znojmo,2-Feb,0/1,2,3,829,https://cztenis.cz/hrac/1066534,1066534
+212,1185,Schottenbergerová,Gita,2014,SK Tenis Tišnov,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1066551,1066551
+193,1185,Svobodová,Naďa,2013,"Prime tennis club, z.s.",1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1068220,1068220
+212,1185,Šebelová,Tereza,2014,TJ Brno-Komín,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1060067,1060067
+124,1185,Šévlová,Adele,2013,"TC Dvůr Králové, z.s.",1/0,1/0,2,3,829,https://cztenis.cz/hrac/1061867,1061867
+124,1185,Šlesingerová,Petra,2013,Sokol Smiřice,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1066389,1066389
+212,1185,Šmídová,Michaela,2015,TENIS SLOVÁCKO z.s.,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1067256,1067256
+61,1185,Šonková,Kristýna,2013,"TK Milevsko, z.s.",1/0,1/0,2,3,829,https://cztenis.cz/hrac/1069468,1069468
+61,1185,Šonková,Nela,2012,TK Sezimovo Ústí,1/0,1/0,2,,,https://cztenis.cz/hrac/1065971,1065971
+217,1185,Špádtová,Marie,2014,TO Sokol Nehvizdy,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1064452,1064452
+217,1185,Špíšková,Barbora,2012,CTA Rudná,1/0,1/0,2,,,https://cztenis.cz/hrac/1064859,1064859
+61,1185,Šuláková,Emma,2015,"LTC VITON České Budějovice,z.s.",1-Feb,1-Jan,2,3,829,https://cztenis.cz/hrac/1067891,1067891
+217,1185,Šváchová,Eliška,2014,LTC Rakovník,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1063640,1063640
+217,1185,Švorcová,Adéla,2012,TJ LTC Poděbrady,1/0,1/0,2,,,https://cztenis.cz/hrac/1060300,1060300
+90,1185,Vavrušková,Ema,2012,Start Liberec,1/0,1/0,2,,,https://cztenis.cz/hrac/1054810,1054810
+193,1185,Veverková,Andrea,2013,TK PRECHEZA Přerov o.s.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1057293,1057293
+124,1185,Vondráčková,Zuzana,2014,"TC Dvůr Králové, z.s.",1/0,1/0,2,3,829,https://cztenis.cz/hrac/1055498,1055498
+230,1185,Voplakalová,Kristýna,2014,TJ Radlice z.s.,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1062783,1062783
+65,1185,Wallner,Barbara,2013,LTK Klatovy,1/0,1/0,2,3,829,https://cztenis.cz/hrac/1054607,1054607
+217,1185,Zavřelová,Laura,2015,I. ČLTPK Čerčany,1-Jan,1-Jan,2,3,829,https://cztenis.cz/hrac/1070252,1070252
+61,1185,Železná,Adriana,2014,"TK Milevsko, z.s.",2-Feb,,2,3,829,https://cztenis.cz/hrac/1071337,1071337
+134,1277,Andres,Beáta,2012,Sokol Smiřice,,1/0,1,,,https://cztenis.cz/hrac/1059806,1059806
+232,1277,Balášová,Lucie,2012,TK Radošovice,,1/0,1,,,https://cztenis.cz/hrac/1059330,1059330
+106,1277,Beranová,Alice,2014,ASK Lovosice,,1/0,1,3,903,https://cztenis.cz/hrac/1065048,1065048
+227,1277,Bertoli,Nina,2014,TJ Kraví Hora Brno,,1/0,1,3,903,https://cztenis.cz/hrac/1061524,1061524
+69,1277,Bicanová,Rozárie,2013,TJ TK Hluboká nad Vltavou,,1/0,1,3,903,https://cztenis.cz/hrac/1070112,1070112
+134,1277,Boháčová,Tereza,2014,Energetik Chvaletice,1/0,,1,3,903,https://cztenis.cz/hrac/1065421,1065421
+238,1277,Bohdanová,Julie,2014,TK Sport Kolovraty,,1/0,1,3,903,https://cztenis.cz/hrac/1068450,1068450
+106,1277,Botková,Ema,2014,TK Rochlice Liberec,,1/0,1,3,903,https://cztenis.cz/hrac/1059478,1059478
+69,1277,Brunner,Laura,2015,"LTC VITON České Budějovice,z.s.",1-Jan,,1,3,903,https://cztenis.cz/hrac/1068068,1068068
+134,1277,Buňatová,Adéla,2013,Energetik Chvaletice,,1/0,1,3,903,https://cztenis.cz/hrac/1065913,1065913
+227,1277,Burgerová,Viktorie,2013,"Gross Tenis Club Nová Ves, z.s.",1/0,,1,3,903,https://cztenis.cz/hrac/1070039,1070039
+232,1277,Císařová,Eliška,2014,LTC Houštka,1/0,,1,3,903,https://cztenis.cz/hrac/1063653,1063653
+208,1277,Čaňová,Markéta,2012,TK Zašová,1/0,,1,,,https://cztenis.cz/hrac/1060099,1060099
+232,1277,Černá,Kristýna,2014,LTC Mladá Boleslav z.s.,1-Jan,0/1,1,3,903,https://cztenis.cz/hrac/1064923,1064923
+70,1277,Černáková,Anna,2013,TJ Slavoj Chodová Planá,1/0,,1,3,903,https://cztenis.cz/hrac/1056909,1056909
+106,1277,Česalová,Adina,2014,Tenis Libochovice,1/0,,1,3,903,https://cztenis.cz/hrac/1063023,1063023
+227,1277,Dobiášková,Jana,2012,TJ Sloup,1/0,,1,,,https://cztenis.cz/hrac/1061706,1061706
+238,1277,Dobřická,Viola,2012,"TCM Dubeč, z.s.",,1/0,1,,,https://cztenis.cz/hrac/1065091,1065091
+106,1277,Doležalová,Emma,2012,TK Most,1/0,,1,,,https://cztenis.cz/hrac/1054369,1054369
+227,1277,Drápalová,Dorota,2013,"Gross Tenis Club Nová Ves, z.s.",1/0,,1,3,903,https://cztenis.cz/hrac/1070016,1070016
+106,1277,Eichler,Laura,2015,SK Matchball Česká Lípa,1-Feb,,1,3,903,https://cztenis.cz/hrac/1060446,1060446
+208,1277,Frýdlová,Agáta,2014,I.NTC Olomouc,1/0,,1,3,903,https://cztenis.cz/hrac/1069393,1069393
+70,1277,Frýzková,Terezie,2014,TK Horažďovice,1/0,,1,3,903,https://cztenis.cz/hrac/1065669,1065669
+238,1277,Gottwaldová,Lenka,2013,"TK DOMYNO P4, z.s.",1-Jan,,1,3,903,https://cztenis.cz/hrac/1071303,1071303
+238,1277,Greplová,Žofie,2012,"TJ Slavoj Tesla Hloubětín, z.s.",1/0,,1,,,https://cztenis.cz/hrac/1067772,1067772
+227,1277,Havelková,Lucie,2014,"Gross Tenis Club Nová Ves, z.s.",1/0,,1,3,903,https://cztenis.cz/hrac/1070029,1070029
+238,1277,Hejlíková,Sofie,2014,TJ Sokol Liboc,1-Jan,,1,3,903,https://cztenis.cz/hrac/1071021,1071021
+69,1277,Hejná,Eliška,2014,TJ Lokomotiva Veselí n.L.,,1/0,1,3,903,https://cztenis.cz/hrac/1067669,1067669
+227,1277,Hinková,Barbora,2013,TK Spartak Jihlava,1-Jan,,1,3,903,https://cztenis.cz/hrac/1066574,1066574
+227,1277,Hlavinová,Denisa,2012,ŽLTC Brno,1/0,,1,,,https://cztenis.cz/hrac/1057509,1057509
+232,1277,Hnídková,Elen,2014,Tenisový klub Mníšek,,1/0,1,3,903,https://cztenis.cz/hrac/1069912,1069912
+238,1277,Hölzlová,Veronika,2014,TC ESO Praha z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1071941,1071941
+134,1277,Horáková,Charlotte,2014,LTC Pardubice,1/0,,1,3,903,https://cztenis.cz/hrac/1069383,1069383
+208,1277,Hrubá,Sofie,2013,TK Dolní Benešov,1/0,,1,3,903,https://cztenis.cz/hrac/1067977,1067977
+106,1277,Hrušová,Sofie,2015,LTK Liberec,1-Jan,,1,3,903,https://cztenis.cz/hrac/1061432,1061432
+106,1277,Hurdová,Martina,2013,TJ Sokol Domoušice,1/0,,1,3,903,https://cztenis.cz/hrac/1069335,1069335
+134,1277,Charbaková,Jasmína,2014,TK Náchod,1-Jan,,1,3,903,https://cztenis.cz/hrac/1070246,1070246
+227,1277,Iriondo,Viktoria,2012,"Gross Tenis Club Nová Ves, z.s.",1/0,,1,,,https://cztenis.cz/hrac/1070062,1070062
+208,1277,Ježková,Magdaléna,2012,TK SC OSTRAVA,1/0,,1,,,https://cztenis.cz/hrac/1061697,1061697
+232,1277,Kadlecová,Kristyna,2012,TJ TK Neratovice,,1/0,1,,,https://cztenis.cz/hrac/1065707,1065707
+232,1277,Karvanová,Laura,2012,TK Benešov,,1/0,1,,,https://cztenis.cz/hrac/1068724,1068724
+208,1277,Kawijová,Anna,2013,TK Gymnázium Uničov,1-Jan,,1,3,903,https://cztenis.cz/hrac/1065113,1065113
+69,1277,Kopecká,Tereza,2015,TJ TK Hluboká nad Vltavou,1-Jan,,1,3,903,https://cztenis.cz/hrac/1071287,1071287
+208,1277,Kostelníková,Eliška,2013,TK SC OSTRAVA,1/0,,1,3,903,https://cztenis.cz/hrac/1059455,1059455
+232,1277,Kral,Mína,2012,TJ Sokol Dobřichovice,1/0,,1,,,https://cztenis.cz/hrac/1068677,1068677
+227,1277,Králíková,Sabina,2014,LTC Hodonín,1/0,,1,3,903,https://cztenis.cz/hrac/1064945,1064945
+208,1277,Kraus,Ema,2015,SK Vitality Slezsko o.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1064157,1064157
+70,1277,Kužílková,Anna,2015,RAPID PLZEŇ TENIS z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1063793,1063793
+208,1277,Lepiařová,Natálie,2013,"TJ Start Ostrava - Poruba, z.s.",,1/0,1,3,903,https://cztenis.cz/hrac/1069667,1069667
+134,1277,Linhartová,Ema,2014,TK Choceň,1-Jan,,1,3,903,https://cztenis.cz/hrac/1065521,1065521
+70,1277,Lišková,Veronika,2014,Tenisklub Cheb,1-Jan,,1,3,903,https://cztenis.cz/hrac/1069167,1069167
+232,1277,Lopourová,Viktorie,2014,Sokol Nové Strašecí,,1/0,1,3,903,https://cztenis.cz/hrac/1063575,1063575
+134,1277,Macháček,Gabrielle,2012,TK Letohrad,,1/0,1,,,https://cztenis.cz/hrac/1062824,1062824
+134,1277,Machatá,Sofie,2013,TK Holice,1/0,,1,3,903,https://cztenis.cz/hrac/1062074,1062074
+69,1277,Malá,Natálie,2012,TK Strakonice,1/0,,1,,,https://cztenis.cz/hrac/1057312,1057312
+232,1277,Matějková,Alice,2014,TJ LTC Poděbrady,1-Jan,,1,3,903,https://cztenis.cz/hrac/1063980,1063980
+238,1277,Melčová,Ema,2014,Sokol Dolní Počernice z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1062024,1062024
+134,1277,Moravkova,Ella,2013,TK Dolní Dobrouč,1/0,,1,3,903,https://cztenis.cz/hrac/1069163,1069163
+238,1277,Mrmusová,Markéta,2015,,1-Jan,,1,3,903,https://cztenis.cz/hrac/1071648,1071648
+227,1277,Nagy,Emily,2014,TENIS SLOVÁCKO z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1064098,1064098
+227,1277,Nečasová,Evelína,2013,TJ Sloup,,1/0,1,3,903,https://cztenis.cz/hrac/1067820,1067820
+208,1277,Němečková,Thea,2013,I.NTC Olomouc,1/0,,1,3,903,https://cztenis.cz/hrac/1067937,1067937
+232,1277,Novotná,Kristýna,2013,TC VITALITY Březnice,1/0,,1,3,903,https://cztenis.cz/hrac/1070150,1070150
+208,1277,Ondruchová,Marie,2015,TK DEZA Valašské Meziříčí,1-Jan,,1,3,903,https://cztenis.cz/hrac/1067485,1067485
+227,1277,Pančochová,Tereza,2015,TJ Sokol Uherský Brod,1-Jan,,1,3,903,https://cztenis.cz/hrac/1064589,1064589
+227,1277,Pařízková,Ellis,2015,HTK Třebíč,1-Jan,,1,3,903,https://cztenis.cz/hrac/1059980,1059980
+134,1277,Pelinková,Tereza,2014,TK Choceň,,1/0,1,3,903,https://cztenis.cz/hrac/1062484,1062484
+69,1277,Pivková,Vanesa,2015,Tenis klub Jindřichův Hradec z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1067958,1067958
+227,1277,Podhradská,Nela,2014,BLTC Brno,,1/0,1,3,903,https://cztenis.cz/hrac/1070288,1070288
+106,1277,Pochobradská,Sofie,2015,TK Litvínov z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1062028,1062028
+232,1277,Pokorna,Martina,2014,TJ LTC Poděbrady,1/0,,1,3,903,https://cztenis.cz/hrac/1068901,1068901
+208,1277,Poláková,Adriana,2012,"TJ Start Ostrava - Poruba, z.s.",,1/0,1,,,https://cztenis.cz/hrac/1060421,1060421
+227,1277,Pospíšilová,Eva,2013,Start Brno,1/0,,1,3,903,https://cztenis.cz/hrac/1066072,1066072
+238,1277,Pravdová,Sofia,2013,TJ Sokol Liboc,,1/0,1,3,903,https://cztenis.cz/hrac/1069333,1069333
+227,1277,Pytelová,Sára,2012,"TC Komárov, z.s.",1/0,,1,,,https://cztenis.cz/hrac/1068094,1068094
+70,1277,Riedlová,Ema,2013,Tenisklub Cheb,1-Jan,,1,3,903,https://cztenis.cz/hrac/1062116,1062116
+232,1277,Roubíčková,Gita,2015,TO Sokol Nehvizdy,1-Jan,,1,3,903,https://cztenis.cz/hrac/1067955,1067955
+238,1277,ROWLAND,SMITH,2014,TSM Sokol Vysočany z.s.,1/0,,1,3,903,https://cztenis.cz/hrac/1067690,1067690
+227,1277,Skryjová,Kristýna,2013,TJ Žďár nad Sázavou,1/0,,1,3,903,https://cztenis.cz/hrac/1056947,1056947
+208,1277,Soukupová,Karolína,2015,Ravelin Tennis Club,1-Jan,,1,3,903,https://cztenis.cz/hrac/1067601,1067601
+238,1277,Strnadová,Eliška,2012,"SK Újezd Praha 4, z.s.",1/0,,1,,,https://cztenis.cz/hrac/1063236,1063236
+232,1277,Strončková,Anna,2013,Tenisový klub Černošice,,1/0,1,3,903,https://cztenis.cz/hrac/1063774,1063774
+232,1277,Šikolová,Michaela,2014,Sokol Nové Strašecí,,1/0,1,3,903,https://cztenis.cz/hrac/1065722,1065722
+232,1277,Šimečková,Laura,2015,I. ČLTPK Čerčany,1-Jan,,1,3,903,https://cztenis.cz/hrac/1072065,1072065
+208,1277,Šindelková,Šarlota,2012,"ITS Tennis Club, z.s.",,1/0,1,,,https://cztenis.cz/hrac/1066322,1066322
+134,1277,Šlaufová,Denisa,2012,Energetik Chvaletice,1/0,,1,,,https://cztenis.cz/hrac/1064834,1064834
+232,1277,Šmídová,Veronika,2012,TK Mnichovo Hradiště,1/0,,1,,,https://cztenis.cz/hrac/1051661,1051661
+238,1277,Švarcová,Adina,2013,"TJ Slavoj Tesla Hloubětín, z.s.",,1/0,1,3,903,https://cztenis.cz/hrac/1061740,1061740
+70,1277,Švecová,Sofia,2013,TK Lokomotiva Plzeň z.s.,,1/0,1,3,903,https://cztenis.cz/hrac/1060449,1060449
+232,1277,Tichá,Agáta,2014,TK Radošovice,,1/0,1,3,903,https://cztenis.cz/hrac/1063639,1063639
+238,1277,Tkachenko,Anna,2014,SK OAZA Praha,1/0,,1,3,903,https://cztenis.cz/hrac/1068748,1068748
+232,1277,Tománková,Laura,2014,LTC Rakovník,1/0,,1,3,903,https://cztenis.cz/hrac/1063641,1063641
+208,1277,Tsaruk,Iryna,2014,"Tenisový klub Příbor,z.s.",1-Jan,,1,3,903,https://cztenis.cz/hrac/1067572,1067572
+238,1277,Valášková,Viktorie,2012,TJ Radlice z.s.,1/0,,1,,,https://cztenis.cz/hrac/1063741,1063741
+70,1277,Valešová,Kristýna,2015,TK Lokomotiva Plzeň z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1061825,1061825
+134,1277,Vilímová,Veronika,2014,TK Choceň,1-Jan,,1,3,903,https://cztenis.cz/hrac/1062485,1062485
+208,1277,Vlašaná,Simona,2013,"ITS Tennis Club, z.s.",1/0,,1,3,903,https://cztenis.cz/hrac/1065730,1065730
+238,1277,Vodenková,Valerie,2013,"LOB S.A. Bohnice, z.s.",1-Feb,,1,3,903,https://cztenis.cz/hrac/1063794,1063794
+69,1277,Votýpková,Valerie,2013,LTC Tábor 1903,1/0,,1,3,903,https://cztenis.cz/hrac/1058008,1058008
+69,1277,Vykoukalová,Sofie,2015,Tenis klub Jindřichův Hradec z.s.,1-Jan,,1,3,903,https://cztenis.cz/hrac/1066984,1066984
+106,1277,Vyšínová,Kristýna,2015,SK Matchball Česká Lípa,1-Jan,,1,3,903,https://cztenis.cz/hrac/1058192,1058192
+134,1277,Zachařová,Denisa,2012,"Tennis club Litomyšl, z.s.",1/0,,1,,,https://cztenis.cz/hrac/1068403,1068403
+232,1277,Zárybnická,Anna,2013,TC VITALITY Březnice,,1/0,1,3,903,https://cztenis.cz/hrac/1070152,1070152
+238,1277,Zubová,Nikol,2013,TCD Donovalská,,1/0,1,3,903,https://cztenis.cz/hrac/1067757,1067757
+208,1277,Žáková,Eliška,2013,T.J. Sokol Šumperk,1/0,,1,3,903,https://cztenis.cz/hrac/1062417,1062417
+227,1277,Živná,Běla,2013,LTC Velen Boskovice,1/0,,1,3,903,https://cztenis.cz/hrac/1068946,1068946

@@ -217,7 +217,7 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
             {isIndexLoading && <Loader2 className="h-4 w-4 animate-spin" />}
           </DialogTitle>
           <DialogDescription className="space-y-1">
-            <div>Search and import players from Czech U12 Girls Rankings (824 players available)</div>
+            <div>Search and import players from Czech U12 Girls Rankings (1,382 players available)</div>
             {searchStats.totalResults > 0 && (
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>{searchStats.totalResults} results</span>

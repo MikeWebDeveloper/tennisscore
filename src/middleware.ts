@@ -130,6 +130,6 @@ export const config = {
      * - fonts (custom fonts)
      * - test-i18n (test routes)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|clear-session|sw.js|manifest.json|icons|fonts|test-i18n|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.gif|.*\\.webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|clear-session|sw.js|manifest.json|icons|fonts|test-i18n|data|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.gif|.*\\.webp|.*\\.json).*)",
   ],
 }
