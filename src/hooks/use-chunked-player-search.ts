@@ -115,10 +115,8 @@ export function useChunkedPlayerSearch(
       }
 
       // In development, be more lenient with mounted state due to hot reloading
-      if (!mountedRef.current && process.env.NODE_ENV !== 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('❌ Search aborted: component unmounted in production')
-        }
+      if (!mountedRef.current && process.env.NODE_ENV === 'production') {
+        console.log('❌ Search aborted: component unmounted in production')
         return
       }
 

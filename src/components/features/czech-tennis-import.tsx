@@ -3,7 +3,6 @@
 import { useState, useTransition, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Search, ExternalLink, Trophy, Calendar, MapPin, Loader2, Zap, AlertCircle } from "lucide-react"
 import {
@@ -28,7 +27,7 @@ interface CzechTennisImportProps {
 
 export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: CzechTennisImportProps) {
   const t = useTranslations('common')
-  const [selectedPlayer, setSelectedPlayer] = useState<SearchResult | null>(null)
+  const [, setSelectedPlayer] = useState<SearchResult | null>(null)
   const [fullPlayerData, setFullPlayerData] = useState<CzechTennisPlayer | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -277,7 +276,7 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
           {/* Debug info for troubleshooting */}
           {process.env.NODE_ENV === 'development' && (
             <div className="text-xs text-muted-foreground p-2 bg-muted/30 mb-2">
-              Debug: query="{query}" | hasSearched={hasSearched.toString()} | isIndexLoading={isIndexLoading.toString()} | results={results.length} | isSearching={isSearching.toString()}
+              Debug: query=&quot;{query}&quot; | hasSearched={hasSearched.toString()} | isIndexLoading={isIndexLoading.toString()} | results={results.length} | isSearching={isSearching.toString()}
             </div>
           )}
           
@@ -344,7 +343,7 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
           ) : hasSearched && query.trim().length > 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No players found matching "{query}"</p>
+              <p>No players found matching &quot;{query}&quot;</p>
               <p className="text-sm">Try searching by first name, last name, club, or BH rating</p>
             </div>
           ) : (

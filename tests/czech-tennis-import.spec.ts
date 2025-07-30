@@ -63,7 +63,7 @@ test.describe('Czech Tennis Import', () => {
       console.log('Search did not return results. Debug info:', debugText)
       
       // Check console logs for more info
-      const consoleLogs = []
+      const consoleLogs: string[] = []
       page.on('console', msg => consoleLogs.push(msg.text()))
       
       console.log('Console logs:', consoleLogs.filter(log => 
