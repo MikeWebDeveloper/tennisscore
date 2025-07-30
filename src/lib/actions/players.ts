@@ -131,14 +131,17 @@ export async function getPlayersByUser(): Promise<Player[]> {
   const { databases } = await createAdminClient()
 
   try {
-    const response = await databases.listDocuments<Player>(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-      [
-        Query.equal("userId", user.$id), 
-        Query.orderDesc("$createdAt"),
-        Query.limit(1000) // Set high limit to get all players
-      ]
+    const response = await withRetry(() =>
+      databases.listDocuments<Player>(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [
+          Query.equal("userId", user.$id), 
+          Query.orderDesc("$createdAt"),
+          Query.limit(100) // Reduce limit for faster queries
+        ]
+      ),
+      'NAVIGATION' // Fast-fail for navigation
     )
 
     const playersWithPictures = response.documents.map(player => {
@@ -412,7 +415,8 @@ export async function getMainPlayer(): Promise<Player | null> {
           Query.equal("isMainPlayer", true),
           Query.limit(1) // We only need one main player
         ]
-      )
+      ),
+      'NAVIGATION' // Use fast-fail retry config for navigation
     )
     
     if (response.documents.length > 0) {

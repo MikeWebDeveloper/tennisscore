@@ -1,8 +1,9 @@
 // TennisScore Service Worker - Performance Optimized
-// Version: 2.0.0 - Bundle Caching & Performance Focus
-const CACHE_NAME = 'tennisscore-v2.0.0'
-const STATIC_CACHE = 'tennisscore-static-v2.0.0'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.0.0'
+// Version: 2.1.0 - Navigation & API Response Caching
+const CACHE_NAME = 'tennisscore-v2.1.0'
+const STATIC_CACHE = 'tennisscore-static-v2.1.0'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.1.0'
+const API_CACHE = 'tennisscore-api-v2.1.0'
 
 // Development detection
 const isDevelopment = (() => {
@@ -24,6 +25,14 @@ const STATIC_ASSETS = [
   '/icons/icon-512x512.png'
 ]
 
+// Common navigation routes to prefetch
+const PREFETCH_ROUTES = [
+  '/dashboard',
+  '/matches',
+  '/players',
+  '/statistics'
+]
+
 // Cache strategies by content type
 const CACHE_STRATEGIES = {
   // Immutable assets - cache forever
@@ -35,19 +44,22 @@ const CACHE_STRATEGIES = {
   // Images and icons - cache first
   IMAGES: /\.(png|jpg|jpeg|gif|webp|svg|ico)$/,
   
-  // App routes - network first with fallback
+  // App routes - stale while revalidate for speed
   APP_ROUTES: /^\/[^.]*$/,
   
-  // API routes - never cache
+  // API routes - cache with short TTL
   API_ROUTES: /\/api\//,
   
   // Real-time routes - always fresh
-  REALTIME_ROUTES: /\/(live|matches\/live)\//
+  REALTIME_ROUTES: /\/(live|matches\/live)\//,
+  
+  // Cacheable API patterns
+  CACHEABLE_API: /\/(players|matches|statistics)$/
 }
 
 // Install event - pre-cache critical assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v2.0.0...')
+  console.log('[SW] Installing service worker v2.1.0...')
   
   event.waitUntil(
     (async () => {
@@ -81,7 +93,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker v2.0.0...')
+  console.log('[SW] Activating service worker v2.1.0...')
   
   event.waitUntil(
     (async () => {
@@ -101,6 +113,14 @@ self.addEventListener('activate', (event) => {
         
         // Take control of all clients
         await self.clients.claim()
+        
+        // Prefetch common routes in background
+        if (!isDevelopment) {
+          setTimeout(() => {
+            prefetchRoutes()
+          }, 5000) // Wait 5s after activation
+        }
+        
         console.log('[SW] Activation complete - ready for fast navigation!')
       } catch (error) {
         console.error('[SW] Activation failed:', error)
@@ -154,9 +174,9 @@ self.addEventListener('fetch', (event) => {
     return
   }
   
-  // App routes (navigation) - network first with offline fallback
+  // App routes (navigation) - stale while revalidate for instant navigation
   if (request.mode === 'navigate' || CACHE_STRATEGIES.APP_ROUTES.test(url.pathname)) {
-    event.respondWith(networkFirstWithOffline(request))
+    event.respondWith(navigationStaleWhileRevalidate(request))
     return
   }
   
@@ -224,6 +244,35 @@ async function networkFirst(request) {
     console.error('[SW] Network first failed:', error)
     throw error
   }
+}
+
+// Strategy: Navigation with Stale While Revalidate (for fast page loads)
+async function navigationStaleWhileRevalidate(request) {
+  const cache = await caches.open(DYNAMIC_CACHE)
+  const cachedResponse = await cache.match(request)
+  
+  // Fetch fresh version in background
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      cache.put(request, response.clone())
+    }
+    return response
+  }).catch(error => {
+    console.log('[SW] Navigation fetch failed:', error)
+    return cachedResponse || getOfflinePage()
+  })
+  
+  // Return cached immediately if available, otherwise wait for network
+  if (cachedResponse) {
+    // Update in background but return cached immediately
+    fetchPromise.then(() => {
+      console.log('[SW] Updated navigation cache in background')
+    })
+    return cachedResponse
+  }
+  
+  // No cache, must wait for network
+  return fetchPromise
 }
 
 // Strategy: Network First with Offline Fallback (for navigation)
@@ -390,5 +439,28 @@ async function clearAllCaches() {
   console.log('[SW] All caches cleared')
 }
 
+// Prefetch common routes for faster navigation
+async function prefetchRoutes() {
+  const cache = await caches.open(DYNAMIC_CACHE)
+  
+  for (const route of PREFETCH_ROUTES) {
+    try {
+      const response = await fetch(route, {
+        credentials: 'same-origin',
+        headers: {
+          'X-SW-Prefetch': 'true'
+        }
+      })
+      
+      if (response.ok) {
+        await cache.put(route, response)
+        console.log('[SW] Prefetched route:', route)
+      }
+    } catch (error) {
+      console.log('[SW] Failed to prefetch route:', route)
+    }
+  }
+}
+
 // Log service worker ready
-console.log('[SW] Service Worker v2.0.0 loaded - Performance optimized!')
+console.log('[SW] Service Worker v2.1.0 loaded - Navigation optimized!')

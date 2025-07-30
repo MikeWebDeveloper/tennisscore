@@ -23,17 +23,35 @@ function createSessionClientWithToken(sessionToken: string) {
   return client
 }
 
-// Utility function for retrying operations (exported for use in actions)
+import { RetryConfig, RETRY_CONFIGS } from "./retry-config"
+
+// Utility function for retrying operations with configurable strategies
 export async function withRetry<T>(
   operation: () => Promise<T>, 
-  maxRetries = 3,
-  baseDelay = 1000
+  config: RetryConfig | keyof typeof RETRY_CONFIGS = 'BACKGROUND'
 ): Promise<T> {
+  // Handle both config object and config name
+  const retryConfig = typeof config === 'string' ? RETRY_CONFIGS[config] : config
+  const { maxRetries, baseDelay, maxTimeout } = retryConfig
+  
   let lastError: Error | null = null
+  const startTime = Date.now()
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      return await operation()
+      // Check if we've exceeded max timeout
+      if (Date.now() - startTime > maxTimeout) {
+        throw new Error(`Operation timed out after ${maxTimeout}ms`)
+      }
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 
+          Math.min(5000, maxTimeout - (Date.now() - startTime)))
+      })
+      
+      // Race between operation and timeout
+      return await Promise.race([operation(), timeoutPromise])
     } catch (error: unknown) {
       lastError = error as Error
       
@@ -46,8 +64,9 @@ export async function withRetry<T>(
             err.cause?.code === 'ETIMEDOUT' || 
             err.cause?.code === 'ENOTFOUND' ||
             err.message?.includes('fetch failed') ||
-            err.message?.includes('network')) {
-          console.log(`🔄 Network error detected (${err.cause?.code || 'fetch failed'}), will retry...`)
+            err.message?.includes('network') ||
+            err.message?.includes('timeout')) {
+          console.log(`🔄 Network error detected (${err.cause?.code || err.message || 'fetch failed'}), will retry...`)
           // Continue to retry logic
         } else if (err.code === 401 || err.code === 403 || err.type === 'general_unauthorized_scope') {
           // Don't retry on auth/permission errors
@@ -64,11 +83,25 @@ export async function withRetry<T>(
         throw lastError
       }
       
-      // Calculate delay with exponential backoff and jitter
-      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000
-      console.warn(`⚠️  Attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms...`, (error as Error)?.message)
+      // Check if we have time for another retry
+      const elapsedTime = Date.now() - startTime
+      if (elapsedTime >= maxTimeout) {
+        console.error(`❌ Operation exceeded timeout of ${maxTimeout}ms`)
+        throw new Error(`Operation timed out after ${elapsedTime}ms`)
+      }
       
-      await new Promise(resolve => setTimeout(resolve, delay))
+      // Calculate delay with exponential backoff (but limited)
+      const delay = Math.min(baseDelay * Math.pow(1.5, attempt), 2000) // Cap at 2 seconds
+      const remainingTime = maxTimeout - elapsedTime
+      const actualDelay = Math.min(delay, remainingTime - 1000) // Leave 1s for the operation
+      
+      if (actualDelay <= 0) {
+        throw new Error(`Operation timed out after ${elapsedTime}ms`)
+      }
+      
+      console.warn(`⚠️  Attempt ${attempt + 1} failed, retrying in ${Math.round(actualDelay)}ms...`, (error as Error)?.message)
+      
+      await new Promise(resolve => setTimeout(resolve, actualDelay))
     }
   }
   
