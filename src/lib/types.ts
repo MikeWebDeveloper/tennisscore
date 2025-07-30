@@ -23,6 +23,8 @@ export interface Player extends Models.Document {
   cztennisUrl?: string      // Column L - external profile link
   czechTennisId?: string    // Column M - unique Czech tennis ID
   isImportedFromCzech?: boolean // Track imported players
+  // Legacy field for backward compatibility
+  rating?: string           // Deprecated: use bhRating and czRanking instead
 }
 
 export interface CzechTennisPlayer {

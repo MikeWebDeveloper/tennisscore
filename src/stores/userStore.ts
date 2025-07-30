@@ -14,6 +14,13 @@ export interface Player {
   firstName: string
   lastName: string
   yearOfBirth?: number
+  // New Czech tennis fields
+  bhRating?: string
+  czRanking?: number
+  cztennisUrl?: string
+  czechTennisId?: string
+  isImportedFromCzech?: boolean
+  // Legacy field for backward compatibility
   rating?: string
   profilePictureId?: string
   isMainPlayer?: boolean

@@ -7,6 +7,18 @@ import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { Player, CzechTennisPlayer } from "@/lib/types"
 
+// Helper function to generate legacy rating from BH and CZ ratings
+function generateLegacyRating(bhRating?: string, czRanking?: number): string | undefined {
+  if (bhRating && czRanking) {
+    return `${bhRating} CŽ ${czRanking}`
+  } else if (bhRating) {
+    return bhRating
+  } else if (czRanking) {
+    return `CŽ ${czRanking}`
+  }
+  return undefined
+}
+
 const playerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -20,6 +32,8 @@ const playerSchema = z.object({
   cztennisUrl: z.string().url().optional(),
   czechTennisId: z.string().optional(),
   isImportedFromCzech: z.boolean().optional(),
+  // Legacy field for backward compatibility
+  rating: z.string().max(50).optional(), // Deprecated: maintained for backward compatibility
 })
 
 export async function createPlayer(formData: FormData): Promise<{ success?: boolean; player?: Player; error?: string }> {
@@ -29,12 +43,15 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       return { error: "Unauthorized" }
     }
     
+    const bhRating = (formData.get("bhRating") as string) || undefined
+    const czRanking = formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined
+    
     const data = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
-      bhRating: (formData.get("bhRating") as string) || undefined,
-      czRanking: formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined,
+      bhRating,
+      czRanking,
       club: (formData.get("club") as string) || undefined,
       playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
       isMainPlayer: formData.get("isMainPlayer") === "true",
@@ -42,6 +59,8 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       cztennisUrl: (formData.get("cztennisUrl") as string) || undefined,
       czechTennisId: (formData.get("czechTennisId") as string) || undefined,
       isImportedFromCzech: formData.get("isImportedFromCzech") === "true",
+      // Legacy field populated from new fields
+      rating: (formData.get("rating") as string) || generateLegacyRating(bhRating, czRanking),
     }
     
     const validatedData = playerSchema.parse(data)
@@ -414,12 +433,15 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       return { error: "Unauthorized" }
     }
     
+    const bhRating = (formData.get("bhRating") as string) || undefined
+    const czRanking = formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined
+    
     const data = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
-      bhRating: (formData.get("bhRating") as string) || undefined,
-      czRanking: formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined,
+      bhRating,
+      czRanking,
       club: (formData.get("club") as string) || undefined,
       playingHand: (() => {
         const hand = formData.get("playingHand") as string
@@ -430,6 +452,8 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       cztennisUrl: (formData.get("cztennisUrl") as string) || undefined,
       czechTennisId: (formData.get("czechTennisId") as string) || undefined,
       isImportedFromCzech: formData.get("isImportedFromCzech") === "true",
+      // Legacy field populated from new fields
+      rating: (formData.get("rating") as string) || generateLegacyRating(bhRating, czRanking),
     }
     
     const validatedData = playerSchema.parse(data)
@@ -689,6 +713,8 @@ export async function createPlayerFromCzechImport(czechPlayer: CzechTennisPlayer
       cztennisUrl: czechPlayer.cztennisUrl,
       czechTennisId: czechPlayer.uniqueId,
       isImportedFromCzech: true,
+      // Populate legacy rating from Czech data
+      rating: generateLegacyRating(czechPlayer.bhRating, czechPlayer.czRanking),
     }
     
     const validatedData = playerSchema.parse(data)
