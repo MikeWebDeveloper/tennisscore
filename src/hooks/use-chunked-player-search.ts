@@ -64,6 +64,20 @@ export function useChunkedPlayerSearch(
   const searchAbortRef = useRef<AbortController | undefined>(undefined)
   const mountedRef = useRef(true)
 
+  // Debug logging for component lifecycle 
+  useEffect(() => {
+    mountedRef.current = true
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏗️ useChunkedPlayerSearch mounted')
+    }
+    return () => {
+      mountedRef.current = false
+      if (process.env.NODE_ENV === 'development') {
+        console.log('💀 useChunkedPlayerSearch unmounting')
+      }
+    }
+  }, [])
+
   /**
    * Perform the actual search
    */
@@ -84,12 +98,32 @@ export function useChunkedPlayerSearch(
     try {
       const searchStartTime = performance.now()
 
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Performing search for:', searchQuery)
+      }
+
       // Perform the search
       const searchResults = await czechPlayerSearch.search(searchQuery)
 
-      // Check if component is still mounted and search wasn't aborted
-      if (!mountedRef.current || abortController.signal.aborted) {
+      // Check if search was aborted (but allow unmounted components in development due to hot reload)
+      if (abortController.signal.aborted) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ Search aborted due to signal')
+        }
         return
+      }
+
+      // In development, be more lenient with mounted state due to hot reloading
+      if (!mountedRef.current && process.env.NODE_ENV !== 'development') {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ Search aborted: component unmounted in production')
+        }
+        return
+      }
+
+      if (process.env.NODE_ENV === 'development' && !mountedRef.current) {
+        console.log('⚠️ Component unmounted but continuing in development mode')
       }
 
       // Apply result limit
@@ -106,6 +140,12 @@ export function useChunkedPlayerSearch(
         searchTime: searchEndTime - searchStartTime,
       })
       setHasSearched(true)
+      
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Search completed: ${searchResults.length} results for "${searchQuery}"`)
+        console.log('🎯 Setting hasSearched=true, results.length=', limitedResults.length)
+      }
     } catch (err) {
       if (!mountedRef.current || abortController.signal.aborted) {
         return
@@ -120,8 +160,16 @@ export function useChunkedPlayerSearch(
         searchTime: 0,
       })
     } finally {
-      if (mountedRef.current && !abortController.signal.aborted) {
+      // In development, be more lenient due to hot reloading
+      const shouldUpdateState = process.env.NODE_ENV === 'development' ? 
+        !abortController.signal.aborted : 
+        (mountedRef.current && !abortController.signal.aborted)
+
+      if (shouldUpdateState) {
         setIsSearching(false)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🏁 Search finally block: mounted=', mountedRef.current, 'aborted=', abortController.signal.aborted)
+        }
       }
     }
   }, [maxResults])
@@ -148,8 +196,16 @@ export function useChunkedPlayerSearch(
       return
     }
 
+    // Debug: log when we start debouncing
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⏱️ Starting debounce for:', query)
+    }
+
     // Debounce the search
     debounceTimeoutRef.current = setTimeout(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Debounce completed, starting search for:', query)
+      }
       performSearch(query)
     }, debounceMs)
 

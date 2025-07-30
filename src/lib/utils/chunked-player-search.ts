@@ -132,7 +132,7 @@ export class ChunkedPlayerSearch {
 
     const normalizedQuery = this.normalizeForSearch(query)
     
-    return this.index.players.filter(player => {
+    const results = this.index.players.filter(player => {
       const fullName = `${player.firstName} ${player.lastName}`
       const normalizedName = this.normalizeForSearch(fullName)
       const normalizedLastName = this.normalizeForSearch(player.lastName)
@@ -148,6 +148,13 @@ export class ChunkedPlayerSearch {
         player.czRanking.toString().includes(normalizedQuery)
       )
     })
+
+    // Debug logging
+    if (process.env.NODE_ENV === 'development' && results.length > 0) {
+      console.log('🔍 Sample search results:', results.slice(0, 2).map(p => `${p.firstName} ${p.lastName}`))
+    }
+
+    return results
   }
 
   /**
@@ -196,8 +203,18 @@ export class ChunkedPlayerSearch {
     // Ensure index is loaded
     await this.initializeIndex()
 
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏓 ChunkedPlayerSearch.search called with:', query, 'Index loaded:', !!this.index)
+    }
+
     // Phase 1: Immediate index search
     const indexResults = this.searchIndex(query)
+    
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 Index search results: ${indexResults.length} players found`)
+    }
     
     if (indexResults.length === 0) {
       return []

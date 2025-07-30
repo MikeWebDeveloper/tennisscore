@@ -47,7 +47,7 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
     clearSearch,
     retrySearch,
   } = useChunkedPlayerSearch({
-    debounceMs: 300,
+    debounceMs: process.env.NODE_ENV === 'development' ? 100 : 300, // Faster in dev to avoid hot reload issues
     minQueryLength: 1,
     maxResults: 50,
     preloadOnMount: true,
@@ -245,7 +245,10 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
             <Input
               placeholder="Search by name, club, ranking, or BH rating..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                console.log('Input changed:', e.target.value)
+                setQuery(e.target.value)
+              }}
               className="pl-10"
               disabled={isIndexLoading}
             />
@@ -271,6 +274,13 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Debug info for troubleshooting */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-muted-foreground p-2 bg-muted/30 mb-2">
+              Debug: query="{query}" | hasSearched={hasSearched.toString()} | isIndexLoading={isIndexLoading.toString()} | results={results.length} | isSearching={isSearching.toString()}
+            </div>
+          )}
+          
           {isIndexLoading ? (
             <div className="text-center py-8 text-muted-foreground">
               <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin opacity-50" />
