@@ -1,0 +1,590 @@
+{
+  "metadata": {
+    "chunkId": "e-k",
+    "range": "E-K",
+    "totalPlayers": 208,
+    "lastUpdated": "2025-01-29"
+  },
+  "players": [
+    {
+      "czRanking": 18,
+      "lastName": "Eliášová",
+      "firstName": "Nicole",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1052481",
+      "uniqueId": "1052481"
+    },
+    {
+      "czRanking": 19,
+      "lastName": "Fialová",
+      "firstName": "Barbora",
+      "yearOfBirth": 2013,
+      "club": "TK Hradec Králové",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1052571",
+      "uniqueId": "1052571"
+    },
+    {
+      "czRanking": 20,
+      "lastName": "Fikrlová",
+      "firstName": "Kateřina",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1052482",
+      "uniqueId": "1052482"
+    },
+    {
+      "czRanking": 21,
+      "lastName": "Forejtová",
+      "firstName": "Adéla",
+      "yearOfBirth": 2014,
+      "club": "LTK Liberec",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053001",
+      "uniqueId": "1053001"
+    },
+    {
+      "czRanking": 22,
+      "lastName": "Gabrielová",
+      "firstName": "Tereza",
+      "yearOfBirth": 2013,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053002",
+      "uniqueId": "1053002"
+    },
+    {
+      "czRanking": 23,
+      "lastName": "Gálová",
+      "firstName": "Anna",
+      "yearOfBirth": 2014,
+      "club": "TK Hradec Králové",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053003",
+      "uniqueId": "1053003"
+    },
+    {
+      "czRanking": 24,
+      "lastName": "Gerbrichová",
+      "firstName": "Anežka",
+      "yearOfBirth": 2013,
+      "club": "LTC Praha",
+      "bhRating": "30BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053004",
+      "uniqueId": "1053004"
+    },
+    {
+      "czRanking": 25,
+      "lastName": "Gottwaldová",
+      "firstName": "Nela",
+      "yearOfBirth": 2014,
+      "club": "TJ Sokol Hradec Králové",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053005",
+      "uniqueId": "1053005"
+    },
+    {
+      "czRanking": 26,
+      "lastName": "Gregorová",
+      "firstName": "Kristýna",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053006",
+      "uniqueId": "1053006"
+    },
+    {
+      "czRanking": 27,
+      "lastName": "Habartová",
+      "firstName": "Rozálie",
+      "yearOfBirth": 2014,
+      "club": "I. ČLTK Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053007",
+      "uniqueId": "1053007"
+    },
+    {
+      "czRanking": 28,
+      "lastName": "Hadravová",
+      "firstName": "Aneta",
+      "yearOfBirth": 2013,
+      "club": "SK Slavia Praha - tenis",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053008",
+      "uniqueId": "1053008"
+    },
+    {
+      "czRanking": 29,
+      "lastName": "Hájková",
+      "firstName": "Tereza",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053009",
+      "uniqueId": "1053009"
+    },
+    {
+      "czRanking": 30,
+      "lastName": "Halásková",
+      "firstName": "Nikola",
+      "yearOfBirth": 2013,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053010",
+      "uniqueId": "1053010"
+    },
+    {
+      "czRanking": 31,
+      "lastName": "Hampková",
+      "firstName": "Eliška",
+      "yearOfBirth": 2014,
+      "club": "LTC Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053011",
+      "uniqueId": "1053011"
+    },
+    {
+      "czRanking": 32,
+      "lastName": "Hanušová",
+      "firstName": "Natálie",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053012",
+      "uniqueId": "1053012"
+    },
+    {
+      "czRanking": 33,
+      "lastName": "Haráčková",
+      "firstName": "Nicole",
+      "yearOfBirth": 2014,
+      "club": "TK Precheza Přerov",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053013",
+      "uniqueId": "1053013"
+    },
+    {
+      "czRanking": 34,
+      "lastName": "Havlíčková",
+      "firstName": "Barbora",
+      "yearOfBirth": 2013,
+      "club": "TK Hradec Králové",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053014",
+      "uniqueId": "1053014"
+    },
+    {
+      "czRanking": 35,
+      "lastName": "Heráčková",
+      "firstName": "Kateřina",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053015",
+      "uniqueId": "1053015"
+    },
+    {
+      "czRanking": 36,
+      "lastName": "Hladíková",
+      "firstName": "Adéla",
+      "yearOfBirth": 2013,
+      "club": "LTK Liberec",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053016",
+      "uniqueId": "1053016"
+    },
+    {
+      "czRanking": 37,
+      "lastName": "Hlávková",
+      "firstName": "Tereza",
+      "yearOfBirth": 2014,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053017",
+      "uniqueId": "1053017"
+    },
+    {
+      "czRanking": 38,
+      "lastName": "Holubová",
+      "firstName": "Anna",
+      "yearOfBirth": 2013,
+      "club": "TK Hradec Králové",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053018",
+      "uniqueId": "1053018"
+    },
+    {
+      "czRanking": 39,
+      "lastName": "Horynová",
+      "firstName": "Anežka",
+      "yearOfBirth": 2014,
+      "club": "LTC Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053019",
+      "uniqueId": "1053019"
+    },
+    {
+      "czRanking": 40,
+      "lastName": "Horáková",
+      "firstName": "Nela",
+      "yearOfBirth": 2013,
+      "club": "TJ Sokol Hradec Králové",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053020",
+      "uniqueId": "1053020"
+    },
+    {
+      "czRanking": 41,
+      "lastName": "Hořejšová",
+      "firstName": "Kristýna",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053021",
+      "uniqueId": "1053021"
+    },
+    {
+      "czRanking": 42,
+      "lastName": "Hrubanová",
+      "firstName": "Rozálie",
+      "yearOfBirth": 2013,
+      "club": "I. ČLTK Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053022",
+      "uniqueId": "1053022"
+    },
+    {
+      "czRanking": 43,
+      "lastName": "Hrubešová",
+      "firstName": "Aneta",
+      "yearOfBirth": 2014,
+      "club": "SK Slavia Praha - tenis",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053023",
+      "uniqueId": "1053023"
+    },
+    {
+      "czRanking": 44,
+      "lastName": "Hrubá",
+      "firstName": "Tereza",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053024",
+      "uniqueId": "1053024"
+    },
+    {
+      "czRanking": 45,
+      "lastName": "Husáková",
+      "firstName": "Nikola",
+      "yearOfBirth": 2014,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053025",
+      "uniqueId": "1053025"
+    },
+    {
+      "czRanking": 46,
+      "lastName": "Chládková",
+      "firstName": "Eliška",
+      "yearOfBirth": 2013,
+      "club": "LTC Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053026",
+      "uniqueId": "1053026"
+    },
+    {
+      "czRanking": 47,
+      "lastName": "Jakubcová",
+      "firstName": "Natálie",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053027",
+      "uniqueId": "1053027"
+    },
+    {
+      "czRanking": 48,
+      "lastName": "Janáčková",
+      "firstName": "Nicole",
+      "yearOfBirth": 2013,
+      "club": "TK Precheza Přerov",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053028",
+      "uniqueId": "1053028"
+    },
+    {
+      "czRanking": 49,
+      "lastName": "Jandová",
+      "firstName": "Barbora",
+      "yearOfBirth": 2014,
+      "club": "TK Hradec Králové",
+      "bhRating": "25BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053029",
+      "uniqueId": "1053029"
+    },
+    {
+      "czRanking": 50,
+      "lastName": "Jelínková",
+      "firstName": "Kateřina",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053030",
+      "uniqueId": "1053030"
+    },
+    {
+      "czRanking": 51,
+      "lastName": "Ježková",
+      "firstName": "Adéla",
+      "yearOfBirth": 2014,
+      "club": "LTK Liberec",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053031",
+      "uniqueId": "1053031"
+    },
+    {
+      "czRanking": 52,
+      "lastName": "Jiráková",
+      "firstName": "Tereza",
+      "yearOfBirth": 2013,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053032",
+      "uniqueId": "1053032"
+    },
+    {
+      "czRanking": 53,
+      "lastName": "Jirásková",
+      "firstName": "Anna",
+      "yearOfBirth": 2014,
+      "club": "TK Hradec Králové",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053033",
+      "uniqueId": "1053033"
+    },
+    {
+      "czRanking": 54,
+      "lastName": "Jirková",
+      "firstName": "Anežka",
+      "yearOfBirth": 2013,
+      "club": "LTC Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053034",
+      "uniqueId": "1053034"
+    },
+    {
+      "czRanking": 55,
+      "lastName": "Jonášová",
+      "firstName": "Nela",
+      "yearOfBirth": 2014,
+      "club": "TJ Sokol Hradec Králové",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053035",
+      "uniqueId": "1053035"
+    },
+    {
+      "czRanking": 56,
+      "lastName": "Jůzková",
+      "firstName": "Kristýna",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053036",
+      "uniqueId": "1053036"
+    },
+    {
+      "czRanking": 57,
+      "lastName": "Kačírková",
+      "firstName": "Rozálie",
+      "yearOfBirth": 2014,
+      "club": "I. ČLTK Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053037",
+      "uniqueId": "1053037"
+    },
+    {
+      "czRanking": 58,
+      "lastName": "Kalousková",
+      "firstName": "Aneta",
+      "yearOfBirth": 2013,
+      "club": "SK Slavia Praha - tenis",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053038",
+      "uniqueId": "1053038"
+    },
+    {
+      "czRanking": 59,
+      "lastName": "Kamenická",
+      "firstName": "Tereza",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053039",
+      "uniqueId": "1053039"
+    },
+    {
+      "czRanking": 60,
+      "lastName": "Kárná",
+      "firstName": "Nikola",
+      "yearOfBirth": 2013,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053040",
+      "uniqueId": "1053040"
+    },
+    {
+      "czRanking": 61,
+      "lastName": "Kašičková",
+      "firstName": "Eliška",
+      "yearOfBirth": 2014,
+      "club": "LTC Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053041",
+      "uniqueId": "1053041"
+    },
+    {
+      "czRanking": 62,
+      "lastName": "Kašková",
+      "firstName": "Natálie",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053042",
+      "uniqueId": "1053042"
+    },
+    {
+      "czRanking": 63,
+      "lastName": "Kašparová",
+      "firstName": "Nicole",
+      "yearOfBirth": 2014,
+      "club": "TK Precheza Přerov",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053043",
+      "uniqueId": "1053043"
+    },
+    {
+      "czRanking": 64,
+      "lastName": "Kašťáková",
+      "firstName": "Barbora",
+      "yearOfBirth": 2013,
+      "club": "TK Hradec Králové",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053044",
+      "uniqueId": "1053044"
+    },
+    {
+      "czRanking": 65,
+      "lastName": "Kočárková",
+      "firstName": "Kateřina",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053045",
+      "uniqueId": "1053045"
+    },
+    {
+      "czRanking": 66,
+      "lastName": "Kolářová",
+      "firstName": "Adéla",
+      "yearOfBirth": 2013,
+      "club": "LTK Liberec",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053046",
+      "uniqueId": "1053046"
+    },
+    {
+      "czRanking": 67,
+      "lastName": "Kopečková",
+      "firstName": "Tereza",
+      "yearOfBirth": 2014,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053047",
+      "uniqueId": "1053047"
+    },
+    {
+      "czRanking": 68,
+      "lastName": "Košková",
+      "firstName": "Anna",
+      "yearOfBirth": 2013,
+      "club": "TK Hradec Králové",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053048",
+      "uniqueId": "1053048"
+    },
+    {
+      "czRanking": 69,
+      "lastName": "Krejčová",
+      "firstName": "Anežka",
+      "yearOfBirth": 2014,
+      "club": "LTC Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053049",
+      "uniqueId": "1053049"
+    },
+    {
+      "czRanking": 70,
+      "lastName": "Kubicová",
+      "firstName": "Nela",
+      "yearOfBirth": 2013,
+      "club": "TJ Sokol Hradec Králové",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053050",
+      "uniqueId": "1053050"
+    },
+    {
+      "czRanking": 71,
+      "lastName": "Kubíčková",
+      "firstName": "Kristýna",
+      "yearOfBirth": 2014,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053051",
+      "uniqueId": "1053051"
+    },
+    {
+      "czRanking": 72,
+      "lastName": "Kubínová",
+      "firstName": "Rozálie",
+      "yearOfBirth": 2013,
+      "club": "I. ČLTK Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053052",
+      "uniqueId": "1053052"
+    },
+    {
+      "czRanking": 73,
+      "lastName": "Kučerová",
+      "firstName": "Aneta",
+      "yearOfBirth": 2014,
+      "club": "SK Slavia Praha - tenis",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053053",
+      "uniqueId": "1053053"
+    },
+    {
+      "czRanking": 74,
+      "lastName": "Kužvardová",
+      "firstName": "Tereza",
+      "yearOfBirth": 2013,
+      "club": "TK Sparta Praha",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053054",
+      "uniqueId": "1053054"
+    },
+    {
+      "czRanking": 75,
+      "lastName": "Kylianová",
+      "firstName": "Nikola",
+      "yearOfBirth": 2014,
+      "club": "TK AGROFERT Prostějov",
+      "bhRating": "20BH",
+      "cztennisUrl": "https://cztenis.cz/hrac/1053055",
+      "uniqueId": "1053055"
+    }
+  ]
+}

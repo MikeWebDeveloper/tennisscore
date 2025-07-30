@@ -46,6 +46,71 @@ export interface CzechTennisData {
   players: CzechTennisPlayer[]
 }
 
+// Chunked Tennis Player Import Interfaces
+export interface PlayerIndexEntry {
+  czRanking: number
+  lastName: string
+  firstName: string
+  club: string
+  bhRating: string
+  uniqueId: string
+  chunk: string // Which chunk contains the full data
+}
+
+export interface ChunkMetadata {
+  range: string
+  players: number
+}
+
+export interface PlayerIndex {
+  metadata: {
+    category: string
+    lastUpdated: string
+    source: string
+    totalPlayers: number
+    chunks: Record<string, ChunkMetadata>
+  }
+  players: PlayerIndexEntry[]
+}
+
+export interface PlayerChunk {
+  metadata: {
+    chunkId: string
+    range: string
+    totalPlayers: number
+    lastUpdated: string
+  }
+  players: CzechTennisPlayer[]
+}
+
+export interface ChunkLoadingState {
+  [chunkId: string]: {
+    loading: boolean
+    loaded: boolean
+    error?: string
+    data?: CzechTennisPlayer[]
+  }
+}
+
+export interface SearchResult {
+  // Basic info from index (always available)
+  czRanking: number
+  lastName: string
+  firstName: string
+  club: string
+  bhRating: string
+  uniqueId: string
+  chunk: string
+  
+  // Enhanced info from chunk (available after chunk loads)
+  yearOfBirth?: number
+  cztennisUrl?: string
+  
+  // UI state
+  isLoading?: boolean
+  isEnhanced?: boolean
+}
+
 export interface Match extends Models.Document {
   playerOneId: string
   playerTwoId: string

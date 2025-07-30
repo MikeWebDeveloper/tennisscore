@@ -58,6 +58,7 @@ next-env.d.ts
 /.vscode/
 .cursor/
 .claude/
+.cursor
 *.swp
 *.swo
 *~

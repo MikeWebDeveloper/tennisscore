@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Search, ExternalLink, Trophy, Calendar, MapPin } from "lucide-react"
+import { Search, ExternalLink, Trophy, Calendar, MapPin, Loader2, Zap, AlertCircle } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { searchCzechPlayers, getCzechTennisMetadata } from "@/lib/utils/czech-tennis"
 import { createPlayerFromCzechImport } from "@/lib/actions/players"
-import { CzechTennisPlayer } from "@/lib/types"
+import { CzechTennisPlayer, SearchResult } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslations } from "@/i18n"
+import { useChunkedPlayerSearch } from "@/hooks/use-chunked-player-search"
+import { czechPlayerSearch } from "@/lib/utils/chunked-player-search"
 
 interface CzechTennisImportProps {
   isOpen: boolean
@@ -27,45 +28,90 @@ interface CzechTennisImportProps {
 
 export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: CzechTennisImportProps) {
   const t = useTranslations('common')
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<CzechTennisPlayer[]>([])
-  const [selectedPlayer, setSelectedPlayer] = useState<CzechTennisPlayer | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<SearchResult | null>(null)
+  const [fullPlayerData, setFullPlayerData] = useState<CzechTennisPlayer | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
 
-  const metadata = getCzechTennisMetadata()
+  // Use the chunked search hook
+  const {
+    query,
+    setQuery,
+    results,
+    isSearching,
+    isIndexLoading,
+    error,
+    hasSearched,
+    searchStats,
+    clearSearch,
+    retrySearch,
+  } = useChunkedPlayerSearch({
+    debounceMs: 300,
+    minQueryLength: 1,
+    maxResults: 50,
+    preloadOnMount: true,
+  })
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (query.trim().length > 0) {
-      const results = searchCzechPlayers(query)
-      setSearchResults(results)
-    } else {
-      setSearchResults([])
+  // Clear search when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      clearSearch()
+      setSelectedPlayer(null)
+      setFullPlayerData(null)
+      setShowConfirmation(false)
     }
-  }
+  }, [isOpen, clearSearch])
 
-  const handlePlayerSelect = (player: CzechTennisPlayer) => {
+  const handlePlayerSelect = async (player: SearchResult) => {
     setSelectedPlayer(player)
+    
+    // Load full player data if not already enhanced
+    if (!player.isEnhanced) {
+      try {
+        const fullData = await czechPlayerSearch.getPlayerByUniqueId(player.uniqueId)
+        setFullPlayerData(fullData)
+      } catch (err) {
+        console.error('Failed to load full player data:', err)
+        toast({
+          title: t('errorOccurred'),
+          description: 'Failed to load complete player information',
+          variant: "destructive",
+        })
+        return
+      }
+    } else {
+      // Create full player data from enhanced search result
+      setFullPlayerData({
+        czRanking: player.czRanking,
+        lastName: player.lastName,
+        firstName: player.firstName,
+        club: player.club,
+        bhRating: player.bhRating,
+        uniqueId: player.uniqueId,
+        yearOfBirth: player.yearOfBirth!,
+        cztennisUrl: player.cztennisUrl!,
+      })
+    }
+    
     setShowConfirmation(true)
   }
 
   const handleImportConfirm = () => {
-    if (!selectedPlayer) return
+    if (!fullPlayerData) return
 
     startTransition(async () => {
-      const result = await createPlayerFromCzechImport(selectedPlayer)
+      const result = await createPlayerFromCzechImport(fullPlayerData)
       
       if (result.success) {
         toast({
           title: t('playerImported'),
-          description: `${selectedPlayer.firstName} ${selectedPlayer.lastName} was imported from Czech Tennis Rankings.`,
+          description: `${fullPlayerData.firstName} ${fullPlayerData.lastName} was imported from Czech Tennis Rankings.`,
         })
         onOpenChange(false)
-        setSearchQuery("")
-        setSearchResults([])
+        clearSearch()
         setSelectedPlayer(null)
+        setFullPlayerData(null)
         setShowConfirmation(false)
         onPlayerImported?.()
       } else {
@@ -81,9 +127,10 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
   const handleBackToSearch = () => {
     setShowConfirmation(false)
     setSelectedPlayer(null)
+    setFullPlayerData(null)
   }
 
-  if (showConfirmation && selectedPlayer) {
+  if (showConfirmation && fullPlayerData) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md mx-auto">
@@ -97,30 +144,30 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
           <div className="bg-muted/30 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">
-                {selectedPlayer.firstName} {selectedPlayer.lastName}
+                {fullPlayerData.firstName} {fullPlayerData.lastName}
               </h3>
               <Badge variant="secondary" className="font-mono">
-                #{selectedPlayer.uniqueId}
+                #{fullPlayerData.uniqueId}
               </Badge>
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-muted-foreground" />
-                <span>CŽ Ranking: <strong>#{selectedPlayer.czRanking}</strong></span>
+                <span>CŽ Ranking: <strong>#{fullPlayerData.czRanking}</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">BH:</span>
-                <strong>{selectedPlayer.bhRating}</strong>
+                <strong>{fullPlayerData.bhRating}</strong>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Born: <strong>{selectedPlayer.yearOfBirth}</strong></span>
+                <span>Born: <strong>{fullPlayerData.yearOfBirth}</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="truncate" title={selectedPlayer.club}>
-                  <strong>{selectedPlayer.club}</strong>
+                <span className="truncate" title={fullPlayerData.club}>
+                  <strong>{fullPlayerData.club}</strong>
                 </span>
               </div>
             </div>
@@ -130,7 +177,7 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
                 variant="outline" 
                 size="sm"
                 className="w-full"
-                onClick={() => window.open(selectedPlayer.cztennisUrl, '_blank')}
+                onClick={() => window.open(fullPlayerData.cztennisUrl, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View on cztenis.cz
@@ -165,9 +212,30 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl mx-auto max-h-[80vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Import from Czech Tennis Rankings</DialogTitle>
-          <DialogDescription>
-            Search and import players from {metadata.category} ({metadata.totalPlayers} players available)
+          <DialogTitle className="flex items-center gap-2">
+            Import from Czech Tennis Rankings
+            {isIndexLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+          </DialogTitle>
+          <DialogDescription className="space-y-1">
+            <div>Search and import players from Czech U12 Girls Rankings (824 players available)</div>
+            {searchStats.totalResults > 0 && (
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>{searchStats.totalResults} results</span>
+                <span>•</span>
+                <span>{searchStats.enhancedResults} enhanced</span>
+                <span>•</span>
+                <span>{Math.round(searchStats.searchTime)}ms</span>
+                {searchStats.enhancedResults > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Zap className="h-3 w-3" />
+                      Progressive loading
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -175,25 +243,50 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, club, or ranking..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Search by name, club, ranking, or BH rating..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               className="pl-10"
+              disabled={isIndexLoading}
             />
+            {isSearching && (
+              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
           </div>
+          
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="flex-1">{error}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={retrySearch}
+                className="text-destructive hover:text-destructive"
+              >
+                Retry
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {searchResults.length > 0 ? (
+          {isIndexLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin opacity-50" />
+              <p>Loading Czech tennis player database...</p>
+              <p className="text-sm">Preparing search index for optimal performance</p>
+            </div>
+          ) : results.length > 0 ? (
             <div className="space-y-2">
-              {searchResults.map((player) => (
+              {results.map((player) => (
                 <div
                   key={player.uniqueId}
-                  className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                  className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors relative"
                   onClick={() => handlePlayerSelect(player)}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium">
                           {player.firstName} {player.lastName}
@@ -201,33 +294,55 @@ export function CzechTennisImport({ isOpen, onOpenChange, onPlayerImported }: Cz
                         <Badge variant="outline" className="text-xs">
                           #{player.czRanking}
                         </Badge>
+                        {player.isEnhanced && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Zap className="h-3 w-3 mr-1" />
+                            Enhanced
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{player.club}</span>
+                        <span className="truncate">{player.club}</span>
                         <span>•</span>
-                        <span>Born {player.yearOfBirth}</span>
-                        <span>•</span>
+                        {player.isEnhanced && player.yearOfBirth ? (
+                          <>
+                            <span>Born {player.yearOfBirth}</span>
+                            <span>•</span>
+                          </>
+                        ) : null}
                         <span>{player.bhRating}</span>
+                        {!player.isEnhanced && (
+                          <>
+                            <span>•</span>
+                            <span className="text-xs opacity-75">Chunk: {player.chunk.toUpperCase()}</span>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <Badge variant="secondary" className="font-mono text-xs">
-                      #{player.uniqueId}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {player.isLoading && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        #{player.uniqueId}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : searchQuery.trim().length > 0 ? (
+          ) : hasSearched && query.trim().length > 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No players found matching "{searchQuery}"</p>
-              <p className="text-sm">Try searching by first name, last name, or club</p>
+              <p>No players found matching "{query}"</p>
+              <p className="text-sm">Try searching by first name, last name, club, or BH rating</p>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Start typing to search Czech tennis players</p>
               <p className="text-sm">Search by name, club, ranking, or BH rating</p>
+              <p className="text-xs mt-2 opacity-75">Progressive loading • Instant results • Full dataset</p>
             </div>
           )}
         </div>

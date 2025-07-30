@@ -140,6 +140,23 @@
                     ],
                     "format": "enum",
                     "default": null
+                },
+                {
+                    "key": "bhRating",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 20,
+                    "default": null
+                },
+                {
+                    "key": "czRanking",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 1,
+                    "max": 650,
+                    "default": null
                 }
             ],
             "indexes": [
