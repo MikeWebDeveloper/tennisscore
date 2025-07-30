@@ -1,132 +1,107 @@
-// TennisScore Service Worker - Production Ready
-// Version: 1.3.4 - Vercel Preview URL Fixes
-const CACHE_NAME = 'tennisscore-v1.3.4'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.4'
+// TennisScore Service Worker - Performance Optimized
+// Version: 2.0.0 - Bundle Caching & Performance Focus
+const CACHE_NAME = 'tennisscore-v2.0.0'
+const STATIC_CACHE = 'tennisscore-static-v2.0.0'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.0.0'
 
-// Robust development detection
+// Development detection
 const isDevelopment = (() => {
   try {
     return self.location.hostname === 'localhost' || 
            self.location.hostname === '127.0.0.1' ||
-           self.location.hostname.includes('localhost') ||
            self.location.port === '3000' ||
-           self.location.port === '3001' ||
-           self.location.href.includes('localhost')
+           self.location.port === '3001'
   } catch {
     return false
   }
 })()
 
-// Essential static assets (production only)
+// Essential static assets to pre-cache
 const STATIC_ASSETS = [
+  '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ]
 
-// Cache strategies
+// Cache strategies by content type
 const CACHE_STRATEGIES = {
-  PRODUCTION_ASSETS: /\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)$/,
-  MANIFEST: /\/manifest\.json$/,
-  ICONS: /\/icons\//
+  // Immutable assets - cache forever
+  STATIC_IMMUTABLE: /\/_next\/static\/.+\.(js|css|woff|woff2|ttf|otf)$/,
+  
+  // Build chunks - stale while revalidate
+  BUILD_CHUNKS: /\/_next\/(chunks|media)\/.+\.(js|css)$/,
+  
+  // Images and icons - cache first
+  IMAGES: /\.(png|jpg|jpeg|gif|webp|svg|ico)$/,
+  
+  // App routes - network first with fallback
+  APP_ROUTES: /^\/[^.]*$/,
+  
+  // API routes - never cache
+  API_ROUTES: /\/api\//,
+  
+  // Real-time routes - always fresh
+  REALTIME_ROUTES: /\/(live|matches\/live)\//
 }
 
-// Requests to bypass (never intercept)
-const BYPASS_PATTERNS = [
-  // Development assets
-  /_next\//,
-  /webpack/,
-  /\.hot-update\./,
-  /hmr/,
-  /_dev/,
-  
-  // API routes
-  /\/api\//,
-  
-  // Service Worker itself
-  /sw\.js$/,
-  
-  // DevTools and development
-  /\.well-known/,
-  /chrome-extension/,
-  /moz-extension/,
-  
-  // Authentication routes (critical for login)
-  /\/login/,
-  /\/signup/,
-  /\/auth/,
-  
-  // Don't intercept same-origin API calls
-  /appwrite\.io/,
-  
-  // Live match pages should always be fresh
-  /\/live\//,
-  /\/matches\/live\//
-]
-
-// Install event
+// Install event - pre-cache critical assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.4...')
-  
-  if (isDevelopment) {
-    console.log('[SW] Development mode - skipping cache setup')
-    return self.skipWaiting()
-  }
+  console.log('[SW] Installing service worker v2.0.0...')
   
   event.waitUntil(
     (async () => {
       try {
-        const cache = await caches.open(CACHE_NAME)
-        console.log('[SW] Caching essential assets...')
+        // Open static cache
+        const cache = await caches.open(STATIC_CACHE)
         
-        // Cache assets one by one with error handling
+        // Pre-cache essential assets
         for (const url of STATIC_ASSETS) {
           try {
-            const response = await fetch(url, { 
-              method: 'GET',
-              cache: 'no-cache',
-              redirect: 'follow'
-            })
+            const response = await fetch(url, { cache: 'no-cache' })
             if (response.ok) {
               await cache.put(url, response)
-              console.log('[SW] Cached:', url)
+              console.log('[SW] Pre-cached:', url)
             }
           } catch (error) {
-            console.log('[SW] Skipped:', url, '-', error.message)
+            console.log('[SW] Failed to pre-cache:', url)
           }
         }
         
+        // Skip waiting to activate immediately
         await self.skipWaiting()
         console.log('[SW] Installation complete')
       } catch (error) {
         console.error('[SW] Install failed:', error)
-        await self.skipWaiting() // Still activate even if caching fails
+        await self.skipWaiting()
       }
     })()
   )
 })
 
-// Activate event
+// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...')
+  console.log('[SW] Activating service worker v2.0.0...')
   
   event.waitUntil(
     (async () => {
       try {
-        // Clean up old caches
+        // Delete old caches
         const cacheNames = await caches.keys()
         await Promise.all(
           cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
+            if (cacheName !== CACHE_NAME && 
+                cacheName !== STATIC_CACHE && 
+                cacheName !== DYNAMIC_CACHE) {
               console.log('[SW] Deleting old cache:', cacheName)
               return caches.delete(cacheName)
             }
           })
         )
         
-        // Take control of all pages
+        // Take control of all clients
         await self.clients.claim()
-        console.log('[SW] Activation complete')
+        console.log('[SW] Activation complete - ready for fast navigation!')
       } catch (error) {
         console.error('[SW] Activation failed:', error)
       }
@@ -134,266 +109,146 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Helper: Should we bypass this request?
-function shouldBypassRequest(request) {
-  // Always bypass non-GET requests
-  if (request.method !== 'GET') {
-    return true
-  }
-  
-  const url = new URL(request.url)
-  
-  // Bypass external origins
-  if (url.origin !== self.location.origin) {
-    return true
-  }
-  
-  // In development, bypass almost everything except manifest/icons
-  if (isDevelopment) {
-    if (CACHE_STRATEGIES.MANIFEST.test(request.url) || 
-        CACHE_STRATEGIES.ICONS.test(request.url)) {
-      return false // Don't bypass - we want to handle these
-    }
-    return true // Bypass everything else in development
-  }
-  
-  // Check against bypass patterns
-  const urlString = request.url
-  const pathname = url.pathname
-  
-  for (const pattern of BYPASS_PATTERNS) {
-    if (pattern.test(urlString) || pattern.test(pathname)) {
-      return true
-    }
-  }
-  
-  return false
-}
-
-// Helper: Check if this is a live match route
-function isLiveMatchRoute(request) {
-  const url = new URL(request.url)
-  return url.pathname.includes('/live/') || url.pathname.includes('/matches/live/')
-}
-
-// Helper: Check if this is Safari browser
-function isSafari() {
-  try {
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-  } catch {
-    return false
-  }
-}
-
-// Helper: Check if this is a Vercel preview URL
-function isVercelPreview(request) {
-  const url = new URL(request.url)
-  return url.hostname.includes('vercel.app') || url.hostname.includes('-git-')
-}
-
-// Fetch event
+// Fetch event - intelligent caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event
+  const url = new URL(request.url)
   
-  // Bypass check
-  if (shouldBypassRequest(request)) {
-    return // Let browser handle naturally
+  // Skip non-GET requests
+  if (request.method !== 'GET') return
+  
+  // Skip external requests
+  if (url.origin !== self.location.origin) return
+  
+  // Skip development hot reload
+  if (isDevelopment && (
+    url.pathname.includes('webpack') ||
+    url.pathname.includes('hot-update') ||
+    url.pathname.includes('_next/development')
+  )) return
+  
+  // API routes - never cache
+  if (CACHE_STRATEGIES.API_ROUTES.test(url.pathname)) return
+  
+  // Real-time routes - always fresh
+  if (CACHE_STRATEGIES.REALTIME_ROUTES.test(url.pathname)) {
+    event.respondWith(networkFirst(request))
+    return
   }
   
-  // Handle the request
-  event.respondWith(handleRequest(request))
+  // Static immutable assets - cache forever
+  if (CACHE_STRATEGIES.STATIC_IMMUTABLE.test(request.url)) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE))
+    return
+  }
+  
+  // Build chunks - stale while revalidate for fast navigation
+  if (CACHE_STRATEGIES.BUILD_CHUNKS.test(request.url)) {
+    event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE))
+    return
+  }
+  
+  // Images - cache first
+  if (CACHE_STRATEGIES.IMAGES.test(request.url)) {
+    event.respondWith(cacheFirst(request, DYNAMIC_CACHE))
+    return
+  }
+  
+  // App routes (navigation) - network first with offline fallback
+  if (request.mode === 'navigate' || CACHE_STRATEGIES.APP_ROUTES.test(url.pathname)) {
+    event.respondWith(networkFirstWithOffline(request))
+    return
+  }
+  
+  // Default - stale while revalidate
+  event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE))
 })
 
-// Main request handler
-async function handleRequest(request) {
-  try {
-    // For live match routes, always go network-first with no-cache
-    if (isLiveMatchRoute(request)) {
-      return await networkFirstNoCache(request)
-    }
-    
-    // Production asset handling
-    if (CACHE_STRATEGIES.PRODUCTION_ASSETS.test(request.url)) {
-      return await cacheFirst(request, DYNAMIC_CACHE)
-    }
-    
-    // Manifest handling
-    if (CACHE_STRATEGIES.MANIFEST.test(request.url)) {
-      return await cacheFirst(request, CACHE_NAME)
-    }
-    
-    // Icon handling
-    if (CACHE_STRATEGIES.ICONS.test(request.url)) {
-      return await cacheFirst(request, DYNAMIC_CACHE)
-    }
-    
-    // Navigation requests (pages)
-    if (request.mode === 'navigate') {
-      return await handleNavigation(request)
-    }
-    
-    // Default: Network with fallback
-    return await networkWithFallback(request)
-    
-  } catch (error) {
-    console.error('[SW] Request handler failed:', error)
-    return await networkWithFallback(request)
-  }
-}
-
-// Network-first with no-cache strategy for live matches
-async function networkFirstNoCache(request) {
-  try {
-    const isPreview = isVercelPreview(request)
-    const safariUser = isSafari()
-    
-    // Enhanced cache control headers for Safari mobile and Vercel previews
-    const headers = {
-      ...request.headers,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache'
-    }
-    
-    // Add additional headers for Safari mobile on Vercel previews
-    if (safariUser && isPreview) {
-      headers['X-Safari-Mobile-Fix'] = 'true'
-      headers['Expires'] = '0'
-      headers['Last-Modified'] = new Date().toUTCString()
-    }
-    
-    const response = await fetch(request, {
-      method: 'GET',
-      headers,
-      mode: 'cors',
-      credentials: request.credentials,
-      redirect: 'follow',
-      cache: 'no-store'
-    })
-    
-    // Enhanced cache-control headers for response based on context
-    const modifiedResponse = new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: new Headers(response.headers)
-    })
-    
-    modifiedResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-    modifiedResponse.headers.set('Pragma', 'no-cache')
-    modifiedResponse.headers.set('Expires', '0')
-    
-    // Additional Safari mobile headers
-    if (safariUser) {
-      modifiedResponse.headers.set('X-Safari-Cache-Fix', 'applied')
-      modifiedResponse.headers.set('Last-Modified', new Date().toUTCString())
-    }
-    
-    // Mark Vercel preview responses for debugging
-    if (isPreview) {
-      modifiedResponse.headers.set('X-Vercel-Preview', 'true')
-    }
-    
-    return modifiedResponse
-  } catch (error) {
-    console.error('[SW] Network-first failed for live match:', error)
-    // Don't fall back to cache for live matches
-    throw error
-  }
-}
-
-// Cache-first strategy
+// Strategy: Cache First (for immutable assets)
 async function cacheFirst(request, cacheName) {
   try {
     const cache = await caches.open(cacheName)
     const cachedResponse = await cache.match(request)
     
     if (cachedResponse) {
-      // Return cached version, update in background
-      fetchAndCache(request, cache).catch(() => {
-        // Ignore background update failures
-      })
+      // Return from cache immediately for speed
       return cachedResponse
     }
     
-    // Not in cache, fetch and cache
-    return await fetchAndCache(request, cache)
-    
-  } catch (error) {
-    console.error('[SW] Cache-first failed:', error)
-    return await networkWithFallback(request)
-  }
-}
-
-// Helper: Fetch and cache
-async function fetchAndCache(request, cache) {
-  try {
-    const response = await fetch(request, { 
-      redirect: 'follow',
-      cache: 'default',
-      mode: request.mode === 'navigate' ? 'cors' : request.mode
-    })
-    
-    if (response.ok && response.status === 200) {
-      // Clone before caching (response can only be consumed once)
-      cache.put(request, response.clone()).catch(() => {
-        // Ignore cache errors
-      })
+    // Not in cache, fetch and cache for next time
+    const response = await fetch(request)
+    if (response.ok) {
+      cache.put(request, response.clone())
     }
-    
     return response
   } catch (error) {
-    console.error('[SW] Fetch and cache failed for:', request.url, error)
+    console.error('[SW] Cache first failed:', error)
     throw error
   }
 }
 
-// Handle navigation requests
-async function handleNavigation(request) {
+// Strategy: Stale While Revalidate (for build chunks)
+async function staleWhileRevalidate(request, cacheName) {
   try {
-    // Create a new request with explicit redirect handling for proxy scenarios
-    const url = request.url
-    const navigationRequest = new Request(url, {
-      method: 'GET',
-      headers: request.headers,
-      mode: request.mode === 'navigate' ? 'cors' : request.mode,
-      credentials: request.credentials,
-      redirect: 'follow',
-      cache: 'default'
-    })
+    const cache = await caches.open(cacheName)
+    const cachedResponse = await cache.match(request)
     
-    const response = await fetch(navigationRequest)
-    
-    return response
-    
-  } catch (error) {
-    console.error('[SW] Navigation failed for:', request.url, error)
-    
-    // Only provide offline fallback in production
-    if (!isDevelopment) {
-      return await getOfflineFallback()
-    }
-    
-    // In development, let the error propagate
-    throw error
-  }
-}
-
-// Network with graceful fallback
-async function networkWithFallback(request) {
-  try {
-    return await fetch(request, { 
-      redirect: 'follow',
-      cache: 'default'
-    })
-  } catch (error) {
-    console.error('[SW] Network request failed:', error)
-    
-    // Try to serve from cache as last resort
-    if (!isDevelopment) {
-      const cache = await caches.open(DYNAMIC_CACHE)
-      const cachedResponse = await cache.match(request)
-      if (cachedResponse) {
-        return cachedResponse
+    // Fetch fresh version in background
+    const fetchPromise = fetch(request).then(response => {
+      if (response.ok) {
+        cache.put(request, response.clone())
       }
+      return response
+    })
+    
+    // Return cached version immediately if available
+    return cachedResponse || fetchPromise
+  } catch (error) {
+    console.error('[SW] Stale while revalidate failed:', error)
+    const cachedResponse = await caches.match(request)
+    return cachedResponse || Promise.reject(error)
+  }
+}
+
+// Strategy: Network First (for real-time data)
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    })
+    return response
+  } catch (error) {
+    console.error('[SW] Network first failed:', error)
+    throw error
+  }
+}
+
+// Strategy: Network First with Offline Fallback (for navigation)
+async function networkFirstWithOffline(request) {
+  try {
+    // Try network first
+    const response = await fetch(request)
+    
+    // Cache successful responses
+    if (response.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE)
+      cache.put(request, response.clone())
+    }
+    
+    return response
+  } catch (error) {
+    // Network failed, try cache
+    const cachedResponse = await caches.match(request)
+    if (cachedResponse) {
+      return cachedResponse
+    }
+    
+    // If it's a navigation request, return offline page
+    if (request.mode === 'navigate') {
+      return getOfflinePage()
     }
     
     throw error
@@ -401,7 +256,12 @@ async function networkWithFallback(request) {
 }
 
 // Offline fallback page
-async function getOfflineFallback() {
+async function getOfflinePage() {
+  const cachedOffline = await caches.match('/')
+  if (cachedOffline) {
+    return cachedOffline
+  }
+  
   return new Response(`
     <!DOCTYPE html>
     <html lang="en">
@@ -469,56 +329,66 @@ async function getOfflineFallback() {
         <div class="container">
           <span class="icon">🎾</span>
           <h1>TennisScore</h1>
-          <p>You're currently offline. Please check your internet connection to continue using the app.</p>
+          <p>You're currently offline. Your cached data is still available.</p>
           <button onclick="window.location.reload()">Try Again</button>
         </div>
       </body>
     </html>
   `, {
     status: 200,
-    headers: { 
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-cache'
-    }
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
   })
 }
 
-// Message handling
+// Performance monitoring
 self.addEventListener('message', (event) => {
-  const { type } = event.data || {}
+  const { type, data } = event.data || {}
   
   switch (type) {
     case 'SKIP_WAITING':
-      console.log('[SW] Skipping waiting...')
       self.skipWaiting()
       break
       
-    case 'CLEAR_CACHE':
-      console.log('[SW] Clearing all caches...')
-      caches.keys().then(names => {
-        return Promise.all(names.map(name => caches.delete(name)))
-      }).then(() => {
-        console.log('[SW] All caches cleared')
-      }).catch(error => {
-        console.error('[SW] Cache clear failed:', error)
+    case 'GET_CACHE_STATS':
+      getCacheStats().then(stats => {
+        event.ports[0]?.postMessage({ type: 'CACHE_STATS', stats })
       })
       break
       
-    case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.4' })
+    case 'CLEAR_CACHE':
+      clearAllCaches().then(() => {
+        event.ports[0]?.postMessage({ type: 'CACHE_CLEARED' })
+      })
       break
       
     default:
-      console.log('[SW] Unknown message type:', type)
+      break
   }
 })
 
-// Error handling
-self.addEventListener('error', (event) => {
-  console.error('[SW] Global error:', event.error)
-})
+// Get cache statistics
+async function getCacheStats() {
+  const cacheNames = await caches.keys()
+  const stats = {}
+  
+  for (const name of cacheNames) {
+    const cache = await caches.open(name)
+    const keys = await cache.keys()
+    stats[name] = {
+      count: keys.length,
+      urls: keys.map(req => req.url)
+    }
+  }
+  
+  return stats
+}
 
-self.addEventListener('unhandledrejection', (event) => {
-  console.error('[SW] Unhandled promise rejection:', event.reason)
-  event.preventDefault() // Prevent browser console error
-}) 
+// Clear all caches
+async function clearAllCaches() {
+  const cacheNames = await caches.keys()
+  await Promise.all(cacheNames.map(name => caches.delete(name)))
+  console.log('[SW] All caches cleared')
+}
+
+// Log service worker ready
+console.log('[SW] Service Worker v2.0.0 loaded - Performance optimized!')

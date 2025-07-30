@@ -174,8 +174,8 @@ export function EditPlayerDialog({
                 name="czRanking"
                 type="number"
                 min="1"
-                max="650"
-                placeholder="1-650"
+                max="1500"
+                placeholder="1-1500"
                 defaultValue={player.czRanking || ""}
               />
             </div>

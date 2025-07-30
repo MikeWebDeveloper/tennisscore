@@ -155,19 +155,47 @@
                     "required": false,
                     "array": false,
                     "min": 1,
-                    "max": 650,
+                    "max": 1500,
                     "default": null
                 }
             ],
             "indexes": [
                 {
                     "key": "userId_index",
-                    "type": "key",
+                    "type": "key", 
                     "status": "available",
                     "attributes": [
                         "userId"
                     ],
                     "orders": []
+                },
+                {
+                    "key": "user_main_player_composite",
+                    "type": "key",
+                    "status": "available", 
+                    "attributes": [
+                        "userId",
+                        "isMainPlayer"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "search_name_composite",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId", 
+                        "firstName",
+                        "lastName"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC", 
+                        "ASC"
+                    ]
                 }
             ]
         },
@@ -359,6 +387,47 @@
                         "matchDate"
                     ],
                     "orders": [
+                        "ASC",
+                        "DESC"
+                    ]
+                },
+                {
+                    "key": "player_participation_p1",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "playerOneId",
+                        "matchDate"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "DESC"
+                    ]
+                },
+                {
+                    "key": "player_participation_p2", 
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "playerTwoId",
+                        "matchDate"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "DESC"
+                    ]
+                },
+                {
+                    "key": "user_status_date_composite",
+                    "type": "key",
+                    "status": "available", 
+                    "attributes": [
+                        "userId",
+                        "status",
+                        "matchDate"
+                    ],
+                    "orders": [
+                        "ASC",
                         "ASC",
                         "DESC"
                     ]

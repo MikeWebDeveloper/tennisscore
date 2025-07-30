@@ -24,7 +24,7 @@ const playerSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   yearOfBirth: z.number().min(1900).max(2030).optional(),
   bhRating: z.string().max(20).optional(), // Backhand rating like "12BH"
-  czRanking: z.number().min(1).max(650).optional(), // Czech Tennis Association ranking 1-650
+  czRanking: z.number().min(1).max(1500).optional(), // Czech Tennis Association ranking 1-1500
   club: z.string().max(100).optional(),
   playingHand: z.enum(['right', 'left']).optional(),
   isMainPlayer: z.boolean().optional(),

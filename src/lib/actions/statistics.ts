@@ -5,27 +5,59 @@ import { createAdminClient } from "@/lib/appwrite-server"
 import { Query } from "node-appwrite"
 import { Match, Player } from "@/lib/types"
 
-export async function getMatchesWithStats(playerId: string): Promise<Match[]> {
+// Simple in-memory cache for statistics (in production, use Redis)
+const statisticsCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+function getCachedStats(key: string) {
+  const cached = statisticsCache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data
+  }
+  return null
+}
+
+function setCachedStats(key: string, data: any) {
+  statisticsCache.set(key, { data, timestamp: Date.now() })
+}
+
+export async function getMatchesWithStats(playerId: string, options: {
+  limit?: number;
+  status?: string;
+  dateAfter?: string;
+} = {}): Promise<Match[]> {
   const user = await getCurrentUser()
   if (!user) throw new Error("Unauthorized")
 
   try {
     const { databases } = await createAdminClient()
+    const { limit = 50, status, dateAfter } = options
     
-    // Get all matches where the player participated
+    // Build efficient query with proper indexing
+    const queries = [
+      Query.or([
+        Query.equal("playerOneId", playerId),
+        Query.equal("playerTwoId", playerId),
+        Query.equal("playerThreeId", playerId),
+        Query.equal("playerFourId", playerId)
+      ]),
+      Query.orderDesc("matchDate"),
+      Query.limit(limit) // Use reasonable limit instead of 1000
+    ]
+
+    // Add optional filters that work with our indexes
+    if (status) {
+      queries.push(Query.equal("status", status))
+    }
+    if (dateAfter) {
+      queries.push(Query.greaterThan("matchDate", dateAfter))
+    }
+    
+    // Get matches with efficient query
     const matchesResponse = await databases.listDocuments<Match>(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      [
-        Query.or([
-          Query.equal("playerOneId", playerId),
-          Query.equal("playerTwoId", playerId),
-          Query.equal("playerThreeId", playerId),
-          Query.equal("playerFourId", playerId)
-        ]),
-        Query.orderDesc("matchDate"),
-        Query.limit(1000) // Get up to 1000 matches for statistics
-      ]
+      queries
     )
 
     // Get all unique player IDs from matches
@@ -72,8 +104,12 @@ export async function getPlayerComparisons(playerId: string): Promise<{
   losses: number
   winRate: number
 }[]> {
-  const matches = await getMatchesWithStats(playerId)
-  const completedMatches = matches.filter(m => m.status === 'completed')
+  // Only fetch completed matches for statistics - much more efficient
+  const matches = await getMatchesWithStats(playerId, { 
+    status: 'completed',
+    limit: 200 // Reasonable limit for opponent statistics
+  })
+  const completedMatches = matches
   
   const opponentStats = new Map<string, {
     opponent: Player

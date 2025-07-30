@@ -9,6 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "setup:appwrite": "node scripts/setup-appwrite.js",
+    "analyze": "ANALYZE=true npm run build",
     "investigate": "npx tsx scripts/investigate-match.ts",
     "investigate:quick": "node scripts/quick-investigation.js",
     "investigate:detailed": "node scripts/detailed-investigation.js",
@@ -18,7 +19,12 @@
     "validate:translations:verbose": "node scripts/validate-translations.js --verbose",
     "test": "node test-czech-search.js",
     "test:e2e": "npx playwright test",
-    "test:czech": "node test-czech-search.js"
+    "test:czech": "node test-czech-search.js",
+    "perf:baseline": "node scripts/performance/baseline-capture.js",
+    "perf:test": "node scripts/performance/performance-test-suite.js",
+    "perf:bundle": "node scripts/performance/bundle-analyzer.js",
+    "perf:pwa": "node scripts/performance/pwa-comparison.js",
+    "perf:all": "npm run perf:baseline && npm run perf:test && npm run perf:bundle && npm run perf:pwa"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -74,6 +80,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.4.5",
     "@playwright/test": "^1.54.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^30.0.0",
@@ -83,11 +90,14 @@
     "@types/react": "19.1.8",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.19",
+    "chrome-launcher": "^1.1.2",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
     "jest": "^29.7.0",
+    "lighthouse": "^12.0.0",
     "playwright": "^1.54.1",
     "postcss": "^8.4.38",
+    "puppeteer": "^23.0.0",
     "tailwindcss": "^3.4.3",
     "ts-jest": "^29.4.0",
     "typescript": "^5.5.0"

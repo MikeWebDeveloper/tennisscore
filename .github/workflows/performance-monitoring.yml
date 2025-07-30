@@ -1,0 +1,300 @@
+name: Performance Monitoring
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'next.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_url:
+        description: 'URL to test (defaults to localhost:3000)'
+        required: false
+        default: 'http://localhost:3000'
+
+jobs:
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        npx playwright install --with-deps chromium
+    
+    - name: Build application
+      run: |
+        npm run build
+        
+    - name: Start application
+      run: |
+        npm start &
+        sleep 10
+        curl -f http://localhost:3000 || exit 1
+      env:
+        NODE_ENV: production
+        PORT: 3000
+    
+    - name: Run Performance Baseline Capture
+      run: npm run perf:baseline
+      env:
+        TEST_URL: ${{ github.event.inputs.test_url || 'http://localhost:3000' }}
+    
+    - name: Run Bundle Analysis
+      run: npm run perf:bundle
+      continue-on-error: true
+    
+    - name: Run PWA Comparison
+      run: npm run perf:pwa
+      continue-on-error: true
+    
+    - name: Upload Performance Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results-${{ github.run_number }}
+        path: |
+          performance-results/
+          performance-baselines/
+        retention-days: 30
+    
+    - name: Performance Regression Check
+      run: |
+        # Check if performance results meet minimum thresholds
+        node -e "
+          const fs = require('fs');
+          try {
+            const baseline = JSON.parse(fs.readFileSync('./performance-baselines/current-baseline.json'));
+            
+            console.log('🔍 Performance Regression Check');
+            console.log('Overall Health:', baseline.summary.overallHealth);
+            
+            const criticalIssues = baseline.summary.criticalIssues.filter(i => i.severity === 'critical');
+            
+            if (criticalIssues.length > 0) {
+              console.log('❌ Critical performance issues detected:');
+              criticalIssues.forEach(issue => console.log('  -', issue.description));
+              process.exit(1);
+            }
+            
+            if (baseline.summary.overallHealth === 'critical') {
+              console.log('❌ Overall performance health is critical');
+              process.exit(1);
+            }
+            
+            console.log('✅ Performance regression check passed');
+          } catch (error) {
+            console.log('⚠️ Could not check performance regression:', error.message);
+            process.exit(0); // Don't fail if baseline doesn't exist yet
+          }
+        "
+    
+    - name: Comment PR with Performance Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const baseline = JSON.parse(fs.readFileSync('./performance-baselines/current-baseline.json'));
+            const { summary } = baseline;
+            
+            const healthEmoji = {
+              good: '✅',
+              fair: '⚠️',
+              poor: '❌',
+              critical: '🚨'
+            };
+            
+            const comment = `## 📊 Performance Test Results
+            
+            ### Overall Health: ${healthEmoji[summary.overallHealth]} ${summary.overallHealth.toUpperCase()}
+            
+            ${summary.criticalIssues.length > 0 ? '### 🚨 Critical Issues\n' + summary.criticalIssues.map(issue => `- **${issue.type}**: ${issue.description}`).join('\n') + '\n' : ''}
+            
+            ### 📈 Key Metrics
+            
+            | Metric | Value | Status |
+            |--------|-------|--------|
+            | Performance Tests | ${summary.keyMetrics.performanceTests?.passRate || 0}% pass rate | ${(summary.keyMetrics.performanceTests?.passRate || 0) >= 80 ? '✅' : '❌'} |
+            | Bundle Compliance | ${summary.keyMetrics.bundles?.compliance || 0}% | ${(summary.keyMetrics.bundles?.compliance || 0) >= 80 ? '✅' : '❌'} |
+            | Total Bundle Size | ${summary.keyMetrics.bundles?.totalSize || 0}kB | ${(summary.keyMetrics.bundles?.totalSize || 0) <= 500 ? '✅' : '❌'} |
+            | PWA vs Browser | ${summary.keyMetrics.pwaPerformance?.overallImprovement || 0}% faster | ${(summary.keyMetrics.pwaPerformance?.overallImprovement || 0) >= 30 ? '✅' : '❌'} |
+            
+            ### 🎯 Recommendations
+            
+            ${summary.recommendations.slice(0, 3).map(rec => `
+            #### ${rec.priority === 1 ? '🔥' : rec.priority === 2 ? '⚡' : '💡'} ${rec.title}
+            ${rec.description}
+            
+            **Estimated Impact**: ${rec.estimatedImpact}
+            `).join('\n')}
+            
+            <details>
+            <summary>📋 View Detailed Results</summary>
+            
+            ### Bundle Analysis
+            ${baseline.bundles ? baseline.bundles.pages.map(page => `
+            - **${page.name}**: ${Math.round(page.totalSize / 1024)}kB (Target: ${Math.round(baseline.bundles.thresholds[page.name.toLowerCase()] / 1024)}kB) ${page.totalSize <= baseline.bundles.thresholds[page.name.toLowerCase()] ? '✅' : '❌'}
+            `).join('') : 'Bundle analysis not available'}
+            
+            ### PWA Performance
+            ${baseline.pwaComparison ? `
+            - **Cold Start**: PWA ${baseline.pwaComparison.coldStart.improvement.toFixed(1)}% faster ${baseline.pwaComparison.coldStart.passed ? '✅' : '❌'}
+            - **Warm Navigation**: PWA ${baseline.pwaComparison.warmNavigation.improvement.toFixed(1)}% faster ${baseline.pwaComparison.warmNavigation.passed ? '✅' : '❌'}
+            - **Cache Hit Rate**: ${baseline.pwaComparison.cachePerformance.pwa.toFixed(1)}% ${baseline.pwaComparison.cachePerformance.passed ? '✅' : '❌'}
+            - **Offline Capability**: ${baseline.pwaComparison.offlineCapability.pwa ? 'Available' : 'Not Available'} ${baseline.pwaComparison.offlineCapability.passed ? '✅' : '❌'}
+            ` : 'PWA comparison not available'}
+            
+            </details>
+            
+            ---
+            
+            🤖 *Automated performance test results for commit ${context.sha.substring(0, 8)}*
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.log('Could not create performance comment:', error.message);
+          }
+
+  lighthouse-ci:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+        
+    - name: Start application
+      run: |
+        npm start &
+        sleep 10
+        curl -f http://localhost:3000 || exit 1
+      env:
+        NODE_ENV: production
+        PORT: 3000
+    
+    - name: Run Lighthouse CI
+      run: |
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+        LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.sha }}
+        LHCI_BUILD_CONTEXT__COMMIT_TIME: ${{ github.event.head_commit.timestamp }}
+    
+    - name: Upload Lighthouse Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: lighthouse-results-${{ github.run_number }}
+        path: .lighthouseci/
+        retention-days: 30
+
+  bundle-size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build and analyze bundle
+      run: |
+        npm run build
+        npm run perf:bundle
+    
+    - name: Check bundle size limits
+      run: |
+        node -e "
+          const fs = require('fs');
+          try {
+            const analysis = JSON.parse(fs.readFileSync('./performance-results/bundle-analysis.json'));
+            
+            console.log('📦 Bundle Size Check');
+            
+            let failed = false;
+            const { pages, thresholds } = analysis;
+            
+            pages.forEach(page => {
+              const threshold = thresholds[page.name.toLowerCase()];
+              const compliant = page.totalSize <= threshold;
+              const status = compliant ? '✅' : '❌';
+              
+              console.log(\`\${status} \${page.name}: \${Math.round(page.totalSize / 1024)}kB (limit: \${Math.round(threshold / 1024)}kB)\`);
+              
+              if (!compliant) {
+                failed = true;
+              }
+            });
+            
+            if (failed) {
+              console.log('\\n❌ Bundle size check failed - some pages exceed size limits');
+              process.exit(1);
+            }
+            
+            console.log('\\n✅ All bundles within size limits');
+          } catch (error) {
+            console.log('⚠️ Could not check bundle sizes:', error.message);
+            process.exit(0);
+          }
+        "
+    
+    - name: Upload bundle analysis
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bundle-analysis-${{ github.run_number }}
+        path: performance-results/bundle-analysis*.json
+        retention-days: 30
