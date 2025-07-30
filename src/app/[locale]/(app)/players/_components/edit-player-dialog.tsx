@@ -148,8 +148,8 @@ export function EditPlayerDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-2">
               <Label htmlFor="yearOfBirth">{t('birthYear')}</Label>
               <Input
                 id="yearOfBirth"
@@ -159,11 +159,24 @@ export function EditPlayerDialog({
               />
             </div>
             <div>
-              <Label htmlFor="rating">{t('rating')}</Label>
+              <Label htmlFor="bhRating">BH</Label>
               <Input
-                id="rating"
-                name="rating"
-                defaultValue={player.rating || ""}
+                id="bhRating"
+                name="bhRating"
+                placeholder="12BH"
+                defaultValue={player.bhRating || ""}
+              />
+            </div>
+            <div>
+              <Label htmlFor="czRanking">CŽ</Label>
+              <Input
+                id="czRanking"
+                name="czRanking"
+                type="number"
+                min="1"
+                max="650"
+                placeholder="1-650"
+                defaultValue={player.czRanking || ""}
               />
             </div>
           </div>

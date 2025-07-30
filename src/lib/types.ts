@@ -10,7 +10,8 @@ export interface Player extends Models.Document {
   firstName: string
   lastName: string
   yearOfBirth?: number
-  rating?: string
+  bhRating?: string
+  czRanking?: number
   club?: string
   playingHand?: 'right' | 'left'
   profilePictureId?: string
@@ -18,6 +19,31 @@ export interface Player extends Models.Document {
   isMainPlayer?: boolean
   isAnonymous?: boolean
   userId: string
+  // Czech tennis import fields
+  cztennisUrl?: string      // Column L - external profile link
+  czechTennisId?: string    // Column M - unique Czech tennis ID
+  isImportedFromCzech?: boolean // Track imported players
+}
+
+export interface CzechTennisPlayer {
+  czRanking: number
+  lastName: string
+  firstName: string
+  yearOfBirth: number
+  club: string
+  bhRating: string
+  cztennisUrl: string
+  uniqueId: string
+}
+
+export interface CzechTennisData {
+  metadata: {
+    category: string
+    lastUpdated: string
+    source: string
+    totalPlayers: number
+  }
+  players: CzechTennisPlayer[]
 }
 
 export interface Match extends Models.Document {

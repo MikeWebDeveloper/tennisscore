@@ -20,7 +20,7 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
 
   // Filter for singles matches only and handle status casing
   const singlesMatches = matches.filter(m => !m.isDoubles)
-  const completedMatches = singlesMatches.filter(m => m.status === 'completed' || m.status === 'Completed')
+  const completedMatches = singlesMatches.filter(m => m.status === 'completed')
   const wonMatches = completedMatches.filter(m => m.winnerId === mainPlayer.$id)
   const winRate = completedMatches.length > 0 ? Math.round((wonMatches.length / completedMatches.length) * 100) : 0
   
@@ -76,8 +76,8 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
       icon: Target,
       title: t('totalMatches'),
       value: completedMatches.length.toString(),
-      subtitle: singlesMatches.filter(m => m.status === 'in-progress' || m.status === 'In Progress').length > 0 
-        ? t('inProgressWithCount', { count: singlesMatches.filter(m => m.status === 'in-progress' || m.status === 'In Progress').length })
+      subtitle: singlesMatches.filter(m => m.status === 'in-progress').length > 0 
+        ? t('inProgressWithCount', { count: singlesMatches.filter(m => m.status === 'in-progress').length })
         : t('completedMatches'),
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10'

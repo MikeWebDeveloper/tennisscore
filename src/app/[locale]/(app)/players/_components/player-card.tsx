@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Edit, Trash2, Star } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Edit, Trash2, Star, ExternalLink } from "lucide-react"
 import { Player } from "@/lib/types"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
+import { PlayerRatingDisplay } from "@/components/shared/player-rating-display"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { useTranslations } from "@/i18n"
 
@@ -41,9 +43,17 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
       
       <CardContent className="p-3">
         <div className="flex items-center space-x-3 w-full">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
+          {/* Avatar with Czech Tennis ID */}
+          <div className="flex-shrink-0 relative">
             <PlayerAvatar player={player} className="h-12 w-12" />
+            {player.czechTennisId && (
+              <Badge 
+                variant="secondary" 
+                className="absolute -bottom-1 -right-1 text-xs font-mono px-1 py-0 h-5"
+              >
+                #{player.czechTennisId}
+              </Badge>
+            )}
           </div>
           
           {/* Player Info */}
@@ -58,19 +68,36 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
             </div>
             
             <div className="space-y-0.5">
-              {player.isMainPlayer && (
-                <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-2 flex-wrap">
+                {player.isMainPlayer && (
                   <span className="text-xs font-medium text-primary">{t("mainPlayer")}</span>
-                </div>
-              )}
+                )}
+                {player.isImportedFromCzech && (
+                  <Badge variant="outline" className="text-xs h-4 px-1">
+                    Czech Import
+                  </Badge>
+                )}
+                {player.cztennisUrl && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 px-1 text-xs hover:bg-muted/50"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.open(player.cztennisUrl, '_blank')
+                    }}
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    cztenis.cz
+                  </Button>
+                )}
+              </div>
               
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 {player.yearOfBirth && (
                   <span>{t("born")}: {player.yearOfBirth}</span>
                 )}
-                {player.rating && (
-                  <span>{t("rating")}: <span className="font-medium text-foreground">{player.rating}</span></span>
-                )}
+                <PlayerRatingDisplay player={player} size="sm" />
                 {player.club && (
                   <span>{t("club").replace(/ \(volitelné\)/, "")}: <span className="font-medium text-foreground">{player.club}</span></span>
                 )}

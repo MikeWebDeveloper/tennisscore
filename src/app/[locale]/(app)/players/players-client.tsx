@@ -42,7 +42,8 @@ export function PlayersClient({ players }: PlayersClientProps) {
       return playerName.includes(searchLower) ||
         player.firstName.toLowerCase().includes(searchLower) ||
         player.lastName.toLowerCase().includes(searchLower) ||
-        player.rating?.toLowerCase().includes(searchLower)
+        player.bhRating?.toLowerCase().includes(searchLower) ||
+        player.czRanking?.toString().includes(searchLower)
     })
 
     // Then sort

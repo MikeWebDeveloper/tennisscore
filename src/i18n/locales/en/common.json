@@ -690,5 +690,10 @@
   "fixed": "Fixed",
   "update": "Update",
   "won": "Won",
-  "lost": "Lost"
+  "lost": "Lost",
+  "importPlayer": "Import Player",
+  "playerImported": "Player Imported",
+  "czechImport": "Czech Import",
+  "importFromCzechRankings": "Import from Czech Rankings",
+  "viewOnCztenis": "View on cztenis.cz"
 }

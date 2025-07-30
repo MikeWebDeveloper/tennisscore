@@ -29,6 +29,7 @@ import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { FullMatchExportButton } from "@/components/features/match-export-dialog"
 
 interface MatchDetailsProps {
@@ -702,7 +703,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             {match.playerOne && (
                               <PlayerDetailsLine
                                 yearOfBirth={match.playerOne.yearOfBirth}
-                                rating={match.playerOne.rating}
+                                rating={formatPlayerRating(match.playerOne)}
                                 club={match.playerOne.club}
                               />
                             )}
@@ -712,7 +713,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                                 <span className="text-xs text-muted-foreground">/</span>
                                 <PlayerDetailsLine
                                   yearOfBirth={match.playerThree.yearOfBirth}
-                                  rating={match.playerThree.rating}
+                                  rating={formatPlayerRating(match.playerThree)}
                                   club={match.playerThree.club}
                                 />
                               </div>
@@ -734,7 +735,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             {match.playerTwo && (
                               <PlayerDetailsLine
                                 yearOfBirth={match.playerTwo.yearOfBirth}
-                                rating={match.playerTwo.rating}
+                                rating={formatPlayerRating(match.playerTwo)}
                                 club={match.playerTwo.club}
                               />
                             )}
@@ -744,7 +745,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                                 <span className="text-xs text-muted-foreground">/</span>
                                 <PlayerDetailsLine
                                   yearOfBirth={match.playerFour.yearOfBirth}
-                                  rating={match.playerFour.rating}
+                                  rating={formatPlayerRating(match.playerFour)}
                                   club={match.playerFour.club}
                                 />
                               </div>

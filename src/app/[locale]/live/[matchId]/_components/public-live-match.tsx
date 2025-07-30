@@ -18,6 +18,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "@/app/[locale]/(app)/matches/live/[id]/_components/MatchTimerDisplay"
 import { MomentumBar } from "@/components/ui/momentum-bar"
 import { formatPlayerFromObject, formatDate } from "@/lib/utils"
+import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
@@ -436,10 +437,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
             playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
             playerFourYearOfBirth={match.playerFour?.yearOfBirth}
-            playerOneRating={match.playerOne.rating}
-            playerTwoRating={match.playerTwo.rating}
-            playerThreeRating={match.playerThree?.rating}
-            playerFourRating={match.playerFour?.rating}
+            playerOneRating={formatPlayerRating(match.playerOne)}
+            playerTwoRating={formatPlayerRating(match.playerTwo)}
+            playerThreeRating={match.playerThree ? formatPlayerRating(match.playerThree) : ''}
+            playerFourRating={match.playerFour ? formatPlayerRating(match.playerFour) : ''}
             playerOneClub={match.playerOne.club}
             playerTwoClub={match.playerTwo.club}
             playerThreeClub={match.playerThree?.club}

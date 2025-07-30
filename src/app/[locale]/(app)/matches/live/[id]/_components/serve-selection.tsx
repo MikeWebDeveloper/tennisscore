@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { useTranslations } from "@/i18n"
 
 interface ServeSelectionProps {
@@ -63,7 +64,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold text-lg">{getPlayerName(playerOne)}</h3>
-                  <p className="text-sm text-muted-foreground">{playerOne.rating || t('unrated')}</p>
+                  <p className="text-sm text-muted-foreground">{formatPlayerRating(playerOne) || t('unrated')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -95,7 +96,7 @@ export function ServeSelection({ playerOne, playerTwo, onServeSelected }: ServeS
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold text-lg">{getPlayerName(playerTwo)}</h3>
-                  <p className="text-sm text-muted-foreground">{playerTwo.rating || t('unrated')}</p>
+                  <p className="text-sm text-muted-foreground">{formatPlayerRating(playerTwo) || t('unrated')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

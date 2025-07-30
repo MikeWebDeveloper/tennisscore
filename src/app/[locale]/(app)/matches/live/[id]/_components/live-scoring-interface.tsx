@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
+import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { UltraSimplePointLogger } from "./ultra-simple-point-logger"
@@ -1124,10 +1125,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerTwoYearOfBirth={match.playerTwo.yearOfBirth}
           playerThreeYearOfBirth={match.playerThree?.yearOfBirth}
           playerFourYearOfBirth={match.playerFour?.yearOfBirth}
-          playerOneRating={match.playerOne.rating}
-          playerTwoRating={match.playerTwo.rating}
-          playerThreeRating={match.playerThree?.rating}
-          playerFourRating={match.playerFour?.rating}
+          playerOneRating={formatPlayerRating(match.playerOne)}
+          playerTwoRating={formatPlayerRating(match.playerTwo)}
+          playerThreeRating={match.playerThree ? formatPlayerRating(match.playerThree) : ''}
+          playerFourRating={match.playerFour ? formatPlayerRating(match.playerFour) : ''}
           playerOneClub={match.playerOne.club}
           playerTwoClub={match.playerTwo.club}
           playerThreeClub={match.playerThree?.club}

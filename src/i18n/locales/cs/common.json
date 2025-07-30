@@ -690,5 +690,10 @@
   "fixed": "Opraveno",
   "update": "Aktualizace",
   "won": "Vyhráno",
-  "lost": "Prohráno"
+  "lost": "Prohráno",
+  "importPlayer": "Importovat hráče",
+  "playerImported": "Hráč importován",
+  "czechImport": "Český import",
+  "importFromCzechRankings": "Importovat z českého žebříčku",
+  "viewOnCztenis": "Zobrazit na cztenis.cz"
 }

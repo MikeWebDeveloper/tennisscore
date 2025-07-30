@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Plus, User, Upload } from "lucide-react"
+import { Plus, User, Upload, Download } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createPlayer } from "@/lib/actions/players"
+import { CzechTennisImport } from "@/components/features/czech-tennis-import"
 import { useTranslations } from "@/i18n"
 
 interface CreatePlayerDialogProps {
@@ -19,6 +20,7 @@ interface CreatePlayerDialogProps {
 export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogProps) {
   const t = useTranslations('common')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showCzechImport, setShowCzechImport] = useState(false)
 
   const handleCreatePlayer = async (formData: FormData) => {
     const result = await createPlayer(formData)
@@ -94,8 +96,8 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-2">
-            <div>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="col-span-2">
               <Label htmlFor="yearOfBirth" className="text-xs font-medium">{t("birthYear")}</Label>
               <Input 
                 id="yearOfBirth" 
@@ -107,11 +109,23 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
               />
             </div>
             <div>
-              <Label htmlFor="rating" className="text-xs font-medium">{t("rating")}</Label>
+              <Label htmlFor="bhRating" className="text-xs font-medium">BH</Label>
               <Input 
-                id="rating" 
-                name="rating" 
-                placeholder={t("ratingPlaceholder")}
+                id="bhRating" 
+                name="bhRating" 
+                placeholder="12BH"
+                className="text-sm h-8"
+              />
+            </div>
+            <div>
+              <Label htmlFor="czRanking" className="text-xs font-medium">CŽ</Label>
+              <Input 
+                id="czRanking" 
+                name="czRanking" 
+                type="number"
+                min="1"
+                max="650"
+                placeholder="1-650"
                 className="text-sm h-8"
               />
             </div>
@@ -148,22 +162,44 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
             </Label>
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="space-y-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="flex-1 h-8 text-xs"
+              onClick={() => setShowCzechImport(true)}
+              className="w-full h-8 text-xs"
               size="sm"
             >
-              {t("cancel")}
+              <Download className="h-3 w-3 mr-2" />
+              Import from Czech Rankings
             </Button>
-            <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
-              {t("createPlayer")}
-            </Button>
+            
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="flex-1 h-8 text-xs"
+                size="sm"
+              >
+                {t("cancel")}
+              </Button>
+              <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
+                {t("createPlayer")}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
+      <CzechTennisImport
+        isOpen={showCzechImport}
+        onOpenChange={setShowCzechImport}
+        onPlayerImported={() => {
+          onOpenChange(false)
+          setPreviewImage(null)
+          window.location.reload()
+        }}
+      />
     </Dialog>
   )
 }

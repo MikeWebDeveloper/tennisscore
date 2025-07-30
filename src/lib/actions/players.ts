@@ -5,16 +5,21 @@ import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
-import { Player } from "@/lib/types"
+import { Player, CzechTennisPlayer } from "@/lib/types"
 
 const playerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   yearOfBirth: z.number().min(1900).max(2030).optional(),
-  rating: z.string().max(50).optional(), // Allow flexible ratings like "H12", "4.5", "UTR 8.2"
+  bhRating: z.string().max(20).optional(), // Backhand rating like "12BH"
+  czRanking: z.number().min(1).max(650).optional(), // Czech Tennis Association ranking 1-650
   club: z.string().max(100).optional(),
   playingHand: z.enum(['right', 'left']).optional(),
   isMainPlayer: z.boolean().optional(),
+  // Czech tennis import fields
+  cztennisUrl: z.string().url().optional(),
+  czechTennisId: z.string().optional(),
+  isImportedFromCzech: z.boolean().optional(),
 })
 
 export async function createPlayer(formData: FormData): Promise<{ success?: boolean; player?: Player; error?: string }> {
@@ -28,10 +33,15 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
-      rating: (formData.get("rating") as string) || undefined,
+      bhRating: (formData.get("bhRating") as string) || undefined,
+      czRanking: formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined,
       club: (formData.get("club") as string) || undefined,
       playingHand: (formData.get("playingHand") as 'right' | 'left' | null) || undefined,
       isMainPlayer: formData.get("isMainPlayer") === "true",
+      // Czech tennis import fields
+      cztennisUrl: (formData.get("cztennisUrl") as string) || undefined,
+      czechTennisId: (formData.get("czechTennisId") as string) || undefined,
+      isImportedFromCzech: formData.get("isImportedFromCzech") === "true",
     }
     
     const validatedData = playerSchema.parse(data)
@@ -314,7 +324,7 @@ async function searchPlayersWithQuery(
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
     
-    const normalizedRating = player.rating ? player.rating
+    const normalizedBhRating = player.bhRating ? player.bhRating
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase() : ""
@@ -322,7 +332,7 @@ async function searchPlayersWithQuery(
     return normalizedPlayerName.includes(normalizedSearch) ||
            normalizedFirstName.includes(normalizedSearch) ||
            normalizedLastName.includes(normalizedSearch) ||
-           normalizedRating.includes(normalizedSearch)
+           normalizedBhRating.includes(normalizedSearch)
   })
 
   // Apply sorting
@@ -408,13 +418,18 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       yearOfBirth: formData.get("yearOfBirth") ? parseInt(formData.get("yearOfBirth") as string) : undefined,
-      rating: (formData.get("rating") as string) || undefined,
+      bhRating: (formData.get("bhRating") as string) || undefined,
+      czRanking: formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined,
       club: (formData.get("club") as string) || undefined,
       playingHand: (() => {
         const hand = formData.get("playingHand") as string
         return hand && (hand === 'right' || hand === 'left') ? hand : undefined
       })(),
       isMainPlayer: formData.get("isMainPlayer") === "true",
+      // Czech tennis import fields
+      cztennisUrl: (formData.get("cztennisUrl") as string) || undefined,
+      czechTennisId: (formData.get("czechTennisId") as string) || undefined,
+      isImportedFromCzech: formData.get("isImportedFromCzech") === "true",
     }
     
     const validatedData = playerSchema.parse(data)
@@ -651,5 +666,67 @@ export async function removePlayerProfilePicture(playerId: string) {
   } catch (error) {
     console.error("Failed to remove player profile picture:", error)
     return { error: "Failed to remove profile picture." }
+  }
+}
+
+export async function createPlayerFromCzechImport(czechPlayer: CzechTennisPlayer): Promise<{ success?: boolean; player?: Player; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { error: "Unauthorized" }
+    }
+    
+    // Convert CzechTennisPlayer to our Player format
+    const data = {
+      firstName: czechPlayer.firstName,
+      lastName: czechPlayer.lastName,
+      yearOfBirth: czechPlayer.yearOfBirth,
+      bhRating: czechPlayer.bhRating,
+      czRanking: czechPlayer.czRanking,
+      club: czechPlayer.club,
+      playingHand: undefined, // Not available in Czech data
+      isMainPlayer: false, // Default to false for imports
+      cztennisUrl: czechPlayer.cztennisUrl,
+      czechTennisId: czechPlayer.uniqueId,
+      isImportedFromCzech: true,
+    }
+    
+    const validatedData = playerSchema.parse(data)
+    
+    const { databases } = await createAdminClient()
+    
+    // Check if player already exists by Czech Tennis ID
+    try {
+      const existingPlayers = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        [Query.equal("userId", user.$id), Query.equal("czechTennisId", czechPlayer.uniqueId)]
+      )
+      
+      if (existingPlayers.documents.length > 0) {
+        return { error: "Player already imported from Czech tennis database" }
+      }
+    } catch (error) {
+      // Continue if check fails - we'll let the create attempt proceed
+    }
+    
+    const player = await withRetry(() => 
+      databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        ID.unique(),
+        {
+          ...validatedData,
+          userId: user.$id,
+        }
+      )
+    )
+    
+    revalidatePath("/players")
+    revalidatePath("/dashboard")
+    return { success: true, player: player as unknown as Player }
+  } catch (error: unknown) {
+    console.error("Error creating player from Czech import:", error)
+    return { error: error instanceof Error ? error.message : "Failed to import player" }
   }
 } 
