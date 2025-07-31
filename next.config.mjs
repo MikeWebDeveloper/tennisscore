@@ -32,15 +32,50 @@ const nextConfig = {
   // Webpack optimizations for better tree shaking and splitting
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     if (!dev && !isServer) {
+      // Advanced tree shaking for Appwrite and other large packages
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Exclude full Appwrite SDK if using optimized version
+        // 'appwrite': false,
+        // 'node-appwrite': false,
+      };
+
       // Production client-side optimizations
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000,
+        maxSize: 244000,
         cacheGroups: {
-          // Vendor chunk for stable dependencies
+          // Critical vendor chunk (smaller, for immediate loading)
+          vendorCritical: {
+            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+            name: 'vendor-critical',
+            priority: 30,
+            chunks: 'all',
+            enforce: true,
+          },
+          // UI frameworks chunk
+          vendorUI: {
+            test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|lucide-react)[\\/]/,
+            name: 'vendor-ui',
+            priority: 25,
+            chunks: 'all',
+            reuseExistingChunk: true,
+          },
+          // Charts and visualization
+          vendorCharts: {
+            test: /[\\/]node_modules[\\/](recharts|d3-)[\\/]/,
+            name: 'vendor-charts',
+            priority: 24,
+            chunks: 'all',
+            reuseExistingChunk: true,
+          },
+          // Other vendor dependencies
           vendor: {
             test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
+            name: 'vendor',
             priority: 10,
+            chunks: 'all',
             reuseExistingChunk: true,
           },
           // UI components chunk
@@ -67,9 +102,16 @@ const nextConfig = {
         },
       };
       
-      // Tree shaking optimizations
+      // Advanced tree shaking optimizations
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
+      config.optimization.providedExports = true;
+      
+      // Minimize bundle size
+      config.optimization.mangleExports = 'size';
+      
+      // Add module concatenation for better tree shaking
+      config.optimization.concatenateModules = true;
     }
     
     return config;
