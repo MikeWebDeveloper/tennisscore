@@ -40,8 +40,7 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = ["/login", "/signup"].includes(actualPathname)
 
   // Public routes that don't need locale handling
-  const isPublicRoute = actualPathname.startsWith("/live/") || 
-                       actualPathname.startsWith("/api/") ||
+  const isPublicRoute = actualPathname.startsWith("/api/") ||
                        actualPathname === "/clear-session" ||
                        actualPathname === "/auth-error"
 
