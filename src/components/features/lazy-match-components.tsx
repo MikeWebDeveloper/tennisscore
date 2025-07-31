@@ -188,7 +188,7 @@ const UltraSimplePointLoggerSkeleton = () => (
 
 // Export placeholder for LazyMatchStats (defined in separate file)
 export const LazyMatchStats = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/match-stats').then(mod => ({ default: mod.MatchStats || mod.default })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/match-stats').then(mod => ({ default: mod.MatchStatsComponent })),
   {
     loading: () => <div>Loading match stats...</div>,
     ssr: false
@@ -196,7 +196,7 @@ export const LazyMatchStats = dynamic(
 )
 
 export const LazyPointByPointView = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/point-by-point-view').then(mod => ({ default: mod.PointByPointView || mod.default })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/point-by-point-view').then(mod => ({ default: mod.PointByPointView })),
   {
     loading: () => <div>Loading point-by-point view...</div>,
     ssr: false
@@ -204,40 +204,41 @@ export const LazyPointByPointView = dynamic(
 )
 
 export const LazyLiveScoringInterface = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.LiveScoringInterface || mod.default })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.LiveScoringInterface })),
   {
     loading: () => <div>Loading live scoring...</div>,
     ssr: false
   }
 )
 
-export const LazyCompactScoringInterface = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.CompactScoringInterface || mod.default })),
-  {  
-    loading: () => <div>Loading compact scoring...</div>,
-    ssr: false
-  }
-)
+// Note: CompactScoringInterface doesn't exist in the file
+// export const LazyCompactScoringInterface = dynamic(
+//   () => import('@/app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.CompactScoringInterface })),
+//   {  
+//     loading: () => <div>Loading compact scoring...</div>,
+//     ssr: false
+//   }
+// )
 
 // Lazy load match components
 export const LazyMatchSettingsDialog = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/match-settings-dialog').then(mod => ({ default: mod.MatchSettingsDialog })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/match-settings-dialog').then(mod => ({ default: mod.MatchSettingsDialog })),
   {
-    loading: () => MatchSettingsDialogSkeleton,
+    loading: () => <MatchSettingsDialogSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )
 
 export const LazySimpleStatsPopup = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/simple-stats-popup').then(mod => ({ default: mod.SimpleStatsPopup })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/simple-stats-popup').then(mod => ({ default: mod.SimpleStatsPopup })),
   {
-    loading: () => SimpleStatsPopupSkeleton,
+    loading: () => <SimpleStatsPopupSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )
 
 export const LazyMatchTimerDisplay = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/MatchTimerDisplay').then(mod => ({ default: mod.MatchTimerDisplay })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/MatchTimerDisplay').then(mod => ({ default: mod.MatchTimerDisplay })),
   {
     loading: () => <MatchTimerDisplaySkeleton />,
     ssr: false
@@ -245,15 +246,15 @@ export const LazyMatchTimerDisplay = dynamic(
 )
 
 export const LazyPointDetailSheet = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/point-detail-sheet').then(mod => ({ default: mod.PointDetailSheet })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/point-detail-sheet').then(mod => ({ default: mod.PointDetailSheet })),
   {
-    loading: () => PointDetailSheetSkeleton,
+    loading: () => <PointDetailSheetSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )
 
 export const LazyServeSelection = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/serve-selection').then(mod => ({ default: mod.ServeSelection })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/serve-selection').then(mod => ({ default: mod.ServeSelection })),
   {
     loading: () => <ServeSelectionSkeleton />,
     ssr: false
@@ -261,7 +262,7 @@ export const LazyServeSelection = dynamic(
 )
 
 export const LazyDeleteMatchButton = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/delete-match-button').then(mod => ({ default: mod.DeleteMatchButton })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/delete-match-button').then(mod => ({ default: mod.DeleteMatchButton })),
   {
     loading: () => <DeleteMatchButtonSkeleton />,
     ssr: false
@@ -269,7 +270,7 @@ export const LazyDeleteMatchButton = dynamic(
 )
 
 export const LazyUltraSimplePointLogger = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/ultra-simple-point-logger').then(mod => ({ default: mod.UltraSimplePointLogger })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/ultra-simple-point-logger').then(mod => ({ default: mod.UltraSimplePointLogger })),
   {
     loading: () => <UltraSimplePointLoggerSkeleton />,
     ssr: false
@@ -277,7 +278,7 @@ export const LazyUltraSimplePointLogger = dynamic(
 )
 
 export const LazyIntuitivePointLogger = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/intuitive-point-logger').then(mod => ({ default: mod.IntuitivePointLogger })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/intuitive-point-logger').then(mod => ({ default: mod.IntuitivePointLogger })),
   {
     loading: () => <UltraSimplePointLoggerSkeleton />, // Reuse skeleton
     ssr: false

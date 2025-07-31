@@ -114,7 +114,7 @@ const MatchPatternsSkeleton = () => (
 
 // Lazy load individual chart components
 export const LazyPerformanceTrends = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/performance-trends').then(mod => ({ default: mod.PerformanceTrends })),
+  () => import('@/app/[locale]/(app)/statistics/_components/performance-trends').then(mod => ({ default: mod.PerformanceTrends })),
   {
     loading: () => <PerformanceTrendsSkeleton />,
     ssr: false
@@ -122,7 +122,7 @@ export const LazyPerformanceTrends = dynamic(
 )
 
 export const LazyServeReturnAnalysis = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/serve-return-analysis').then(mod => ({ default: mod.ServeReturnAnalysis })),
+  () => import('@/app/[locale]/(app)/statistics/_components/serve-return-analysis').then(mod => ({ default: mod.ServeReturnAnalysis })),
   {
     loading: () => <ServeReturnAnalysisSkeleton />,
     ssr: false
@@ -130,7 +130,7 @@ export const LazyServeReturnAnalysis = dynamic(
 )
 
 export const LazyClutchPerformance = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/clutch-performance').then(mod => ({ default: mod.ClutchPerformance })),
+  () => import('@/app/[locale]/(app)/statistics/_components/clutch-performance').then(mod => ({ default: mod.ClutchPerformance })),
   {
     loading: () => <ClutchPerformanceSkeleton />,
     ssr: false
@@ -138,7 +138,7 @@ export const LazyClutchPerformance = dynamic(
 )
 
 export const LazyHeadToHeadAnalysis = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/head-to-head-analysis').then(mod => ({ default: mod.HeadToHeadAnalysis })),
+  () => import('@/app/[locale]/(app)/statistics/_components/head-to-head-analysis').then(mod => ({ default: mod.HeadToHeadAnalysis })),
   {
     loading: () => <HeadToHeadAnalysisSkeleton />,
     ssr: false
@@ -146,7 +146,7 @@ export const LazyHeadToHeadAnalysis = dynamic(
 )
 
 export const LazyMatchPatterns = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/match-patterns').then(mod => ({ default: mod.MatchPatterns })),
+  () => import('@/app/[locale]/(app)/statistics/_components/match-patterns').then(mod => ({ default: mod.MatchPatterns })),
   {
     loading: () => <MatchPatternsSkeleton />,
     ssr: false

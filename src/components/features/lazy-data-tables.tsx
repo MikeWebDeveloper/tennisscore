@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+// Table components not needed for skeletons
 import { List, Users, Trophy, Filter } from 'lucide-react'
 
 // Generic table skeleton
@@ -32,29 +32,24 @@ const DataTableSkeleton = ({
         </div>
         
         {/* Table */}
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {Array.from({ length: columns }).map((_, i) => (
-                  <TableHead key={i}>
-                    <Skeleton className="h-4 w-16" />
-                  </TableHead>
+        <div className="border rounded-lg p-4">
+          {/* Table header */}
+          <div className="flex space-x-4 pb-4 border-b">
+            {Array.from({ length: columns }).map((_, i) => (
+              <Skeleton key={i} className="h-4 w-16" />
+            ))}
+          </div>
+          
+          {/* Table rows */}
+          <div className="space-y-2 pt-2">
+            {Array.from({ length: rows }).map((_, i) => (
+              <div key={i} className="flex space-x-4 py-2">
+                {Array.from({ length: columns }).map((_, j) => (
+                  <Skeleton key={j} className="h-4 w-20" />
                 ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: rows }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: columns }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-20" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </div>
+            ))}
+          </div>
         </div>
         
         {/* Pagination */}
@@ -222,7 +217,7 @@ const StatisticsFiltersSkeleton = () => (
 
 // Lazy load data table components
 export const LazyMatchesList = dynamic(
-  () => import('../app/[locale]/(app)/matches/_components/matches-list').then(mod => ({ default: mod.MatchesList })),
+  () => import('@/app/[locale]/(app)/matches/_components/matches-list').then(mod => ({ default: mod.MatchesList })),
   {
     loading: () => <MatchesListSkeleton />,
     ssr: false
@@ -230,7 +225,7 @@ export const LazyMatchesList = dynamic(
 )
 
 export const LazyPlayerList = dynamic(
-  () => import('../app/[locale]/(app)/players/_components/player-list').then(mod => ({ default: mod.PlayerList })),
+  () => import('@/app/[locale]/(app)/players/_components/player-list').then(mod => ({ default: mod.PlayerList })),
   {
     loading: () => <PlayerListSkeleton />,
     ssr: false
@@ -238,7 +233,7 @@ export const LazyPlayerList = dynamic(
 )
 
 export const LazyVirtualMatchesList = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/virtual-matches-list').then(mod => ({ default: mod.VirtualMatchesList })),
+  () => import('@/app/[locale]/(app)/statistics/_components/virtual-matches-list').then(mod => ({ default: mod.VirtualMatchesList })),
   {
     loading: () => <VirtualMatchesListSkeleton />,
     ssr: false
@@ -246,7 +241,7 @@ export const LazyVirtualMatchesList = dynamic(
 )
 
 export const LazyStatisticsFilters = dynamic(
-  () => import('../app/[locale]/(app)/statistics/_components/statistics-filters').then(mod => ({ default: mod.StatisticsFilters })),
+  () => import('@/app/[locale]/(app)/statistics/_components/statistics-filters').then(mod => ({ default: mod.StatisticsFiltersComponent })),
   {
     loading: () => <StatisticsFiltersSkeleton />,
     ssr: false
@@ -254,13 +249,14 @@ export const LazyStatisticsFilters = dynamic(
 )
 
 // Generic lazy data table for reuse
-export const LazyDataTable = dynamic(
-  () => import('../components/ui/data-table').then(mod => ({ default: mod.DataTable })),
-  {
-    loading: () => <DataTableSkeleton />,
-    ssr: false
-  }
-)
+// Note: data-table component doesn't exist in the project
+// export const LazyDataTable = dynamic(
+//   () => import('@/components/ui/data-table').then(mod => ({ default: mod.DataTable })),
+//   {
+//     loading: () => <DataTableSkeleton />,
+//     ssr: false
+//   }
+// )
 
 // Export skeletons for reuse
 export {

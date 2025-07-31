@@ -126,37 +126,39 @@ const EditPlayerButtonLoading = ({ children, ...props }: any) => (
 
 // Lazy load CreatePlayerDialog component
 export const LazyCreatePlayerDialog = dynamic(
-  () => import('../app/[locale]/(app)/players/_components/create-player-dialog').then(mod => ({ default: mod.CreatePlayerDialog })),
+  () => import('@/app/[locale]/(app)/players/_components/create-player-dialog').then(mod => ({ default: mod.CreatePlayerDialog })),
   {
-    loading: () => CreatePlayerDialogSkeleton,
+    loading: () => <CreatePlayerDialogSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )
 
 // Lazy load EditPlayerDialog component
 export const LazyEditPlayerDialog = dynamic(
-  () => import('../app/[locale]/(app)/players/_components/edit-player-dialog').then(mod => ({ default: mod.EditPlayerDialog })),
+  () => import('@/app/[locale]/(app)/players/_components/edit-player-dialog').then(mod => ({ default: mod.EditPlayerDialog })),
   {
-    loading: () => EditPlayerDialogSkeleton,
+    loading: () => <EditPlayerDialogSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )
 
 // Export button loading components for standalone use
+// Note: CreatePlayerButton doesn't exist, using CreatePlayerTrigger instead
 export const LazyCreatePlayerButton = dynamic(
-  () => import('../app/[locale]/(app)/players/_components/create-player-dialog').then(mod => ({ default: mod.CreatePlayerButton })),
+  () => import('@/app/[locale]/(app)/players/_components/create-player-dialog').then(mod => ({ default: mod.CreatePlayerTrigger })),
   {
-    loading: () => CreatePlayerButtonLoading,
+    loading: () => <CreatePlayerButtonLoading />,
     ssr: false
   }
 )
 
-export const LazyEditPlayerButton = dynamic(
-  () => import('../app/[locale]/(app)/players/_components/edit-player-dialog').then(mod => ({ default: mod.EditPlayerButton })),
-  {
-    loading: () => EditPlayerButtonLoading,
-    ssr: false
-  }
-)
+// Note: EditPlayerButton doesn't exist in the edit-player-dialog file
+// export const LazyEditPlayerButton = dynamic(
+//   () => import('@/app/[locale]/(app)/players/_components/edit-player-dialog').then(mod => ({ default: mod.EditPlayerButton })),
+//   {
+//     loading: () => <EditPlayerButtonLoading />,
+//     ssr: false
+//   }
+// )
 
 export { CreatePlayerDialogSkeleton, EditPlayerDialogSkeleton }

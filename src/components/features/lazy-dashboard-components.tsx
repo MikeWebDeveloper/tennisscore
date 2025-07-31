@@ -162,7 +162,7 @@ const MainPlayerSetupPromptSkeleton = () => (
 
 // Lazy load dashboard components
 export const LazyRecentMatchesOverview = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/recent-matches-overview').then(mod => ({ default: mod.RecentMatchesOverview })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/recent-matches-overview').then(mod => ({ default: mod.RecentMatchesOverview })),
   {
     loading: () => <RecentMatchesOverviewSkeleton />,
     ssr: false
@@ -170,7 +170,7 @@ export const LazyRecentMatchesOverview = dynamic(
 )
 
 export const LazyStatsCards = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/stats-cards').then(mod => ({ default: mod.StatsCards })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/stats-cards').then(mod => ({ default: mod.StatsCards })),
   {
     loading: () => <StatsCardsSkeleton />,
     ssr: false
@@ -178,7 +178,7 @@ export const LazyStatsCards = dynamic(
 )
 
 export const LazyStreamlinedStatsCards = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/streamlined-stats-cards').then(mod => ({ default: mod.StreamlinedStatsCards })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/streamlined-stats-cards').then(mod => ({ default: mod.StreamlinedStatsCards })),
   {
     loading: () => <StatsCardsSkeleton />,
     ssr: false
@@ -186,7 +186,7 @@ export const LazyStreamlinedStatsCards = dynamic(
 )
 
 export const LazyQuickActionsHub = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/quick-actions-hub').then(mod => ({ default: mod.QuickActionsHub })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/quick-actions-hub').then(mod => ({ default: mod.QuickActionsHub })),
   {
     loading: () => <QuickActionsHubSkeleton />,
     ssr: false
@@ -194,7 +194,7 @@ export const LazyQuickActionsHub = dynamic(
 )
 
 export const LazyWhatsNewPanel = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/whats-new-panel').then(mod => ({ default: mod.WhatsNewPanel })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/whats-new-panel').then(mod => ({ default: mod.WhatsNewPanel })),
   {
     loading: () => <WhatsNewPanelSkeleton />,
     ssr: false
@@ -202,7 +202,7 @@ export const LazyWhatsNewPanel = dynamic(
 )
 
 export const LazyPWAInstallationBanner = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/pwa-installation-banner').then(mod => ({ default: mod.PWAInstallationBanner })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/pwa-installation-banner').then(mod => ({ default: mod.PWAInstallationBanner })),
   {
     loading: () => <PWAInstallationBannerSkeleton />,
     ssr: false
@@ -210,7 +210,7 @@ export const LazyPWAInstallationBanner = dynamic(
 )
 
 export const LazyCreateNewMatchButton = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/create-new-match-button').then(mod => ({ default: mod.CreateNewMatchButton })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/create-new-match-button').then(mod => ({ default: mod.CreateNewMatchButton })),
   {
     loading: () => <CreateNewMatchButtonSkeleton />,
     ssr: false
@@ -218,7 +218,7 @@ export const LazyCreateNewMatchButton = dynamic(
 )
 
 export const LazyMainPlayerSetupPrompt = dynamic(
-  () => import('../app/[locale]/(app)/dashboard/_components/main-player-setup-prompt').then(mod => ({ default: mod.MainPlayerSetupPrompt })),
+  () => import('@/app/[locale]/(app)/dashboard/_components/main-player-setup-prompt').then(mod => ({ default: mod.MainPlayerSetupPrompt })),
   {
     loading: () => <MainPlayerSetupPromptSkeleton />,
     ssr: false

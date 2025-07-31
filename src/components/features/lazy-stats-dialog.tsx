@@ -72,12 +72,9 @@ const StatsButtonLoading = ({ children, ...props }: any) => (
 
 // Lazy load StatsDiscoveryDialog component
 export const LazyStatsDiscoveryDialog = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/stats-drilldown-dialog').then(mod => ({ default: mod.StatsDiscoveryDialog })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/stats-drilldown-dialog').then(mod => ({ default: mod.StatsDrilldownDialog })),
   {
-    loading: () => ({ 
-      StatsDiscoveryDialog: StatsDialogSkeleton,
-      StatsDiscoveryButton: StatsButtonLoading
-    }),
+    loading: () => <StatsDialogSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )

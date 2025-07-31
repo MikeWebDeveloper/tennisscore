@@ -60,7 +60,7 @@ const MatchStatsSkeleton = () => (
 
 // Lazy load MatchStats component
 export const LazyMatchStats = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/match-stats').then(mod => ({ default: mod.MatchStats })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/match-stats').then(mod => ({ default: mod.MatchStatsComponent })),
   {
     loading: () => <MatchStatsSkeleton />,
     ssr: false

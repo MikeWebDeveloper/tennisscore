@@ -73,7 +73,7 @@ export const LazyInteractiveCourt = dynamic(
 
 // Lazy load just the court component without card wrapper
 export const LazyCourtVisualization = dynamic(
-  () => import('./interactive-court').then(mod => ({ default: mod.CourtVisualization })),
+  () => import('./interactive-court').then(mod => ({ default: mod.InteractiveCourt })),
   {
     loading: () => <CourtLoadingPlaceholder />,
     ssr: false

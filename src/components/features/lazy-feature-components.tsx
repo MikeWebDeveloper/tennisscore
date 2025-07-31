@@ -159,7 +159,7 @@ export const LazyNemesisBunnyStats = dynamic(
 export const LazyCustomModeDialog = dynamic(
   () => import('./custom-mode-dialog').then(mod => ({ default: mod.CustomModeDialog })),
   {
-    loading: () => CustomModeDialogSkeleton,
+    loading: () => <CustomModeDialogSkeleton isOpen={false} onClose={() => {}} />,
     ssr: false
   }
 )

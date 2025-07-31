@@ -122,7 +122,7 @@ const CompactScoringInterfaceSkeleton = () => (
 
 // Lazy load LiveScoringInterface component
 export const LazyLiveScoringInterface = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.LiveScoringInterface })),
+  () => import('@/app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.LiveScoringInterface })),
   {
     loading: () => <LiveScoringInterfaceSkeleton />,
     ssr: false
@@ -130,12 +130,13 @@ export const LazyLiveScoringInterface = dynamic(
 )
 
 // Lazy load compact version for mobile/small screens
-export const LazyCompactScoringInterface = dynamic(
-  () => import('../app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.CompactScoringInterface })),
-  {
-    loading: () => <CompactScoringInterfaceSkeleton />,
-    ssr: false
-  }
-)
+// Note: CompactScoringInterface doesn't exist in the live-scoring-interface file
+// export const LazyCompactScoringInterface = dynamic(
+//   () => import('@/app/[locale]/(app)/matches/live/[id]/_components/live-scoring-interface').then(mod => ({ default: mod.CompactScoringInterface })),
+//   {
+//     loading: () => <CompactScoringInterfaceSkeleton />,
+//     ssr: false
+//   }
+// )
 
 export { LiveScoringInterfaceSkeleton, CompactScoringInterfaceSkeleton }

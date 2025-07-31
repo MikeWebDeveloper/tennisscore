@@ -51,7 +51,7 @@ const PointByPointSkeleton = () => (
 
 // Lazy load PointByPointView component
 export const LazyPointByPointView = dynamic(
-  () => import('../app/[locale]/(app)/matches/[id]/_components/point-by-point-view').then(mod => ({ default: mod.PointByPointView })),
+  () => import('@/app/[locale]/(app)/matches/[id]/_components/point-by-point-view').then(mod => ({ default: mod.PointByPointView })),
   {
     loading: () => <PointByPointSkeleton />,
     ssr: false
