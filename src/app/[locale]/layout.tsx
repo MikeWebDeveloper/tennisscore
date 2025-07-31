@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl"
 import { routing } from "@/i18n/routing"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
 import { Toaster } from "@/components/ui/sonner"
 import "@/app/globals.css"
 
@@ -41,18 +42,20 @@ export default async function LocaleLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`} suppressHydrationWarning>
-        <ThemeProvider>
-          <ServiceWorkerProvider>
-            <NextIntlClientProvider messages={messages} locale={locale}>
-              {children}
-            </NextIntlClientProvider>
-            <Toaster 
-              position="top-center"
-              richColors
-              closeButton
-            />
-          </ServiceWorkerProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <ServiceWorkerProvider>
+              <NextIntlClientProvider messages={messages} locale={locale}>
+                {children}
+              </NextIntlClientProvider>
+              <Toaster 
+                position="top-center"
+                richColors
+                closeButton
+              />
+            </ServiceWorkerProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   )

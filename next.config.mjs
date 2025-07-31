@@ -14,10 +14,23 @@ const nextConfig = {
   },
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
+    optimizePackageImports: [
+      '@radix-ui/react-icons', 
+      'lucide-react',
+      'recharts',
+      'framer-motion',
+      'date-fns'
+    ],
     serverActions: {
       bodySizeLimit: '12mb', // Increase limit for profile picture uploads (10MB + buffer)
     },
+  },
+  
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn']
+    } : false,
   },
   
   // Image optimization configuration
