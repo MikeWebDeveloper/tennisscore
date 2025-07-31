@@ -225,14 +225,16 @@ export async function getMatchesByUser(): Promise<Match[]> {
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         [
           Query.equal("userId", user.$id),
-          Query.notEqual("isDeleted", true), // Exclude soft deleted matches
           Query.orderDesc("$createdAt"),
           Query.limit(1000) // Keep high limit for backward compatibility
         ]
       )
     )
 
-    return response.documents as unknown as Match[]
+    // Filter out soft deleted matches client-side for backward compatibility
+    const matches = response.documents.filter(match => !match.isDeleted)
+
+    return matches as unknown as Match[]
   } catch (error) {
     console.error("Error fetching matches:", error)
     return []
@@ -261,8 +263,7 @@ export async function getMatchesByUserPaginated(options: {
 
     // Build query with filters
     const queries = [
-      Query.equal("userId", user.$id),
-      Query.notEqual("isDeleted", true) // Exclude soft deleted matches
+      Query.equal("userId", user.$id)
     ]
     
     // Add date filtering
@@ -307,18 +308,17 @@ export async function getMatchesByUserPaginated(options: {
       databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-        [
-          Query.equal("userId", user.$id),
-          Query.notEqual("isDeleted", true)
-        ]
+        [Query.equal("userId", user.$id)]
       )
     )
 
-    const matches = response.documents as unknown as Match[]
-    const total = totalResponse.total
+    // Filter out soft deleted matches client-side for backward compatibility
+    const allMatches = response.documents.filter(match => !match.isDeleted) as unknown as Match[]
+    const totalMatches = totalResponse.documents.filter(match => !match.isDeleted)
+    const total = totalMatches.length
     const hasMore = (offset + limit) < total
 
-    return { matches, total, hasMore }
+    return { matches: allMatches, total, hasMore }
   } catch (error) {
     console.error("Error fetching paginated matches:", error)
     return { matches: [], total: 0, hasMore: false }
@@ -340,7 +340,6 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         [
           Query.equal("userId", user.$id),
-          Query.notEqual("isDeleted", true),
           Query.or([
             Query.equal("playerOneId", playerId),
             Query.equal("playerTwoId", playerId)
@@ -349,7 +348,10 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
       )
     )
 
-    return response.documents as unknown as Match[]
+    // Filter out soft deleted matches client-side for backward compatibility
+    const matches = response.documents.filter(match => !match.isDeleted)
+
+    return matches as unknown as Match[]
   } catch (error) {
     console.error("Error fetching player matches:", error)
     return []
@@ -448,25 +450,30 @@ export async function getDeletedMatches(): Promise<Match[]> {
 
     const { databases } = await createAdminClient()
     
-    // Get matches deleted within the last 7 days
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
+    // Get all user matches first
     const response = await withRetry(() =>
       databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         [
           Query.equal("userId", user.$id),
-          Query.equal("isDeleted", true),
-          Query.greaterThanEqual("deletedAt", sevenDaysAgo.toISOString()),
-          Query.orderDesc("deletedAt"),
-          Query.limit(100)
+          Query.orderDesc("$createdAt"),
+          Query.limit(1000)
         ]
       )
     )
 
-    return response.documents as unknown as Match[]
+    // Filter for deleted matches within the last 7 days client-side
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    
+    const deletedMatches = response.documents.filter(match => {
+      if (!match.isDeleted || !match.deletedAt) return false
+      const deletedDate = new Date(match.deletedAt)
+      return deletedDate >= sevenDaysAgo
+    })
+
+    return deletedMatches as unknown as Match[]
   } catch (error) {
     console.error("Error fetching deleted matches:", error)
     return []
