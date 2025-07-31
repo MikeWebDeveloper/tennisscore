@@ -2,7 +2,8 @@
 
 import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, Target } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { Target } from "lucide-react"
 import { useMemo, useState, useEffect } from "react"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"

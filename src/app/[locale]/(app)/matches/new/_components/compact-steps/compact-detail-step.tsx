@@ -1,6 +1,10 @@
 "use client"
 
-import { BarChart3, Zap, Target, Lock, Microscope } from "lucide-react"
+import { BarChart3 } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Target } from "lucide-react"
+import { Lock } from "lucide-react"
+import { Microscope } from "lucide-react"
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 

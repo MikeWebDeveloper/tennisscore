@@ -11,7 +11,13 @@ import { EditPlayerDialog } from "./_components/edit-player-dialog"
 import { useTranslations } from "@/i18n"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowUpDown, ArrowUpAZ, ArrowDownZA, Search, Loader2, Users, Eye } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
+import { ArrowUpAZ } from "lucide-react"
+import { ArrowDownZA } from "lucide-react"
+import { Search } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { Users } from "lucide-react"
+import { Eye } from "lucide-react"
 
 interface PaginatedPlayersClientProps {
   initialPlayers: Player[]

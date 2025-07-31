@@ -8,19 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Clock, 
-  Trophy, 
-  Share2, 
-  Play, 
-  TrendingUp,
-  BarChart3,
-  Activity,
-  Users,
-  Target
-} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import { Calendar } from "lucide-react"
+import { Clock } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Share2 } from "lucide-react"
+import { Play } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { BarChart3 } from "lucide-react"
+import { Activity } from "lucide-react"
+import { Users } from "lucide-react"
+import { Target } from "lucide-react"
 import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
 import { MatchStatsComponentSimpleFixed } from "./match-stats"

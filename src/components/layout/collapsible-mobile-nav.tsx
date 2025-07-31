@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Link, usePathname } from "@/i18n/navigation"
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
-import { Plus, ChevronUp } from "lucide-react"
+import { Plus } from "lucide-react"
+import { ChevronUp } from "lucide-react"
 
 interface NavItem {
   href: string

@@ -6,26 +6,24 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { FramerAnimatedCounter } from "@/components/ui/framer-animated-counter"
 import { FramerInteractiveCard } from "@/components/ui/framer-interactive-card"
-import { 
-  Trophy, 
-  Calendar,
-  Target,
-  Activity,
-  Zap,
-  Award,
-  Flame,
-  Plus,
-  UserPlus,
-  LucideIcon,
-  RotateCcw,
-  Shield,
-  CircleArrowDown,
-  Percent,
-  ArrowUpRight,
-  ArrowDownLeft,
-  TrendingUp,
-  Timer
-} from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Calendar } from "lucide-react"
+import { Target } from "lucide-react"
+import { Activity } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Award } from "lucide-react"
+import { Flame } from "lucide-react"
+import { Plus } from "lucide-react"
+import { UserPlus } from "lucide-react"
+import { LucideIcon } from "lucide-react"
+import { RotateCcw } from "lucide-react"
+import { Shield } from "lucide-react"
+import { CircleArrowDown } from "lucide-react"
+import { Percent } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
+import { ArrowDownLeft } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { Timer } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import { Suspense } from "react"
 import { LazyPerformanceCharts } from "./lazy-performance-charts"

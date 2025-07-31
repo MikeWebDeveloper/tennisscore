@@ -8,7 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useMatchStore, CustomModeConfig } from '@/stores/matchStore'
-import { BarChart3, Clock, Target, Zap } from 'lucide-react'
+import { BarChart3 } from "lucide-react"
+import { Clock } from "lucide-react"
+import { Target } from "lucide-react"
+import { Zap } from "lucide-react"
 
 interface CustomModeDialogProps {
   open: boolean

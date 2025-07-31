@@ -1,7 +1,8 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { Play, ArrowRight } from "lucide-react"
+import { Play } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTranslations } from "@/i18n"
 import { useRouter } from "next/navigation"

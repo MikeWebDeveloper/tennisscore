@@ -6,16 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Activity, 
-  Trophy,
-  Target,
-  Brain,
-  BarChart3,
-  Download,
-  Filter,
-  X
-} from "lucide-react"
+import { Activity } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Target } from "lucide-react"
+import { Brain } from "lucide-react"
+import { BarChart3 } from "lucide-react"
+import { Download } from "lucide-react"
+import { Filter } from "lucide-react"
+import { X } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { StatisticsFiltersComponent, StatisticsFilters } from "./_components/statistics-filters"

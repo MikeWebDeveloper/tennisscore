@@ -1,6 +1,7 @@
 "use client"
 
-import { Users, User } from "lucide-react"
+import { Users } from "lucide-react"
+import { User } from "lucide-react"
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 import { useState } from "react"

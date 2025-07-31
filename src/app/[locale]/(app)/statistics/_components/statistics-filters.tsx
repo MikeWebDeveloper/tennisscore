@@ -9,14 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { 
-  Filter, 
-  Calendar as CalendarIcon, 
-  User, 
-  RotateCcw,
-  ChevronDown,
-  X
-} from "lucide-react"
+import { Filter } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { User } from "lucide-react"
+import { RotateCcw } from "lucide-react"
+import { ChevronDown } from "lucide-react"
+import { X } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Match, Player } from "@/lib/types"

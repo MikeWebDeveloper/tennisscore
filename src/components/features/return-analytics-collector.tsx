@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ReturnStats } from "@/lib/schemas/match"
-import { CornerDownLeft, Crosshair, Shield } from "lucide-react"
+import { CornerDownLeft } from "lucide-react"
+import { Crosshair } from "lucide-react"
+import { Shield } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface ReturnAnalyticsCollectorProps {

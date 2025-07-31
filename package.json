@@ -25,7 +25,9 @@
     "perf:monitor": "node src/scripts/performance-monitor.js",
     "perf:baseline": "npm run build && npm run perf:lighthouse",
     "perf:audit": "node src/scripts/performance-audit.js",
-    "perf:all": "npm run perf:analyze && npm run perf:audit"
+    "perf:all": "npm run perf:analyze && npm run perf:audit",
+    "lucide:analyze": "node src/scripts/optimize-lucide-imports.js --report-only",
+    "lucide:optimize": "node src/scripts/optimize-lucide-imports.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

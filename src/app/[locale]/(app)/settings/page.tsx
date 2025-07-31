@@ -3,7 +3,9 @@
 import { CacheManager } from "@/components/features/cache-manager"
 import { SoundSettings } from "@/components/ui/sound-settings"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings, Database, Volume2 } from "lucide-react"
+import { Settings } from "lucide-react"
+import { Database } from "lucide-react"
+import { Volume2 } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 export default function SettingsPage() {

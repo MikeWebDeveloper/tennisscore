@@ -2,7 +2,9 @@
 
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Trophy, SkipForward, Check } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { SkipForward } from "lucide-react"
+import { Check } from "lucide-react"
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 import { useState } from "react"

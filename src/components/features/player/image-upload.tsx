@@ -1,7 +1,10 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Upload, X, Crop, Check } from "lucide-react"
+import { Upload } from "lucide-react"
+import { X } from "lucide-react"
+import { Crop } from "lucide-react"
+import { Check } from "lucide-react"
 import Image from "next/image"
 import ReactCrop, { 
   centerCrop, 

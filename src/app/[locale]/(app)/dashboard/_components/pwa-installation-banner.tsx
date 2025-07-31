@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
-import { X, Download, Smartphone, Monitor, Apple } from "lucide-react"
+import { X } from "lucide-react"
+import { Download } from "lucide-react"
+import { Smartphone } from "lucide-react"
+import { Monitor } from "lucide-react"
+import { Apple } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/i18n"

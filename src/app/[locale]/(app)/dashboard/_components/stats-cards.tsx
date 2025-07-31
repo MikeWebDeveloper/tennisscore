@@ -4,12 +4,10 @@ import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
-import { 
-  Trophy, 
-  Calendar, 
-  Users, 
-  TrendingUp
-} from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Calendar } from "lucide-react"
+import { Users } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface StatsCardsProps {

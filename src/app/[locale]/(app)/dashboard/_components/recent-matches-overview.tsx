@@ -1,7 +1,11 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { Calendar, Clock, Trophy, ArrowRight, Play } from "lucide-react"
+import { Calendar } from "lucide-react"
+import { Clock } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { ArrowRight } from "lucide-react"
+import { Play } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

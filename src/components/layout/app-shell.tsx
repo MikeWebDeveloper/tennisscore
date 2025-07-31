@@ -7,20 +7,18 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { 
-  Home, 
-  Trophy, 
-  Users, 
-  Menu, 
-  X, 
-  Plus,
-  Sun,
-  Moon,
-  LogOut,
-  Settings,
-  Shield,
-  BarChart3
-} from "lucide-react"
+import { Home } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Users } from "lucide-react"
+import { Menu } from "lucide-react"
+import { X } from "lucide-react"
+import { Plus } from "lucide-react"
+import { Sun } from "lucide-react"
+import { Moon } from "lucide-react"
+import { LogOut } from "lucide-react"
+import { Settings } from "lucide-react"
+import { Shield } from "lucide-react"
+import { BarChart3 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
 import { User } from "@/lib/types"

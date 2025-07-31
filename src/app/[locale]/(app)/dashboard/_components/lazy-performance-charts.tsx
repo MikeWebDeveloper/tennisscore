@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3 } from "lucide-react"
 
 // Performance Charts loading skeleton
 const PerformanceChartsSkeleton = () => (

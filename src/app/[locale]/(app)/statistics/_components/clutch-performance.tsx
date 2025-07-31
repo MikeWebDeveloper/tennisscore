@@ -22,7 +22,11 @@ import {
   Legend
 } from "recharts"
 import { Match } from "@/lib/types"
-import { Trophy, Target, Brain, Flame, Heart } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Target } from "lucide-react"
+import { Brain } from "lucide-react"
+import { Flame } from "lucide-react"
+import { Heart } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface ClutchPerformanceProps {

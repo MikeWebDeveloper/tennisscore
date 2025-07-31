@@ -2,7 +2,10 @@
 
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
-import { TrendingUp, Minus, VolumeX, Volume2 } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { Minus } from "lucide-react"
+import { VolumeX } from "lucide-react"
+import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { playSound } from "@/lib/sounds"

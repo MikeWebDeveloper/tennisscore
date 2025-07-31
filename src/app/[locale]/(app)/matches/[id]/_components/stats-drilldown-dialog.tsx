@@ -4,7 +4,11 @@ import { motion } from '@/lib/framer-motion-config'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Target, Zap, AlertTriangle, Trophy, X } from "lucide-react"
+import { Target } from "lucide-react"
+import { Zap } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { X } from "lucide-react"
 import { PointDetail } from "@/lib/types"
 
 // Extended type for enhanced point details with additional analytics

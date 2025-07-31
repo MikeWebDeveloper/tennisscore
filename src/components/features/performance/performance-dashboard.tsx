@@ -5,7 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle, AlertTriangle, XCircle, Activity } from 'lucide-react'
+import { CheckCircle } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
+import { XCircle } from "lucide-react"
+import { Activity } from "lucide-react"
 import { useTranslations } from '@/i18n'
 import { usePerformanceDashboard } from '@/hooks/use-performance-monitoring'
 import { cn } from '@/lib/utils'

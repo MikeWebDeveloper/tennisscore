@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { soundManager, playSound, type SoundEvent } from "@/lib/sounds"
-import { Volume2, VolumeX, TestTube2 } from "lucide-react"
+import { Volume2 } from "lucide-react"
+import { VolumeX } from "lucide-react"
+import { TestTube2 } from "lucide-react"
 
 interface SoundSettings {
   enabled: boolean

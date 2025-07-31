@@ -19,7 +19,9 @@ import {
   Cell
 } from "recharts"
 import { Match, Player } from "@/lib/types"
-import { TrendingUp, TrendingDown, Users } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { TrendingDown } from "lucide-react"
+import { Users } from "lucide-react"
 import { aggregatePlayerStatsAcrossMatches } from "@/lib/utils/match-stats"
 import { useTranslations } from "@/i18n"
 

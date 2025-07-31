@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ServeStats } from "@/lib/schemas/match"
-import { Zap, Target, TrendingUp } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Target } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface AdvancedServeCollectorProps {

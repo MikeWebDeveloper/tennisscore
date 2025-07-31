@@ -20,7 +20,10 @@ import {
   RadialBar
 } from "recharts"
 import { Match } from "@/lib/types"
-import { Zap, Target, Shield, TrendingUp } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Target } from "lucide-react"
+import { Shield } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface ServeReturnAnalysisProps {

@@ -2,7 +2,10 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Users, Trophy, Clock } from "lucide-react"
+import { ExternalLink } from "lucide-react"
+import { Users } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Clock } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import { Link } from "@/i18n/navigation"

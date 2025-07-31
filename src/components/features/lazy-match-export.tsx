@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-react'
+import { Download } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 // Loading component for export buttons
 const ExportButtonLoading = ({ variant = "outline", children = "Export" }: { variant?: "outline" | "default", children?: React.ReactNode }) => (

@@ -1,7 +1,8 @@
 "use client"
 
 import React, { Component, ReactNode } from "react"
-import { AlertTriangle, RefreshCw } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cleanupExtensionAttributes } from "@/lib/utils/browser-extension-detector"

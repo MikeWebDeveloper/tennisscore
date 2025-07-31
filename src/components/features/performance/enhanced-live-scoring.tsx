@@ -4,7 +4,10 @@ import { Suspense, memo, useCallback, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Wifi, WifiOff, Activity, Zap } from 'lucide-react'
+import { Wifi } from "lucide-react"
+import { WifiOff } from "lucide-react"
+import { Activity } from "lucide-react"
+import { Zap } from "lucide-react"
 import { useTranslations } from '@/i18n'
 import { cn } from '@/lib/utils'
 

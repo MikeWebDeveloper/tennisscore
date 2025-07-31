@@ -1,7 +1,14 @@
 import React, { Component, ReactNode } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
 import { Button } from './button'
-import { AlertTriangle, RefreshCw, Home, Wifi, WifiOff, Server, Shield, Clock } from 'lucide-react'
+import { AlertTriangle } from "lucide-react"
+import { RefreshCw } from "lucide-react"
+import { Home } from "lucide-react"
+import { Wifi } from "lucide-react"
+import { WifiOff } from "lucide-react"
+import { Server } from "lucide-react"
+import { Shield } from "lucide-react"
+import { Clock } from "lucide-react"
 import { ErrorType } from '@/lib/utils/error-handler'
 
 interface Props {

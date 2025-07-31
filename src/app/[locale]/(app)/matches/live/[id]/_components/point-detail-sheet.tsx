@@ -18,7 +18,10 @@ import {
   ShotType, 
   CourtPosition
 } from "@/lib/types"
-import { Target, Zap, Trophy, AlertTriangle } from "lucide-react"
+import { Target } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface PointDetailSheetProps {

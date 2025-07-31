@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check } from "lucide-react"
+import { ChevronsUpDown } from "lucide-react"
 
 import { cn, normalizeTextForSearch } from "@/lib/utils"
 import { Button } from "@/components/ui/button"

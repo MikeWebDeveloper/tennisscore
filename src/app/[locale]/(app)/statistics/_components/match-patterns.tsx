@@ -15,16 +15,14 @@ import {
   RadialBar,
   Legend
 } from "recharts"
-import { 
-  Clock, 
-  Sunrise, 
-  Sun, 
-  Sunset, 
-  Trophy,
-  Activity,
-  Timer,
-  Zap
-} from "lucide-react"
+import { Clock } from "lucide-react"
+import { Sunrise } from "lucide-react"
+import { Sun } from "lucide-react"
+import { Sunset } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Activity } from "lucide-react"
+import { Timer } from "lucide-react"
+import { Zap } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface MatchPatternsProps {

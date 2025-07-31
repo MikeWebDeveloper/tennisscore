@@ -6,19 +6,17 @@ import { motion } from '@/lib/framer-motion-config'
 import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  ArrowLeft,
-  Undo,
-  Trophy,
-  Share2,
-  MessageCircle,
-  MessageSquare,
-  Copy,
-  Mail,
-  Activity,
-  Settings,
-  BarChart3
-} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import { Undo } from "lucide-react"
+import { Trophy } from "lucide-react"
+import { Share2 } from "lucide-react"
+import { MessageCircle } from "lucide-react"
+import { MessageSquare } from "lucide-react"
+import { Copy } from "lucide-react"
+import { Mail } from "lucide-react"
+import { Activity } from "lucide-react"
+import { Settings } from "lucide-react"
+import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { updateMatchScore } from "@/lib/actions/matches"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"

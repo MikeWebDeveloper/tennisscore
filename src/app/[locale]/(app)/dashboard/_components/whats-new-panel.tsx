@@ -1,7 +1,9 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { Sparkles, ChevronRight, Clock } from "lucide-react"
+import { Sparkles } from "lucide-react"
+import { ChevronRight } from "lucide-react"
+import { Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/i18n"

@@ -1,0 +1,235 @@
+/**
+ * Master index for all lazy-loaded components in the tennis score application
+ * 
+ * This file provides centralized access to all lazy-loaded components with
+ * proper loading skeletons and TypeScript support.
+ * 
+ * Components are organized by category:
+ * - Dashboard Components
+ * - Match Components  
+ * - Statistics Components
+ * - Player Components
+ * - Feature Components
+ * - Data Tables
+ * - UI Components
+ */
+
+// Dashboard Components
+export {
+  LazyRecentMatchesOverview,
+  LazyStatsCards,
+  LazyStreamlinedStatsCards,
+  LazyQuickActionsHub,
+  LazyWhatsNewPanel,
+  LazyPWAInstallationBanner,
+  LazyCreateNewMatchButton,
+  LazyMainPlayerSetupPrompt,
+  // Skeletons
+  RecentMatchesOverviewSkeleton,
+  StatsCardsSkeleton,
+  QuickActionsHubSkeleton,
+  WhatsNewPanelSkeleton,
+  PWAInstallationBannerSkeleton,
+  CreateNewMatchButtonSkeleton,
+  MainPlayerSetupPromptSkeleton
+} from './lazy-dashboard-components'
+
+// Match Components
+export {
+  LazyMatchStats,
+  LazyPointByPointView,
+  LazyLiveScoringInterface,
+  LazyCompactScoringInterface,
+  LazyMatchSettingsDialog,
+  LazySimpleStatsPopup,
+  LazyMatchTimerDisplay,
+  LazyPointDetailSheet,
+  LazyServeSelection,
+  LazyDeleteMatchButton,
+  LazyUltraSimplePointLogger,
+  LazyIntuitivePointLogger,
+  // Skeletons
+  MatchStatsSkeleton,
+  PointByPointSkeleton,
+  LiveScoringInterfaceSkeleton,
+  CompactScoringInterfaceSkeleton,
+  MatchSettingsDialogSkeleton,
+  SimpleStatsPopupSkeleton,
+  MatchTimerDisplaySkeleton,
+  PointDetailSheetSkeleton,
+  ServeSelectionSkeleton,
+  DeleteMatchButtonSkeleton,
+  UltraSimplePointLoggerSkeleton
+} from './lazy-match-components'
+
+export {
+  LazyMatchStats as LazyMatchStatsComponent,
+  MatchStatsSkeleton as MatchStatsSkeletonComponent
+} from './lazy-match-stats'
+
+export {
+  LazyPointByPointView as LazyPointByPointComponent,
+  PointByPointSkeleton as PointByPointSkeletonComponent
+} from './lazy-point-by-point'
+
+export {
+  LazyLiveScoringInterface as LazyLiveScoringComponent,
+  LazyCompactScoringInterface as LazyCompactScoringComponent,
+  LiveScoringInterfaceSkeleton as LiveScoringInterfaceSkeletonComponent,
+  CompactScoringInterfaceSkeleton as CompactScoringInterfaceSkeletonComponent
+} from './lazy-live-scoring'
+
+// Statistics Components
+export {
+  LazyPerformanceTrends,
+  LazyServeReturnAnalysis,
+  LazyClutchPerformance,
+  LazyHeadToHeadAnalysis,
+  LazyMatchPatterns,
+  // Skeletons
+  ChartSkeleton,
+  PerformanceTrendsSkeleton,
+  ServeReturnAnalysisSkeleton,
+  ClutchPerformanceSkeleton,
+  HeadToHeadAnalysisSkeleton,
+  MatchPatternsSkeleton
+} from './lazy-statistics-charts'
+
+// Chart components from existing lazy-charts
+export {
+  LazyPerformanceTrends as LazyPerformanceTrendsChart,
+  LazyServeReturnAnalysis as LazyServeReturnAnalysisChart, 
+  LazyClutchPerformance as LazyClutchPerformanceChart,
+  LazyHeadToHeadAnalysis as LazyHeadToHeadAnalysisChart,
+  LazyMatchPatterns as LazyMatchPatternsChart
+} from '../app/[locale]/(app)/statistics/_components/lazy-charts'
+
+// Performance charts from dashboard
+export {
+  LazyPerformanceCharts
+} from '../app/[locale]/(app)/dashboard/_components/lazy-performance-charts'
+
+// Player Components
+export {
+  LazyCreatePlayerDialog,
+  LazyEditPlayerDialog,
+  LazyCreatePlayerButton,
+  LazyEditPlayerButton,
+  // Skeletons
+  CreatePlayerDialogSkeleton,
+  EditPlayerDialogSkeleton
+} from './lazy-player-dialogs'
+
+// Feature Components
+export {
+  LazyEnhancedStatsDisplay,
+  LazyNemesisBunnyStats,
+  LazyCustomModeDialog,
+  LazyAdvancedServeCollector,
+  LazyReturnAnalyticsCollector,
+  // Skeletons
+  EnhancedStatsDisplaySkeleton,
+  NemesisBunnyStatsSkeleton,
+  CustomModeDialogSkeleton,
+  FeatureButtonLoading
+} from './lazy-feature-components'
+
+export {
+  LazyInteractiveCourt,
+  LazyCourtVisualization,
+  // Skeletons
+  InteractiveCourtSkeleton,
+  CourtLoadingPlaceholder
+} from './lazy-interactive-court'
+
+export {
+  LazyStatsDiscoveryDialog,
+  // Skeletons
+  StatsDialogSkeleton,
+  StatsButtonLoading
+} from './lazy-stats-dialog'
+
+// Data Tables
+export {
+  LazyMatchesList,
+  LazyPlayerList,
+  LazyVirtualMatchesList,
+  LazyStatisticsFilters,
+  LazyDataTable,
+  // Skeletons
+  DataTableSkeleton,
+  MatchesListSkeleton,
+  PlayerListSkeleton,
+  VirtualMatchesListSkeleton,
+  StatisticsFiltersSkeleton
+} from './lazy-data-tables'
+
+// Export/Import Components
+export {
+  LazyFullMatchExportButton,
+  LazyQuickExportButton,
+  LazyAdvancedExportDialog
+} from './lazy-match-export'
+
+/**
+ * Utility function to create a lazy component with consistent loading state
+ */
+export const createLazyComponent = <T extends React.ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>,
+  LoadingSkeleton: React.ComponentType<any>,
+  options: {
+    ssr?: boolean
+    displayName?: string
+  } = {}
+) => {
+  const dynamic = require('next/dynamic')
+  
+  return dynamic(importFn, {
+    loading: () => React.createElement(LoadingSkeleton),
+    ssr: options.ssr ?? false,
+    ...(options.displayName && { displayName: options.displayName })
+  })
+}
+
+/**
+ * Hook for conditional lazy loading based on viewport
+ */
+export const useLazyComponent = (condition: boolean = true) => {
+  const [shouldLoad, setShouldLoad] = React.useState(false)
+  
+  React.useEffect(() => {
+    if (condition) {
+      setShouldLoad(true)
+    }
+  }, [condition])
+  
+  return shouldLoad
+}
+
+/**
+ * Component performance monitoring
+ */
+export const withPerformanceMonitoring = <P extends object>(
+  Component: React.ComponentType<P>,
+  componentName: string
+) => {
+  return React.forwardRef<any, P>((props, ref) => {
+    React.useEffect(() => {
+      const startTime = performance.now()
+      
+      return () => {
+        const endTime = performance.now()
+        const loadTime = endTime - startTime
+        
+        if (loadTime > 100) { // Log slow components
+          console.warn(`Slow lazy component load: ${componentName} took ${loadTime.toFixed(2)}ms`)
+        }
+      }
+    }, [])
+    
+    return React.createElement(Component, { ...props, ref })
+  })
+}
+
+// Re-export React for the utility functions
+import React from 'react'

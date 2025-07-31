@@ -11,7 +11,10 @@ import { EditPlayerDialog } from "./_components/edit-player-dialog"
 import { useTranslations } from "@/i18n"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowUpDown, ArrowUpAZ, ArrowDownZA, Search } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
+import { ArrowUpAZ } from "lucide-react"
+import { ArrowDownZA } from "lucide-react"
+import { Search } from "lucide-react"
 
 interface PlayersClientProps {
   user: UserType

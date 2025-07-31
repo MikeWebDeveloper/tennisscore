@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AdvancedMatchStats } from "@/lib/utils/match-stats"
-import { BarChart3, Target, Zap, Activity } from "lucide-react"
+import { BarChart3 } from "lucide-react"
+import { Target } from "lucide-react"
+import { Zap } from "lucide-react"
+import { Activity } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface EnhancedStatsDisplayProps {

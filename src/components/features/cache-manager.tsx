@@ -4,7 +4,11 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { RefreshCw, Trash2, HardDrive, Database, CheckCircle } from "lucide-react"
+import { RefreshCw } from "lucide-react"
+import { Trash2 } from "lucide-react"
+import { HardDrive } from "lucide-react"
+import { Database } from "lucide-react"
+import { CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 
 export function CacheManager() {

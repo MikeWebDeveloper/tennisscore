@@ -1,7 +1,12 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { Play, UserPlus, BarChart3, Users, Settings, ArrowRight } from "lucide-react"
+import { Play } from "lucide-react"
+import { UserPlus } from "lucide-react"
+import { BarChart3 } from "lucide-react"
+import { Users } from "lucide-react"
+import { Settings } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/i18n"

@@ -3,7 +3,11 @@
 import React, { Component, ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertTriangle, RefreshCw, Home, Wifi, WifiOff } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
+import { RefreshCw } from "lucide-react"
+import { Home } from "lucide-react"
+import { Wifi } from "lucide-react"
+import { WifiOff } from "lucide-react"
 import { motion } from '@/lib/framer-motion-config'
 
 interface Props {
