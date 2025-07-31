@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
-import { X } from "lucide-react"
-import { Download } from "lucide-react"
-import { Smartphone } from "lucide-react"
-import { Monitor } from "lucide-react"
-import { Apple } from "lucide-react"
+import { X, Download, Smartphone, Monitor, Apple, Share2, Chrome } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useTranslations } from "@/i18n"
 
 interface BeforeInstallPromptEvent extends Event {
@@ -27,6 +30,7 @@ export function PWAInstallationBanner() {
   const [showBanner, setShowBanner] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const [deviceType, setDeviceType] = useState<'ios' | 'android' | 'desktop' | 'unknown'>('unknown')
+  const [showInstructions, setShowInstructions] = useState(false)
 
   useEffect(() => {
     // Check if already installed
@@ -128,7 +132,7 @@ export function PWAInstallationBanner() {
         return {
           icon: Download,
           title: "Install App",
-          instructions: "Add TennisScore to your device for quick access"
+          instructions: "Add Tenis.click to your device for quick access"
         }
     }
   }
@@ -140,8 +144,9 @@ export function PWAInstallationBanner() {
   const { icon: Icon, title, instructions } = getInstallInstructions()
 
   return (
-    <AnimatePresence>
-      <motion.div
+    <>
+      <AnimatePresence>
+        <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -163,7 +168,7 @@ export function PWAInstallationBanner() {
                 </p>
                 
                 <div className="flex items-center gap-2">
-                  {deferredPrompt && (
+                  {deferredPrompt ? (
                     <Button 
                       size="sm" 
                       onClick={handleInstallClick}
@@ -172,7 +177,20 @@ export function PWAInstallationBanner() {
                       <Download className="h-3 w-3 mr-1" />
                       {commonT('install')}
                     </Button>
-                  )}
+                  ) : (deviceType === 'ios' || deviceType === 'android') ? (
+                    <Button 
+                      size="sm" 
+                      onClick={() => setShowInstructions(true)}
+                      className="text-xs px-3 py-1 h-auto"
+                    >
+                      {deviceType === 'ios' ? (
+                        <Apple className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Smartphone className="h-3 w-3 mr-1" />
+                      )}
+                      {commonT('showMeHow', 'Show Me How')}
+                    </Button>
+                  ) : null}
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -197,5 +215,94 @@ export function PWAInstallationBanner() {
         </Card>
       </motion.div>
     </AnimatePresence>
+
+    <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {deviceType === 'ios' ? (
+              <>
+                <Apple className="h-5 w-5" />
+                Install on iOS
+              </>
+            ) : (
+              <>
+                <Chrome className="h-5 w-5" />
+                Install on Android
+              </>
+            )}
+          </DialogTitle>
+          <DialogDescription className="space-y-4 pt-4">
+            {deviceType === 'ios' ? (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Open in Safari</p>
+                    <p className="text-sm text-muted-foreground">Make sure you're using Safari browser</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Tap the Share button</p>
+                    <p className="text-sm text-muted-foreground">Look for <Share2 className="inline h-3 w-3" /> at the bottom of the screen</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Add to Home Screen</p>
+                    <p className="text-sm text-muted-foreground">Scroll down and tap "Add to Home Screen"</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Open in Chrome</p>
+                    <p className="text-sm text-muted-foreground">Make sure you're using Chrome browser</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Tap the menu button</p>
+                    <p className="text-sm text-muted-foreground">Look for ⋮ at the top right</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Add to Home screen</p>
+                    <p className="text-sm text-muted-foreground">Tap "Add to Home screen" or "Install app"</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end">
+          <Button onClick={() => setShowInstructions(false)} variant="outline">
+            {commonT('close')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }

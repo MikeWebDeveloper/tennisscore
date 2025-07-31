@@ -171,6 +171,12 @@ export function PaginatedMatchesClient({
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
 
+  const handleMatchDeleted = (matchId: string) => {
+    // Remove the deleted match from local state immediately
+    setMatches(prev => prev.filter(match => match.$id !== matchId))
+    setTotal(prev => prev - 1)
+  }
+
   const sortedMatches = useMemo(() => {
     if (sortOrder === 'none') return matches
 
@@ -316,7 +322,7 @@ export function PaginatedMatchesClient({
         />
       ) : (
         <>
-          <MatchesList matches={sortedMatches} />
+          <MatchesList matches={sortedMatches} onMatchDeleted={handleMatchDeleted} />
           
           {/* Load More Button */}
           {hasMore && (

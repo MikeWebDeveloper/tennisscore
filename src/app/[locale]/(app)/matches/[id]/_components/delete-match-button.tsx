@@ -25,9 +25,10 @@ interface DeleteMatchButtonProps {
     p1: string
     p2: string
   }
+  onDeleteSuccess?: () => void
 }
 
-export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonProps) {
+export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: DeleteMatchButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const t = useTranslations('common')
@@ -35,10 +36,15 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
   const deleteMatchMutation = useDeleteMatchMutation({
     onSuccess: () => {
       toast.success(t('matchDeleted'))
-      // Wait a bit for cache invalidation to complete before navigating
-      setTimeout(() => {
-        router.push("/matches")
-      }, 100)
+      // Call the callback to update parent component's state
+      if (onDeleteSuccess) {
+        onDeleteSuccess()
+      } else {
+        // Only navigate if no callback provided (when used on match detail page)
+        setTimeout(() => {
+          router.push("/matches")
+        }, 100)
+      }
     },
     onError: (error) => {
       console.error('Delete match error:', error)

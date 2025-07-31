@@ -45,9 +45,10 @@ interface MatchesListProps {
     playerThree?: Player
     playerFour?: Player
   }>
+  onMatchDeleted?: (matchId: string) => void
 }
 
-export function MatchesList({ matches }: MatchesListProps) {
+export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
   const t = useTranslations('match')
   const commonT = useTranslations('common')
   const [searchQuery, setSearchQuery] = useState("")
@@ -306,6 +307,7 @@ export function MatchesList({ matches }: MatchesListProps) {
                     p1: match.playerOneName,
                     p2: match.playerTwoName,
                   }}
+                  onDeleteSuccess={() => onMatchDeleted?.(match.$id)}
                 />
               </div>
             </div>
