@@ -7,6 +7,9 @@ import { Player, MatchStats } from "@/lib/types"
 import { Target } from "lucide-react"
 import { Zap } from "lucide-react"
 import { Shield } from "lucide-react"
+import { Brain } from "lucide-react"
+import { TrendingUp } from "lucide-react"
+import { Crosshair } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/i18n"
 import { PointDetail } from "@/lib/types"
@@ -1208,6 +1211,371 @@ export function MatchStatsComponentSimpleFixed({
                     format="percentage"
                   />
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Enhanced Pressure Performance Section */}
+          {pointLog && pointLog.length > 0 && pointLog.some(p => 'pressureContext' in p && p.pressureContext) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  {t('pressurePerformance')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const p1PressurePoints = pointLog.filter(p => 
+                    'pressureContext' in p && p.pressureContext && (p.pressureContext as any).level >= 3
+                  )
+                  const p2PressurePoints = pointLog.filter(p => 
+                    'pressureContext' in p && p.pressureContext && (p.pressureContext as any).level >= 3
+                  )
+                  
+                  const p1Won = p1PressurePoints.filter(p => p.winner === 'p1').length
+                  const p2Won = p2PressurePoints.filter(p => p.winner === 'p2').length
+                  
+                  const p1ClutchPoints = pointLog.filter(p => 
+                    'clutchSituation' in p && p.clutchSituation && (p.clutchSituation as any).level >= 3
+                  )
+                  const p2ClutchPoints = pointLog.filter(p => 
+                    'clutchSituation' in p && p.clutchSituation && (p.clutchSituation as any).level >= 3
+                  )
+                  
+                  const p1ClutchWon = p1ClutchPoints.filter(p => p.winner === 'p1').length
+                  const p2ClutchWon = p2ClutchPoints.filter(p => p.winner === 'p2').length
+                  
+                  return (
+                    <>
+                      {p1PressurePoints.length > 0 && (
+                        <StatRow 
+                          label={t('highPressurePoints')}
+                          value1={p1Won}
+                          value2={p2Won}
+                        />
+                      )}
+                      {p1PressurePoints.length > 0 && (
+                        <StatRow 
+                          label={t('pressureWinRate')}
+                          value1={p1PressurePoints.length > 0 ? Math.round((p1Won / p1PressurePoints.length) * 100) : 0}
+                          value2={p2PressurePoints.length > 0 ? Math.round((p2Won / p2PressurePoints.length) * 100) : 0}
+                          format="percentage"
+                        />
+                      )}
+                      {p1ClutchPoints.length > 0 && (
+                        <StatRow 
+                          label={t('clutchPoints')}
+                          value1={p1ClutchWon}
+                          value2={p2ClutchWon}
+                        />
+                      )}
+                      {p1ClutchPoints.length > 0 && (
+                        <StatRow 
+                          label={t('clutchWinRate')}
+                          value1={p1ClutchPoints.length > 0 ? Math.round((p1ClutchWon / p1ClutchPoints.length) * 100) : 0}
+                          value2={p2ClutchPoints.length > 0 ? Math.round((p2ClutchWon / p2ClutchPoints.length) * 100) : 0}
+                          format="percentage"
+                        />
+                      )}
+                    </>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Momentum Analysis Section */}
+          {pointLog && pointLog.length > 0 && pointLog.some(p => 'momentumContext' in p && p.momentumContext) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  {t('momentumAnalysis')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const gameChangingPoints = pointLog.filter(p => 
+                    'momentumContext' in p && p.momentumContext && (p.momentumContext as any).isGameChanger
+                  )
+                  
+                  const p1GameChangers = gameChangingPoints.filter(p => p.winner === 'p1').length
+                  const p2GameChangers = gameChangingPoints.filter(p => p.winner === 'p2').length
+                  
+                  const momentumShifts = pointLog.filter(p => 
+                    'momentumContext' in p && p.momentumContext && (p.momentumContext as any).shift
+                  )
+                  
+                  const p1MomentumShifts = momentumShifts.filter(p => 
+                    'momentumContext' in p && (p.momentumContext as any)?.momentumDirection === 'p1'
+                  ).length
+                  const p2MomentumShifts = momentumShifts.filter(p => 
+                    'momentumContext' in p && (p.momentumContext as any)?.momentumDirection === 'p2'
+                  ).length
+                  
+                  const longestStreakP1 = Math.max(...pointLog.map(p => 
+                    'streakAnalysis' in p && (p.streakAnalysis as any)?.currentStreak?.player === 'p1' ? 
+                    (p.streakAnalysis as any).currentStreak.length : 0
+                  ))
+                  const longestStreakP2 = Math.max(...pointLog.map(p => 
+                    'streakAnalysis' in p && (p.streakAnalysis as any)?.currentStreak?.player === 'p2' ? 
+                    (p.streakAnalysis as any).currentStreak.length : 0
+                  ))
+                  
+                  return (
+                    <>
+                      {gameChangingPoints.length > 0 && (
+                        <StatRow 
+                          label={t('gameChangingPoints')}
+                          value1={p1GameChangers}
+                          value2={p2GameChangers}
+                        />
+                      )}
+                      {momentumShifts.length > 0 && (
+                        <StatRow 
+                          label={t('momentumShifts')}
+                          value1={p1MomentumShifts}
+                          value2={p2MomentumShifts}
+                        />
+                      )}
+                      <StatRow 
+                        label={t('longestStreak')}
+                        value1={longestStreakP1}
+                        value2={longestStreakP2}
+                      />
+                    </>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Enhanced Serve Analysis Section */}
+          {pointLog && pointLog.length > 0 && pointLog.some(p => 'enhancedServeData' in p && p.enhancedServeData) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Crosshair className="h-4 w-4" />
+                  {t('enhancedServeAnalysis')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const p1Serves = pointLog.filter(p => p.server === 'p1' && 'enhancedServeData' in p && p.enhancedServeData)
+                  const p2Serves = pointLog.filter(p => p.server === 'p2' && 'enhancedServeData' in p && p.enhancedServeData)
+                  
+                  const p1Quality = p1Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.quality && (p.enhancedServeData as any).quality >= 4).length
+                  const p2Quality = p2Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.quality && (p.enhancedServeData as any).quality >= 4).length
+                  
+                  const p1Effective = p1Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.effectiveness === 'strong').length
+                  const p2Effective = p2Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.effectiveness === 'strong').length
+                  
+                  const getSpinBreakdown = (serves: PointDetail[]) => {
+                    const spins = { flat: 0, slice: 0, kick: 0, twist: 0 }
+                    serves.forEach(p => {
+                      if ('enhancedServeData' in p && (p.enhancedServeData as any)?.spin) {
+                        const spin = (p.enhancedServeData as any).spin as keyof typeof spins
+                        if (spin in spins) {
+                          spins[spin]++
+                        }
+                      }
+                    })
+                    return spins
+                  }
+                  
+                  const p1Spins = getSpinBreakdown(p1Serves)
+                  const p2Spins = getSpinBreakdown(p2Serves)
+                  
+                  return (
+                    <>
+                      {(p1Quality > 0 || p2Quality > 0) && (
+                        <StatRow 
+                          label={t('highQualityServes')}
+                          value1={p1Quality}
+                          value2={p2Quality}
+                        />
+                      )}
+                      {(p1Effective > 0 || p2Effective > 0) && (
+                        <StatRow 
+                          label={t('effectiveServes')}
+                          value1={p1Effective}
+                          value2={p2Effective}
+                        />
+                      )}
+                      {(p1Spins.flat > 0 || p2Spins.flat > 0) && (
+                        <StatRow 
+                          label={t('flatServes')}
+                          value1={p1Spins.flat}
+                          value2={p2Spins.flat}
+                        />
+                      )}
+                      {(p1Spins.slice > 0 || p2Spins.slice > 0) && (
+                        <StatRow 
+                          label={t('sliceServes')}
+                          value1={p1Spins.slice}
+                          value2={p2Spins.slice}
+                        />
+                      )}
+                      {(p1Spins.kick > 0 || p2Spins.kick > 0) && (
+                        <StatRow 
+                          label={t('kickServes')}
+                          value1={p1Spins.kick}
+                          value2={p2Spins.kick}
+                        />
+                      )}
+                    </>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rally Pattern Analysis Section */}
+          {pointLog && pointLog.length > 0 && pointLog.some(p => 'rallyCharacteristics' in p && p.rallyCharacteristics) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  {t('rallyPatternAnalysis')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const rallies = pointLog.filter(p => 'rallyCharacteristics' in p && p.rallyCharacteristics)
+                  
+                  const p1Dominant = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.dominantPlayer === 'p1').length
+                  const p2Dominant = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.dominantPlayer === 'p2').length
+                  
+                  const baselineRallies = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.type === 'baseline')
+                  const p1BaselineWins = baselineRallies.filter(p => p.winner === 'p1').length
+                  const p2BaselineWins = baselineRallies.filter(p => p.winner === 'p2').length
+                  
+                  const netPlays = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.type === 'net-play')
+                  const p1NetWins = netPlays.filter(p => p.winner === 'p1').length
+                  const p2NetWins = netPlays.filter(p => p.winner === 'p2').length
+                  
+                  const aggressiveRallies = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.character === 'aggressive')
+                  const p1AggressiveWins = aggressiveRallies.filter(p => p.winner === 'p1').length
+                  const p2AggressiveWins = aggressiveRallies.filter(p => p.winner === 'p2').length
+                  
+                  return (
+                    <>
+                      {(p1Dominant > 0 || p2Dominant > 0) && (
+                        <StatRow 
+                          label={t('dominantInRally')}
+                          value1={p1Dominant}
+                          value2={p2Dominant}
+                        />
+                      )}
+                      {baselineRallies.length > 0 && (
+                        <StatRow 
+                          label={t('baselineWins')}
+                          value1={p1BaselineWins}
+                          value2={p2BaselineWins}
+                        />
+                      )}
+                      {netPlays.length > 0 && (
+                        <StatRow 
+                          label={t('netPlayWins')}
+                          value1={p1NetWins}
+                          value2={p2NetWins}
+                        />
+                      )}
+                      {aggressiveRallies.length > 0 && (
+                        <StatRow 
+                          label={t('aggressivePlayWins')}
+                          value1={p1AggressiveWins}
+                          value2={p2AggressiveWins}
+                        />
+                      )}
+                    </>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tactical Insights Section */}
+          {pointLog && pointLog.length > 0 && pointLog.some(p => 'tacticalContext' in p && p.tacticalContext) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  {t('tacticalInsights')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const tacticalPoints = pointLog.filter(p => 'tacticalContext' in p && p.tacticalContext)
+                  
+                  const p1NetApproaches = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && (p.tacticalContext as any)?.approachShot && p.winner === 'p1'
+                  ).length
+                  const p2NetApproaches = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && (p.tacticalContext as any)?.approachShot && p.winner === 'p2'
+                  ).length
+                  
+                  const p1NetPositions = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && (p.tacticalContext as any)?.netPosition && p.winner === 'p1'
+                  ).length
+                  const p2NetPositions = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && (p.tacticalContext as any)?.netPosition && p.winner === 'p2'
+                  ).length
+                  
+                  const crucialPoints = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && ((p.tacticalContext as any)?.gameState === 'crucial' || (p.tacticalContext as any)?.gameState === 'decisive')
+                  )
+                  const p1CrucialWins = crucialPoints.filter(p => p.winner === 'p1').length
+                  const p2CrucialWins = crucialPoints.filter(p => p.winner === 'p2').length
+                  
+                  const highImportance = tacticalPoints.filter(p => 
+                    'tacticalContext' in p && (p.tacticalContext as any)?.tacticalImportance && (p.tacticalContext as any).tacticalImportance >= 4
+                  )
+                  const p1HighImportanceWins = highImportance.filter(p => p.winner === 'p1').length
+                  const p2HighImportanceWins = highImportance.filter(p => p.winner === 'p2').length
+                  
+                  return (
+                    <>
+                      {(p1NetApproaches > 0 || p2NetApproaches > 0) && (
+                        <StatRow 
+                          label={t('approachShotWins')}
+                          value1={p1NetApproaches}
+                          value2={p2NetApproaches}
+                        />
+                      )}
+                      {(p1NetPositions > 0 || p2NetPositions > 0) && (
+                        <StatRow 
+                          label={t('netPositionWins')}
+                          value1={p1NetPositions}
+                          value2={p2NetPositions}
+                        />
+                      )}
+                      {crucialPoints.length > 0 && (
+                        <StatRow 
+                          label={t('crucialPointsWon')}
+                          value1={p1CrucialWins}
+                          value2={p2CrucialWins}
+                        />
+                      )}
+                      {highImportance.length > 0 && (
+                        <StatRow 
+                          label={t('highImportancePoints')}
+                          value1={p1HighImportanceWins}
+                          value2={p2HighImportanceWins}
+                        />
+                      )}
+                      {crucialPoints.length > 0 && (
+                        <StatRow 
+                          label={t('crucialPointsWinRate')}
+                          value1={crucialPoints.length > 0 ? Math.round((p1CrucialWins / crucialPoints.length) * 100) : 0}
+                          value2={crucialPoints.length > 0 ? Math.round((p2CrucialWins / crucialPoints.length) * 100) : 0}
+                          format="percentage"
+                        />
+                      )}
+                    </>
+                  )
+                })()}
               </CardContent>
             </Card>
           )}

@@ -233,6 +233,17 @@ export function calculateMatchStats(pointLog: PointDetail[]): EnhancedMatchStats
       }
       
       stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
+    } else if (point.pointOutcome === 'net') {
+      // Net errors should be attributed to the player who hit the net
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for a net error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Net error should go to the opponent
+      }
+      
+      // Count as unforced error for now (could add separate net error stats later)
+      stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     }
 
     // Count aces and double faults - use server for proper attribution
@@ -1312,6 +1323,17 @@ export function calculateSimpleStats(pointLog: SimplePointDetail[]): EnhancedMat
       }
       
       stats.forcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
+    } else if (point.pointOutcome === 'net') {
+      // Net errors should be attributed to the player who hit the net
+      let errorPlayer = point.lastShotPlayer || (isP1 ? 'p2' : 'p1');
+      
+      // Fix buggy data: if lastShotPlayer equals winner for a net error, it's wrong
+      if (errorPlayer === point.winner) {
+        errorPlayer = point.winner === 'p1' ? 'p2' : 'p1'; // Net error should go to the opponent
+      }
+      
+      // Count as unforced error for now (could add separate net error stats later)
+      stats.unforcedErrorsByPlayer[errorPlayer === 'p1' ? 0 : 1]++
     }
 
     // Aces and double faults

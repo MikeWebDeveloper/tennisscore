@@ -22,7 +22,6 @@ import { Target } from "lucide-react"
 import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
 import { MatchStatsComponentSimpleFixed } from "./match-stats"
-import { EnhancedMatchStats } from "./enhanced-match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/i18n"
@@ -956,11 +955,26 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               $permissions: []
             }
 
+            const parsedMatchFormat = (() => {
+              try {
+                return JSON.parse(match.matchFormat)
+              } catch {
+                return { detailLevel: 'simple' }
+              }
+            })()
+            
+            const detailLevel = parsedMatchFormat.detailLevel || 'simple'
+            const stats = calculateMatchStats(pointDetails)
+            
             return (
-              <EnhancedMatchStats 
-                stats={legacyStats}
-                playerOne={match.playerOne || fallbackPlayerOne}
-                playerTwo={match.playerTwo || fallbackPlayerTwo}
+              <MatchStatsComponentSimpleFixed 
+                stats={stats}
+                playerNames={{
+                  p1: match.playerOne ? formatPlayerFromObject(match.playerOne) : t('player.player1'),
+                  p2: match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('player.player2')
+                }}
+                detailLevel={detailLevel}
+                pointLog={pointDetails}
               />
             )
           })()}
