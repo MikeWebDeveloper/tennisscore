@@ -3,21 +3,7 @@
 import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Legend,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts"
+import { UPlotBarChart, UPlotLineChart, UPlotPieChart } from "@/components/ui/charts"
 import { Match, Player } from "@/lib/types"
 import { TrendingUp } from "lucide-react"
 import { TrendingDown } from "lucide-react"
@@ -259,17 +245,14 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
               </CardHeader>
               <CardContent>
                 <div className="h-[200px] sm:h-[225px] md:h-[250px] min-h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={h2hComparisonData} layout="horizontal" margin={{ top: 5, right: 10, left: 5, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" domain={[0, 100]} className="text-xs" />
-                    <YAxis dataKey="metric" type="category" className="text-xs" width={80} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="you" fill="#22c55e" name="You" />
-                    <Bar dataKey="opponent" fill="#ef4444" name={selectedOpponentStats.opponent ? `${selectedOpponentStats.opponent.firstName} ${selectedOpponentStats.opponent.lastName}`.trim() : "Opponent"} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <UPlotBarChart 
+                    data={h2hComparisonData} 
+                    dataKeys={['you', 'opponent']} 
+                    nameKey="metric" 
+                    colors={['#22c55e', '#ef4444']} 
+                    height={250} 
+                    layout="horizontal"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -284,23 +267,10 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
               </CardHeader>
               <CardContent>
                 <div className="h-[200px] sm:h-[225px] md:h-[250px] min-h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={matchHistoryData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis domain={[0, 1]} ticks={[0, 1]} className="text-xs" />
-                    <Tooltip 
-                      formatter={(value: number) => value === 1 ? "Win" : "Loss"}
-                    />
-                    <Line 
-                      type="stepAfter" 
-                      dataKey="result" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      dot={{ fill: '#3b82f6', r: 4 }}
-                    />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <UPlotLineChart 
+                    data={matchHistoryData} 
+                    height={200} 
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -316,25 +286,15 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
                 </CardHeader>
                 <CardContent>
                   <div className="h-[150px] sm:h-[175px] md:h-[200px] min-h-[150px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                      <Pie
-                        data={surfaceData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ surface, winRate }) => `${surface}: ${winRate}%`}
-                        outerRadius={70}
-                        fill="#8884d8"
-                        dataKey="winRate"
-                      >
-                        {surfaceData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <UPlotPieChart 
+                      data={surfaceData.map((item, index) => ({
+                        name: `${item.surface}: ${item.winRate}%`,
+                        value: item.winRate,
+                        fill: COLORS[index % COLORS.length]
+                      }))}
+                      height={150}
+                      outerRadius={70}
+                    />
                   </div>
                 </CardContent>
               </Card>

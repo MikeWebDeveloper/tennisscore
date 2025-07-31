@@ -4,21 +4,7 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  RadialBarChart,
-  RadialBar
-} from "recharts"
+import { UPlotBarChart, UPlotPieChart, UPlotRadialBarChart } from "@/components/ui/charts"
 import { Match } from "@/lib/types"
 import { Zap } from "lucide-react"
 import { Target } from "lucide-react"
@@ -258,15 +244,13 @@ export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeRetur
           </CardHeader>
           <CardContent>
             <div className="h-[200px] sm:h-[225px] md:h-[250px] min-h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={serveEffectivenessData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="category" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip />
-                <Bar dataKey="percentage" fill="#3b82f6" name="Win Percentage" />
-                </BarChart>
-              </ResponsiveContainer>
+              <UPlotBarChart 
+                data={serveEffectivenessData} 
+                dataKeys={['percentage']} 
+                nameKey="category" 
+                colors={['#3b82f6']} 
+                height={250} 
+              />
             </div>
           </CardContent>
         </Card>
@@ -281,25 +265,15 @@ export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeRetur
           <CardContent>
             {servePlacementData.length > 0 ? (
               <div className="h-[200px] sm:h-[225px] md:h-[250px] min-h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                  <Pie
-                    data={servePlacementData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {servePlacementData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <UPlotPieChart 
+                  data={servePlacementData.map((item, index) => ({
+                    name: item.name,
+                    value: item.value,
+                    fill: COLORS[index % COLORS.length]
+                  }))}
+                  height={250}
+                  outerRadius={80}
+                />
               </div>
             ) : (
               <div className="flex items-center justify-center h-[250px] text-muted-foreground">
@@ -320,23 +294,17 @@ export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeRetur
         </CardHeader>
         <CardContent>
           <div className="h-[250px] sm:h-[275px] md:h-[300px] min-h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart 
-              cx="50%" 
-              cy="50%" 
-              innerRadius="10%" 
-              outerRadius="80%" 
-              data={returnEffectivenessData}
-            >
-              <RadialBar 
-                dataKey="value" 
-                cornerRadius={10}
-                fill="#8b5cf6"
-              />
-              <Legend />
-              <Tooltip />
-              </RadialBarChart>
-            </ResponsiveContainer>
+            <UPlotRadialBarChart 
+              data={returnEffectivenessData.map(item => ({
+                name: item.category,
+                value: item.value,
+                fill: "#8b5cf6"
+              }))}
+              height={300}
+              innerRadius={10}
+              outerRadius={80}
+              cornerRadius={10}
+            />
           </div>
         </CardContent>
       </Card>

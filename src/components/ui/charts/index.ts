@@ -1,0 +1,6 @@
+export { UPlotLineChart } from './uplot-line-chart'
+export { UPlotBarChart } from './uplot-bar-chart'
+export { UPlotPieChart } from './uplot-pie-chart'
+export { UPlotAreaChart } from './uplot-area-chart'
+export { UPlotRadarChart } from './uplot-radar-chart'
+export { UPlotRadialBarChart } from './uplot-radial-bar-chart'

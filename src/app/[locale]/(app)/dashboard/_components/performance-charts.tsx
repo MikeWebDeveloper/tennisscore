@@ -2,18 +2,7 @@
 
 import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts"
+import { UPlotLineChart, UPlotPieChart } from "@/components/ui/charts"
 import { TrendingUp } from "lucide-react"
 import { Target } from "lucide-react"
 import { useMemo, useState, useEffect } from "react"
@@ -142,38 +131,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={winLossTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--border))" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="rgb(var(--muted-foreground))"
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke="rgb(var(--muted-foreground))"
-                  fontSize={12}
-                  domain={[0, 100]}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgb(var(--card))',
-                    border: '1px solid rgb(var(--border))',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    color: 'rgb(var(--foreground))'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="winRate" 
-                  stroke="rgb(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'rgb(var(--primary))', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, fill: 'rgb(var(--primary))' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <UPlotLineChart data={winLossTrend} height={200} />
           </CardContent>
         </Card>
       </motion.div>
@@ -192,45 +150,7 @@ export function PerformanceCharts({ matches, mainPlayer }: PerformanceChartsProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={performanceBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={80}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {performanceBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgb(var(--card))',
-                    border: '1px solid rgb(var(--border))',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    color: 'rgb(var(--foreground))'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {performanceBreakdown.map((entry) => (
-                <div key={entry.name} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: entry.fill }}
-                  />
-                  <span className="text-xs text-gray-700 dark:text-slate-400">{entry.name}</span>
-                </div>
-              ))}
-            </div>
+            <UPlotPieChart data={performanceBreakdown} height={200} innerRadius={40} outerRadius={80} />
           </CardContent>
         </Card>
       </motion.div>

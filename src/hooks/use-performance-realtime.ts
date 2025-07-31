@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { client } from '@/lib/appwrite-client'
+import { client } from '@/lib/appwrite'
 import { queryKeys } from '@/lib/tanstack-query/query-keys'
 import type { Score } from '@/stores/matchStore'
 

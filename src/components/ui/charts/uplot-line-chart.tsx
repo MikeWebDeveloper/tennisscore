@@ -5,13 +5,15 @@ import UplotReact from 'uplot-react'
 import 'uplot/dist/uPlot.min.css'
 
 interface UPlotLineChartProps {
-  data: Array<{ match: number; winRate: number; date: string }>
+  data: Array<{ [key: string]: any }>
   width?: number
   height?: number
   className?: string
+  xKey?: string
+  yKey?: string
 }
 
-export function UPlotLineChart({ data, width = 400, height = 200, className = '' }: UPlotLineChartProps) {
+export function UPlotLineChart({ data, width = 400, height = 200, className = '', xKey, yKey }: UPlotLineChartProps) {
   const [size, setSize] = useState({ width, height })
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -30,8 +32,12 @@ export function UPlotLineChart({ data, width = 400, height = 200, className = ''
 
   // Convert data to uPlot format [x-values, y-values]
   const uplotData: Array<Array<number>> = [
-    data.map((_, i) => i + 1), // X axis (match numbers)
-    data.map(d => d.winRate)   // Y axis (win rates)
+    data.map((_, i) => i), // X axis (indices)
+    data.map(d => {
+      if (yKey) return d[yKey]
+      // Try common keys for backwards compatibility
+      return d.winRate ?? d.pressure ?? d.pointsWon ?? d.firstServe ?? Object.values(d).find(v => typeof v === 'number') ?? 0
+    })
   ] as any
 
   const options: any = {
@@ -40,7 +46,7 @@ export function UPlotLineChart({ data, width = 400, height = 200, className = ''
     series: [
       {},
       {
-        label: "Win Rate %",
+        label: yKey || "Value",
         stroke: "#39FF14",
         fill: "rgba(57, 255, 20, 0.1)",
         width: 2,
@@ -74,7 +80,7 @@ export function UPlotLineChart({ data, width = 400, height = 200, className = ''
           stroke: "rgba(255,255,255,0.2)",
           width: 1
         },
-        values: (u: any, vals: number[]) => vals.map(v => v + "%")
+        values: (u: any, vals: number[]) => vals.map(v => yKey === 'winRate' || yKey === 'percentage' ? v + "%" : v.toString())
       }
     ],
     scales: {
@@ -82,7 +88,21 @@ export function UPlotLineChart({ data, width = 400, height = 200, className = ''
         time: false
       },
       y: {
-        range: () => [0, 100] as [number, number]
+        range: () => {
+          if (yKey === 'winRate' || yKey === 'percentage') {
+            return [0, 100] as [number, number]
+          }
+          // Auto-scale for other data types
+          const values = data.map(d => {
+            if (yKey) return d[yKey]
+            return d.winRate ?? d.pressure ?? d.pointsWon ?? d.firstServe ?? Object.values(d).find(v => typeof v === 'number') ?? 0
+          }).filter(v => typeof v === 'number')
+          
+          const min = Math.min(...values)
+          const max = Math.max(...values)
+          const padding = (max - min) * 0.1
+          return [Math.max(0, min - padding), max + padding] as [number, number]
+        }
       }
     },
     cursor: {

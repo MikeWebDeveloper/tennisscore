@@ -4,23 +4,7 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Legend
-} from "recharts"
+import { UPlotBarChart, UPlotLineChart, UPlotRadarChart } from "@/components/ui/charts"
 import { Match } from "@/lib/types"
 import { Trophy } from "lucide-react"
 import { Target } from "lucide-react"
@@ -262,21 +246,13 @@ export function ClutchPerformance({
         </CardHeader>
         <CardContent>
           <div className="h-[250px] sm:h-[275px] md:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={mentalRadarData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-              <PolarGrid className="stroke-muted" />
-              <PolarAngleAxis dataKey="metric" className="text-xs" />
-              <PolarRadiusAxis angle={90} domain={[0, 100]} className="text-xs" />
-              <Radar 
-                name="Performance" 
-                dataKey="value" 
-                stroke="#8b5cf6" 
-                fill="#8b5cf6" 
-                fillOpacity={0.3}
-                strokeWidth={2}
-              />
-              </RadarChart>
-            </ResponsiveContainer>
+            <UPlotRadarChart 
+              data={mentalRadarData} 
+              dataKeys={mentalRadarData.map(d => d.metric)} 
+              nameKey="metric" 
+              colors={['#8b5cf6']} 
+              height={300} 
+            />
           </div>
         </CardContent>
       </Card>
@@ -292,15 +268,14 @@ export function ClutchPerformance({
           </CardHeader>
           <CardContent>
             <div className="h-[200px] xs:h-[225px] sm:h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={clutchByScore} layout="horizontal" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis type="number" domain={[0, 100]} className="text-xs" />
-                <YAxis dataKey="situation" type="category" className="text-[10px] xs:text-xs" width={80} />
-                <Tooltip />
-                <Bar dataKey="successRate" fill="#8b5cf6" name="Success Rate %" />
-                </BarChart>
-              </ResponsiveContainer>
+              <UPlotBarChart 
+                data={clutchByScore} 
+                dataKeys={['successRate']} 
+                nameKey="situation" 
+                colors={['#8b5cf6']} 
+                height={250} 
+                layout="horizontal"
+              />
             </div>
           </CardContent>
         </Card>
@@ -314,32 +289,10 @@ export function ClutchPerformance({
           </CardHeader>
           <CardContent>
             <div className="h-[200px] xs:h-[225px] sm:h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={pressureTimeline} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="match" className="text-xs" />
-                <YAxis className="text-xs" domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="pressure" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={2}
-                  name="Pressure Performance"
-                />
-                <Line 
-                  type="step" 
-                  dataKey="result" 
-                  stroke="#22c55e" 
-                  strokeWidth={1}
-                  strokeDasharray="5 5"
-                  name="Win/Loss"
-                  yAxisId="right"
-                />
-                <YAxis yAxisId="right" orientation="right" domain={[0, 1]} hide />
-                </LineChart>
-              </ResponsiveContainer>
+              <UPlotLineChart 
+                data={pressureTimeline} 
+                height={250} 
+              />
             </div>
           </CardContent>
         </Card>

@@ -3,25 +3,7 @@
 import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
-} from "recharts"
+import { UPlotLineChart, UPlotAreaChart, UPlotBarChart, UPlotRadarChart } from "@/components/ui/charts"
 import { Match } from "@/lib/types"
 import { aggregatePlayerStatsAcrossMatches } from "@/lib/utils/match-stats"
 import { useTranslations } from "@/i18n"
@@ -190,87 +172,46 @@ export function PerformanceTrends({ matches, mainPlayerId }: PerformanceTrendsPr
 
             <TabsContent value="winrate">
               <div className="h-[200px] xs:h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="winRate" 
-                    stroke="#22c55e" 
-                    fill="#22c55e20" 
-                    strokeWidth={2}
-                    name="Win Rate (%)"
-                  />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <UPlotAreaChart 
+                  data={monthlyData} 
+                  dataKeys={['winRate']} 
+                  nameKey="month" 
+                  colors={['#22c55e']} 
+                  height={300} 
+                />
               </div>
             </TabsContent>
 
             <TabsContent value="serve">
               <div className="h-[200px] xs:h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="firstServe" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    name="First Serve %"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="aces" 
-                    stroke="#f59e0b" 
-                    strokeWidth={2}
-                    name={t("common.charts.aces")}
-                  />
-                  </LineChart>
-                </ResponsiveContainer>
+                <UPlotLineChart 
+                  data={monthlyData} 
+                  height={300} 
+                />
               </div>
             </TabsContent>
 
             <TabsContent value="points">
               <div className="h-[200px] xs:h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="pointsWon" 
-                    stroke="#8b5cf6" 
-                    fill="#8b5cf620" 
-                    strokeWidth={2}
-                    name="Points Won %"
-                  />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <UPlotAreaChart 
+                  data={monthlyData} 
+                  dataKeys={['pointsWon']} 
+                  nameKey="month" 
+                  colors={['#8b5cf6']} 
+                  height={300} 
+                />
               </div>
             </TabsContent>
 
             <TabsContent value="shotmaking">
               <div className="h-[200px] xs:h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="winners" fill="#22c55e" name={t("common.charts.winners")} />
-                  <Bar dataKey="errors" fill="#ef4444" name={t("common.charts.unforcedErrors")} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <UPlotBarChart 
+                  data={monthlyData} 
+                  dataKeys={['winners', 'errors']} 
+                  nameKey="month" 
+                  colors={['#22c55e', '#ef4444']} 
+                  height={300} 
+                />
               </div>
             </TabsContent>
           </Tabs>
@@ -288,29 +229,10 @@ export function PerformanceTrends({ matches, mainPlayerId }: PerformanceTrendsPr
           </CardHeader>
           <CardContent>
             <div className="h-[200px] xs:h-[225px] sm:h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={formData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="match" className="text-xs" />
-                <YAxis className="text-xs" domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="pointsWon" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  name="Points Won %"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="firstServe" 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  name="First Serve %"
-                />
-                </LineChart>
-              </ResponsiveContainer>
+              <UPlotLineChart 
+                data={formData} 
+                height={250} 
+              />
             </div>
           </CardContent>
         </Card>
@@ -325,21 +247,13 @@ export function PerformanceTrends({ matches, mainPlayerId }: PerformanceTrendsPr
           </CardHeader>
           <CardContent>
             <div className="h-[200px] xs:h-[225px] sm:h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
-                <PolarGrid className="stroke-muted" />
-                <PolarAngleAxis dataKey="metric" className="text-xs" />
-                <PolarRadiusAxis angle={90} domain={[0, 100]} className="text-xs" />
-                <Radar 
-                  name={t("common.charts.performance")} 
-                  dataKey="value" 
-                  stroke="#22c55e" 
-                  fill="#22c55e" 
-                  fillOpacity={0.3}
-                  strokeWidth={2}
-                />
-                </RadarChart>
-              </ResponsiveContainer>
+              <UPlotRadarChart 
+                data={radarData} 
+                dataKeys={radarData.map(d => d.metric)} 
+                nameKey="metric" 
+                colors={['#22c55e']} 
+                height={250} 
+              />
             </div>
           </CardContent>
         </Card>
@@ -355,15 +269,13 @@ export function PerformanceTrends({ matches, mainPlayerId }: PerformanceTrendsPr
         </CardHeader>
         <CardContent>
           <div className="h-[150px] xs:h-[175px] sm:h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeOfDayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="time" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip />
-              <Bar dataKey="winRate" fill="#3b82f6" name="Win Rate %" />
-              </BarChart>
-            </ResponsiveContainer>
+            <UPlotBarChart 
+              data={timeOfDayData} 
+              dataKeys={['winRate']} 
+              nameKey="time" 
+              colors={['#3b82f6']} 
+              height={200} 
+            />
           </div>
         </CardContent>
       </Card>

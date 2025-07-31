@@ -3,18 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
-  Legend
-} from "recharts"
+import { UPlotBarChart, UPlotRadialBarChart } from "@/components/ui/charts"
 import { Clock } from "lucide-react"
 import { Sunrise } from "lucide-react"
 import { Sun } from "lucide-react"
@@ -185,15 +174,13 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           </div>
           
           <div className="h-[150px] xs:h-[175px] sm:h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeOfDayData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="time" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip />
-              <Bar dataKey="winRate" fill="#3b82f6" name="Win Rate %" />
-              </BarChart>
-            </ResponsiveContainer>
+            <UPlotBarChart 
+              data={timeOfDayData} 
+              dataKeys={['winRate']} 
+              nameKey="time" 
+              colors={['#3b82f6']} 
+              height={200} 
+            />
           </div>
         </CardContent>
       </Card>
@@ -221,18 +208,17 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
               </div>
               
               <div className="h-[120px] xs:h-[135px] sm:h-[150px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart 
-                    cx="50%" 
-                    cy="50%" 
-                    innerRadius="30%" 
-                    outerRadius="90%" 
-                    data={intensityData}
-                  >
-                    <RadialBar dataKey="value" cornerRadius={10} fill="#8b5cf6" />
-                    <Legend />
-                  </RadialBarChart>
-                </ResponsiveContainer>
+                <UPlotRadialBarChart 
+                  data={intensityData.map(item => ({
+                    name: item.name,
+                    value: item.value,
+                    fill: "#8b5cf6"
+                  }))}
+                  height={150}
+                  innerRadius={30}
+                  outerRadius={90}
+                  cornerRadius={10}
+                />
               </div>
               
               <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
@@ -261,32 +247,13 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           </CardHeader>
           <CardContent>
             <div className="h-[200px] xs:h-[225px] sm:h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={durationData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="category" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload[0]) {
-                      return (
-                        <div className="rounded-lg border bg-background p-2 shadow-sm">
-                          <p className="text-sm font-medium">{payload[0].payload.category}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {Math.round(payload[0].value as number)} min
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {payload[0].payload.description}
-                          </p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
-                />
-                <Bar dataKey="value" fill="#22c55e" />
-                </BarChart>
-              </ResponsiveContainer>
+              <UPlotBarChart 
+                data={durationData} 
+                dataKeys={['value']} 
+                nameKey="category" 
+                colors={['#22c55e']} 
+                height={150} 
+              />
             </div>
           </CardContent>
         </Card>

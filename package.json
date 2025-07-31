@@ -74,7 +74,6 @@
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.51.2",
     "react-image-crop": "^11.0.10",
-    "recharts": "^2.12.7",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

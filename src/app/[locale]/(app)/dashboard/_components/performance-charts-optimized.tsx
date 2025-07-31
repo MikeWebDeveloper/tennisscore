@@ -7,7 +7,7 @@ import { Target } from "lucide-react"
 import { useMemo, useState, useEffect } from "react"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
-import { UPlotLineChart } from "@/components/charts/uplot-line-chart"
+import { UPlotLineChart } from "@/components/ui/charts"
 
 interface PerformanceChartsProps {
   matches: Match[]
