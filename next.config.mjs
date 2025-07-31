@@ -19,11 +19,60 @@ const nextConfig = {
       'lucide-react',
       'recharts',
       'framer-motion',
-      'date-fns'
+      'date-fns',
+      '@tanstack/react-query',
+      'zustand',
+      'react-hook-form'
     ],
     serverActions: {
       bodySizeLimit: '12mb', // Increase limit for profile picture uploads (10MB + buffer)
     },
+  },
+  
+  // Webpack optimizations for better tree shaking and splitting
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    if (!dev && !isServer) {
+      // Production client-side optimizations
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          // Vendor chunk for stable dependencies
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 10,
+            reuseExistingChunk: true,
+          },
+          // UI components chunk
+          ui: {
+            test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
+            name: 'ui',
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          // Features chunk
+          features: {
+            test: /[\\/]src[\\/]components[\\/]features[\\/]/,
+            name: 'features',
+            priority: 15,
+            reuseExistingChunk: true,
+          },
+          // Tennis utilities chunk
+          tennis: {
+            test: /[\\/]src[\\/]lib[\\/]utils[\\/]tennis/,
+            name: 'tennis',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+        },
+      };
+      
+      // Tree shaking optimizations
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = false;
+    }
+    
+    return config;
   },
   
   // Compiler optimizations
@@ -132,4 +181,4 @@ const nextConfig = {
   },
 };
 
-export default withBundleAnalyzer(withNextIntl(nextConfig)); 
+export default withBundleAnalyzer(withNextIntl(nextConfig));

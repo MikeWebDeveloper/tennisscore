@@ -82,43 +82,80 @@ export function useRealtimeMatch(matchId: string) {
           throw new Error(`Missing required environment variables: database=${!!dbId}, collection=${!!collectionId}`)
         }
         
-        // Simple subscription to the specific document
-        const channel = `databases.${dbId}.collections.${collectionId}.documents.${matchId}`
+        // Try multiple channel formats for compatibility
+        const channels = [
+          `databases.${dbId}.collections.${collectionId}.documents.${matchId}`,
+          `databases.${dbId}.collections.${collectionId}.documents`,
+          `collections.${collectionId}.documents.${matchId}`
+        ]
         
-        console.log("📡 Subscription channel:", channel)
+        console.log("📡 Trying subscription channels:", channels)
         console.log("🔧 Client configuration:", {
-          hasClient: !!client
+          hasClient: !!client,
+          clientType: typeof client
         })
 
-        const unsubscribe = client.subscribe(
-          channel,
-          (response) => {
-            console.log("🎉 Real-time event received:", response)
-            
-            // Check if this is an update event
-            const isUpdate = response.events.some(event => 
-              event.includes('update')
-            )
-            
-            if (isUpdate && response.payload) {
-              const payload = response.payload as Record<string, unknown>
-              console.log("✅ Match updated:", payload)
-              
-              setLastUpdate({
-                score: payload.score as string,
-                pointLog: payload.pointLog as string[],
-                events: payload.events as string[],
-                status: payload.status as "In Progress" | "Completed",
-                winnerId: payload.winnerId as string | undefined
-              })
-              setConnected(true)
-              setError(null)
-              setRetryCount(0)
-            }
-          }
-        )
+        let subscribed = false
+        let unsubscribeFn: (() => void) | null = null
 
-        unsubscribeRef.current = unsubscribe
+        // Try each channel format
+        for (const channel of channels) {
+          try {
+            console.log(`📡 Attempting channel: ${channel}`)
+            
+            const unsubscribe = client.subscribe(
+              channel,
+              (response) => {
+                console.log("🎉 Real-time event received:", {
+                  channel,
+                  events: response.events,
+                  hasPayload: !!response.payload,
+                  payloadKeys: response.payload ? Object.keys(response.payload) : []
+                })
+                
+                // Check if this is an update event for our document
+                const isRelevantUpdate = response.events.some(event => 
+                  event.includes('update') && 
+                  (event.includes(matchId) || (response.payload as any)?.$id === matchId)
+                )
+                
+                if (isRelevantUpdate && response.payload) {
+                  const payload = response.payload as Record<string, unknown>
+                  console.log("✅ Match updated:", {
+                    id: payload.$id,
+                    hasScore: !!payload.score,
+                    hasPointLog: !!payload.pointLog,
+                    status: payload.status
+                  })
+                  
+                  setLastUpdate({
+                    score: payload.score as string,
+                    pointLog: payload.pointLog as string[],
+                    events: payload.events as string[],
+                    status: payload.status as "In Progress" | "Completed",
+                    winnerId: payload.winnerId as string | undefined
+                  })
+                  setConnected(true)
+                  setError(null)
+                  setRetryCount(0)
+                }
+              }
+            )
+
+            unsubscribeFn = unsubscribe
+            subscribed = true
+            console.log(`✅ Successfully subscribed to channel: ${channel}`)
+            break // Exit loop on successful subscription
+          } catch (channelErr) {
+            console.warn(`⚠️ Failed to subscribe to channel ${channel}:`, channelErr)
+          }
+        }
+
+        if (!subscribed) {
+          throw new Error("Failed to subscribe to any real-time channel")
+        }
+
+        unsubscribeRef.current = unsubscribeFn
         setConnected(true)
         setError(null)
         console.log("✅ Real-time subscription established")
@@ -131,10 +168,21 @@ export function useRealtimeMatch(matchId: string) {
         setError(err instanceof Error ? err.message : "Connection failed")
         setConnected(false)
         
-        // Retry with exponential backoff
+        // For public pages, always poll as fallback
+        console.log("📊 Falling back to polling mode for public page")
+        
+        // Start polling as fallback
+        const pollInterval = setInterval(() => {
+          fetchMatchData()
+        }, 5000) // Poll every 5 seconds
+        
+        // Store interval ID for cleanup
+        unsubscribeRef.current = () => clearInterval(pollInterval)
+        
+        // Still retry real-time connection
         if (retryCount < 3) {
           const delay = 1000 * Math.pow(2, retryCount)
-          console.log(`⏳ Retrying in ${delay}ms...`)
+          console.log(`⏳ Retrying real-time connection in ${delay}ms...`)
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
             connectToRealtime()
