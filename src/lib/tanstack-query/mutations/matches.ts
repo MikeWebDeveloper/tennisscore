@@ -100,27 +100,28 @@ export function useDeleteMatchMutation(
 ) {
   const queryClient = useQueryClient()
 
-  return useServerActionMutation(
-    async (matchId: string) => await deleteMatch(matchId),
-    {
-      onSuccess: (_, matchId) => {
-        // Remove match from all caches
-        queryClient.removeQueries({ queryKey: queryKeys.matches.detail(matchId) })
-        queryClient.removeQueries({ queryKey: queryKeys.matches.live(matchId) })
-        
-        // Invalidate matches list
-        queryClient.invalidateQueries({ queryKey: queryKeys.matches.lists() })
-        
-        // Invalidate recent matches
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.matches.all, 
-          predicate: (query) => query.queryKey.includes('recent')
-        })
-        
-        // Invalidate statistics as deleting a match affects stats
-        queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
-      },
-      ...options,
-    }
-  )
+  return useMutation({
+    mutationFn: async (matchId: string) => await deleteMatch(matchId),
+    onSuccess: (_, matchId) => {
+      // Remove match from all caches
+      queryClient.removeQueries({ queryKey: queryKeys.matches.detail(matchId) })
+      queryClient.removeQueries({ queryKey: queryKeys.matches.live(matchId) })
+      
+      // Invalidate matches list
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.lists() })
+      
+      // Invalidate recent matches
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.matches.all, 
+        predicate: (query) => query.queryKey.includes('recent')
+      })
+      
+      // Invalidate statistics as deleting a match affects stats
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
+      
+      // Call the options onSuccess if provided
+      options?.onSuccess?.(_, matchId, undefined)
+    },
+    ...options,
+  })
 }

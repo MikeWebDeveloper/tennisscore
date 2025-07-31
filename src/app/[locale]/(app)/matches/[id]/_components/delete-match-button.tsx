@@ -41,7 +41,8 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
       }, 100)
     },
     onError: (error) => {
-      toast.error((error as any)?.error || t('failedToDeleteMatch'))
+      console.error('Delete match error:', error)
+      toast.error(error instanceof Error ? error.message : t('failedToDeleteMatch'))
     }
   })
 

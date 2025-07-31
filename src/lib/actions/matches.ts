@@ -405,10 +405,12 @@ export async function deleteMatch(matchId: string) {
       matchId
     )
 
-    return { success: true }
+    // Return void on success (mutation expects void)
+    return
   } catch (error) {
     console.error("Error deleting match:", error)
-    return { error: error instanceof Error ? error.message : "Failed to delete match" }
+    // Throw the error so the mutation's onError handler catches it
+    throw error instanceof Error ? error : new Error("Failed to delete match")
   }
 }
 
