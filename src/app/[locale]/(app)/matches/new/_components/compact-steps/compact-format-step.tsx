@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "@/i18n"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { useRef, useEffect } from "react"
 
 interface CompactFormatStepProps {

@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider"
 import { QueryProvider } from "@/components/providers/query-provider"
+import { MotionProvider } from "@/components/providers/motion-provider"
 import { Toaster } from "@/components/ui/sonner"
 import "@/app/globals.css"
 
@@ -45,14 +46,16 @@ export default async function LocaleLayout({
         <QueryProvider>
           <ThemeProvider>
             <ServiceWorkerProvider>
-              <NextIntlClientProvider messages={messages} locale={locale}>
-                {children}
-              </NextIntlClientProvider>
-              <Toaster 
-                position="top-center"
-                richColors
-                closeButton
-              />
+              <MotionProvider>
+                <NextIntlClientProvider messages={messages} locale={locale}>
+                  {children}
+                </NextIntlClientProvider>
+                <Toaster 
+                  position="top-center"
+                  richColors
+                  closeButton
+                />
+              </MotionProvider>
             </ServiceWorkerProvider>
           </ThemeProvider>
         </QueryProvider>

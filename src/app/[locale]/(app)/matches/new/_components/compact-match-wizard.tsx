@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation"
 import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
-import { gsap } from "gsap"
+import { motion, useAnimation } from "@/lib/framer-motion-config"
 import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createMatch } from "@/lib/actions/matches"
@@ -29,6 +29,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const router = useRouter()
   const t = useTranslations('common')
   const containerRef = useRef<HTMLDivElement>(null)
+  const controls = useAnimation()
   
   // Wizard state
   const [currentStep, setCurrentStep] = useState(1)
@@ -56,25 +57,27 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const totalSteps = 5
 
   // Navigation functions with animations
-  const goToBack = () => {
+  const goToBack = async () => {
     if (currentStep > 1) {
-      if (containerRef.current) {
-        gsap.to(containerRef.current, {
-          x: 20,
-          opacity: 0.7,
-          duration: 0.2,
-          ease: "power2.inOut",
-          onComplete: () => {
-            setCurrentStep(currentStep - 1)
-            gsap.fromTo(containerRef.current, 
-              { x: -20, opacity: 0.7 }, 
-              { x: 0, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }
-            )
-          }
-        })
-      } else {
-        setCurrentStep(currentStep - 1)
-      }
+      // Animate out
+      await controls.start({
+        x: 20,
+        opacity: 0.7,
+        transition: { duration: 0.2, ease: "easeInOut" }
+      })
+      
+      // Change step
+      setCurrentStep(currentStep - 1)
+      
+      // Animate in
+      await controls.start({
+        x: 0,
+        opacity: 1,
+        transition: { 
+          duration: 0.3, 
+          ease: [0.175, 0.885, 0.32, 1.275] // back.out easing
+        }
+      })
     }
   }
 
@@ -274,7 +277,12 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
       <div className="flex-1 flex flex-col items-center p-4 min-h-0">
         {/* Mobile-first: Start content near top, desktop: centered */}
         <div className="w-full max-w-md mt-4 md:mt-0 md:flex-1 md:flex md:flex-col md:justify-center">
-          <div ref={containerRef} className="w-full">
+          <motion.div 
+            ref={containerRef} 
+            className="w-full"
+            animate={controls}
+            initial={{ x: 0, opacity: 1 }}
+          >
             {renderStepContent()}
             {currentStep > 1 && (
               <div className="flex justify-start mt-4">
@@ -289,7 +297,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
                 </Button>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

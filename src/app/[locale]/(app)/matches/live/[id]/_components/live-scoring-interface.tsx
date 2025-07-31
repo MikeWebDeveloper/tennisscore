@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

@@ -1,29 +1,26 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { gsap } from "gsap"
 
-interface UseGSAPCardAnimationOptions {
+interface UseCardAnimationOptions {
   totalCards: number
   staggerDelay: number
   startDelay?: number
 }
 
-export function useGSAPCardAnimation({
+export function useCardAnimation({
   totalCards,
   staggerDelay,
   startDelay = 0.5
-}: UseGSAPCardAnimationOptions) {
+}: UseCardAnimationOptions) {
   const [animatedCards, setAnimatedCards] = useState<Set<number>>(new Set())
   const [hasTriggered, setHasTriggered] = useState(false)
-  const timelineRef = useRef<gsap.core.Timeline | null>(null)
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([])
 
   useEffect(() => {
-    const currentTimeline = timelineRef.current
-    // Clean up previous timeline
-    if (currentTimeline) {
-      currentTimeline.kill()
-    }
+    // Clear any existing timeouts
+    timeoutsRef.current.forEach(timeout => clearTimeout(timeout))
+    timeoutsRef.current = []
 
     // Simple sequential animation start
     const startAnimations = () => {
@@ -33,21 +30,23 @@ export function useGSAPCardAnimation({
       
       // Trigger cards sequentially
       for (let i = 0; i < totalCards; i++) {
-        const delay = startDelay + (i * staggerDelay / 1000)
+        const delay = (startDelay + (i * staggerDelay / 1000)) * 1000 // Convert to ms
         
-        gsap.delayedCall(delay, () => {
+        const timeout = setTimeout(() => {
           setAnimatedCards(prev => new Set([...prev, i]))
-        })
+        }, delay)
+        
+        timeoutsRef.current.push(timeout)
       }
     }
 
     // Start animations immediately when component mounts
     startAnimations()
 
+    // Cleanup
     return () => {
-      if (currentTimeline) {
-        currentTimeline.kill()
-      }
+      timeoutsRef.current.forEach(timeout => clearTimeout(timeout))
+      timeoutsRef.current = []
     }
   }, [totalCards, staggerDelay, startDelay])
 

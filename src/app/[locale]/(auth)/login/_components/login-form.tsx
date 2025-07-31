@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation"
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Button } from "@/components/ui/button"
 import {
   Card,

@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Player } from "@/lib/types"
 import { PlayerCard } from "./player-card"
 

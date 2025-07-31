@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
 import { TrendingUp, Minus, VolumeX, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"

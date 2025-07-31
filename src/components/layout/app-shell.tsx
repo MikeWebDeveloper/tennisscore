@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, usePathname } from "@/i18n/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

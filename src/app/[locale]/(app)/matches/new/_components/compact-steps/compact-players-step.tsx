@@ -11,7 +11,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { useUserStore } from "@/stores/userStore"
 import { CreatePlayerDialog } from "../../../../players/_components/create-player-dialog"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 
 interface CompactPlayersStepProps {
   matchType: "singles" | "doubles"

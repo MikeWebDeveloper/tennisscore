@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Trophy, Eye, Users, Calendar, Clock, Activity } from "lucide-react"
 import { Match } from "@/lib/types"
 import { formatMatchScore } from "@/lib/utils/match-formatting"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 
 interface VirtualMatchesListProps {
   matches: Match[]

@@ -1,11 +1,11 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { GSAPAnimatedCounter } from "@/components/ui/gsap-animated-counter"
-import { GSAPInteractiveCard } from "@/components/ui/gsap-interactive-card"
+import { FramerAnimatedCounter } from "@/components/ui/framer-animated-counter"
+import { FramerInteractiveCard } from "@/components/ui/framer-interactive-card"
 import { 
   Trophy, 
   Calendar,
@@ -36,7 +36,7 @@ import { NemesisBunnyStats } from "@/components/features/nemesis-bunny-stats"
 import { analyzeOpponentRecords, MatchData } from "@/lib/utils/opponent-analysis"
 import { CreatePlayerDialog } from "../../players/_components/create-player-dialog"
 import { useState } from "react"
-import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
+import { useCardAnimation } from "@/hooks/use-card-animation"
 import { ChartSkeleton } from "@/components/ui/loading-skeletons"
 
 interface EnhancedBentoGridProps {
@@ -383,7 +383,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
   const totalCardsCount = 16 + (stats.bestTimeOfDay ? 1 : 0) + (stats.forehandBackhandRatio > 0 ? 1 : 0)
   
   // GSAP-powered unified animation for all cards
-  const cardAnimation = useGSAPCardAnimation({
+  const cardAnimation = useCardAnimation({
     totalCards: totalCardsCount,
     staggerDelay: 400, // Faster, smoother sequential animation
     startDelay: 0.5
@@ -439,7 +439,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
     }
 
     return (
-      <GSAPInteractiveCard 
+      <FramerInteractiveCard 
         variant={variant}
         cardType={cardType}
         className={className}
@@ -461,14 +461,14 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               <div className="flex-1 flex items-center">
                 <p className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-foreground group-hover:scale-105 transition-transform duration-200 font-mono leading-none">
                   {typeof value === 'number' ? (
-                    <GSAPAnimatedCounter
+                    <FramerAnimatedCounter
                       value={value}
                       duration={1.8}
                       delay={cardAnimation.getDelay(cardIndex)}
                       shouldAnimate={cardAnimation.shouldAnimate(cardIndex)}
                     />
                   ) : typeof value === 'string' && value.includes('%') ? (
-                    <GSAPAnimatedCounter
+                    <FramerAnimatedCounter
                       value={parseInt(value.replace('%', ''))}
                       suffix="%"
                       duration={1.8}
@@ -491,7 +491,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               )}
             </div>
           </CardContent>
-      </GSAPInteractiveCard>
+      </FramerInteractiveCard>
     )
   }
 
@@ -901,24 +901,24 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary mb-1">
-                  <GSAPAnimatedCounter 
+                  <FramerAnimatedCounter 
                     value={stats.thisMonthMatches} 
                     duration={2.0} 
                     delay={12.0} // Start after main cards complete
                     shouldAnimate={cardAnimation.hasTriggered}
-                    ease="elastic.out(1, 0.5)"
+                    ease="anticipate"
                   />
                 </div>
                 <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("matchesLabel")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600 mb-1">
-                  <GSAPAnimatedCounter 
+                  <FramerAnimatedCounter 
                     value={Math.round(stats.thisMonthMatches * stats.winRate / 100)} 
                     duration={2.0} 
                     delay={12.5}
                     shouldAnimate={cardAnimation.hasTriggered}
-                    ease="power4.out"
+                    ease="easeOut"
                   />
                 </div>
                 <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("wonLabel")}</div>
@@ -929,12 +929,12 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600 mb-1">
-                  <GSAPAnimatedCounter 
+                  <FramerAnimatedCounter 
                     value={stats.currentWinStreak} 
                     duration={2.0} 
                     delay={13.0}
                     shouldAnimate={cardAnimation.hasTriggered}
-                    ease="bounce.out"
+                    ease="backOut"
                   />
                 </div>
                 <div className="text-xs text-gray-700 dark:text-muted-foreground">{t("winStreakMonthlyLabel")}</div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Button } from "@/components/ui/button"
 import { Player } from "@/lib/types"
 import { TennisBallIcon } from "@/components/shared/tennis-ball-icon"

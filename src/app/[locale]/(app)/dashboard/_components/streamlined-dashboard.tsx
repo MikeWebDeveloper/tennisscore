@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Star } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"

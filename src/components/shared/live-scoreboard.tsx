@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Badge } from "@/components/ui/badge"
 import { TennisBallIcon } from "./tennis-ball-icon"
 import { Score, MatchFormat } from "@/stores/matchStore"

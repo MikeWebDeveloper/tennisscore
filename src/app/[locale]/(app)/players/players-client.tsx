@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { User as UserType, Player } from "@/lib/types"
 import { deletePlayer } from "@/lib/actions/players"
 import { formatPlayerFromObject } from "@/lib/utils"

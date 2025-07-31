@@ -1,5 +1,27 @@
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+// Dynamic imports for jsPDF - loaded only when needed
+let jsPDF: any = null
+let autoTable: any = null
+
+// Lazy loader for PDF libraries
+async function loadPDFLibraries() {
+  if (!jsPDF || !autoTable) {
+    console.log('📦 Loading PDF libraries...')
+    const start = performance.now()
+    
+    const [jsPDFModule, autoTableModule] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable')
+    ])
+    
+    jsPDF = jsPDFModule.default
+    autoTable = autoTableModule.default
+    
+    const duration = Math.round(performance.now() - start)
+    console.log(`✅ PDF libraries loaded in ${duration}ms`)
+  }
+  
+  return { jsPDF, autoTable }
+}
 import { Match, MatchFormat, PointDetail as StorePointDetail } from '@/stores/matchStore'
 import { PointDetail } from '@/lib/types'
 import { calculateMatchStats, EnhancedMatchStats, calculateDetailedMatchStats, DetailedMatchStats } from '@/lib/utils/match-stats'
@@ -107,12 +129,12 @@ export interface MatchExportData {
 
 // Main export function
 export class MatchExporter {
-  private doc: jsPDF
+  private doc: any
   private currentY: number = 20
-  private pageWidth: number
-  private pageHeight: number
+  private pageWidth: number = 210 // A4 width in mm
+  private pageHeight: number = 297 // A4 height in mm
   private margin: number = 20
-  private contentWidth: number
+  private contentWidth: number = 170 // pageWidth - 2 * margin
   private colors = {
     primary: [39, 174, 96] as [number, number, number],     // Green
     secondary: [52, 152, 219] as [number, number, number],   // Blue
@@ -126,14 +148,33 @@ export class MatchExporter {
     error: [231, 76, 60] as [number, number, number]         // Red
   }
 
-  constructor() {
-    this.doc = new jsPDF('p', 'mm', 'a4')
+  private jsPDFClass: any
+  
+  constructor(jsPDFInstance?: any) {
+    this.jsPDFClass = jsPDFInstance
+    // If jsPDF is provided, create document immediately
+    if (jsPDFInstance) {
+      this.doc = new jsPDFInstance('p', 'mm', 'a4')
+      this.initializeDimensions()
+    }
+  }
+  
+  private initializeDimensions() {
     this.pageWidth = this.doc.internal.pageSize.getWidth()
     this.pageHeight = this.doc.internal.pageSize.getHeight()
     this.contentWidth = this.pageWidth - (this.margin * 2)
   }
 
   async exportMatch(match: Match, playerNames: [string, string], options: ExportOptions): Promise<Blob> {
+    // Ensure PDF libraries are loaded if not already initialized
+    if (!this.doc && !this.jsPDFClass) {
+      const { jsPDF, autoTable: loadedAutoTable } = await loadPDFLibraries()
+      this.jsPDFClass = jsPDF
+      this.doc = new jsPDF('p', 'mm', 'a4')
+      this.initializeDimensions()
+      // autoTable is already set globally by loadPDFLibraries
+    }
+    
     const exportData = this.prepareExportData(match, playerNames, options)
     
     // Generate PDF based on template
@@ -448,6 +489,7 @@ export class MatchExporter {
   }
 
   private addStyledTable(data: string[][], headerColor: [number, number, number]): void {
+    // autoTable should already be loaded by exportMatch
     autoTable(this.doc, {
       head: [data[0]],
       body: data.slice(1),
@@ -876,7 +918,10 @@ export class MatchExporter {
 
 // Export utility functions
 export async function exportMatchToPDF(match: Match, playerNames: [string, string], options: ExportOptions): Promise<Blob> {
-  const exporter = new MatchExporter()
+  // Load PDF libraries before creating exporter
+  const { jsPDF } = await loadPDFLibraries()
+  
+  const exporter = new MatchExporter(jsPDF)
   return await exporter.exportMatch(match, playerNames, options)
 }
 

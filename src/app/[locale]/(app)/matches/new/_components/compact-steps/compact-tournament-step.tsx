@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Trophy, SkipForward, Check } from "lucide-react"
 import { useTranslations } from "@/i18n"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { useState } from "react"
 
 interface CompactTournamentStepProps {

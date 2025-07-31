@@ -2,7 +2,7 @@
 
 import { Users, User } from "lucide-react"
 import { useTranslations } from "@/i18n"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { useState } from "react"
 
 interface CompactMatchTypeStepProps {

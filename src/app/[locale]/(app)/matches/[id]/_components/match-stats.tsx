@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Player, MatchStats } from "@/lib/types"
 import { Target, Zap, Shield } from "lucide-react"

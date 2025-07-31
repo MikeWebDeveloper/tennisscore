@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 import { Star } from "lucide-react"
 import { StreamlinedDashboard } from "./_components/streamlined-dashboard"
 import { MainPlayerSetupPrompt } from "./_components/main-player-setup-prompt"

@@ -2,7 +2,7 @@
 
 import { BarChart3, Zap, Target, Lock, Microscope } from "lucide-react"
 import { useTranslations } from "@/i18n"
-import { motion } from "framer-motion"
+import { motion } from '@/lib/framer-motion-config'
 
 interface CompactDetailStepProps {
   value: "points" | "simple" | "detailed" | "complex" | ""
