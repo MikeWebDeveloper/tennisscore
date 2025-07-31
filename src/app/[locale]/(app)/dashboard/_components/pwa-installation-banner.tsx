@@ -188,7 +188,7 @@ export function PWAInstallationBanner() {
                       ) : (
                         <Smartphone className="h-3 w-3 mr-1" />
                       )}
-                      {commonT('showMeHow', 'Show Me How')}
+                      {commonT('showMeHow')}
                     </Button>
                   ) : null}
                   <Button 

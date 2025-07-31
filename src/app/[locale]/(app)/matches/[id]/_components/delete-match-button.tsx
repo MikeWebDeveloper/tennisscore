@@ -36,11 +36,8 @@ export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: Del
   const deleteMatchMutation = useDeleteMatchMutation({
     onSuccess: () => {
       toast.success(t('matchDeleted'))
-      // Call the callback to update parent component's state
-      if (onDeleteSuccess) {
-        onDeleteSuccess()
-      } else {
-        // Only navigate if no callback provided (when used on match detail page)
+      // Only navigate if no callback provided (when used on match detail page)
+      if (!onDeleteSuccess) {
         setTimeout(() => {
           router.push("/matches")
         }, 100)
@@ -53,8 +50,13 @@ export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: Del
   })
 
   const handleDelete = () => {
-    deleteMatchMutation.mutate(matchId)
     setIsOpen(false)
+    // Call the optimistic update immediately
+    if (onDeleteSuccess) {
+      onDeleteSuccess()
+    }
+    // Then perform the actual deletion
+    deleteMatchMutation.mutate(matchId)
   }
 
   return (

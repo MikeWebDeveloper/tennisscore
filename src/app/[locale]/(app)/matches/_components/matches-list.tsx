@@ -18,6 +18,7 @@ import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MatchCardSkeleton } from "@/components/ui/loading-skeletons"
+import { motion, AnimatePresence } from "@/lib/framer-motion-config"
 
 interface MatchesListProps {
   matches: Array<{
@@ -54,6 +55,23 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [isFiltering, setIsFiltering] = useState(false)
+  const [deletingMatches, setDeletingMatches] = useState<Set<string>>(new Set())
+  
+  const handleDeleteMatch = (matchId: string) => {
+    // Add to deleting set for animation
+    setDeletingMatches(prev => new Set(prev).add(matchId))
+    
+    // Wait for animation to complete before updating parent state
+    setTimeout(() => {
+      onMatchDeleted?.(matchId)
+      // Remove from deleting set after parent updates
+      setDeletingMatches(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(matchId)
+        return newSet
+      })
+    }, 300) // Match animation duration
+  }
   
   // Filter matches based on search and status
   const filteredMatches = matches.filter(match => {
@@ -241,8 +259,23 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredMatches.map((match) => (
-        <Card key={match.$id} className={`hover:shadow-md transition-shadow ${getCardHeight(match)}`}>
+          <AnimatePresence mode="popLayout">
+            {filteredMatches.map((match) => (
+              <motion.div
+                key={match.$id}
+                layout
+                initial={{ opacity: 1, scale: 1 }}
+                animate={{ 
+                  opacity: deletingMatches.has(match.$id) ? 0 : 1,
+                  scale: deletingMatches.has(match.$id) ? 0.8 : 1,
+                }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: "easeInOut"
+                }}
+              >
+                <Card className={`hover:shadow-md transition-shadow ${getCardHeight(match)}`}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
               <CardTitle className="text-base leading-tight flex-1">
@@ -307,13 +340,15 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
                     p1: match.playerOneName,
                     p2: match.playerTwoName,
                   }}
-                  onDeleteSuccess={() => onMatchDeleted?.(match.$id)}
+                  onDeleteSuccess={() => handleDeleteMatch(match.$id)}
                 />
               </div>
             </div>
           </CardContent>
-        </Card>
-          ))}
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>
