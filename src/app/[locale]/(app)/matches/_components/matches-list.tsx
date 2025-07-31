@@ -58,16 +58,23 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
   const [deletingMatches, setDeletingMatches] = useState<Set<string>>(new Set())
   
   const handleDeleteMatch = (matchId: string) => {
+    console.log('🎬 Starting animation for match:', matchId)
     // Add to deleting set for animation
-    setDeletingMatches(prev => new Set(prev).add(matchId))
+    setDeletingMatches(prev => {
+      const newSet = new Set(prev).add(matchId)
+      console.log('📊 Deleting matches set:', Array.from(newSet))
+      return newSet
+    })
     
     // Wait for animation to complete before updating parent state
     setTimeout(() => {
+      console.log('⏰ Animation timeout complete for match:', matchId)
       onMatchDeleted?.(matchId)
       // Remove from deleting set after parent updates
       setDeletingMatches(prev => {
         const newSet = new Set(prev)
         newSet.delete(matchId)
+        console.log('🧹 Cleaned up deleting matches set:', Array.from(newSet))
         return newSet
       })
     }, 300) // Match animation duration

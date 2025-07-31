@@ -434,6 +434,8 @@
   "detailLevelCanBeChanged": "Úroveň detailů lze změnit během zápasu",
   "matchDeleted": "Zápas smazán.",
   "failedToDeleteMatch": "Nepodařilo se smazat zápas.",
+  "matchRestored": "Zápas byl úspěšně obnoven",
+  "failedToRestoreMatch": "Nepodařilo se obnovit zápas",
   "serveStatisticsHeader": "Statistiky servisu",
   "serveStatisticsDescription": "Rozbor vašeho servisu",
   "acesLabel": "Esa",

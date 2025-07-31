@@ -434,6 +434,8 @@
   "detailLevelCanBeChanged": "Detail level can be changed during the match",
   "matchDeleted": "Match deleted.",
   "failedToDeleteMatch": "Failed to delete match.",
+  "matchRestored": "Match restored successfully",
+  "failedToRestoreMatch": "Failed to restore match",
   "serveStatisticsHeader": "Serve Statistics",
   "serveStatisticsDescription": "Your serving performance breakdown",
   "acesLabel": "Aces",

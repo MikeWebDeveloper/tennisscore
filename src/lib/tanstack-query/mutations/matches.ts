@@ -8,7 +8,8 @@ import type { Match, MatchFormat } from '@/lib/types'
 import { 
   createMatch, 
   updateMatchScore, 
-  deleteMatch
+  deleteMatch,
+  restoreMatch
 } from '@/lib/actions/matches'
 
 interface CreateMatchData {
@@ -117,6 +118,36 @@ export function useDeleteMatchMutation(
       })
       
       // Invalidate statistics as deleting a match affects stats
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
+      
+      // Call the options onSuccess if provided
+      options?.onSuccess?.(_, matchId, undefined)
+    },
+    ...options,
+  })
+}
+
+/**
+ * Hook to restore a soft-deleted match
+ */
+export function useRestoreMatchMutation(
+  options?: TennisMutationOptions<{ success: boolean }, unknown, string>
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (matchId: string) => await restoreMatch(matchId),
+    onSuccess: (_, matchId) => {
+      // Invalidate matches list to show restored match
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.lists() })
+      
+      // Invalidate recent matches
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.matches.all, 
+        predicate: (query) => query.queryKey.includes('recent')
+      })
+      
+      // Invalidate statistics as restoring a match affects stats
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
       
       // Call the options onSuccess if provided

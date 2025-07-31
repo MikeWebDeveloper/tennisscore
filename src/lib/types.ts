@@ -144,6 +144,11 @@ export interface Match extends Models.Document {
   endTime?: string // ISO timestamp when match completes
   setDurations?: number[] // Duration of each completed set in milliseconds
   
+  // Soft delete fields
+  deletedAt?: string // ISO timestamp when match was deleted
+  deletedBy?: string // User ID who deleted the match
+  isDeleted?: boolean // Flag to quickly filter deleted matches
+  
   userId: string
 }
 

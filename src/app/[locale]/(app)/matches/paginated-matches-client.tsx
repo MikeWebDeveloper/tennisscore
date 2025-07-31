@@ -172,8 +172,14 @@ export function PaginatedMatchesClient({
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
 
   const handleMatchDeleted = (matchId: string) => {
+    console.log('🔄 Parent state update for match:', matchId)
+    console.log('📋 Matches before filter:', matches.length)
     // Remove the deleted match from local state immediately
-    setMatches(prev => prev.filter(match => match.$id !== matchId))
+    setMatches(prev => {
+      const filtered = prev.filter(match => match.$id !== matchId)
+      console.log('📋 Matches after filter:', filtered.length)
+      return filtered
+    })
     setTotal(prev => prev - 1)
   }
 

@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { X } from "lucide-react"
-import { useDeleteMatchMutation } from "@/lib/tanstack-query/mutations/matches"
+import { useDeleteMatchMutation, useRestoreMatchMutation } from "@/lib/tanstack-query/mutations/matches"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 
@@ -33,9 +33,28 @@ export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: Del
   const router = useRouter()
   const t = useTranslations('common')
   
+  const restoreMatchMutation = useRestoreMatchMutation({
+    onSuccess: () => {
+      toast.success(t('matchRestored'))
+    },
+    onError: (error) => {
+      console.error('Restore match error:', error)
+      toast.error(error instanceof Error ? error.message : t('failedToRestoreMatch'))
+    }
+  })
+  
   const deleteMatchMutation = useDeleteMatchMutation({
     onSuccess: () => {
-      toast.success(t('matchDeleted'))
+      // Show success toast with undo action
+      toast.success(t('matchDeleted'), {
+        action: {
+          label: t('undo'),
+          onClick: () => {
+            restoreMatchMutation.mutate(matchId)
+          }
+        },
+        duration: 10000 // Show for 10 seconds to give time to undo
+      })
       // Only navigate if no callback provided (when used on match detail page)
       if (!onDeleteSuccess) {
         setTimeout(() => {
@@ -50,9 +69,11 @@ export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: Del
   })
 
   const handleDelete = () => {
+    console.log('🗑️ Delete initiated for match:', matchId)
     setIsOpen(false)
     // Call the optimistic update immediately
     if (onDeleteSuccess) {
+      console.log('🚀 Calling onDeleteSuccess optimistically')
       onDeleteSuccess()
     }
     // Then perform the actual deletion

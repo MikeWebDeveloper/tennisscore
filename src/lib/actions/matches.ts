@@ -103,6 +103,12 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
       return null
     }
 
+    // Check if match is soft deleted
+    if (match.isDeleted) {
+      console.error("Match is deleted")
+      return null
+    }
+
     // Populate player data
     const [playerOne, playerTwo, playerThree, playerFour] = await Promise.all([
       getPopulatedPlayer(match.playerOneId),
@@ -219,6 +225,7 @@ export async function getMatchesByUser(): Promise<Match[]> {
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         [
           Query.equal("userId", user.$id),
+          Query.notEqual("isDeleted", true), // Exclude soft deleted matches
           Query.orderDesc("$createdAt"),
           Query.limit(1000) // Keep high limit for backward compatibility
         ]
@@ -253,7 +260,10 @@ export async function getMatchesByUserPaginated(options: {
     const { limit = 15, offset = 0, dateFilter = 'all' } = options
 
     // Build query with filters
-    const queries = [Query.equal("userId", user.$id)]
+    const queries = [
+      Query.equal("userId", user.$id),
+      Query.notEqual("isDeleted", true) // Exclude soft deleted matches
+    ]
     
     // Add date filtering
     if (dateFilter !== 'all') {
@@ -297,7 +307,10 @@ export async function getMatchesByUserPaginated(options: {
       databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-        [Query.equal("userId", user.$id)]
+        [
+          Query.equal("userId", user.$id),
+          Query.notEqual("isDeleted", true)
+        ]
       )
     )
 
@@ -327,6 +340,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
         process.env.APPWRITE_MATCHES_COLLECTION_ID!,
         [
           Query.equal("userId", user.$id),
+          Query.notEqual("isDeleted", true),
           Query.or([
             Query.equal("playerOneId", playerId),
             Query.equal("playerTwoId", playerId)
@@ -353,6 +367,11 @@ export async function getMatch(matchId: string): Promise<Match> {
         matchId
       )
     )
+    
+    // Check if match is soft deleted
+    if (match.isDeleted) {
+      throw new Error("Match not found")
+    }
     
     // Convert setDurations from string array to number array
     return {
@@ -398,19 +417,112 @@ export async function deleteMatch(matchId: string) {
       throw new Error("Unauthorized to delete this match")
     }
 
-    // Delete the match
-    await databases.deleteDocument(
+    // Soft delete: mark as deleted instead of actually deleting
+    await databases.updateDocument(
       process.env.APPWRITE_DATABASE_ID!,
       process.env.APPWRITE_MATCHES_COLLECTION_ID!,
-      matchId
+      matchId,
+      {
+        isDeleted: true,
+        deletedAt: new Date().toISOString(),
+        deletedBy: user.$id
+      }
     )
 
+    revalidatePath("/matches")
     // Return void on success (mutation expects void)
     return
   } catch (error) {
     console.error("Error deleting match:", error)
     // Throw the error so the mutation's onError handler catches it
     throw error instanceof Error ? error : new Error("Failed to delete match")
+  }
+}
+
+export async function getDeletedMatches(): Promise<Match[]> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return []
+    }
+
+    const { databases } = await createAdminClient()
+    
+    // Get matches deleted within the last 7 days
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const response = await withRetry(() =>
+      databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        [
+          Query.equal("userId", user.$id),
+          Query.equal("isDeleted", true),
+          Query.greaterThanEqual("deletedAt", sevenDaysAgo.toISOString()),
+          Query.orderDesc("deletedAt"),
+          Query.limit(100)
+        ]
+      )
+    )
+
+    return response.documents as unknown as Match[]
+  } catch (error) {
+    console.error("Error fetching deleted matches:", error)
+    return []
+  }
+}
+
+export async function restoreMatch(matchId: string) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { databases } = await createAdminClient()
+
+  try {
+    // First verify the user owns this match and it's deleted
+    const match = await databases.getDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId
+    )
+
+    if (match.userId !== user.$id) {
+      throw new Error("Unauthorized to restore this match")
+    }
+
+    if (!match.isDeleted) {
+      throw new Error("Match is not deleted")
+    }
+
+    // Check if match was deleted within the last 7 days
+    if (match.deletedAt) {
+      const deletedDate = new Date(match.deletedAt)
+      const now = new Date()
+      const daysSinceDeleted = (now.getTime() - deletedDate.getTime()) / (1000 * 60 * 60 * 24)
+      
+      if (daysSinceDeleted > 7) {
+        throw new Error("Match was deleted more than 7 days ago and cannot be restored")
+      }
+    }
+
+    // Restore the match by removing soft delete flags
+    await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID!,
+      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      matchId,
+      {
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null
+      }
+    )
+
+    revalidatePath("/matches")
+    return { success: true }
+  } catch (error) {
+    console.error("Error restoring match:", error)
+    throw error instanceof Error ? error : new Error("Failed to restore match")
   }
 }
 
