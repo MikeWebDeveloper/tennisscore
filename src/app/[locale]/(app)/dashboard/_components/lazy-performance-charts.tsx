@@ -27,9 +27,9 @@ const PerformanceChartsSkeleton = () => (
   </Card>
 )
 
-// Lazy load PerformanceCharts component
+// Lazy load PerformanceCharts component - using optimized version
 export const LazyPerformanceCharts = dynamic(
-  () => import('./performance-charts').then(mod => ({ default: mod.PerformanceCharts })),
+  () => import('./performance-charts-optimized').then(mod => ({ default: mod.PerformanceCharts })),
   {
     loading: () => <PerformanceChartsSkeleton />,
     ssr: false // Disable SSR for chart components
