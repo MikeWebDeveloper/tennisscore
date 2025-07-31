@@ -8,8 +8,7 @@ import type { Player } from '@/lib/types'
 import { 
   createPlayer, 
   updatePlayer, 
-  deletePlayer,
-  createPlayerFromCzechImport
+  deletePlayer
 } from '@/lib/actions/players'
 
 /**
@@ -101,28 +100,3 @@ export function useDeletePlayerMutation(
 }
 
 
-/**
- * Hook to import a Czech tennis player
- */
-export function useImportCzechTennisPlayerMutation(
-  options?: TennisMutationOptions<Player, unknown, { czechTennisData: any; additionalData: any }>
-) {
-  const queryClient = useQueryClient()
-
-  return useServerActionMutation(
-    async (czechTennisData: any) => 
-      await createPlayerFromCzechImport(czechTennisData),
-    {
-      onSuccess: (data) => {
-        // Invalidate players list to include new imported player
-        queryClient.invalidateQueries({ queryKey: queryKeys.players.lists() })
-        
-        // If this was set as main player, invalidate main player query
-        if (data.isMainPlayer) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.players.main('current') })
-        }
-      },
-      ...options,
-    }
-  )
-}

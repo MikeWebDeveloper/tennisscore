@@ -42,8 +42,7 @@ export {
 export {
   useCreatePlayerMutation,
   useUpdatePlayerMutation,
-  useDeletePlayerMutation,
-  useImportCzechTennisPlayerMutation
+  useDeletePlayerMutation
 } from './mutations/players'
 
 // Match queries and mutations

@@ -5,7 +5,7 @@ import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
-import { Player, CzechTennisPlayer } from "@/lib/types"
+import { Player } from "@/lib/types"
 
 // Helper function to generate legacy rating from BH and CZ ratings
 function generateLegacyRating(bhRating?: string, czRanking?: number): string | undefined {
@@ -697,66 +697,4 @@ export async function removePlayerProfilePicture(playerId: string) {
   }
 }
 
-export async function createPlayerFromCzechImport(czechPlayer: CzechTennisPlayer): Promise<{ success?: boolean; player?: Player; error?: string }> {
-  try {
-    const user = await getCurrentUser()
-    if (!user) {
-      return { error: "Unauthorized" }
-    }
-    
-    // Convert CzechTennisPlayer to our Player format
-    const data = {
-      firstName: czechPlayer.firstName,
-      lastName: czechPlayer.lastName,
-      yearOfBirth: czechPlayer.yearOfBirth,
-      bhRating: czechPlayer.bhRating,
-      czRanking: czechPlayer.czRanking,
-      club: czechPlayer.club,
-      playingHand: undefined, // Not available in Czech data
-      isMainPlayer: false, // Default to false for imports
-      cztennisUrl: czechPlayer.cztennisUrl,
-      czechTennisId: czechPlayer.uniqueId,
-      isImportedFromCzech: true,
-      // Populate legacy rating from Czech data
-      rating: generateLegacyRating(czechPlayer.bhRating, czechPlayer.czRanking),
-    }
-    
-    const validatedData = playerSchema.parse(data)
-    
-    const { databases } = await createAdminClient()
-    
-    // Check if player already exists by Czech Tennis ID
-    try {
-      const existingPlayers = await databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        [Query.equal("userId", user.$id), Query.equal("czechTennisId", czechPlayer.uniqueId)]
-      )
-      
-      if (existingPlayers.documents.length > 0) {
-        return { error: "Player already imported from Czech tennis database" }
-      }
-    } catch (error) {
-      // Continue if check fails - we'll let the create attempt proceed
-    }
-    
-    const player = await withRetry(() => 
-      databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
-        ID.unique(),
-        {
-          ...validatedData,
-          userId: user.$id,
-        }
-      )
-    )
-    
-    revalidatePath("/players")
-    revalidatePath("/dashboard")
-    return { success: true, player: player as unknown as Player }
-  } catch (error: unknown) {
-    console.error("Error creating player from Czech import:", error)
-    return { error: error instanceof Error ? error.message : "Failed to import player" }
-  }
-} 
+ 

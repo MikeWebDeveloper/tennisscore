@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Plus, User, Upload, Download } from "lucide-react"
+import { Plus, User, Upload } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { createPlayer } from "@/lib/actions/players"
-import { CzechTennisImport } from "@/components/features/czech-tennis-import"
 import { useTranslations } from "@/i18n"
 
 interface CreatePlayerDialogProps {
@@ -20,7 +19,6 @@ interface CreatePlayerDialogProps {
 export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogProps) {
   const t = useTranslations('common')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [showCzechImport, setShowCzechImport] = useState(false)
 
   const handleCreatePlayer = async (formData: FormData) => {
     const result = await createPlayer(formData)
@@ -163,17 +161,6 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
           </div>
 
           <div className="space-y-2 pt-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setShowCzechImport(true)}
-              className="w-full h-8 text-xs"
-              size="sm"
-            >
-              <Download className="h-3 w-3 mr-2" />
-              Import from Czech Rankings
-            </Button>
-            
             <div className="flex gap-2">
               <Button 
                 type="button" 
@@ -191,15 +178,6 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
           </div>
         </form>
       </DialogContent>
-      <CzechTennisImport
-        isOpen={showCzechImport}
-        onOpenChange={setShowCzechImport}
-        onPlayerImported={() => {
-          onOpenChange(false)
-          setPreviewImage(null)
-          window.location.reload()
-        }}
-      />
     </Dialog>
   )
 }
