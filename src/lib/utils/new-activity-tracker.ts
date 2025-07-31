@@ -91,7 +91,7 @@ class NewActivityTracker {
         activities: this.activities,
         lastUpdated: new Date().toISOString()
       })
-      localStorage.setItem('tennisscore_new_activities', data)
+      localStorage.setItem('tenisclick_new_activities', data)
     } catch (error) {
       console.warn('Failed to save new activities to storage:', error)
     }
@@ -101,7 +101,7 @@ class NewActivityTracker {
     if (typeof window === 'undefined') return
     
     try {
-      const data = localStorage.getItem('tennisscore_new_activities')
+      const data = localStorage.getItem('tenisclick_new_activities')
       if (data) {
         const parsed = JSON.parse(data)
         this.activities = (parsed.activities || []).map((activity: any) => ({

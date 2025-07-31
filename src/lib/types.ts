@@ -185,7 +185,7 @@ export interface DashboardStats {
 
 // Detailed Point Tracking Types
 export type ServeType = "first" | "second"
-export type PointOutcome = "winner" | "unforced_error" | "forced_error" | "ace" | "double_fault"
+export type PointOutcome = "winner" | "unforced_error" | "forced_error" | "ace" | "double_fault" | "net"
 export type ShotType = "forehand" | "backhand" | "volley" | "overhead" | "drop_shot" | "lob" | "serve"
 export type CourtPosition = "deuce" | "ad" | "net" | "baseline"
 
@@ -254,16 +254,24 @@ export interface PlayerStats {
   firstServePointsWon: number
   secondServesMade: number
   secondServePointsWon: number
+  servicePointsWon: number
+  serviceGamesPlayed: number
+  serviceGamesLost: number
   
   // Break Point Stats
   breakPointsFaced: number
   breakPointsSaved: number
   breakPointsWon: number
+  breakPointsCreated?: number
   
   // Return Stats
   totalReturnPointsWon: number
   firstReturnPointsWon: number
   secondReturnPointsWon: number
+  receivingPointsWon: number
+  receivingPointsPlayed: number
+  firstServeReturnPointsWon?: number
+  secondServeReturnPointsWon?: number
 
   // Net Stats
   netPointsAttempted: number

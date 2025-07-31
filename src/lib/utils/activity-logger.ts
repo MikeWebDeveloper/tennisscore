@@ -119,7 +119,7 @@ class ActivityLogger {
         sessionId: this.sessionId,
         lastUpdated: new Date().toISOString()
       })
-      localStorage.setItem('tennisscore_activity_logs', data)
+      localStorage.setItem('tenisclick_activity_logs', data)
     } catch (error) {
       console.warn('Failed to save activity logs to storage:', error)
     }
@@ -129,7 +129,7 @@ class ActivityLogger {
     if (typeof window === 'undefined') return
     
     try {
-      const data = localStorage.getItem('tennisscore_activity_logs')
+      const data = localStorage.getItem('tenisclick_activity_logs')
       if (data) {
         const parsed = JSON.parse(data)
         if (parsed.sessionId === this.sessionId) {
@@ -279,7 +279,7 @@ class ActivityLogger {
   clearLogs(): void {
     this.logs = []
     if (this.config.persistToStorage) {
-      localStorage.removeItem('tennisscore_activity_logs')
+      localStorage.removeItem('tenisclick_activity_logs')
     }
   }
 

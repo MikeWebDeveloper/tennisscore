@@ -43,7 +43,6 @@ import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 import { LazyLiveSetExportButton as LiveSetExportButton } from "@/components/features/lazy-match-export"
-import { useLiveViewers } from "@/hooks/use-live-viewers"
 
 // Confetti celebration function
 const triggerMatchWinConfetti = () => {
@@ -597,7 +596,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   
   const pointSituation = getPointSituation()
   
-  const { count: viewerCount, loading: viewerLoading } = useLiveViewers(match.$id, false)
 
   
   // Initialize match data
@@ -1030,11 +1028,6 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
             {/* Action Buttons: icon + text on desktop/tablet, icon only on mobile */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Viewer count live */}
-              <div className="flex items-center gap-1 px-2 text-xs sm:text-sm text-blue-500 font-semibold min-w-[32px]">
-                <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' /><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' /></svg>
-                {viewerLoading ? <span className="w-3 h-3 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block"></span> : <span>{viewerCount}</span>}
-              </div>
               {/* Breakpoint indicator in header */}
               {pointSituation && (
                 <motion.div

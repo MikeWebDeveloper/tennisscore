@@ -1,9 +1,9 @@
-// TennisScore Service Worker - Performance Optimized
+// Tenis.click Service Worker - Performance Optimized
 // Version: 2.1.0 - Navigation & API Response Caching
-const CACHE_NAME = 'tennisscore-v2.1.0'
-const STATIC_CACHE = 'tennisscore-static-v2.1.0'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v2.1.0'
-const API_CACHE = 'tennisscore-api-v2.1.0'
+const CACHE_NAME = 'tenisclick-v2.1.0'
+const STATIC_CACHE = 'tenisclick-static-v2.1.0'
+const DYNAMIC_CACHE = 'tenisclick-dynamic-v2.1.0'
+const API_CACHE = 'tenisclick-api-v2.1.0'
 
 // Development detection
 const isDevelopment = (() => {
@@ -316,7 +316,7 @@ async function getOfflinePage() {
     <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>TennisScore - Offline</title>
+        <title>Tenis.click - Offline</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -377,7 +377,7 @@ async function getOfflinePage() {
       <body>
         <div class="container">
           <span class="icon">🎾</span>
-          <h1>TennisScore</h1>
+          <h1>Tenis.click</h1>
           <p>You're currently offline. Your cached data is still available.</p>
           <button onclick="window.location.reload()">Try Again</button>
         </div>

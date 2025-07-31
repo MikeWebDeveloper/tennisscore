@@ -67,7 +67,7 @@ export const useUserStore = create<UserState>()(
       setIsLoading: (loading) => set({ isLoading: loading }),
     }),
     {
-      name: 'tennisscore-user-store',
+      name: 'tenisclick-user-store',
       partialize: (state) => ({
         mainPlayerId: state.mainPlayerId,
         // Don't persist user data for security - it will be refetched

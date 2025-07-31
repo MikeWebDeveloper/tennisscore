@@ -131,8 +131,8 @@ export interface PointDetail {
   
   // Basic fields for compatibility
   serveType: 'first' | 'second'
-  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
-  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault'
+  pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
+  serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
   rallyLength: number
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
   lastShotPlayer?: 'p1' | 'p2'

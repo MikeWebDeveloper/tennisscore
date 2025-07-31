@@ -176,12 +176,12 @@ export function AppShell({ children, user }: AppShellProps) {
             <div className="flex h-full flex-col">
               {/* Logo */}
               <div className="flex h-16 items-center border-b border-border px-6">
-                <div className="flex items-center space-x-2">
+                <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                   <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-background" />
                   </div>
-                  <span className="text-xl font-bold text-foreground">TennisScore</span>
-                </div>
+                  <span className="text-xl font-bold text-foreground">Tenis.click</span>
+                </Link>
               </div>
 
               {/* Navigation */}
@@ -305,12 +305,12 @@ export function AppShell({ children, user }: AppShellProps) {
               <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
             
-            <div className="flex items-center space-x-2">
+            <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <div className="h-6 w-6 rounded bg-foreground flex items-center justify-center">
                 <Trophy className="h-4 w-4 text-background" />
               </div>
-              <span className="font-bold text-foreground">TennisScore</span>
-            </div>
+              <span className="font-bold text-foreground">Tenis.click</span>
+            </Link>
 
             <div className="flex items-center space-x-2">
               <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} className="mr-1" />
@@ -357,12 +357,12 @@ export function AppShell({ children, user }: AppShellProps) {
                   <div className="flex h-full flex-col">
                     {/* Mobile Header */}
                     <div className="flex h-16 items-center justify-between border-b border-border px-6">
-                      <div className="flex items-center space-x-2">
+                      <Link href="/dashboard" onClick={() => setSidebarOpen(false)} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                         <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                           <Trophy className="h-5 w-5 text-primary-foreground" />
                         </div>
-                        <span className="text-xl font-bold text-foreground">TennisScore</span>
-                      </div>
+                        <span className="text-xl font-bold text-foreground">Tenis.click</span>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"

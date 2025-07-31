@@ -367,12 +367,20 @@ export function calculatePlayerStats(points: PointDetail[], playerKey: "p1" | "p
       firstServePointsWon: 0,
       secondServesMade: 0,
       secondServePointsWon: 0,
+      servicePointsWon: 0,
+      serviceGamesPlayed: 0,
+      serviceGamesLost: 0,
       breakPointsFaced: 0,
       breakPointsSaved: 0,
       breakPointsWon: 0,
+      breakPointsCreated: 0,
       totalReturnPointsWon: 0,
       firstReturnPointsWon: 0,
       secondReturnPointsWon: 0,
+      receivingPointsWon: 0,
+      receivingPointsPlayed: 0,
+      firstServeReturnPointsWon: 0,
+      secondServeReturnPointsWon: 0,
       netPointsAttempted: 0,
       netPointsWon: 0,
     }
@@ -393,12 +401,20 @@ export function calculatePlayerStats(points: PointDetail[], playerKey: "p1" | "p
     firstServePointsWon: stats.firstServePointsWonByPlayer[idx],
     secondServesMade: stats.secondServePointsPlayedByPlayer[idx],
     secondServePointsWon: stats.secondServePointsWonByPlayer[idx],
+    servicePointsWon: stats.servicePointsWonByPlayer[idx],
+    serviceGamesPlayed: 0, // not directly available in EnhancedMatchStats
+    serviceGamesLost: 0, // not directly available in EnhancedMatchStats
     breakPointsFaced: stats.breakPointsByPlayer.faced[idx],
     breakPointsSaved: stats.breakPointsByPlayer.saved[idx],
     breakPointsWon: stats.breakPointsByPlayer.converted[idx],
+    breakPointsCreated: stats.breakPointsByPlayer.faced[1 - idx], // opponent's break points faced
     totalReturnPointsWon: stats.receivingPointsWonByPlayer[idx],
     firstReturnPointsWon: stats.receivingPointsWonByPlayer[idx], // fallback
     secondReturnPointsWon: 0, // not directly available
+    receivingPointsWon: stats.receivingPointsWonByPlayer[idx],
+    receivingPointsPlayed: stats.receivingPointsPlayedByPlayer[idx],
+    firstServeReturnPointsWon: 0, // not directly available
+    secondServeReturnPointsWon: 0, // not directly available
     netPointsAttempted: 0, // not directly available
     netPointsWon: 0, // not directly available
   }

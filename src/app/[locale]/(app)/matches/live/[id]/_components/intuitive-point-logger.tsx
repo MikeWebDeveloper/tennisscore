@@ -52,6 +52,9 @@ export function IntuitivePointLogger({
         return pointContext.winner !== pointContext.server
       case 'double_fault':
         return pointContext.serveType !== "second" || pointContext.winner === pointContext.server
+      case 'net':
+        // Net fault can only happen when server loses the point
+        return pointContext.winner === pointContext.server
       default:
         return false
     }
@@ -75,6 +78,14 @@ export function IntuitivePointLogger({
         error = t('aceServerError')
       }
     }
+    
+    if (outcome === "net") {
+      if (pointContext.winner === pointContext.server) {
+        error = t('netError')
+      }
+    }
+
+    // Note: Net and ace cannot be combined since they use radio buttons (mutually exclusive)
 
     if (error) {
       setValidationError(error)
@@ -131,6 +142,13 @@ export function IntuitivePointLogger({
       description: t('twoConsecutiveFaults'),
       color: 'bg-red-500 hover:bg-red-600 text-white',
       disabled: isOutcomeDisabled('double_fault')
+    },
+    {
+      id: 'net' as const,
+      label: t('net'),
+      description: t('ballHitNet'),
+      color: 'bg-purple-500 hover:bg-purple-600 text-white',
+      disabled: isOutcomeDisabled('net')
     }
   ]
 

@@ -22,6 +22,7 @@ import { Target } from "lucide-react"
 import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
 import { MatchStatsComponentSimpleFixed } from "./match-stats"
+import { EnhancedMatchStats } from "./enhanced-match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/i18n"
@@ -844,34 +845,125 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
         {/* Statistics Tab */}
         <TabsContent value="statistics" className="space-y-6">
-          <MatchStatsComponentSimpleFixed 
-            stats={calculateMatchStats(match.pointLog.map(pointStr => {
+          {(() => {
+            // Parse point details for statistics
+            const pointDetails = match.pointLog.map(pointStr => {
               try {
                 return JSON.parse(pointStr) as PointDetail
               } catch {
                 return null
               }
-            }).filter((point): point is PointDetail => point !== null))}
-            playerNames={{
-              p1: getTeamName("team1"),
-              p2: getTeamName("team2")
-            }}
-            detailLevel={(() => {
-              try {
-                const format = JSON.parse(match.matchFormat)
-                return format.detailLevel || "simple"
-              } catch {
-                return "simple"
+            }).filter((point): point is PointDetail => point !== null)
+
+            // Convert match stats to legacy format
+            const modernStats = calculateMatchStats(pointDetails)
+            const legacyStats = {
+              player1: {
+                totalPointsWon: modernStats.totalPointsWonByPlayer[0],
+                winners: modernStats.winnersByPlayer[0],
+                unforcedErrors: modernStats.unforcedErrorsByPlayer[0],
+                forcedErrors: modernStats.forcedErrorsByPlayer[0],
+                aces: modernStats.acesByPlayer[0],
+                doubleFaults: modernStats.doubleFaultsByPlayer[0],
+                firstServesAttempted: 0, // Not directly available in EnhancedMatchStats
+                firstServesMade: 0, // Not directly available in EnhancedMatchStats  
+                firstServePointsWon: modernStats.firstServePointsWonByPlayer[0],
+                secondServesMade: 0, // Not directly available in EnhancedMatchStats
+                secondServePointsWon: modernStats.secondServePointsWonByPlayer[0],
+                servicePointsWon: modernStats.servicePointsWonByPlayer[0],
+                serviceGamesPlayed: 0, // Not directly available in EnhancedMatchStats
+                serviceGamesLost: 0, // Not directly available in EnhancedMatchStats
+                receivingPointsWon: modernStats.receivingPointsWonByPlayer[0],
+                receivingPointsPlayed: modernStats.receivingPointsPlayedByPlayer[0],
+                firstServeReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                secondServeReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                breakPointsCreated: modernStats.breakPointsByPlayer.faced[1], // Opponent's break points faced
+                breakPointsWon: modernStats.breakPointsByPlayer.converted[0],
+                breakPointsFaced: modernStats.breakPointsByPlayer.faced[0],
+                totalReturnPointsWon: modernStats.receivingPointsWonByPlayer[0],
+                firstReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                secondReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                breakPointsSaved: modernStats.breakPointsByPlayer.saved[0],
+                netPointsAttempted: 0, // Not tracked in current stats
+                netPointsWon: 0, // Not tracked in current stats
+              },
+              player2: {
+                totalPointsWon: modernStats.totalPointsWonByPlayer[1],
+                winners: modernStats.winnersByPlayer[1],
+                unforcedErrors: modernStats.unforcedErrorsByPlayer[1],
+                forcedErrors: modernStats.forcedErrorsByPlayer[1],
+                aces: modernStats.acesByPlayer[1],
+                doubleFaults: modernStats.doubleFaultsByPlayer[1],
+                firstServesAttempted: 0, // Not directly available in EnhancedMatchStats
+                firstServesMade: 0, // Not directly available in EnhancedMatchStats
+                firstServePointsWon: modernStats.firstServePointsWonByPlayer[1],
+                secondServesMade: 0, // Not directly available in EnhancedMatchStats
+                secondServePointsWon: modernStats.secondServePointsWonByPlayer[1],
+                servicePointsWon: modernStats.servicePointsWonByPlayer[1],
+                serviceGamesPlayed: 0, // Not directly available in EnhancedMatchStats
+                serviceGamesLost: 0, // Not directly available in EnhancedMatchStats
+                receivingPointsWon: modernStats.receivingPointsWonByPlayer[1],
+                receivingPointsPlayed: modernStats.receivingPointsPlayedByPlayer[1],
+                firstServeReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                secondServeReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                breakPointsCreated: modernStats.breakPointsByPlayer.faced[0], // Opponent's break points faced
+                breakPointsWon: modernStats.breakPointsByPlayer.converted[1],
+                breakPointsFaced: modernStats.breakPointsByPlayer.faced[1],
+                totalReturnPointsWon: modernStats.receivingPointsWonByPlayer[1],
+                firstReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                secondReturnPointsWon: 0, // Not directly available in EnhancedMatchStats
+                breakPointsSaved: modernStats.breakPointsByPlayer.saved[1],
+                netPointsAttempted: 0, // Not tracked in current stats
+                netPointsWon: 0, // Not tracked in current stats
               }
-            })()}
-            pointLog={match.pointLog.map(pointStr => {
-              try {
-                return JSON.parse(pointStr) as PointDetail
-              } catch {
-                return null
-              }
-            }).filter((point): point is PointDetail => point !== null)}
-          />
+            }
+
+            if (pointDetails.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-2">No statistics available for this match.</p>
+                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see comprehensive match statistics.</p>
+                  </CardContent>
+                </Card>
+              )
+            }
+
+            const fallbackPlayerOne: Player = {
+              $id: 'unknown1',
+              firstName: getTeamName("team1").split(' ')[0] || 'Player',
+              lastName: getTeamName("team1").split(' ').slice(1).join(' ') || '1',
+              userId: match.userId,
+              $sequence: 0,
+              $collectionId: 'players',
+              $databaseId: 'default',
+              $createdAt: new Date().toISOString(),
+              $updatedAt: new Date().toISOString(),
+              $permissions: []
+            }
+
+            const fallbackPlayerTwo: Player = {
+              $id: 'unknown2',
+              firstName: getTeamName("team2").split(' ')[0] || 'Player',
+              lastName: getTeamName("team2").split(' ').slice(1).join(' ') || '2',
+              userId: match.userId,
+              $sequence: 0,
+              $collectionId: 'players',
+              $databaseId: 'default',
+              $createdAt: new Date().toISOString(),
+              $updatedAt: new Date().toISOString(),
+              $permissions: []
+            }
+
+            return (
+              <EnhancedMatchStats 
+                stats={legacyStats}
+                playerOne={match.playerOne || fallbackPlayerOne}
+                playerTwo={match.playerTwo || fallbackPlayerTwo}
+              />
+            )
+          })()}
         </TabsContent>
 
         {/* Analysis Tab */}

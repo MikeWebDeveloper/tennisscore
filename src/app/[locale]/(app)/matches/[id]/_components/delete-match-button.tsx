@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { X } from "lucide-react"
-import { deleteMatch } from "@/lib/actions/matches"
+import { useDeleteMatchMutation } from "@/lib/tanstack-query/mutations/matches"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 
@@ -28,29 +28,30 @@ interface DeleteMatchButtonProps {
 }
 
 export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const t = useTranslations('common')
-
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      const result = await deleteMatch(matchId)
-      if (result.success) {
-        toast.success(t('matchDeleted'))
+  
+  const deleteMatchMutation = useDeleteMatchMutation({
+    onSuccess: () => {
+      toast.success(t('matchDeleted'))
+      // Wait a bit for cache invalidation to complete before navigating
+      setTimeout(() => {
         router.push("/matches")
-      } else {
-        toast.error(result.error || t('failedToDeleteMatch'))
-      }
-    } catch {
-      toast.error(t('failedToDeleteMatch'))
-    } finally {
-      setIsDeleting(false)
+      }, 100)
+    },
+    onError: (error) => {
+      toast.error((error as any)?.error || t('failedToDeleteMatch'))
     }
+  })
+
+  const handleDelete = () => {
+    deleteMatchMutation.mutate(matchId)
+    setIsOpen(false)
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button 
           variant="outline" 
@@ -75,9 +76,9 @@ export function DeleteMatchButton({ matchId, playerNames }: DeleteMatchButtonPro
           <AlertDialogAction 
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={handleDelete}
-            disabled={isDeleting}
+            disabled={deleteMatchMutation.isPending}
           >
-            {isDeleting ? t('deleting') : t('deleteMatch')}
+            {deleteMatchMutation.isPending ? t('deleting') : t('deleteMatch')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

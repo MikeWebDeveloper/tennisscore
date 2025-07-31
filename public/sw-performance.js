@@ -1,11 +1,11 @@
-// High-Performance Service Worker for Tennis Score App
+// High-Performance Service Worker for Tenis.click App
 // Optimized for Core Web Vitals and tennis-specific data patterns
 
 const CACHE_VERSION = 'v3.0.0-perf'
-const STATIC_CACHE = `tennisscore-static-${CACHE_VERSION}`
-const DYNAMIC_CACHE = `tennisscore-dynamic-${CACHE_VERSION}`
-const API_CACHE = `tennisscore-api-${CACHE_VERSION}`
-const IMAGE_CACHE = `tennisscore-images-${CACHE_VERSION}`
+const STATIC_CACHE = `tenisclick-static-${CACHE_VERSION}`
+const DYNAMIC_CACHE = `tenisclick-dynamic-${CACHE_VERSION}`
+const API_CACHE = `tenisclick-api-${CACHE_VERSION}`
+const IMAGE_CACHE = `tenisclick-images-${CACHE_VERSION}`
 
 // Enhanced caching strategies for different content types
 const CACHE_STRATEGIES = {

@@ -48,7 +48,8 @@ export const pointOutcomeSchema = z.enum([
   "winner", 
   "unforced_error",
   "forced_error",
-  "double_fault"
+  "double_fault",
+  "net"
 ])
 
 // Serve type schema
