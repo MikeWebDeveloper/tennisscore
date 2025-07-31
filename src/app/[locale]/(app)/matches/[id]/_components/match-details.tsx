@@ -30,7 +30,7 @@ import { useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
-import { FullMatchExportButton } from "@/components/features/match-export-dialog"
+import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
 
 interface MatchDetailsProps {
   match: {

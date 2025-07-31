@@ -28,7 +28,7 @@ import {
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import { Suspense } from "react"
-import { PerformanceCharts } from "./performance-charts"
+import { LazyPerformanceCharts } from "./lazy-performance-charts"
 import { Match, Player, PointDetail } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
@@ -827,7 +827,7 @@ export function EnhancedBentoGrid({ matches, mainPlayer }: EnhancedBentoGridProp
                     </Badge>
                   </div>
                   <Suspense fallback={<ChartsSkeleton />}>
-                    <PerformanceCharts matches={matches} mainPlayer={mainPlayer} />
+                    <LazyPerformanceCharts matches={matches} mainPlayer={mainPlayer} />
                   </Suspense>
                 </CardContent>
               </Card>

@@ -24,11 +24,13 @@ import {
   aggregatePlayerStatsAcrossMatches,
   calculateDetailedMatchStats
 } from "@/lib/utils/match-stats"
-import { PerformanceTrends } from "./_components/performance-trends"
-import { ServeReturnAnalysis } from "./_components/serve-return-analysis"
-import { ClutchPerformance } from "./_components/clutch-performance"
-import { HeadToHeadAnalysis } from "./_components/head-to-head-analysis"
-import { MatchPatterns } from "./_components/match-patterns"
+import { 
+  LazyPerformanceTrends as PerformanceTrends,
+  LazyServeReturnAnalysis as ServeReturnAnalysis,
+  LazyClutchPerformance as ClutchPerformance,
+  LazyHeadToHeadAnalysis as HeadToHeadAnalysis,
+  LazyMatchPatterns as MatchPatterns
+} from "./_components/lazy-charts"
 import { Button } from "@/components/ui/button"
 
 interface EnhancedStatisticsClientProps {

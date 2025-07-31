@@ -44,7 +44,7 @@ import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
-import { LiveSetExportButton } from "@/components/features/match-export-dialog"
+import { LazyLiveSetExportButton as LiveSetExportButton } from "@/components/features/lazy-match-export"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 
 // Confetti celebration function
