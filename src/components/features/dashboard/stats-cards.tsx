@@ -22,12 +22,12 @@ interface StatsCardsProps {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
-  show: { 
-    opacity: 1, 
-    y: 0, 
+  show: {
+    opacity: 1,
+    y: 0,
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 300,
       damping: 25
     }
@@ -108,9 +108,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
           key={card.key}
           variants={cardVariants}
           className={card.className}
-          whileHover={{ 
+          whileHover={{
             scale: 1.02,
-            transition: { type: "spring", stiffness: 400, damping: 10 }
+            transition: { type: "spring" as const, stiffness: 400, damping: 10 }
           }}
           whileTap={{ scale: 0.98 }}
         >
