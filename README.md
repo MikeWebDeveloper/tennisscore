@@ -1,6 +1,6 @@
 # TennisScore 🎾
 
-Professional tennis scoring and analytics platform - Your digital tennis companion.
+Professional tennis scoring and analytics platform – your digital tennis companion.
 
 ## Overview
 
@@ -9,47 +9,48 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 15 with App Router
-- **UI Library**: shadcn/ui (built on Radix UI)
+- **Framework**: Next.js 15 (App Router)
+- **Runtime**: React 19
+- **UI Library**: shadcn/ui (Radix UI)
 - **Styling**: Tailwind CSS
-- **Animation**: Framer Motion
+- **Animation**: Framer Motion (LazyMotion + domAnimation)
 - **State Management**: Zustand
-- **Charts**: Recharts
-- **Icons**: Lucide React
+- **Charts**: uPlot (migrated from Recharts)
+- **Icons**: lucide-react (optimized imports)
 
 ### Backend
 - **BaaS**: Appwrite Cloud
 - **Authentication**: Appwrite Auth (Email/Password)
-- **Database**: Appwrite Databases
-- **Storage**: Appwrite Storage
-- **Real-time**: Appwrite Realtime
+- **Database**: Appwrite Databases (soft delete with retention)
+- **Storage**: Appwrite Storage (profile pictures)
+- **Real-time**: Appwrite Realtime (public live sharing)
 
 ### Deployment
 - **Hosting**: Vercel
-- **Domain**: tenscr.app
+- **Branches**: `main` (production), `test` (preview deployments)
 
 ## Features
 
 ### ✅ Implemented
-- User authentication (signup/signin/signout)
-- Dark mode first design with Electric Green primary color
-- Responsive design (mobile-first)
-- Modern UI with shadcn/ui components
-- Framer Motion animations
+- Authentication (signup/signin/signout)
+- Internationalization: English + Czech
+- Player profiles with image upload/crop
+- Live match scoring with real-time sharing (public route)
+- Soft delete for matches (7‑day retention)
+- Performance optimizations (first load ~693 KB)
+- Framer Motion animations (LazyMotion)
 - Protected routes with middleware
-- TypeScript support
+- TypeScript + ESLint
 
 ### 🚧 In Development
-- Player management
-- Live match scoring
-- Real-time match sharing
-- Dashboard with Bento Grid layout
-- Performance analytics with charts
-- Photo and comment sharing
+- Complete chart migration to uPlot across all views
+- Performance monitoring (web‑vitals, budgets, dashboards)
+- Database and query optimization
+- PWA polish (offline flows, caching strategy)
+- Enhanced dashboard with analytics widgets
 
 ### 📋 Planned
 - Advanced statistics visualization
-- PWA support
 - Doubles scoring
 - Practice session tracking
 - Social features
@@ -110,10 +111,7 @@ npm run dev
 ```
 src/
 ├── app/                  # Next.js App Router
-│   ├── (auth)/           # Auth pages (login, signup)
-│   ├── (app)/            # Authenticated app pages
-│   │   ├── dashboard/
-│   │   └── matches/
+│   ├── [locale]/         # Localized routes (next-intl)
 │   ├── live/[matchId]/   # Public live sharing
 │   └── layout.tsx
 ├── components/
@@ -121,9 +119,7 @@ src/
 │   ├── features/         # Feature-specific components
 │   └── layout/           # Layout components
 ├── lib/
-│   ├── appwrite-client.ts
-│   ├── appwrite-server.ts
-│   ├── auth.ts
+│   ├── appwrite/         # Appwrite clients and helpers
 │   ├── actions/          # Server Actions
 │   └── utils.ts
 ├── stores/               # Zustand stores
@@ -158,6 +154,7 @@ src/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript compiler
+- `npm run perf:all` - Analyze and audit performance
 
 ### Code Style
 - TypeScript for type safety
@@ -165,6 +162,11 @@ src/
 - shadcn/ui component patterns
 - Server Components by default
 - Client Components for interactivity
+
+## Branches & Deployments
+
+- `main`: Production. Deploys to production domain on Vercel.
+- `test`: Preview. Used for testing; generates preview URLs only.
 
 ## Contributing
 
