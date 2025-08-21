@@ -1,5 +1,6 @@
 import createNextIntlPlugin from 'next-intl/plugin'
 
+// This comment is added to force a new build on Vercel
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
