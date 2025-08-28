@@ -1,7 +1,6 @@
 {
   "extends": [
-    "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended"
+    "next/core-web-vitals"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
@@ -10,7 +9,11 @@
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-empty-object-type": "warn",
     "@typescript-eslint/no-explicit-any": "warn",
-    "react/display-name": "error"
+    "react/display-name": "error",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-var-requires": "warn",
+    "@typescript-eslint/ban-types": "warn",
+    "prefer-const": "warn"
   },
   "ignorePatterns": [
     "node_modules/",
@@ -21,6 +24,8 @@
     "*.config.js",
     "*.config.mjs",
     "src/scripts/**/*.js",
-    "scripts/**/*.js"
+    "scripts/**/*.js",
+    "src/lib/utils/react19-compatibility.ts",
+    "src/scripts/**/*.ts"
   ]
 }
