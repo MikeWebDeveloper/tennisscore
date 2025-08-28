@@ -1,7 +1,7 @@
 "use client"
 
 import { Link } from "@/i18n/navigation"
-import { useActionState } from "react"
+// React 18 compatible imports
 import { useFormStatus } from "react-dom"
 import { motion } from '@/lib/framer-motion-config'
 import { Button } from "@/components/ui/button"
@@ -45,9 +45,22 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(signInAction, undefined)
+  const [state, setState] = useState(undefined)
+  const [isPending, setIsPending] = useState(false)
   const t = useTranslations('auth')
   const [mounted, setMounted] = useState(false)
+
+  const formAction = async (formData: FormData) => {
+    setIsPending(true)
+    try {
+      const result = await signInAction(state, formData)
+      setState(result)
+    } catch (error) {
+      setState(error)
+    } finally {
+      setIsPending(false)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
