@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { cn } from "@/lib/utils"
 
 export interface VirtualScrollListProps<T> {
@@ -67,7 +67,7 @@ export function VirtualScrollList<T>({
   }
 
   // Scroll to item
-  const scrollToItem = (index: number, alignment: 'start' | 'center' | 'end' = 'start') => {
+  const scrollToItem = useCallback((index: number, alignment: 'start' | 'center' | 'end' = 'start') => {
     if (!scrollElementRef.current) return
 
     const itemTop = index * itemHeight
@@ -81,7 +81,7 @@ export function VirtualScrollList<T>({
 
     scrollTo = Math.max(0, Math.min(scrollTo, totalHeight - containerHeight))
     scrollElementRef.current.scrollTop = scrollTo
-  }
+  }, [itemHeight, containerHeight, totalHeight])
 
   // Public API
   useEffect(() => {

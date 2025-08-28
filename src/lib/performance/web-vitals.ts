@@ -264,7 +264,7 @@ export function measureInteractionLatency(name: string, fn: () => void | Promise
 
 export function measureComponentRender(componentName: string) {
   return (WrappedComponent: React.ComponentType<any>) => {
-    return React.memo((props: any) => {
+    const MeasuredComponent = React.memo((props: any) => {
       const renderStart = React.useRef<number>(0)
       
       React.useLayoutEffect(() => {
@@ -280,6 +280,9 @@ export function measureComponentRender(componentName: string) {
       
       return React.createElement(WrappedComponent, props)
     })
+
+    MeasuredComponent.displayName = `measureComponentRender(${componentName})`
+    return MeasuredComponent
   }
 }
 

@@ -71,7 +71,7 @@ export function useRenderPerformance(componentName: string): ComponentPerformanc
         console.warn(`🐌 Slow render: ${componentName} took ${renderTime.toFixed(2)}ms`)
       }
     }
-  })
+  }, [componentName])
 
   return componentPerf
 }

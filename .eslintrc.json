@@ -1,9 +1,16 @@
 {
   "extends": [
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
   ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "react/no-unescaped-entities": "off"
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-empty-object-type": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "react/display-name": "error"
   },
   "ignorePatterns": [
     "node_modules/",
@@ -12,6 +19,8 @@
     "build/",
     "dist/",
     "*.config.js",
-    "*.config.mjs"
+    "*.config.mjs",
+    "src/scripts/**/*.js",
+    "scripts/**/*.js"
   ]
 }

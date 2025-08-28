@@ -267,7 +267,7 @@ export const createMotionPreferenceManager = () => {
   }
 }
 
-export default {
+const AnimationBundleOptimizer = {
   initializeGSAPOptimizations,
   analyzeAnimationBundle,
   createAnimationPerformanceMonitor,
@@ -276,3 +276,5 @@ export default {
   optimizeAnimationMemory,
   createMotionPreferenceManager
 }
+
+export default AnimationBundleOptimizer

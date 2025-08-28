@@ -280,10 +280,9 @@ export async function resilientFetch(
 
 /**
  * Connection quality assessment for adaptive behavior
+ * Note: This should be called from within a React component that uses useConnectionMonitoring
  */
-export function assessConnectionQuality(): 'excellent' | 'good' | 'poor' | 'offline' {
-  const connection = useConnectionMonitoring()
-  
+export function assessConnectionQuality(connection: ReturnType<typeof useConnectionMonitoring>): 'excellent' | 'good' | 'poor' | 'offline' {
   if (!connection.isOnline) return 'offline'
   
   // Use effective connection type if available

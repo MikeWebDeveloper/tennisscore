@@ -413,8 +413,10 @@ export const stopWebVitalsMonitoring = (): void => {
   }
 }
 
-export default {
+const WebVitalsUtils = {
   getWebVitalsMonitor,
   startWebVitalsMonitoring,
   stopWebVitalsMonitoring
 }
+
+export default WebVitalsUtils

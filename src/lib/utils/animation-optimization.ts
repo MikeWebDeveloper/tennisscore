@@ -371,7 +371,7 @@ export const initializeAnimationOptimizations = (): void => {
   }
 }
 
-export default {
+const AnimationOptimizations = {
   ANIMATION_CONFIG,
   createOptimizedTimeline,
   fadeIn,
@@ -382,3 +382,5 @@ export default {
   motionPreference,
   initializeAnimationOptimizations
 }
+
+export default AnimationOptimizations

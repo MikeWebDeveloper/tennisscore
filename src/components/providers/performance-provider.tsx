@@ -3,12 +3,14 @@
  * Coordinates all performance optimizations across the tennis scoring app
  */
 
+"use client"
+
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { performanceMonitor, PerformanceSummary } from '@/lib/performance/web-vitals'
 import { performanceTracker } from '@/lib/monitoring/performance-tracker'
-import { useTennisPerformance } from '@/hooks/use-performance'
+import { useTennisPerformance } from '@/hooks/use-performance-monitoring'
 
 interface PerformanceContextType {
   webVitals: PerformanceSummary
@@ -264,7 +266,7 @@ export function withPerformanceTracking<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   componentName: string
 ) {
-  return React.memo((props: P) => {
+  const WrappedWithPerformance = React.memo((props: P) => {
     const { trackCustomMetric } = usePerformance()
     const renderStart = React.useRef<number>(0)
 
@@ -283,4 +285,7 @@ export function withPerformanceTracking<P extends object>(
 
     return <WrappedComponent {...props} />
   })
+
+  WrappedWithPerformance.displayName = `withPerformanceTracking(${componentName})`
+  return WrappedWithPerformance
 }

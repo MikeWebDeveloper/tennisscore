@@ -270,7 +270,7 @@ export const useMemoWithMetrics = <T>(
     
     previousDeps.current = deps
     return result
-  }, deps || [])
+  }, [factory, computationName, ...(deps || [])])
 }
 
 /**
@@ -303,7 +303,7 @@ export const useCallbackWithMetrics = <T extends (...args: any[]) => any>(
     }
     
     return result
-  }, deps) as T
+  }, [callback, callbackName, ...deps]) as T
 }
 
 /**

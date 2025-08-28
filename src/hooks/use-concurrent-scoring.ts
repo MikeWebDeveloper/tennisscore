@@ -130,7 +130,7 @@ export function useConcurrentScoring({
       // Server update logic would go here
       // This runs with lower priority to not block UI
     })
-  }, [initialPointLog, onScoreUpdate])
+  }, [initialPointLog, onScoreUpdate, matchFormat])
 
   // Memoized state for optimal re-renders
   const scoringState = useMemo((): ConcurrentScoringState => ({
