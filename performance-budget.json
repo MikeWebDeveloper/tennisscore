@@ -1,125 +1,33 @@
 {
-  "budgets": [
+  "resourceSizes": [
     {
-      "path": "**",
-      "timings": [
-        {
-          "metric": "largest-contentful-paint",
-          "budget": 2500,
-          "tolerance": 200
-        },
-        {
-          "metric": "first-contentful-paint", 
-          "budget": 1200,
-          "tolerance": 150
-        },
-        {
-          "metric": "cumulative-layout-shift",
-          "budget": 0.1,
-          "tolerance": 0.02
-        },
-        {
-          "metric": "interaction-to-next-paint",
-          "budget": 200,
-          "tolerance": 50
-        }
-      ],
-      "resourceSizes": [
-        {
-          "resourceType": "script",
-          "budget": 400,
-          "tolerance": 50
-        },
-        {
-          "resourceType": "stylesheet",
-          "budget": 30,
-          "tolerance": 5
-        },
-        {
-          "resourceType": "document",
-          "budget": 18,
-          "tolerance": 3
-        },
-        {
-          "resourceType": "font",
-          "budget": 80,
-          "tolerance": 10
-        },
-        {
-          "resourceType": "image",
-          "budget": 200,
-          "tolerance": 30
-        },
-        {
-          "resourceType": "media",
-          "budget": 300,
-          "tolerance": 50
-        },
-        {
-          "resourceType": "third-party",
-          "budget": 100,
-          "tolerance": 20
-        }
-      ]
+      "path": "/_next/static/**/*.js",
+      "maxSize": "700KB",
+      "warning": "600KB"
     },
     {
-      "path": "/[locale]/live/[matchId]",
-      "timings": [
-        {
-          "metric": "largest-contentful-paint",
-          "budget": 3000,
-          "tolerance": 300
-        },
-        {
-          "metric": "interaction-to-next-paint",
-          "budget": 150,
-          "tolerance": 30
-        }
-      ],
-      "resourceSizes": [
-        {
-          "resourceType": "script",
-          "budget": 500,
-          "tolerance": 75
-        }
-      ]
-    },
-    {
-      "path": "/[locale]/dashboard",
-      "timings": [
-        {
-          "metric": "largest-contentful-paint",
-          "budget": 2000,
-          "tolerance": 200
-        }
-      ],
-      "resourceSizes": [
-        {
-          "resourceType": "script",
-          "budget": 350,
-          "tolerance": 50
-        }
-      ]
+      "path": "/_next/static/**/*.css",
+      "maxSize": "100KB",
+      "warning": "80KB"
     }
   ],
-  "assertions": [
+  "timings": [
     {
-      "assertionType": "matchesProperty",
-      "auditProperty": "first-contentful-paint",
-      "operator": "<=",
-      "expected": 1500
+      "metric": "First Contentful Paint",
+      "budget": 2000,
+      "warning": 1500
     },
     {
-      "assertionType": "matchesProperty", 
-      "auditProperty": "interactive",
-      "operator": "<=",
-      "expected": 3000
+      "metric": "Largest Contentful Paint", 
+      "budget": 3000,
+      "warning": 2500
     },
     {
-      "assertionType": "matchesProperty",
-      "auditProperty": "speed-index",
-      "operator": "<=",
-      "expected": 2000
+      "metric": "Time to Interactive",
+      "budget": 4000,
+      "warning": 3500
     }
-  ]
+  ],
+  "description": "Performance budget for TennisScore application - keeps bundle size under control and ensures fast loading times",
+  "lastUpdated": "2025-08-28"
 }

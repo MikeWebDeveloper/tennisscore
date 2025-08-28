@@ -5,33 +5,19 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporarily disable for build optimization focus
+  // Build quality checks enabled
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
-  // Advanced experimental features for React 19 compatibility
+  // Experimental features compatible with Next.js 14
   experimental: {
-    // Package-level optimizations for better tree shaking
-    optimizePackageImports: [
-      '@radix-ui/react-icons', 
-      'lucide-react',
-      'framer-motion/dom',
-      'date-fns',
-      '@tanstack/react-query',
-      'zustand',
-      'react-hook-form'
-    ],
     serverActions: {
       bodySizeLimit: '12mb', // Profile picture upload optimization
     },
-    // React 19 optimizations - disabled experimental features for stability
-    reactCompiler: false,
-    ppr: false,
-    cacheComponents: false, // Renamed from dynamicIO
   },
   
   // Enhanced webpack configuration for build performance
@@ -155,13 +141,11 @@ const nextConfig = {
     return config;
   },
   
-  // React 19 optimized compiler options
+  // Production compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn']
     } : false,
-    // Enable React refresh in development
-    reactRemoveProperties: false,
   },
   
   // Optimized image configuration for Appwrite
@@ -193,12 +177,81 @@ const nextConfig = {
   // Standalone output for optimal production deployment
   output: 'standalone',
   
-  // Performance-focused headers
+  // Comprehensive security and performance-focused headers
   async headers() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Build Content Security Policy for production security
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.live",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.com",
+      "connect-src 'self' https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.live wss: ws:",
+      "media-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "frame-src 'none'",
+      "upgrade-insecure-requests"
+    ].join('; ');
+    
     return [
-      // Security headers
+      // Comprehensive security headers for all routes
       {
         source: '/(.*)',
+        headers: [
+          // Content Security Policy - XSS protection
+          {
+            key: 'Content-Security-Policy',
+            value: isProduction ? csp : "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: *; connect-src *;",
+          },
+          // Prevent MIME type sniffing
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // Prevent clickjacking
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          // XSS Protection (legacy browsers)
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          // Referrer policy for privacy
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // HSTS - Force HTTPS in production
+          ...(isProduction ? [{
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          }] : []),
+          // Permissions Policy - Limit browser features
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+          },
+          // Additional security headers
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none',
+          },
+        ],
+      },
+      // API routes security
+      {
+        source: '/api/(.*)',
         headers: [
           {
             key: 'X-Content-Type-Options',
@@ -208,13 +261,14 @@ const nextConfig = {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
+          // API rate limiting headers
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: 'X-RateLimit-Limit',
+            value: '100',
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: 'X-RateLimit-Remaining',
+            value: '100',
           },
         ],
       },
@@ -279,8 +333,8 @@ const nextConfig = {
     pagesBufferLength: 2,
   },
   
-  // Fix workspace root warning
-  outputFileTracingRoot: process.cwd(),
+  // Output configuration
+  // outputFileTracingRoot removed - not supported in Next.js 14
   
   // Performance monitoring
   logging: {
