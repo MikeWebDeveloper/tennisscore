@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { 
@@ -9,13 +9,11 @@ import {
   Target, 
   BarChart3,
   Loader2,
-  Trash2,
-  Sheet,
-  Users
+  Sheet
 } from 'lucide-react'
 
 // Match Settings Dialog skeleton
-const MatchSettingsDialogSkeleton = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+const MatchSettingsDialogSkeleton = ({ isOpen: _isOpen, onClose: _onClose }: { isOpen: boolean; onClose: () => void }) => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div className="bg-background rounded-lg p-6 max-w-lg w-full mx-4">
       <div className="flex items-center gap-2 mb-4">
@@ -46,7 +44,7 @@ const MatchSettingsDialogSkeleton = ({ isOpen, onClose }: { isOpen: boolean; onC
 )
 
 // Simple Stats Popup skeleton
-const SimpleStatsPopupSkeleton = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+const SimpleStatsPopupSkeleton = ({ isOpen: _isOpen, onClose: _onClose }: { isOpen: boolean; onClose: () => void }) => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4">
       <div className="flex items-center justify-between mb-4">
@@ -88,7 +86,7 @@ const MatchTimerDisplaySkeleton = () => (
 )
 
 // Point Detail Sheet skeleton
-const PointDetailSheetSkeleton = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+const PointDetailSheetSkeleton = ({ isOpen: _isOpen, onClose: _onClose }: { isOpen: boolean; onClose: () => void }) => (
   <div className="fixed inset-y-0 right-0 bg-background border-l w-96 z-50 p-6">
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2">

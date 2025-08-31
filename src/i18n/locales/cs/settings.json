@@ -14,5 +14,22 @@
   "checkUpdatesDescription": "Zkontrolovat aktualizace: Pro ruční kontrolu nových verzí aplikace",
   "installAppDescription": "Instalovat aplikaci: Pro lepší výkon a offline přístup",
   "soundSettings": "Nastavení zvuku",
-  "customizeAudioPreferences": "Přizpůsobte si zvukové preference pro bodování zápasů"
+  "customizeAudioPreferences": "Přizpůsobte si zvukové preference pro bodování zápasů",
+  "soundEffects": "Zvukové efekty",
+  "enableSoundEffects": "Povolit zvukové efekty",
+  "turnOnAudioFeedback": "Zapnout zvukovou zpětnou vazbu pro události zápasu",
+  "volume": "Hlasitost",
+  "soundCategories": "Kategorie zvuků",
+  "pointSounds": "Zvuky bodů",
+  "pointSoundsDescription": "Základní bodování, esa, dvojchyby",
+  "criticalPointSounds": "Zvuky kritických bodů",
+  "criticalPointSoundsDescription": "Brejkboly, setboly, mečboly",
+  "matchEventSounds": "Zvuky událostí zápasu",
+  "matchEventSoundsDescription": "Vyhraná hra, vyhraný set, dokončení zápasu",
+  "testDifferentSounds": "Vyzkoušet různé zvuky",
+  "ace": "Eso",
+  "doubleFault": "Dvojchyba",
+  "matchPoint": "Mečbol",
+  "matchWon": "Vyhraný zápas",
+  "soundEffectsInfo": "💡 Zvukové efekty se automaticky inicializují, když začnete bodovat. Hlasitost a nastavení se ukládají automaticky."
 }

@@ -1,6 +1,7 @@
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { notFound } from "next/navigation"
 import { getMessages } from "next-intl/server"
+// @ts-ignore - NextIntlClientProvider exists at runtime but TS can't find it
 import { NextIntlClientProvider } from "next-intl"
 import { routing } from "@/i18n/routing"
 import { ThemeProvider } from "@/components/providers/theme-provider"

@@ -21,7 +21,7 @@ function SimplePieChart({ data }: { data: Array<{ name: string; value: number; f
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-48 max-w-[200px] mx-auto">
-      {data.map((item, index) => {
+      {data.map((item) => {
         const percentage = (item.value / total) * 100
         const startAngle = (cumulativePercentage * 360) / 100
         const endAngle = ((cumulativePercentage + percentage) * 360) / 100

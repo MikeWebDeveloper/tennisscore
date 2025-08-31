@@ -13,6 +13,27 @@ import { Crosshair } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/i18n"
 import { PointDetail } from "@/lib/types"
+import {
+  hasPressureContext,
+  hasClutchSituation
+} from '@/lib/types/tennis-scoring-types'
+import type { 
+  MomentumContext, 
+  EnhancedServeData,
+  RallyCharacteristics as StoreRallyCharacteristics
+} from '@/stores/matchStore'
+import type { StreakAnalysis } from '@/lib/utils/tennis-scoring'
+
+// Define tactical context type from PointDetail interface
+type TacticalContext = {
+  approachShot?: boolean
+  netPosition?: boolean
+  pressureSituation?: boolean
+  tacticalImportance?: 1 | 2 | 3 | 4 | 5
+  gameState?: 'routine' | 'important' | 'crucial' | 'decisive'
+  setContext?: 'early' | 'middle' | 'late' | 'decisive'
+  matchContext?: 'early' | 'middle' | 'late' | 'decisive'
+}
 import { calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { formatPlayerFromObject } from "@/lib/utils"
 // import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
@@ -1227,20 +1248,20 @@ export function MatchStatsComponentSimpleFixed({
               <CardContent className="space-y-4">
                 {(() => {
                   const p1PressurePoints = pointLog.filter(p => 
-                    'pressureContext' in p && p.pressureContext && (p.pressureContext as any).level >= 3
+                    hasPressureContext(p) && (p as any).pressureContext && (p as any).pressureContext.level >= 3
                   )
                   const p2PressurePoints = pointLog.filter(p => 
-                    'pressureContext' in p && p.pressureContext && (p.pressureContext as any).level >= 3
+                    hasPressureContext(p) && (p as any).pressureContext && (p as any).pressureContext.level >= 3
                   )
                   
                   const p1Won = p1PressurePoints.filter(p => p.winner === 'p1').length
                   const p2Won = p2PressurePoints.filter(p => p.winner === 'p2').length
                   
                   const p1ClutchPoints = pointLog.filter(p => 
-                    'clutchSituation' in p && p.clutchSituation && (p.clutchSituation as any).level >= 3
+                    hasClutchSituation(p) && (p as any).clutchSituation && (p as any).clutchSituation.level >= 3
                   )
                   const p2ClutchPoints = pointLog.filter(p => 
-                    'clutchSituation' in p && p.clutchSituation && (p.clutchSituation as any).level >= 3
+                    hasClutchSituation(p) && (p as any).clutchSituation && (p as any).clutchSituation.level >= 3
                   )
                   
                   const p1ClutchWon = p1ClutchPoints.filter(p => p.winner === 'p1').length
@@ -1297,30 +1318,36 @@ export function MatchStatsComponentSimpleFixed({
               <CardContent className="space-y-4">
                 {(() => {
                   const gameChangingPoints = pointLog.filter(p => 
-                    'momentumContext' in p && p.momentumContext && (p.momentumContext as any).isGameChanger
+                    'momentumContext' in p && p.momentumContext && 
+                    (p.momentumContext as MomentumContext).isGameChanger
                   )
                   
                   const p1GameChangers = gameChangingPoints.filter(p => p.winner === 'p1').length
                   const p2GameChangers = gameChangingPoints.filter(p => p.winner === 'p2').length
                   
                   const momentumShifts = pointLog.filter(p => 
-                    'momentumContext' in p && p.momentumContext && (p.momentumContext as any).shift
+                    'momentumContext' in p && p.momentumContext && 
+                    (p.momentumContext as MomentumContext).shift
                   )
                   
                   const p1MomentumShifts = momentumShifts.filter(p => 
-                    'momentumContext' in p && (p.momentumContext as any)?.momentumDirection === 'p1'
+                    'momentumContext' in p && p.momentumContext &&
+                    (p.momentumContext as MomentumContext).momentumDirection === 'p1'
                   ).length
                   const p2MomentumShifts = momentumShifts.filter(p => 
-                    'momentumContext' in p && (p.momentumContext as any)?.momentumDirection === 'p2'
+                    'momentumContext' in p && p.momentumContext &&
+                    (p.momentumContext as MomentumContext).momentumDirection === 'p2'
                   ).length
                   
                   const longestStreakP1 = Math.max(...pointLog.map(p => 
-                    'streakAnalysis' in p && (p.streakAnalysis as any)?.currentStreak?.player === 'p1' ? 
-                    (p.streakAnalysis as any).currentStreak.length : 0
+                    'streakAnalysis' in p && p.streakAnalysis && 
+                    (p.streakAnalysis as StreakAnalysis).currentStreak?.player === 'p1' ? 
+                    (p.streakAnalysis as StreakAnalysis).currentStreak.length : 0
                   ))
                   const longestStreakP2 = Math.max(...pointLog.map(p => 
-                    'streakAnalysis' in p && (p.streakAnalysis as any)?.currentStreak?.player === 'p2' ? 
-                    (p.streakAnalysis as any).currentStreak.length : 0
+                    'streakAnalysis' in p && p.streakAnalysis && 
+                    (p.streakAnalysis as StreakAnalysis).currentStreak?.player === 'p2' ? 
+                    (p.streakAnalysis as StreakAnalysis).currentStreak.length : 0
                   ))
                   
                   return (
@@ -1365,17 +1392,32 @@ export function MatchStatsComponentSimpleFixed({
                   const p1Serves = pointLog.filter(p => p.server === 'p1' && 'enhancedServeData' in p && p.enhancedServeData)
                   const p2Serves = pointLog.filter(p => p.server === 'p2' && 'enhancedServeData' in p && p.enhancedServeData)
                   
-                  const p1Quality = p1Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.quality && (p.enhancedServeData as any).quality >= 4).length
-                  const p2Quality = p2Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.quality && (p.enhancedServeData as any).quality >= 4).length
+                  const p1Quality = p1Serves.filter(p => 
+                    'enhancedServeData' in p && p.enhancedServeData && 
+                    (p.enhancedServeData as EnhancedServeData).quality && 
+                    (p.enhancedServeData as EnhancedServeData).quality! >= 4
+                  ).length
+                  const p2Quality = p2Serves.filter(p => 
+                    'enhancedServeData' in p && p.enhancedServeData && 
+                    (p.enhancedServeData as EnhancedServeData).quality && 
+                    (p.enhancedServeData as EnhancedServeData).quality! >= 4
+                  ).length
                   
-                  const p1Effective = p1Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.effectiveness === 'strong').length
-                  const p2Effective = p2Serves.filter(p => 'enhancedServeData' in p && (p.enhancedServeData as any)?.effectiveness === 'strong').length
+                  const p1Effective = p1Serves.filter(p => 
+                    'enhancedServeData' in p && p.enhancedServeData && 
+                    (p.enhancedServeData as EnhancedServeData).effectiveness === 'strong'
+                  ).length
+                  const p2Effective = p2Serves.filter(p => 
+                    'enhancedServeData' in p && p.enhancedServeData && 
+                    (p.enhancedServeData as EnhancedServeData).effectiveness === 'strong'
+                  ).length
                   
                   const getSpinBreakdown = (serves: PointDetail[]) => {
                     const spins = { flat: 0, slice: 0, kick: 0, twist: 0 }
                     serves.forEach(p => {
-                      if ('enhancedServeData' in p && (p.enhancedServeData as any)?.spin) {
-                        const spin = (p.enhancedServeData as any).spin as keyof typeof spins
+                      if ('enhancedServeData' in p && p.enhancedServeData && 
+                          (p.enhancedServeData as EnhancedServeData).spin) {
+                        const spin = (p.enhancedServeData as EnhancedServeData).spin as keyof typeof spins
                         if (spin in spins) {
                           spins[spin]++
                         }
@@ -1444,18 +1486,33 @@ export function MatchStatsComponentSimpleFixed({
                 {(() => {
                   const rallies = pointLog.filter(p => 'rallyCharacteristics' in p && p.rallyCharacteristics)
                   
-                  const p1Dominant = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.dominantPlayer === 'p1').length
-                  const p2Dominant = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.dominantPlayer === 'p2').length
+                  const p1Dominant = rallies.filter(p => 
+                    'rallyCharacteristics' in p && p.rallyCharacteristics && 
+                    (p.rallyCharacteristics as StoreRallyCharacteristics).dominantPlayer === 'p1'
+                  ).length
+                  const p2Dominant = rallies.filter(p => 
+                    'rallyCharacteristics' in p && p.rallyCharacteristics && 
+                    (p.rallyCharacteristics as StoreRallyCharacteristics).dominantPlayer === 'p2'
+                  ).length
                   
-                  const baselineRallies = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.type === 'baseline')
+                  const baselineRallies = rallies.filter(p => 
+                    'rallyCharacteristics' in p && p.rallyCharacteristics && 
+                    (p.rallyCharacteristics as StoreRallyCharacteristics).type === 'baseline'
+                  )
                   const p1BaselineWins = baselineRallies.filter(p => p.winner === 'p1').length
                   const p2BaselineWins = baselineRallies.filter(p => p.winner === 'p2').length
                   
-                  const netPlays = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.type === 'net-play')
+                  const netPlays = rallies.filter(p => 
+                    'rallyCharacteristics' in p && p.rallyCharacteristics && 
+                    (p.rallyCharacteristics as StoreRallyCharacteristics).type === 'net-play'
+                  )
                   const p1NetWins = netPlays.filter(p => p.winner === 'p1').length
                   const p2NetWins = netPlays.filter(p => p.winner === 'p2').length
                   
-                  const aggressiveRallies = rallies.filter(p => 'rallyCharacteristics' in p && (p.rallyCharacteristics as any)?.character === 'aggressive')
+                  const aggressiveRallies = rallies.filter(p => 
+                    'rallyCharacteristics' in p && p.rallyCharacteristics && 
+                    (p.rallyCharacteristics as StoreRallyCharacteristics).character === 'aggressive'
+                  )
                   const p1AggressiveWins = aggressiveRallies.filter(p => p.winner === 'p1').length
                   const p2AggressiveWins = aggressiveRallies.filter(p => p.winner === 'p2').length
                   
@@ -1510,27 +1567,35 @@ export function MatchStatsComponentSimpleFixed({
                   const tacticalPoints = pointLog.filter(p => 'tacticalContext' in p && p.tacticalContext)
                   
                   const p1NetApproaches = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && (p.tacticalContext as any)?.approachShot && p.winner === 'p1'
+                    'tacticalContext' in p && p.tacticalContext && 
+                    (p.tacticalContext as TacticalContext).approachShot && p.winner === 'p1'
                   ).length
                   const p2NetApproaches = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && (p.tacticalContext as any)?.approachShot && p.winner === 'p2'
+                    'tacticalContext' in p && p.tacticalContext && 
+                    (p.tacticalContext as TacticalContext).approachShot && p.winner === 'p2'
                   ).length
                   
                   const p1NetPositions = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && (p.tacticalContext as any)?.netPosition && p.winner === 'p1'
+                    'tacticalContext' in p && p.tacticalContext && 
+                    (p.tacticalContext as TacticalContext).netPosition && p.winner === 'p1'
                   ).length
                   const p2NetPositions = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && (p.tacticalContext as any)?.netPosition && p.winner === 'p2'
+                    'tacticalContext' in p && p.tacticalContext && 
+                    (p.tacticalContext as TacticalContext).netPosition && p.winner === 'p2'
                   ).length
                   
                   const crucialPoints = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && ((p.tacticalContext as any)?.gameState === 'crucial' || (p.tacticalContext as any)?.gameState === 'decisive')
+                    'tacticalContext' in p && p.tacticalContext && 
+                    ((p.tacticalContext as TacticalContext).gameState === 'crucial' || 
+                     (p.tacticalContext as TacticalContext).gameState === 'decisive')
                   )
                   const p1CrucialWins = crucialPoints.filter(p => p.winner === 'p1').length
                   const p2CrucialWins = crucialPoints.filter(p => p.winner === 'p2').length
                   
                   const highImportance = tacticalPoints.filter(p => 
-                    'tacticalContext' in p && (p.tacticalContext as any)?.tacticalImportance && (p.tacticalContext as any).tacticalImportance >= 4
+                    'tacticalContext' in p && p.tacticalContext && 
+                    (p.tacticalContext as TacticalContext).tacticalImportance && 
+                    (p.tacticalContext as TacticalContext).tacticalImportance! >= 4
                   )
                   const p1HighImportanceWins = highImportance.filter(p => p.winner === 'p1').length
                   const p2HighImportanceWins = highImportance.filter(p => p.winner === 'p2').length

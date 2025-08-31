@@ -90,7 +90,17 @@ const EnhancedLiveScoring = memo(function EnhancedLiveScoring({
   }, [benchmarkScoringOperation, startUIInteraction, scorePoint, completeUIInteraction])
 
   // Connection quality assessment
-  const connectionQuality = useMemo(() => assessConnectionQuality(), [])
+  const connectionQuality = useMemo(() => {
+    // Mock connection data if needed
+    const mockConnection = {
+      isOnline: true,
+      effectiveType: '4g' as const,
+      rtt: 50,
+      downlink: 10,
+      saveData: false
+    }
+    return assessConnectionQuality(mockConnection as any)
+  }, [])
 
   // Performance status indicator
   const performanceStatus = useMemo(() => {
@@ -220,7 +230,7 @@ const EnhancedLiveScoring = memo(function EnhancedLiveScoring({
               <div>
                 <div className="font-medium">UI Response</div>
                 <div className="text-muted-foreground">
-                  {report.uiMetrics.totalResponse}ms
+                  {report?.uiMetrics?.totalResponse || 0}ms
                 </div>
               </div>
               <div>

@@ -10,7 +10,8 @@ import { Link } from "@/i18n/navigation"
 import { useTranslations } from "@/i18n"
 
 export function MainPlayerSetupPrompt() {
-  const t = useTranslations('common')
+  const t = useTranslations('dashboard')
+  const navigationT = useTranslations('navigation')
   
   return (
     <motion.div
@@ -44,7 +45,7 @@ export function MainPlayerSetupPrompt() {
             <Button asChild className="min-w-[140px]">
               <Link href="/players">
                 <Users className="h-4 w-4 mr-2" />
-                {t("managePlayers")}
+                {navigationT("managePlayers")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>

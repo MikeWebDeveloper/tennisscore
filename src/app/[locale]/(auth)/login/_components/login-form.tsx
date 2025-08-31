@@ -44,9 +44,17 @@ function SubmitButton() {
   )
 }
 
+type FormState = {
+  success: boolean;
+  error?: string;
+} | {
+  success?: boolean;
+  error: string;
+} | undefined;
+
 export function LoginForm() {
-  const [state, setState] = useState(undefined)
-  const [isPending, setIsPending] = useState(false)
+  const [state, setState] = useState<FormState>(undefined)
+  const [, setIsPending] = useState(false)
   const t = useTranslations('auth')
   const [mounted, setMounted] = useState(false)
 
@@ -56,7 +64,7 @@ export function LoginForm() {
       const result = await signInAction(state, formData)
       setState(result)
     } catch (error) {
-      setState(error)
+      setState({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
     } finally {
       setIsPending(false)
     }

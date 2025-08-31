@@ -38,9 +38,21 @@ import {
 } from 'lucide-react'
 import { useMemoryManagement } from '@/hooks/use-memory-management'
 import { 
-  MemoryMetrics,
+  MemoryMetrics as UtilsMemoryMetrics,
   MemoryLeakDetection
 } from '@/lib/utils/memory-management'
+
+// Use the hook's MemoryMetrics type
+interface MemoryMetrics {
+  heapUsed: number
+  heapTotal: number
+  external: number
+  arrayBuffers: number
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+  timestamp: number
+}
 import { logger } from '@/lib/utils/logger'
 
 interface MemoryDashboardProps {
@@ -73,19 +85,17 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
     needsOptimization,
     triggerGarbageCollection,
     updateMemoryState
-  } = useMemoryManagement({
-    enableMonitoring: enableRealTime,
-    enableLeakDetection: true,
-    enableAutoCleanup: true,
-    componentName: 'MemoryDashboard',
-    monitoringInterval: refreshInterval
-  })
+  } = useMemoryManagement()
 
   // Update memory history
   useEffect(() => {
     if (currentMetrics) {
+      const convertedMetrics: MemoryMetrics = {
+        ...currentMetrics,
+        timestamp: Date.now()
+      }
       setMemoryHistory(prev => {
-        const newHistory = [...prev, currentMetrics]
+        const newHistory = [...prev, convertedMetrics]
         // Keep only last 50 entries
         return newHistory.length > 50 ? newHistory.slice(-50) : newHistory
       })
@@ -169,11 +179,11 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
     used: metric.usedJSHeapSize / (1024 * 1024),
     total: metric.totalJSHeapSize / (1024 * 1024),
     limit: metric.jsHeapSizeLimit / (1024 * 1024),
-    percentage: metric.memoryUsagePercent
+    percentage: (metric.usedJSHeapSize / metric.totalJSHeapSize) * 100
   }))
 
   // Leak type distribution
-  const leakTypeData = leakDetections.reduce((acc, leak) => {
+  const leakTypeData = leakDetections.reduce((acc: Record<string, number>, leak: any) => {
     acc[leak.leakType] = (acc[leak.leakType] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -184,7 +194,7 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
   }))
 
   // Cleanup function distribution
-  const cleanupTypeData = cleanupFunctions.reduce((acc, cleanup) => {
+  const cleanupTypeData = cleanupFunctions.reduce((acc: Record<string, number>, cleanup: any) => {
     acc[cleanup.type] = (acc[cleanup.type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -386,7 +396,7 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({name, percent}) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -428,7 +438,7 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {leakDetections.map((leak, index) => (
+                {leakDetections.map((leak: any, index: number) => (
                   <div 
                     key={index} 
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
@@ -473,7 +483,7 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {cleanupFunctions.map((cleanup, index) => (
+                {cleanupFunctions.map((cleanup: any, index: number) => (
                   <div 
                     key={index} 
                     className="flex items-center justify-between p-3 border rounded-lg"
@@ -545,7 +555,7 @@ export const MemoryDashboard: React.FC<MemoryDashboardProps> = ({
                   <div>
                     <h4 className="font-medium mb-2">Optimization Suggestions</h4>
                     <div className="space-y-2">
-                      {optimizationSuggestions.map((suggestion, index) => (
+                      {optimizationSuggestions.map((suggestion: string, index: number) => (
                         <div key={index} className="text-sm text-muted-foreground">
                           • {suggestion}
                         </div>

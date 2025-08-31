@@ -74,17 +74,17 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
       '7d': 7 * 24 * 60 * 60 * 1000
     }[timeRange]
 
-    const timeFiltered = metrics.filter(m => 
+    const timeFiltered = metrics.filter((m: any) => 
       now - m.timestamp < timeRangeMs
     )
 
     switch (filterType) {
       case 'slow':
-        return timeFiltered.filter(m => m.executionTime > 1000)
+        return timeFiltered.filter((m: any) => m.executionTime > 1000)
       case 'cached':
-        return timeFiltered.filter(m => m.cacheHit)
+        return timeFiltered.filter((m: any) => m.cacheHit)
       case 'failed':
-        return timeFiltered.filter(m => m.executionTime === 0) // Failed queries
+        return timeFiltered.filter((m: any) => m.executionTime === 0) // Failed queries
       default:
         return timeFiltered
     }
@@ -102,10 +102,10 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
       }
     }
 
-    const totalExecutionTime = filteredMetrics.reduce((sum, m) => sum + m.executionTime, 0)
-    const cacheHits = filteredMetrics.filter(m => m.cacheHit).length
-    const slowQueries = filteredMetrics.filter(m => m.executionTime > 1000).length
-    const deduplicationSavings = filteredMetrics.reduce((sum, m) => sum + m.deduplicationSavings, 0)
+    const totalExecutionTime = filteredMetrics.reduce((sum: number, m: any) => sum + m.executionTime, 0)
+    const cacheHits = filteredMetrics.filter((m: any) => m.cacheHit).length
+    const slowQueries = filteredMetrics.filter((m: any) => m.executionTime > 1000).length
+    const deduplicationSavings = filteredMetrics.reduce((sum: number, m: any) => sum + m.deduplicationSavings, 0)
 
     return {
       avgExecutionTime: totalExecutionTime / filteredMetrics.length,
@@ -120,7 +120,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
   const executionTimeData = useMemo(() => {
     return filteredMetrics
       .slice(-50) // Last 50 queries
-      .map((metric, index) => ({
+      .map((metric: any, index: number) => ({
         index,
         time: new Date(metric.timestamp).toLocaleTimeString(),
         executionTime: metric.executionTime,
@@ -131,7 +131,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
 
   // Query distribution data
   const queryDistributionData = useMemo(() => {
-    const distribution = filteredMetrics.reduce((acc, metric) => {
+    const distribution = filteredMetrics.reduce((acc: Record<string, number>, metric: any) => {
       const bucket = metric.executionTime < 100 ? 'Fast (<100ms)' :
                     metric.executionTime < 500 ? 'Medium (100-500ms)' :
                     metric.executionTime < 1000 ? 'Slow (500ms-1s)' :
@@ -149,7 +149,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
 
   // Cache performance data
   const cachePerformanceData = useMemo(() => {
-    const cacheHits = filteredMetrics.filter(m => m.cacheHit).length
+    const cacheHits = filteredMetrics.filter((m: any) => m.cacheHit).length
     const cacheMisses = filteredMetrics.length - cacheHits
 
     return [
@@ -237,7 +237,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
             <Database className="h-4 w-4" />
             Clear Cache
           </Button>
-          {enableExport && (
+          {false && (
             <Button 
               variant="outline" 
               size="sm" 
@@ -361,7 +361,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
           <AlertDescription>
             <strong>Optimization Recommendations:</strong>
             <ul className="mt-2 space-y-1">
-              {recommendations.map((rec, index) => (
+              {recommendations.map((rec: string, index: number) => (
                 <li key={index} className="text-sm">• {rec}</li>
               ))}
             </ul>
@@ -417,7 +417,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({name, percent}) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -529,7 +529,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {filteredMetrics.slice(-20).reverse().map((metric, index) => (
+                {filteredMetrics.slice(-20).reverse().map((metric: any, index: number) => (
                   <div 
                     key={index} 
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
@@ -584,25 +584,25 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
                       <div className="flex justify-between">
                         <span>Fast Queries (&lt;100ms):</span>
                         <span className="font-mono text-green-600">
-                          {filteredMetrics.filter(m => m.executionTime < 100).length}
+                          {filteredMetrics.filter((m: any) => m.executionTime < 100).length}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Medium Queries (100-500ms):</span>
                         <span className="font-mono text-yellow-600">
-                          {filteredMetrics.filter(m => m.executionTime >= 100 && m.executionTime < 500).length}
+                          {filteredMetrics.filter((m: any) => m.executionTime >= 100 && m.executionTime < 500).length}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Slow Queries (500ms-1s):</span>
                         <span className="font-mono text-orange-600">
-                          {filteredMetrics.filter(m => m.executionTime >= 500 && m.executionTime < 1000).length}
+                          {filteredMetrics.filter((m: any) => m.executionTime >= 500 && m.executionTime < 1000).length}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Very Slow Queries (&gt;1s):</span>
                         <span className="font-mono text-red-600">
-                          {filteredMetrics.filter(m => m.executionTime >= 1000).length}
+                          {filteredMetrics.filter((m: any) => m.executionTime >= 1000).length}
                         </span>
                       </div>
                     </div>
@@ -614,7 +614,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
                       <div className="flex justify-between">
                         <span>Cache Hits:</span>
                         <span className="font-mono text-green-600">
-                          {filteredMetrics.filter(m => m.cacheHit).length}
+                          {filteredMetrics.filter((m: any) => m.cacheHit).length}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -626,7 +626,7 @@ export const QueryAnalyticsDashboard: React.FC<QueryAnalyticsDashboardProps> = (
                       <div className="flex justify-between">
                         <span>Batch Optimized:</span>
                         <span className="font-mono text-purple-600">
-                          {filteredMetrics.filter(m => m.batchOptimization).length}
+                          {filteredMetrics.filter((m: any) => m.batchOptimization).length}
                         </span>
                       </div>
                     </div>

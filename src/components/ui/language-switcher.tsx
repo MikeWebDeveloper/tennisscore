@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname } from '@/i18n/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale } from '@/i18n'
 import { routing } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {

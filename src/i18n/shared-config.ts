@@ -38,43 +38,13 @@ export function validateLocale(locale: string | undefined): SupportedLocale {
 
 /**
  * Load all namespace translations for a given locale
- * Dynamically imports all translation files and returns organized structure
+ * Now uses unified message files for better TypeScript integration
  */
 export async function loadNamespaceTranslations(validatedLocale: SupportedLocale) {
-  // Load all namespace translations in parallel for optimal performance
-  const [
-    admin,
-    auth,
-    common,
-    dashboard,
-    match,
-    navigation,
-    player,
-    settings,
-    statistics
-  ] = await Promise.all([
-    import(`./locales/${validatedLocale}/admin.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/auth.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/common.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/dashboard.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/match.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/navigation.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/player.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/settings.json`).then(m => m.default),
-    import(`./locales/${validatedLocale}/statistics.json`).then(m => m.default),
-  ])
-
-  return {
-    admin,
-    auth,
-    common,
-    dashboard,
-    match,
-    navigation,
-    player,
-    settings,
-    statistics
-  }
+  // Import unified messages file for optimal TypeScript support
+  const messages = await import(`./messages/${validatedLocale}.json`).then(m => m.default)
+  
+  return messages
 }
 
 /**

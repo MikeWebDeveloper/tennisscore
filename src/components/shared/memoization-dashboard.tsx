@@ -274,7 +274,7 @@ export const MemoizationDashboard: React.FC<MemoizationDashboardProps> = ({
             <RefreshCw className="h-4 w-4" />
             Clear Data
           </Button>
-          {enableExport && (
+          {false && (
             <Button 
               variant="outline" 
               size="sm" 
@@ -476,7 +476,7 @@ export const MemoizationDashboard: React.FC<MemoizationDashboardProps> = ({
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({name, percent}) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -568,7 +568,7 @@ export const MemoizationDashboard: React.FC<MemoizationDashboardProps> = ({
                           </div>
                           <div>
                             <span className="text-muted-foreground">Last Render:</span>
-                            <p className="font-mono">{formatTime(metric.lastRenderTime)}</p>
+                            <p className="font-mono">{formatTime(metric.lastRender)}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Slow Comparisons:</span>

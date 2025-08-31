@@ -5,6 +5,8 @@
 
 'use client'
 
+import React from 'react'
+
 export interface WebVitalMetric {
   name: 'LCP' | 'INP' | 'CLS' | 'FID' | 'TTFB' | 'FCP'
   value: number
@@ -385,6 +387,10 @@ class WebVitalsMonitor {
     this.recordMetric(metric)
   }
 
+  public getPerformanceReport(): WebVitalsReport {
+    return this.generateReport()
+  }
+
   public destroy(): void {
     this.stopMonitoring()
     this.clearMetrics()
@@ -392,13 +398,13 @@ class WebVitalsMonitor {
 }
 
 // Global instance
-let webVitalsMonitor: WebVitalsMonitor | null = null
+let globalWebVitalsMonitor: WebVitalsMonitor | null = null
 
 export const getWebVitalsMonitor = (): WebVitalsMonitor => {
-  if (!webVitalsMonitor) {
-    webVitalsMonitor = new WebVitalsMonitor()
+  if (!globalWebVitalsMonitor) {
+    globalWebVitalsMonitor = new WebVitalsMonitor()
   }
-  return webVitalsMonitor
+  return globalWebVitalsMonitor
 }
 
 export const startWebVitalsMonitoring = (): WebVitalsMonitor => {
@@ -412,6 +418,57 @@ export const stopWebVitalsMonitoring = (): void => {
     webVitalsMonitor.stopMonitoring()
   }
 }
+
+// React hook for components
+export function useWebVitals() {
+  const [report, setReport] = React.useState<WebVitalsReport | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
+  
+  React.useEffect(() => {
+    const monitor = getWebVitalsMonitor()
+    monitor.startMonitoring()
+    
+    const unsubscribe = monitor.onMetric(() => {
+      const newReport = monitor.generateReport()
+      setReport(newReport)
+      setIsLoading(false)
+    })
+    
+    // Initial report
+    setTimeout(() => {
+      setReport(monitor.generateReport())
+      setIsLoading(false)
+    }, 100)
+    
+    return () => {
+      unsubscribe()
+      monitor.stopMonitoring()
+    }
+  }, [])
+  
+  const recordCustomMetric = React.useCallback((name: string, value: number, unit: string) => {
+    const monitor = getWebVitalsMonitor()
+    monitor.recordCustomMetric(name, value, unit)
+  }, [])
+  
+  const getPerformanceSummary = React.useCallback(() => {
+    return report?.performance || {
+      score: 0,
+      status: 'poor' as const,
+      recommendations: []
+    }
+  }, [report])
+  
+  return {
+    report,
+    isLoading,
+    recordCustomMetric,
+    getPerformanceSummary
+  }
+}
+
+// Export the monitor instance for backward compatibility
+export const webVitalsMonitor = getWebVitalsMonitor()
 
 const WebVitalsUtils = {
   getWebVitalsMonitor,

@@ -29,56 +29,56 @@ interface DynamicRouteLoaderProps {
 // Route-based lazy components
 const LazyComponents = {
   Dashboard: lazyLoadComponent(
-    () => import('@/app/(app)/dashboard/page'),
+    () => import('@/app/[locale]/(app)/dashboard/page'),
     'dashboard-page'
   ),
   
   DashboardEnhancedBentoGrid: lazyLoadComponent(
-    () => import('@/app/(app)/dashboard/_components/enhanced-bento-grid'),
+    () => import('@/app/[locale]/(app)/dashboard/_components/enhanced-bento-grid').then(m => ({ default: m.EnhancedBentoGrid })),
     'dashboard-bento-grid'
   ),
   
   Matches: lazyLoadComponent(
-    () => import('@/app/(app)/matches/page'),
+    () => import('@/app/[locale]/(app)/matches/page'),
     'matches-page'
   ),
   
   MatchDetails: lazyLoadComponent(
-    () => import('@/app/(app)/matches/[id]/page'),
+    () => import('@/app/[locale]/(app)/matches/[id]/page'),
     'match-details'
   ),
   
   Players: lazyLoadComponent(
-    () => import('@/app/(app)/players/page'),
+    () => import('@/app/[locale]/(app)/players/page'),
     'players-page'
   ),
   
   Admin: lazyLoadComponent(
-    () => import('@/app/(app)/admin/page'),
+    () => import('@/app/[locale]/(app)/admin/page'),
     'admin-page'
   ),
   
   // Heavy chart components
   RechartsComponents: lazyLoadComponent(
-    () => import('recharts'),
+    () => import('recharts').then(m => ({ default: m.BarChart || m })),
     'recharts-bundle'
   ),
   
   // Form components
   FormComponents: lazyLoadComponent(
-    () => import('@/components/ui/form'),
+    () => import('@/components/ui/form').then(m => ({ default: m.Form || m })),
     'form-components'
   ),
   
   // Date picker
   DatePicker: lazyLoadComponent(
-    () => import('@/components/ui/date-picker'),
+    () => import('@/components/ui/date-picker').then(m => ({ default: m.DatePicker || m })),
     'date-picker'
   ),
   
   // Data table
   DataTable: lazyLoadComponent(
-    () => import('@/components/ui/data-table'),
+    () => import('@/components/ui/data-table').then(m => ({ default: m.DataTable || m })),
     'data-table'
   )
 }
@@ -176,7 +176,7 @@ export const DynamicRouteLoader: React.FC<DynamicRouteLoaderProps> = ({
           await Promise.allSettled(
             chunksToPreload.map(chunk => 
               dynamicImport(
-                () => import(`@/app/(app)${pathname}/page`).catch(() => ({})),
+                () => import(`@/app/(app)${pathname}/page`).then(m => ({ default: m.default || m })).catch(() => ({ default: () => null })),
                 chunk,
                 { preload: true }
               ).catch(() => {})
@@ -223,7 +223,7 @@ export const DynamicRouteLoader: React.FC<DynamicRouteLoaderProps> = ({
 
   // Error recovery function
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
-    logger.error('Route component error:', error, errorInfo)
+    logger.error('Route component error:', { error, errorInfo })
     
     // Attempt to recover by reloading the chunk
     if (enableErrorRecovery) {
@@ -352,7 +352,7 @@ export const withRouteBasedSplitting = <P extends object>(
   const WrappedComponent = (props: P) => (
     <ErrorBoundary FallbackComponent={DefaultErrorFallback}>
       <Suspense fallback={<DefaultLoadingFallback />}>
-        <LazyComponent {...props} />
+        <LazyComponent {...(props as any)} />
       </Suspense>
     </ErrorBoundary>
   )

@@ -2,16 +2,14 @@ import dynamic from 'next/dynamic'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 // Table components not needed for skeletons
-import { List, Users, Trophy, Filter } from 'lucide-react'
+import { List, Filter } from 'lucide-react'
 
 // Generic table skeleton
 const DataTableSkeleton = ({ 
-  title, 
   icon: Icon, 
   rows = 5, 
   columns = 4 
 }: { 
-  title?: string; 
   icon?: any; 
   rows?: number; 
   columns?: number; 

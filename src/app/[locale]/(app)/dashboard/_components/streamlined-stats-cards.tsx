@@ -1,13 +1,11 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { ArrowRight } from "lucide-react"
 import { TrendingUp } from "lucide-react"
 import { Trophy } from "lucide-react"
 import { Target } from "lucide-react"
 import { Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { useRouter } from "next/navigation"
@@ -19,7 +17,6 @@ interface StreamlinedStatsCardsProps {
 
 export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsCardsProps) {
   const t = useTranslations('dashboard')
-  const commonT = useTranslations('common')
   const router = useRouter()
 
   // Filter for singles matches only and handle status casing

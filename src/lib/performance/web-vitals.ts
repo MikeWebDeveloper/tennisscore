@@ -3,6 +3,7 @@
  * Real browser performance measurement using official APIs
  */
 
+import React from 'react'
 import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals'
 
 export interface PerformanceData {
@@ -286,5 +287,3 @@ export function measureComponentRender(componentName: string) {
   }
 }
 
-// Fix the React import issue
-import React from 'react'

@@ -24,7 +24,6 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PWAInstallationBanner() {
-  const t = useTranslations('dashboard')
   const commonT = useTranslations('common')
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)

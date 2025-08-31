@@ -11,6 +11,7 @@ import { soundManager, playSound, type SoundEvent } from "@/lib/sounds"
 import { Volume2 } from "lucide-react"
 import { VolumeX } from "lucide-react"
 import { TestTube2 } from "lucide-react"
+import { useTranslations } from '@/i18n'
 
 interface SoundSettings {
   enabled: boolean
@@ -21,6 +22,7 @@ interface SoundSettings {
 }
 
 export function SoundSettings() {
+  const t = useTranslations('settings')
   const [settings, setSettings] = useState<SoundSettings>({
     enabled: true,
     volume: 0.7,
@@ -58,16 +60,16 @@ export function SoundSettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Volume2 className="h-5 w-5" />
-          Sound Effects
+          {t('soundEffects')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Master Enable/Disable */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label className="text-base font-medium">Enable Sound Effects</Label>
+            <Label className="text-base font-medium">{t('enableSoundEffects')}</Label>
             <p className="text-sm text-muted-foreground">
-              Turn on audio feedback for match events
+              {t('turnOnAudioFeedback')}
             </p>
           </div>
           <Switch
@@ -79,7 +81,7 @@ export function SoundSettings() {
         {/* Volume Control */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium">Volume</Label>
+            <Label className="text-base font-medium">{t('volume')}</Label>
             <span className="text-sm text-muted-foreground">
               {Math.round(settings.volume * 100)}%
             </span>
@@ -103,14 +105,14 @@ export function SoundSettings() {
 
         {/* Sound Categories */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-muted-foreground">Sound Categories</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">{t('soundCategories')}</h4>
           
           {/* Point Sounds */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Point Sounds</Label>
+              <Label className="text-sm font-medium">{t('pointSounds')}</Label>
               <p className="text-xs text-muted-foreground">
-                Basic point scoring, aces, double faults
+                {t('pointSoundsDescription')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -134,9 +136,9 @@ export function SoundSettings() {
           {/* Critical Point Sounds */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Critical Point Sounds</Label>
+              <Label className="text-sm font-medium">{t('criticalPointSounds')}</Label>
               <p className="text-xs text-muted-foreground">
-                Break points, set points, match points
+                {t('criticalPointSoundsDescription')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -160,9 +162,9 @@ export function SoundSettings() {
           {/* Match Event Sounds */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Match Event Sounds</Label>
+              <Label className="text-sm font-medium">{t('matchEventSounds')}</Label>
               <p className="text-xs text-muted-foreground">
-                Game won, set won, match completion
+                {t('matchEventSoundsDescription')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -188,7 +190,7 @@ export function SoundSettings() {
 
         {/* Test Sounds Section */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Test Different Sounds</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">{t('testDifferentSounds')}</h4>
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
@@ -198,7 +200,7 @@ export function SoundSettings() {
               className="justify-start"
             >
               <TestTube2 className="h-3 w-3 mr-2" />
-              Ace
+              {t('ace')}
             </Button>
             <Button
               variant="outline"
@@ -208,7 +210,7 @@ export function SoundSettings() {
               className="justify-start"
             >
               <TestTube2 className="h-3 w-3 mr-2" />
-              Double Fault
+              {t('doubleFault')}
             </Button>
             <Button
               variant="outline"
@@ -218,7 +220,7 @@ export function SoundSettings() {
               className="justify-start"
             >
               <TestTube2 className="h-3 w-3 mr-2" />
-              Match Point
+              {t('matchPoint')}
             </Button>
             <Button
               variant="outline"
@@ -228,7 +230,7 @@ export function SoundSettings() {
               className="justify-start"
             >
               <TestTube2 className="h-3 w-3 mr-2" />
-              Match Won
+              {t('matchWon')}
             </Button>
           </div>
         </div>
@@ -236,8 +238,7 @@ export function SoundSettings() {
         {/* Info Note */}
         <div className="rounded-lg bg-muted p-3">
           <p className="text-xs text-muted-foreground">
-            💡 Sound effects will initialize automatically when you start scoring points. 
-            Volume and settings are saved automatically.
+            {t('soundEffectsInfo')}
           </p>
         </div>
       </CardContent>

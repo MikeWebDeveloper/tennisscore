@@ -14,5 +14,22 @@
   "checkUpdatesDescription": "Check Updates: To manually check for new app versions",
   "installAppDescription": "Install App: For better performance and offline access",
   "soundSettings": "Sound Settings",
-  "customizeAudioPreferences": "Customize your audio preferences for match scoring"
+  "customizeAudioPreferences": "Customize your audio preferences for match scoring",
+  "soundEffects": "Sound Effects",
+  "enableSoundEffects": "Enable Sound Effects",
+  "turnOnAudioFeedback": "Turn on audio feedback for match events",
+  "volume": "Volume",
+  "soundCategories": "Sound Categories",
+  "pointSounds": "Point Sounds",
+  "pointSoundsDescription": "Basic point scoring, aces, double faults",
+  "criticalPointSounds": "Critical Point Sounds",
+  "criticalPointSoundsDescription": "Break points, set points, match points",
+  "matchEventSounds": "Match Event Sounds",
+  "matchEventSoundsDescription": "Game won, set won, match completion",
+  "testDifferentSounds": "Test Different Sounds",
+  "ace": "Ace",
+  "doubleFault": "Double Fault",
+  "matchPoint": "Match Point",
+  "matchWon": "Match Won",
+  "soundEffectsInfo": "💡 Sound effects will initialize automatically when you start scoring points. Volume and settings are saved automatically."
 }

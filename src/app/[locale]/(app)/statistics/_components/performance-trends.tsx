@@ -15,7 +15,6 @@ interface PerformanceTrendsProps {
 }
 
 export function PerformanceTrends({ matches, mainPlayerId }: PerformanceTrendsProps) {
-  const t = useTranslations('common')
   const tStats = useTranslations('statistics')
 
   // Calculate monthly performance data

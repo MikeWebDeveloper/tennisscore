@@ -1,10 +1,9 @@
 "use client"
 
 import { motion } from '@/lib/framer-motion-config'
-import { Star } from "lucide-react"
 import { StreamlinedDashboard } from "./_components/streamlined-dashboard"
 import { MainPlayerSetupPrompt } from "./_components/main-player-setup-prompt"
-import { Match, Player, User, DashboardStats } from "@/lib/types"
+import { Match, Player, User } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 
 interface DashboardClientProps {

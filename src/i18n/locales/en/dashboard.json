@@ -99,5 +99,20 @@
       "title": "Component Quality Fixes",
       "description": "Resolved various UI inconsistencies and improved component reliability across the application."
     }
-  }
+  },
+  "performanceTrendTitle": "Performance Trend",
+  "performanceBreakdownTitle": "Performance Breakdown",
+  "noDataLabel": "No data available",
+  "totalMatches": "Total Matches",
+  "inProgress": "In Progress",
+  "completed": "Completed",
+  "players": "Players",
+  "playersCreated": "Players Created",
+  "performance": "Performance",
+  "overallRating": "Overall Rating",
+  "excellent": "Excellent",
+  "good": "Good",
+  "fair": "Fair",
+  "needsWork": "Needs Work",
+  "hot": "Hot!"
 }

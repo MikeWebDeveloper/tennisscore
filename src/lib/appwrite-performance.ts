@@ -1,5 +1,5 @@
 import { databases, users } from '@/lib/appwrite-admin';
-import { Database, Query, Models } from 'appwrite';
+import { Databases, Query, Models } from 'appwrite';
 
 interface QueryPerformanceMetric {
   operation: string;
@@ -134,7 +134,7 @@ const appwritePerformanceMonitor = new AppwritePerformanceMonitor();
 
 // Enhanced Appwrite client wrapper with performance monitoring
 export class MonitoredAppwriteClient {
-  constructor(private client: Database) {}
+  constructor(private client: Databases) {}
 
   async listDocuments(
     databaseId: string,
@@ -237,7 +237,7 @@ export class MonitoredAppwriteClient {
 }
 
 // Create monitored database client
-export const monitoredDatabases = new MonitoredAppwriteClient(databases);
+export const monitoredDatabases = new MonitoredAppwriteClient(databases as any);
 
 // Specialized monitoring functions for common TennisScore operations
 export async function measureMatchStatistics<T>(

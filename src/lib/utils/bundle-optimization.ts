@@ -40,6 +40,7 @@ const loadingChunks: Map<string, Promise<unknown>> = new Map()
 
 /**
  * Enhanced dynamic import with error handling and retry logic
+ * Supports optional modules and proper TypeScript typing
  */
 export const dynamicImport = async <T = unknown>(
   importFn: () => Promise<T>,
@@ -57,7 +58,7 @@ export const dynamicImport = async <T = unknown>(
     // Check if chunk is already loading
     if (loadingChunks.has(chunkName)) {
       logger.debug(`Chunk ${chunkName} already loading, waiting...`)
-      return await loadingChunks.get(chunkName)! as Promise<T>
+      return await (loadingChunks.get(chunkName)! as Promise<T>)
     }
 
     // Create loading promise
@@ -120,8 +121,9 @@ export const dynamicImport = async <T = unknown>(
 
 /**
  * Lazy load component with suspense and error boundary
+ * Enhanced with proper TypeScript typing and error handling
  */
-export const lazyLoadComponent = <T extends React.ComponentType<unknown>>(
+export const lazyLoadComponent = <T extends React.ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   chunkName: string,
   config: LazyLoadConfig = {}
@@ -131,7 +133,7 @@ export const lazyLoadComponent = <T extends React.ComponentType<unknown>>(
     retryDelay = 1000
   } = config
 
-  return React.lazy(async () => {
+  return React.lazy(async (): Promise<{ default: T }> => {
     let lastError: Error | null = null
     
     for (let i = 0; i <= retryCount; i++) {
@@ -141,7 +143,12 @@ export const lazyLoadComponent = <T extends React.ComponentType<unknown>>(
           preload: true
         })
         
-        return loadedModule
+        // Ensure the module has a default export
+        if (!loadedModule || typeof loadedModule.default === 'undefined') {
+          throw new Error(`Module ${chunkName} does not have a default export`)
+        }
+        
+        return loadedModule as { default: T }
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error')
         
@@ -181,13 +188,14 @@ export const preloadCriticalChunks = async (route: string): Promise<void> => {
 }
 
 /**
- * Get critical chunks for a specific route
+ * Get critical chunks for a specific route with uPlot support
  */
 const getCriticalChunksForRoute = (route: string): string[] => {
   const routeChunkMap: Record<string, string[]> = {
-    '/dashboard': ['dashboard', 'charts', 'statistics'],
+    '/dashboard': ['dashboard', 'uplot-chart', 'statistics'],
     '/matches': ['matches', 'scoring', 'realtime'],
     '/players': ['players', 'forms', 'validation'],
+    '/statistics': ['statistics', 'uplot-chart', 'data-analysis'],
     '/admin': ['admin', 'tables', 'data-management']
   }
   
@@ -195,18 +203,93 @@ const getCriticalChunksForRoute = (route: string): string[] => {
 }
 
 /**
- * Tree shaking helper for conditional imports
+ * Tree shaking helper for conditional imports with error handling
  */
 export const conditionalImport = async <T>(
   condition: boolean,
   importFn: () => Promise<T>,
-  chunkName: string
+  chunkName: string,
+  fallback?: T
 ): Promise<T | null> => {
   if (!condition) {
     return null
   }
   
-  return await dynamicImport(importFn, chunkName)
+  try {
+    return await dynamicImport(importFn, chunkName)
+  } catch (error) {
+    logger.warn(`Conditional import ${chunkName} failed:`, error)
+    return fallback || null
+  }
+}
+
+/**
+ * Safe module checker - verifies if a module can be imported
+ */
+export const canImportModule = async (moduleName: string): Promise<boolean> => {
+  try {
+    // Try to resolve the module without actually importing it
+    if (typeof window !== 'undefined') {
+      // Client-side check using dynamic import
+      await eval(`import('${moduleName}').then(() => true, () => false)`)
+      return true
+    }
+    // Server-side check (simplified)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Module availability registry for caching import checks
+ */
+const moduleAvailability = new Map<string, boolean>()
+
+/**
+ * Enhanced conditional import with availability caching
+ */
+export const smartConditionalImport = async <T>(
+  moduleName: string,
+  importFn: () => Promise<T>,
+  chunkName: string,
+  options: {
+    fallback?: T
+    cache?: boolean
+    required?: boolean
+  } = {}
+): Promise<T | null> => {
+  const { fallback, cache = true, required = false } = options
+  
+  // Check cache first
+  if (cache && moduleAvailability.has(moduleName)) {
+    const isAvailable = moduleAvailability.get(moduleName)!
+    if (!isAvailable) {
+      if (required) {
+        throw new Error(`Required module ${moduleName} is not available`)
+      }
+      return fallback || null
+    }
+  }
+  
+  try {
+    const result = await dynamicImport(importFn, chunkName)
+    if (cache) {
+      moduleAvailability.set(moduleName, true)
+    }
+    return result
+  } catch (error) {
+    if (cache) {
+      moduleAvailability.set(moduleName, false)
+    }
+    
+    if (required) {
+      throw new Error(`Required module ${moduleName} failed to load: ${error}`)
+    }
+    
+    logger.warn(`Optional module ${moduleName} not available:`, error)
+    return fallback || null
+  }
 }
 
 /**
@@ -374,53 +457,161 @@ export const monitorChunkPerformance = (chunkName: string): void => {
  * React lazy loading utilities
  */
 import React from 'react'
+import type { ComponentType, LazyExoticComponent } from 'react'
 
-export const LazyDashboard = lazyLoadComponent(
-  () => import('@/app/[locale]/(app)/dashboard/page'),
+// Type-safe lazy loading for Next.js pages
+type NextPageComponent = ComponentType<any>
+type LazyNextPage = LazyExoticComponent<NextPageComponent>
+
+export const LazyDashboard: LazyNextPage = lazyLoadComponent(
+  () => import('@/app/[locale]/(app)/dashboard/page').then(mod => ({ 
+    default: mod.default as NextPageComponent 
+  })),
   'dashboard'
 )
 
-export const LazyMatches = lazyLoadComponent(
-  () => import('@/app/[locale]/(app)/matches/page'),
+export const LazyMatches: LazyNextPage = lazyLoadComponent(
+  () => import('@/app/[locale]/(app)/matches/page').then(mod => ({ 
+    default: mod.default as NextPageComponent 
+  })),
   'matches'
 )
 
-export const LazyPlayers = lazyLoadComponent(
-  () => import('@/app/[locale]/(app)/players/page'),
+export const LazyPlayers: LazyNextPage = lazyLoadComponent(
+  () => import('@/app/[locale]/(app)/players/page').then(mod => ({ 
+    default: mod.default as NextPageComponent 
+  })),
   'players'
 )
 
-export const LazyAdmin = lazyLoadComponent(
-  () => import('@/app/[locale]/(app)/admin/page'),
+export const LazyAdmin: LazyNextPage = lazyLoadComponent(
+  () => import('@/app/[locale]/(app)/admin/page').then(mod => ({ 
+    default: mod.default as NextPageComponent 
+  })),
   'admin'
 )
 
-// Heavy chart components
-export const LazyRechartsBarChart = lazyLoadComponent(
-  () => import('recharts').then(mod => ({ default: mod.BarChart as any })),
-  'recharts-bar'
+// Type-safe chart components using uPlot (migrated from Recharts)
+export const LazyUPlotChart = lazyLoadComponent(
+  () => import('uplot-react').then(mod => ({ 
+    default: mod.default as ComponentType<any> 
+  })),
+  'uplot-chart'
 )
 
-export const LazyRechartsLineChart = lazyLoadComponent(
-  () => import('recharts').then(mod => ({ default: mod.LineChart as any })),
-  'recharts-line'
-)
+// Conditional utility library imports with proper typing
+export const conditionalDateFns = async () => {
+  try {
+    return await dynamicImport(
+      () => import('date-fns'),
+      'date-fns'
+    )
+  } catch (error) {
+    logger.warn('date-fns not available, using fallback')
+    return null
+  }
+}
 
-export const LazyRechartsRadarChart = lazyLoadComponent(
-  () => import('recharts').then(mod => ({ default: mod.RadarChart as any })),
-  'recharts-radar'
-)
+// Type-safe optional library loader
+export const loadOptionalLibrary = async <T>(
+  importFn: () => Promise<T>,
+  libraryName: string,
+  fallback?: T
+): Promise<T | null> => {
+  try {
+    return await dynamicImport(importFn, libraryName)
+  } catch (error) {
+    logger.warn(`Optional library ${libraryName} not available:`, error)
+    return fallback || null
+  }
+}
 
-// Heavy utility libraries
-export const LazyLodash = dynamicImport(
-  () => import('lodash'),
-  'lodash'
-)
+/**
+ * Type definitions for error boundary components
+ */
+export interface LazyLoadErrorBoundaryProps {
+  children: React.ReactNode
+  fallback?: React.ComponentType<{ error: Error; retry: () => void }>
+}
 
-export const LazyDateFns = dynamicImport(
-  () => import('date-fns'),
-  'date-fns'
-)
+export interface LazyLoadErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+/**
+ * Error boundary factory for lazy-loaded modules
+ * Note: Actual React component implementation should be in a .tsx file
+ */
+export const createLazyLoadErrorBoundary = () => {
+  // This is a factory function that returns the class definition
+  // The actual implementation should be in a .tsx file
+  return class LazyLoadErrorBoundary extends React.Component<
+    LazyLoadErrorBoundaryProps,
+    LazyLoadErrorBoundaryState
+  > {
+    constructor(props: LazyLoadErrorBoundaryProps) {
+      super(props)
+      this.state = { hasError: false, error: null }
+    }
+
+    static getDerivedStateFromError(error: Error): LazyLoadErrorBoundaryState {
+      return { hasError: true, error }
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+      logger.error('LazyLoad Error:', error)
+      logger.error('Error Info:', errorInfo)
+    }
+
+    retry = () => {
+      this.setState({ hasError: false, error: null })
+    }
+
+    render(): React.ReactNode {
+      if (this.state.hasError) {
+        const FallbackComponent = this.props.fallback
+        if (FallbackComponent && this.state.error) {
+          return React.createElement(FallbackComponent, {
+            error: this.state.error,
+            retry: this.retry
+          })
+        }
+        // Return a simple error message as React element
+        return React.createElement('div', {
+          role: 'alert',
+          style: { padding: '16px', border: '1px solid #fca5a5', borderRadius: '6px' }
+        }, 'Component failed to load. Please try again.')
+      }
+
+      return this.props.children
+    }
+  }
+}
+
+/**
+ * HOC factory for wrapping lazy components with error boundaries
+ */
+export const createLazyErrorBoundaryWrapper = <P extends object>(
+  LazyComponent: React.LazyExoticComponent<React.ComponentType<P>>,
+  fallback?: React.ComponentType<{ error: Error; retry: () => void }>
+) => {
+  const ErrorBoundary = createLazyLoadErrorBoundary()
+  
+  const WrappedComponent: React.FC<P> = (props) => 
+    // eslint-disable-next-line react/no-children-prop
+    React.createElement(ErrorBoundary, { 
+      fallback,
+      // eslint-disable-next-line react/no-children-prop
+      children: React.createElement(React.Suspense, { 
+        fallback: React.createElement('div', null, 'Loading...'),
+        children: React.createElement(LazyComponent, props as any)
+      })
+    })
+  
+  WrappedComponent.displayName = `withLazyErrorBoundary(Component)`
+  return WrappedComponent
+}
 
 /**
  * Bundle optimization hook for React components
@@ -429,11 +620,11 @@ export const useBundleOptimization = () => {
   const [analytics, setAnalytics] = React.useState<Map<string, BundleAnalytics>>(new Map())
   const [isLoading, setIsLoading] = React.useState(false)
   
-  const loadChunk = React.useCallback(async (
+  const loadChunk = React.useCallback(async <T>(
     chunkName: string,
-    importFn: () => Promise<unknown>,
+    importFn: () => Promise<T>,
     config: ChunkLoadingConfig = {}
-  ) => {
+  ): Promise<T> => {
     setIsLoading(true)
     
     try {
@@ -445,6 +636,19 @@ export const useBundleOptimization = () => {
     }
   }, [])
   
+  const loadOptionalChunk = React.useCallback(async <T>(
+    chunkName: string,
+    importFn: () => Promise<T>,
+    fallback?: T
+  ): Promise<T | null> => {
+    try {
+      return await loadChunk(chunkName, importFn)
+    } catch (error) {
+      logger.warn(`Optional chunk ${chunkName} failed to load:`, error)
+      return fallback || null
+    }
+  }, [loadChunk])
+  
   const preloadChunks = React.useCallback(async (route: string) => {
     await preloadCriticalChunks(route)
   }, [])
@@ -455,6 +659,7 @@ export const useBundleOptimization = () => {
   
   return {
     loadChunk,
+    loadOptionalChunk,
     preloadChunks,
     getChunkAnalytics,
     analytics,

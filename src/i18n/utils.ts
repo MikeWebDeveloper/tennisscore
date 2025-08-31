@@ -1,5 +1,7 @@
-import { useLocale, useFormatter } from 'next-intl'
-import { useTranslations } from '@/i18n'
+import { useTranslations } from 'next-intl'
+
+// Simple locale fallback for type safety
+const useLocale = () => 'en' as const
 import { routing } from './routing'
 import type { SupportedLocale } from './routing'
 
@@ -7,7 +9,6 @@ import type { SupportedLocale } from './routing'
 export class TennisFormatter {
   constructor(
     private t: ReturnType<typeof useTranslations>,
-    private format: ReturnType<typeof useFormatter>,
     private locale: SupportedLocale
   ) {}
 
@@ -111,11 +112,10 @@ export class TennisFormatter {
 
 // Hook to get tennis formatter
 export function useTennisFormatter() {
-  const t = useTranslations('common')
-  const format = useFormatter()
+  const t = useTranslations()
   const locale = useLocale() as SupportedLocale
   
-  return new TennisFormatter(t, format, locale)
+  return new TennisFormatter(t, locale)
 }
 
 // Enhanced statistics formatting

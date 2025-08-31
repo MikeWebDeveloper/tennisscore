@@ -99,5 +99,20 @@
       "title": "Opravy kvality komponentů",
       "description": "Vyřešeny různé nekonzistence v UI a vylepšena spolehlivost komponentů v celé aplikaci."
     }
-  }
+  },
+  "performanceTrendTitle": "Trend výkonu",
+  "performanceBreakdownTitle": "Rozklad výkonu",
+  "noDataLabel": "Nejsou k dispozici data",
+  "totalMatches": "Celkem zápasů",
+  "inProgress": "Probíhající",
+  "completed": "Dokončené",
+  "players": "Hráči",
+  "playersCreated": "Vytvořeni hráči",
+  "performance": "Výkon",
+  "overallRating": "Celkové hodnocení",
+  "excellent": "Vynikající",
+  "good": "Dobré",
+  "fair": "Slušné",
+  "needsWork": "Potřebuje práci",
+  "hot": "Žhavé!"
 }

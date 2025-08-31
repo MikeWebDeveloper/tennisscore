@@ -1,13 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { client, databases } from "@/lib/appwrite-client"
+import { useState } from "react"
+import { client } from "@/lib/appwrite-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateMatchScore } from "@/lib/actions/matches"
 
+interface DebugEvent {
+  time: string
+  event: unknown
+}
+
 export default function DebugRealtime() {
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<DebugEvent[]>([])
   const [connected, setConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [matchId, setMatchId] = useState("")

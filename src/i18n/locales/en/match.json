@@ -1,5 +1,6 @@
 {
   "newMatch": "New Match",
+  "resume": "Resume",
   "liveScoring": "Live Scoring",
   "liveDisplay": "Live",
   "matchCompleted": "Match Completed - Winner: {winner}",

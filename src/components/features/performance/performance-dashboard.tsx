@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
  */
 export const PerformanceDashboard = memo(function PerformanceDashboard() {
   const t = useTranslations('common')
-  const { dashboardData, isMonitoring, hasData } = usePerformanceDashboard()
+  const { dashboardData = { metrics: [], recommendations: [], status: 'good', latency: 0, target: 100 }, isMonitoring = false, hasData = false } = usePerformanceDashboard() || {}
 
   const statusConfig = useMemo(() => {
     switch (dashboardData.status) {
@@ -110,7 +110,7 @@ export const PerformanceDashboard = memo(function PerformanceDashboard() {
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">
-                    {dashboardData.metrics.filter(m => m.passed).length}
+                    {dashboardData.metrics.filter((m: any) => m.passed).length}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {t('performance.passedMetrics')}
@@ -137,7 +137,7 @@ export const PerformanceDashboard = memo(function PerformanceDashboard() {
           <AlertTitle>{t('performance.recommendations')}</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1 mt-2">
-              {dashboardData.recommendations.map((recommendation, index) => (
+              {dashboardData.recommendations.map((recommendation: string, index: number) => (
                 <li key={index} className="text-sm">
                   {recommendation}
                 </li>
@@ -155,7 +155,7 @@ export const PerformanceDashboard = memo(function PerformanceDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {dashboardData.metrics.slice(-5).map((metric, index) => (
+              {dashboardData.metrics.slice(-5).map((metric: any, index: number) => (
                 <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
                   <div className="flex items-center gap-3">
                     {metric.passed ? (

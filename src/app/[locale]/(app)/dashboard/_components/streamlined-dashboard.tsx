@@ -2,7 +2,7 @@
 
 import { motion } from '@/lib/framer-motion-config'
 import { Star } from "lucide-react"
-import { Match, Player } from "@/lib/types"
+import { Match, Player, User } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { StreamlinedStatsCards } from "./streamlined-stats-cards"
 import { PWAInstallationBanner } from "./pwa-installation-banner"
@@ -12,7 +12,7 @@ import { QuickActionsHub } from "./quick-actions-hub"
 import { CreateNewMatchButton } from "./create-new-match-button"
 
 interface StreamlinedDashboardProps {
-  user: any
+  user: User | null
   mainPlayer: Player
   matches: Match[]
   playersMap: Map<string, Player>

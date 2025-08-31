@@ -82,25 +82,11 @@ export function PerformanceSection() {
 
   const getPerformanceRating = () => {
     const summary = getPerformanceSummary()
-    const vitals = summary.coreWebVitals
-    
-    let goodCount = 0
-    let totalCount = 0
-    
-    Object.values(vitals).forEach(vital => {
-      if (vital) {
-        totalCount++
-        if (vital.rating === 'good') goodCount++
-      }
-    })
-    
-    if (totalCount === 0) return { rating: 'unknown', score: 0 }
-    
-    const score = (goodCount / totalCount) * 100
-    
-    if (score >= 80) return { rating: 'good', score }
-    if (score >= 60) return { rating: 'needs-improvement', score }
-    return { rating: 'poor', score }
+    // summary has { score, status, recommendations }
+    return {
+      rating: summary.status || 'fair',
+      score: summary.score || 0
+    }
   }
 
   const performanceRating = getPerformanceRating()
@@ -141,8 +127,8 @@ export function PerformanceSection() {
                 ) : (
                   <AlertCircle className="w-3 h-3" />
                 )}
-                {performanceRating.rating === 'good' ? 'Good' : 
-                 performanceRating.rating === 'needs-improvement' ? 'Needs Improvement' : 'Poor'}
+                {performanceRating.rating === 'good' || performanceRating.rating === 'excellent' ? 'Good' : 
+                 performanceRating.rating === 'fair' ? 'Fair' : 'Poor'}
               </Badge>
             </div>
           </div>

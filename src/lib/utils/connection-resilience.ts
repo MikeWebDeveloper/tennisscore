@@ -305,8 +305,9 @@ export function assessConnectionQuality(connection: ReturnType<typeof useConnect
 /**
  * Adaptive polling intervals based on connection quality
  */
-export function getAdaptivePollingInterval(): number {
-  const quality = assessConnectionQuality()
+export function getAdaptivePollingInterval(connection?: ReturnType<typeof useConnectionMonitoring>): number {
+  // Default to offline if no connection provided
+  const quality = connection ? assessConnectionQuality(connection) : 'offline'
   
   switch (quality) {
     case 'excellent':

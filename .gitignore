@@ -39,6 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# next-intl generated declaration files
+src/i18n/messages/*.d.json.ts
+messages/*.d.json.ts
 .env*.local
 
 # Local MCP config for Appwrite

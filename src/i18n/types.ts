@@ -1,4 +1,8 @@
-// Core message types for next-intl integration
+// DEPRECATED: This file is deprecated in favor of proper next-intl AppConfig augmentation
+// See: src/types/next-intl.d.ts for the new type-safe approach
+// TODO: Remove this file after migration is complete
+
+// Legacy message types for next-intl integration (DEPRECATED)
 export interface Messages {
   // Common namespace
   common: {
@@ -38,6 +42,10 @@ export interface Messages {
     all: string
     refresh: string
     undo: string
+    ofTotal: string
+    completedDescription: string
+    best: string
+    serveStatisticsHeader: string
   }
 
   // Navigation namespace
@@ -224,6 +232,39 @@ export interface Messages {
     wonLabel: string
     avgDurationLabel: string
     winStreakMonthlyLabel: string
+    acesLabel: string
+    noPerformanceDataYet: string
+    completeSomeMatchesToSeeCharts: string
+    winRateTrend: string
+    pointBreakdown: string
+    recentForm: string
+    lastXMatches: string
+    earlyMorning: string
+    morning: string
+    afternoon: string
+    evening: string
+    night: string
+    lateNight: string
+    unforcedErrorsLabel: string
+    forcedErrorsLabel: string
+    viewMoreStats: string
+    showLess: string
+    performanceInsights: string
+    advancedAnalytics: string
+    last5Matches: string
+    courtTime: string
+    totalPlayingTime: string
+    peakPerformance: string
+    bestPlayingTime: string
+    perMatch: string
+    fhBhRatio: string
+    forehandPreference: string
+    vs: string
+    player1: string
+    player2: string
+    whatsNew: string
+    stayTunedForMoreUpdates: string
+    winStreakLabel: string
   }
 
   // Player namespace
@@ -237,6 +278,7 @@ export interface Messages {
     left: string
     right: string
     createPlayer: string
+    addPlayer: string
     editPlayer: string
     profilePicture: string
     uploadNewPicture: string
@@ -370,6 +412,60 @@ export interface Messages {
     secondServePointsWonPercent: string
     forcedErrorsLabel: string
     unforcedErrorsChart: string
+  }
+  // Admin namespace
+  admin: {
+    title: string
+    description: string
+    allMatches: string
+    systemOverview: string
+    allMatchesTitle: string
+    allMatchesDescription: string
+    searchPlaceholder: string
+    searching: string
+    showingMatchesFor: string
+    showingMatches: string
+    noMatchesFoundSearch: string
+    noMatchesFound: string
+    loading: string
+    loadMore: string
+  }
+  // Settings namespace
+  settings: {
+    settings: string
+    managePreferences: string
+    cacheAndUpdates: string
+    aboutCacheManagement: string
+    whyUseCacheManagement: string
+    fixesOutdated: string
+    resolvesStaleData: string
+    improvesPerformance: string
+    forcesFreshData: string
+    whenToUseFeatures: string
+    clearCacheDescription: string
+    forceReloadDescription: string
+    checkUpdatesDescription: string
+    installAppDescription: string
+    soundSettings: string
+    customizeAudioPreferences: string
+    // Sound settings specific keys
+    soundEffects: string
+    enableSoundEffects: string
+    turnOnAudioFeedback: string
+    volume: string
+    soundCategories: string
+    pointSounds: string
+    pointSoundsDescription: string
+    criticalPointSounds: string
+    criticalPointSoundsDescription: string
+    matchEventSounds: string
+    matchEventSoundsDescription: string
+    testDifferentSounds: string
+    ace: string
+    doubleFault: string
+    matchPoint: string
+    matchWon: string
+    soundEffectsInfo: string
   }
 }
 

@@ -4,12 +4,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { 
   Calendar, 
-  TrendingUp, 
   Users, 
-  Trophy, 
-  Clock, 
   Zap,
-  Download,
   Loader2,
   Bell,
   Smartphone

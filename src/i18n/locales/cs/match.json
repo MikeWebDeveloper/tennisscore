@@ -1,5 +1,6 @@
 {
   "newMatch": "Nový zápas",
+  "resume": "Pokračovat",
   "liveScoring": "Živé skórování",
   "liveDisplay": "Živě",
   "matchCompleted": "Zápas dokončen - Vítěz: {winner}",

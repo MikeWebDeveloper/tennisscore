@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Download, Settings, BarChart3, Loader2, Rabbit, Trophy } from 'lucide-react'
+import { Settings, BarChart3, Loader2, Rabbit } from 'lucide-react'
 
 // Enhanced Stats Display skeleton
 const EnhancedStatsDisplaySkeleton = () => (
