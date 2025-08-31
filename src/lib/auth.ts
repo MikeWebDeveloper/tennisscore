@@ -3,6 +3,16 @@ import { getSession } from "./session"
 
 export async function getCurrentUser() {
   try {
+    // Test bypass for E2E runs
+    if (typeof process !== 'undefined' && (process.env.PLAYWRIGHT === '1' || process.env.DISABLE_AUTH_FOR_TEST === '1')) {
+      return {
+        $id: 'test-user',
+        email: 'test@example.com',
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString(),
+      }
+    }
+
     // Get session data - this contains the user info we need
     const sessionData = await getSession()
     if (!sessionData) {

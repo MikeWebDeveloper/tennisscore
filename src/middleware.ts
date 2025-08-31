@@ -13,6 +13,11 @@ const ADMIN_EMAILS = [
 const intlMiddleware = createIntlMiddleware(routing)
 
 export async function middleware(request: NextRequest) {
+  // Bypass auth and redirects for automated tests
+  if (process.env.PLAYWRIGHT === '1' || process.env.DISABLE_AUTH_FOR_TEST === '1') {
+    return intlMiddleware(request)
+  }
+
   const { pathname } = request.nextUrl
   const sessionCookie = request.cookies.get("session")?.value
 
