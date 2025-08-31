@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 import { Loader2 } from "lucide-react"
 import { AdminMatchCard } from "@/components/shared/admin-match-card"
-import { getAllMatchesWithPlayers } from "@/lib/actions/matches"
+// Avoid importing server-only code into client. Use an API route instead.
 import { Match, Player } from "@/lib/types"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useTranslations } from "@/i18n"
@@ -54,11 +54,18 @@ export function AdminMatchesClient({
     
     setIsLoading(true)
     try {
-      const result = await getAllMatchesWithPlayers({
-        limit: 20,
-        offset,
-        search: search.trim()
+      const params = new URLSearchParams({
+        limit: String(20),
+        offset: String(offset),
+        search: search.trim(),
       })
+      const res = await fetch(`/api/admin/matches?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+      })
+      if (!res.ok) throw new Error(`Failed to fetch matches: ${res.status}`)
+      const result = await res.json()
       
       if (!mounted) return // Check again before setting state
       
