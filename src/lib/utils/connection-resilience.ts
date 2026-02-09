@@ -5,8 +5,8 @@
 
 interface ConnectionState {
   isOnline: boolean
-  connectionType: 'wifi' | '4g' | '3g' | '2g' | 'slow-2g' | 'unknown'
-  effectiveType: string
+  connectionType: ConnectionType
+  effectiveType: EffectiveConnectionType | string // Fallback for unknown types
   downlink: number
   rtt: number
 }
@@ -56,20 +56,20 @@ export function useConnectionMonitoring(): ConnectionState {
     return {
       isOnline: true,
       connectionType: 'unknown',
-      effectiveType: 'unknown',
-      downlink: 0,
-      rtt: 0
+      effectiveType: '4g' as EffectiveConnectionType, // Assume good connection on server
+      downlink: 10,
+      rtt: 50
     }
   }
 
-  const connection = (navigator as any).connection || 
-                    (navigator as any).mozConnection || 
-                    (navigator as any).webkitConnection
+  const connection = navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection
 
   return {
     isOnline: navigator.onLine,
     connectionType: connection?.type || 'unknown',
-    effectiveType: connection?.effectiveType || 'unknown',
+    effectiveType: connection?.effectiveType || 'unknown' as EffectiveConnectionType,
     downlink: connection?.downlink || 0,
     rtt: connection?.rtt || 0
   }
@@ -90,7 +90,7 @@ export async function retryWithBackoff<T>(
     backoffFactor: config?.backoffFactor ?? 2,
     jitter: config?.jitter ?? true
   }
-  
+
   const backoff = createExponentialBackoff(fullConfig)
   let lastError: Error
 
@@ -99,7 +99,7 @@ export async function retryWithBackoff<T>(
       return await operation()
     } catch (error) {
       lastError = error as Error
-      
+
       // Don't retry on client errors (4xx)
       if (error && typeof error === 'object' && 'status' in error) {
         const status = (error as any).status
@@ -155,13 +155,13 @@ export class ResilientWebSocket {
     this.ws.onopen = (event) => {
       this.reconnectAttempts = 0
       this.isReconnecting = false
-      
+
       // Send queued messages
       while (this.messageQueue.length > 0) {
         const message = this.messageQueue.shift()!
         this.ws!.send(message)
       }
-      
+
       this.emit('open', event)
     }
 
@@ -185,16 +185,16 @@ export class ResilientWebSocket {
 
   private handleConnectionError() {
     if (this.isReconnecting) return
-    
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.isReconnecting = true
       this.reconnectAttempts++
-      
+
       const delay = Math.min(
         this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
         30000
       )
-      
+
       setTimeout(() => {
         this.connect()
       }, delay)
@@ -252,24 +252,24 @@ export async function resilientFetch(
   options: RequestInit & { timeout?: number } = {}
 ): Promise<Response> {
   const { timeout = 10000, ...fetchOptions } = options
-  
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
-  
+
   try {
     const response = await retryWithBackoff(async () => {
       const res = await fetch(url, {
         ...fetchOptions,
         signal: controller.signal
       })
-      
+
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
-      
+
       return res
     })
-    
+
     clearTimeout(timeoutId)
     return response
   } catch (error) {
@@ -284,13 +284,13 @@ export async function resilientFetch(
  */
 export function assessConnectionQuality(connection: ReturnType<typeof useConnectionMonitoring>): 'excellent' | 'good' | 'poor' | 'offline' {
   if (!connection.isOnline) return 'offline'
-  
+
   // Use effective connection type if available
   switch (connection.effectiveType) {
     case '4g':
       return 'excellent'
     case '3g':
-      return 'good' 
+      return 'good'
     case '2g':
     case 'slow-2g':
       return 'poor'
@@ -308,7 +308,7 @@ export function assessConnectionQuality(connection: ReturnType<typeof useConnect
 export function getAdaptivePollingInterval(connection?: ReturnType<typeof useConnectionMonitoring>): number {
   // Default to offline if no connection provided
   const quality = connection ? assessConnectionQuality(connection) : 'offline'
-  
+
   switch (quality) {
     case 'excellent':
       return 1000 // 1 second

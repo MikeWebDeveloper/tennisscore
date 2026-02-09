@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { Query } from "node-appwrite"
 import { Match, Player } from "@/lib/types"
+import { env } from "@/lib/env"
 
 // Simple in-memory cache for statistics (in production, use Redis)
 const statisticsCache = new Map<string, { data: any; timestamp: number }>()
@@ -32,7 +33,7 @@ export async function getMatchesWithStats(playerId: string, options: {
   try {
     const { databases } = await createAdminClient()
     const { limit = 50, status, dateAfter } = options
-    
+
     // Build efficient query with proper indexing
     const queries = [
       Query.or([
@@ -52,11 +53,11 @@ export async function getMatchesWithStats(playerId: string, options: {
     if (dateAfter) {
       queries.push(Query.greaterThan("matchDate", dateAfter))
     }
-    
+
     // Get matches with efficient query
     const matchesResponse = await databases.listDocuments<Match>(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       queries
     )
 
@@ -73,11 +74,11 @@ export async function getMatchesWithStats(playerId: string, options: {
     const playersMap = new Map<string, Player>()
     if (playerIds.size > 0) {
       const playersResponse = await databases.listDocuments<Player>(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [Query.equal("$id", Array.from(playerIds))]
       )
-      
+
       playersResponse.documents.forEach(player => {
         playersMap.set(player.$id, player)
       })
@@ -105,12 +106,12 @@ export async function getPlayerComparisons(playerId: string): Promise<{
   winRate: number
 }[]> {
   // Only fetch completed matches for statistics - much more efficient
-  const matches = await getMatchesWithStats(playerId, { 
+  const matches = await getMatchesWithStats(playerId, {
     status: 'completed',
     limit: 200 // Reasonable limit for opponent statistics
   })
   const completedMatches = matches
-  
+
   const opponentStats = new Map<string, {
     opponent: Player
     matches: number
@@ -125,7 +126,7 @@ export async function getPlayerComparisons(playerId: string): Promise<{
     } else if (match.playerTwoId === playerId && match.playerOne) {
       opponentId = match.playerOneId
     }
-    
+
     if (!opponentId) return
 
     const opponent = match.playerOneId === opponentId ? match.playerOne : match.playerTwo

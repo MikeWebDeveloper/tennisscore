@@ -6,6 +6,7 @@ import { getCurrentUser, isAdmin } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition, Player } from "@/lib/types"
 import { getPlayerById } from "./players"
+import { env } from "@/lib/env"
 
 export async function createMatch(matchData: {
   playerOneId: string
@@ -13,7 +14,7 @@ export async function createMatch(matchData: {
   playerThreeId?: string
   playerFourId?: string
   tournamentName?: string
-  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" | "detailed" }
+  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" | "detailed" | "custom" }
 }) {
   const user = await getCurrentUser()
   if (!user) {
@@ -55,8 +56,8 @@ export async function createMatch(matchData: {
     console.log("Attempting to create match with data:", newMatch)
 
     const match = await databases.createDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       ID.unique(),
       newMatch
     )
@@ -92,8 +93,8 @@ export async function getMatchById(matchId: string): Promise<Match | null> {
 
   try {
     const match = await databases.getDocument<Match>(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId
     )
 
@@ -151,7 +152,7 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
     const { databases } = await createAdminClient()
 
     // Serialize pointLog objects to strings since Appwrite expects string arrays
-    const serializedPointLog = scoreUpdate.pointLog.map(point => 
+    const serializedPointLog = scoreUpdate.pointLog.map(point =>
       typeof point === 'string' ? point : JSON.stringify(point)
     )
 
@@ -167,11 +168,11 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
       score: JSON.stringify(scoreUpdate.score),
       pointLog: serializedPointLog,
     }
-    
+
     if (scoreUpdate.status) {
       updateData.status = scoreUpdate.status
     }
-    
+
     if (scoreUpdate.winnerId) {
       updateData.winnerId = scoreUpdate.winnerId
     }
@@ -194,8 +195,8 @@ export async function updateMatchScore(matchId: string, scoreUpdate: {
 
     const match = await withRetry(() =>
       databases.updateDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         matchId,
         updateData
       )
@@ -221,8 +222,8 @@ export async function getMatchesByUser(): Promise<Match[]> {
 
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         [
           Query.equal("userId", user.$id),
           Query.orderDesc("$createdAt"),
@@ -265,12 +266,12 @@ export async function getMatchesByUserPaginated(options: {
     const queries = [
       Query.equal("userId", user.$id)
     ]
-    
+
     // Add date filtering
     if (dateFilter !== 'all') {
       const now = new Date()
       let filterDate: Date
-      
+
       switch (dateFilter) {
         case 'thisMonth':
           filterDate = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -284,7 +285,7 @@ export async function getMatchesByUserPaginated(options: {
         default:
           filterDate = new Date(0) // No filter
       }
-      
+
       if (filterDate.getTime() > 0) {
         queries.push(Query.greaterThanEqual("matchDate", filterDate.toISOString()))
       }
@@ -297,8 +298,8 @@ export async function getMatchesByUserPaginated(options: {
 
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         queries
       )
     )
@@ -306,8 +307,8 @@ export async function getMatchesByUserPaginated(options: {
     // Get total count for pagination info
     const totalResponse = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         [Query.equal("userId", user.$id)]
       )
     )
@@ -336,8 +337,8 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
 
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         [
           Query.equal("userId", user.$id),
           Query.or([
@@ -360,21 +361,21 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
 
 export async function getMatch(matchId: string): Promise<Match> {
   const { databases } = await createAdminClient()
-  
+
   try {
     const match = await withRetry(() =>
       databases.getDocument<Match>(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         matchId
       )
     )
-    
+
     // Check if match is soft deleted
     if (match.isDeleted) {
       throw new Error("Match not found")
     }
-    
+
     // Convert setDurations from string array to number array
     return {
       ...match,
@@ -382,11 +383,11 @@ export async function getMatch(matchId: string): Promise<Match> {
     }
   } catch (error: unknown) {
     console.error("Error fetching match:", error)
-    
+
     // Handle specific Appwrite errors
     if (error && typeof error === 'object') {
       const err = error as { code?: number; type?: string; message?: string }
-      
+
       if (err.code === 404 || err.type === 'document_not_found') {
         throw new Error("Match not found")
       } else if (err.code === 401 || err.type === 'general_unauthorized_scope') {
@@ -395,7 +396,7 @@ export async function getMatch(matchId: string): Promise<Match> {
         throw new Error("Network error - please check your connection")
       }
     }
-    
+
     // Generic fallback
     throw new Error("Unable to load match")
   }
@@ -410,8 +411,8 @@ export async function deleteMatch(matchId: string) {
   try {
     // First verify the user owns this match
     const match = await databases.getDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId
     )
 
@@ -421,8 +422,8 @@ export async function deleteMatch(matchId: string) {
 
     // Soft delete: mark as deleted instead of actually deleting
     await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId,
       {
         isDeleted: true,
@@ -449,12 +450,12 @@ export async function getDeletedMatches(): Promise<Match[]> {
     }
 
     const { databases } = await createAdminClient()
-    
+
     // Get all user matches first
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         [
           Query.equal("userId", user.$id),
           Query.orderDesc("$createdAt"),
@@ -466,7 +467,7 @@ export async function getDeletedMatches(): Promise<Match[]> {
     // Filter for deleted matches within the last 7 days client-side
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    
+
     const deletedMatches = response.documents.filter(match => {
       if (!match.isDeleted || !match.deletedAt) return false
       const deletedDate = new Date(match.deletedAt)
@@ -489,8 +490,8 @@ export async function restoreMatch(matchId: string) {
   try {
     // First verify the user owns this match and it's deleted
     const match = await databases.getDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId
     )
 
@@ -507,7 +508,7 @@ export async function restoreMatch(matchId: string) {
       const deletedDate = new Date(match.deletedAt)
       const now = new Date()
       const daysSinceDeleted = (now.getTime() - deletedDate.getTime()) / (1000 * 60 * 60 * 24)
-      
+
       if (daysSinceDeleted > 7) {
         throw new Error("Match was deleted more than 7 days ago and cannot be restored")
       }
@@ -515,8 +516,8 @@ export async function restoreMatch(matchId: string) {
 
     // Restore the match by removing soft delete flags
     await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId,
       {
         isDeleted: false,
@@ -544,8 +545,8 @@ export async function addMatchComment(matchId: string, comment: string): Promise
 
     // Get current match to retrieve existing events
     const match = await databases.getDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId
     )
 
@@ -568,8 +569,8 @@ export async function addMatchComment(matchId: string, comment: string): Promise
 
     // Update match with new events array
     await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId,
       {
         events: updatedEvents
@@ -596,14 +597,14 @@ export async function generateDetailedPointData(matchId: string = "68494c7fd65b6
 
     // Generate point-by-point data for 6-4, 6-3 match
     const detailedPoints = generateMatchPoints()
-    
+
     // Serialize points for Appwrite storage
     const serializedPointLog = detailedPoints.map(point => JSON.stringify(point))
 
     // Update the match with detailed point data
     await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId,
       {
         pointLog: serializedPointLog
@@ -624,7 +625,7 @@ function generateMatchPoints(): PointDetail[] {
   let pointNumber = 1
   let setNumber = 1
   let gameNumber = 1
-  
+
   // Set 1: 6-4 (Michal wins)
   const set1Games = [
     { p1: 1, p2: 0 }, // 1-0
@@ -653,25 +654,25 @@ function generateMatchPoints(): PointDetail[] {
   ]
 
   const allSets = [set1Games, set2Games]
-  
+
   allSets.forEach((setGames, setIndex) => {
     setNumber = setIndex + 1
     gameNumber = 1
-    
+
     setGames.forEach((gameResult, gameIndex) => {
       const isLastGameOfSet = gameIndex === setGames.length - 1
       const isLastGameOfMatch = setIndex === 1 && isLastGameOfSet
-      
+
       // Generate points for this game
       const gamePoints = generateGamePoints(
-        gameResult, 
-        pointNumber, 
-        setNumber, 
+        gameResult,
+        pointNumber,
+        setNumber,
         gameNumber,
         isLastGameOfSet,
         isLastGameOfMatch
       )
-      
+
       points.push(...gamePoints)
       pointNumber += gamePoints.length
       gameNumber++
@@ -681,40 +682,40 @@ function generateMatchPoints(): PointDetail[] {
   return points
 }
 
-function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointNumber: number, setNumber: number, gameNumber: number, isLastGameOfSet: boolean, isLastGameOfMatch: boolean): PointDetail[] {
+function generateGamePoints(gameResult: { p1: number, p2: number }, startingPointNumber: number, setNumber: number, gameNumber: number, isLastGameOfSet: boolean, isLastGameOfMatch: boolean): PointDetail[] {
   const points: PointDetail[] = []
   let pointNumber = startingPointNumber
-  
+
   // Determine who wins this game and server
   const gameWinner: "p1" | "p2" = gameResult.p1 > (gameResult.p2 || 0) ? "p1" : "p2"
   const server: "p1" | "p2" = gameNumber % 2 === 1 ? "p1" : "p2" // Alternate serve each game
-  
+
   // Track actual tennis score progression
   const currentScore = { p1: 0, p2: 0 }
   let pointIndex = 0
-  
+
   // Play points until someone wins the game
   while (true) {
     // Get the game score BEFORE this point is played
     const gameScore = getTennisScore(currentScore.p1, currentScore.p2)
-    
+
     const isGameWinningPoint = isGameComplete(currentScore)
     if (isGameWinningPoint) break
-    
+
     // Determine point winner based on realistic probability
     // If this is the last point needed to reach our target, award to gameWinner
     const shouldGameWinnerWin = isNearGameEnd(currentScore, gameWinner)
-    const winner: "p1" | "p2" = shouldGameWinnerWin ? gameWinner : 
-                                (Math.random() > 0.5 ? "p1" : "p2")
-    
+    const winner: "p1" | "p2" = shouldGameWinnerWin ? gameWinner :
+      (Math.random() > 0.5 ? "p1" : "p2")
+
     // **REALISTIC SERVE PATTERNS**
     const isFirstServeIn = Math.random() < 0.65 // 65% first serve success rate
     const isDoubleFault = !isFirstServeIn && Math.random() < 0.08 // 8% chance of double fault when first serve misses
-    
+
     let serveType: "first" | "second"
     let serveOutcome: PointOutcome
     let pointOutcome: PointOutcome
-    
+
     if (isFirstServeIn) {
       serveType = "first"
       serveOutcome = generateRealisticPointOutcome(true, winner === server)
@@ -728,12 +729,12 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       serveOutcome = generateRealisticPointOutcome(false, winner === server)
       pointOutcome = serveOutcome
     }
-    
+
     // Award the point AFTER creating the point detail
     currentScore[winner]++
-    
+
     const isLastPoint = isGameComplete(currentScore)
-    
+
     const point: PointDetail = {
       id: `point_${pointNumber}`,
       timestamp: new Date(Date.now() + pointNumber * 30000).toISOString(),
@@ -750,7 +751,7 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       rallyLength: generateRealisticRallyLength(pointOutcome),
       pointOutcome,
       lastShotType: generateRealisticLastShot(pointOutcome),
-      lastShotPlayer: pointOutcome === 'unforced_error' || pointOutcome === 'forced_error' || pointOutcome === 'double_fault' 
+      lastShotPlayer: pointOutcome === 'unforced_error' || pointOutcome === 'forced_error' || pointOutcome === 'double_fault'
         ? (winner === 'p1' ? 'p2' : 'p1') // Error: lastShotPlayer made the error and lost
         : winner, // Winner or ace: lastShotPlayer won the point
       isBreakPoint: server !== gameWinner && isLastPoint,
@@ -762,27 +763,27 @@ function generateGamePoints(gameResult: {p1: number, p2: number}, startingPointN
       notes: isLastPoint ? "Game winning point" : undefined,
       courtPosition: ["deuce", "ad", "baseline", "net"][Math.floor(Math.random() * 4)] as CourtPosition
     }
-    
+
     points.push(point)
     pointNumber++
     pointIndex++
-    
+
     // Safety check to prevent infinite loops
     if (pointIndex > 20) break
   }
-  
+
   return points
 }
 
 // Helper function to check if game is complete
 function isGameComplete(score: { p1: number, p2: number }): boolean {
   const { p1, p2 } = score
-  
+
   // Standard game: win by 2, at least 4 points
   if (Math.max(p1, p2) >= 4) {
     return Math.abs(p1 - p2) >= 2
   }
-  
+
   return false
 }
 
@@ -790,13 +791,13 @@ function isGameComplete(score: { p1: number, p2: number }): boolean {
 function isNearGameEnd(score: { p1: number, p2: number }, gameWinner: "p1" | "p2"): boolean {
   const winnerScore = score[gameWinner]
   const loserScore = score[gameWinner === "p1" ? "p2" : "p1"]
-  
+
   // If winner is close to winning, bias heavily toward them
   if (winnerScore >= 3) return true
-  
+
   // If it's close, 50/50
   if (Math.abs(winnerScore - loserScore) <= 1) return Math.random() > 0.5
-  
+
   // Otherwise, slight bias toward winner
   return Math.random() > 0.3
 }
@@ -805,12 +806,12 @@ function isNearGameEnd(score: { p1: number, p2: number }, gameWinner: "p1" | "p2
 function getTennisScore(p1Points: number, p2Points: number): string {
   // Tennis scoring: 0, 15, 30, 40, deuce, advantage
   const scoreNames = ["0", "15", "30", "40"]
-  
+
   // Both players under 40 (less than 3 points)
   if (p1Points < 3 && p2Points < 3) {
     return `${scoreNames[p1Points]}-${scoreNames[p2Points]}`
   }
-  
+
   // At least one player has 40 (3+ points)
   if (p1Points >= 3 && p2Points >= 3) {
     // Deuce situation
@@ -824,11 +825,11 @@ function getTennisScore(p1Points: number, p2Points: number): string {
       return "40-Ad"
     }
   }
-  
+
   // One player has less than 40, other has 40 or more
   const p1Display = p1Points >= 3 ? "40" : scoreNames[p1Points]
   const p2Display = p2Points >= 3 ? "40" : scoreNames[p2Points]
-  
+
   return `${p1Display}-${p2Display}`
 }
 
@@ -871,17 +872,17 @@ function generateRealisticLastShot(pointOutcome: string): ShotType {
   if (pointOutcome === "ace" || pointOutcome === "double_fault") {
     return "serve"
   }
-  
+
   const shots: ShotType[] = ["forehand", "backhand", "volley", "overhead"]
   const weights = [0.45, 0.35, 0.15, 0.05] // Realistic shot distribution
   const random = Math.random()
   let sum = 0
-  
+
   for (let i = 0; i < shots.length; i++) {
     sum += weights[i]
     if (random <= sum) return shots[i]
   }
-  
+
   return "forehand"
 }
 
@@ -895,8 +896,8 @@ export async function updateMatchFormat(matchId: string, newFormat: MatchFormat)
     const { databases } = await createAdminClient()
 
     await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
       matchId,
       { matchFormat: JSON.stringify(newFormat) }
     )
@@ -917,7 +918,7 @@ export async function getAllMatches(options: {
 } = {}): Promise<{ matches: Match[], total: number, hasMore: boolean }> {
   try {
     const user = await getCurrentUser()
-    
+
     // Check if user has admin access
     if (!user || !isAdmin(user.email)) {
       return { matches: [], total: 0, hasMore: false }
@@ -928,7 +929,7 @@ export async function getAllMatches(options: {
 
     // Build query
     const queries: string[] = []
-    
+
     // Add search functionality if provided
     if (search.trim()) {
       // For search, we'll need to get all matches first and filter client-side
@@ -944,8 +945,8 @@ export async function getAllMatches(options: {
 
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         queries
       )
     )
@@ -958,27 +959,27 @@ export async function getAllMatches(options: {
       matches = matches.filter(match => {
         // Search in tournament name
         if (match.tournamentName?.toLowerCase().includes(searchLower)) return true
-        
+
         // We'll need to populate players to search in player names
         // For now, just search in tournament and user data
         return false
       })
-      
+
       // Apply pagination after filtering
       const total = matches.length
       matches = matches.slice(offset, offset + limit)
-      return { 
-        matches, 
-        total, 
-        hasMore: (offset + limit) < total 
+      return {
+        matches,
+        total,
+        hasMore: (offset + limit) < total
       }
     }
 
     // Get total count for pagination
     const totalResponse = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         [Query.orderDesc("$createdAt")]
       )
     )
@@ -1007,16 +1008,18 @@ export async function getAllMatchesWithPlayers(options: {
   limit?: number
   offset?: number
   search?: string
-} = {}): Promise<{ matches: (Match & {
-  playerOneName: string
-  playerTwoName: string
-  playerThreeName?: string
-  playerFourName?: string
-  createdByEmail?: string
-})[], total: number, hasMore: boolean }> {
+} = {}): Promise<{
+  matches: (Match & {
+    playerOneName: string
+    playerTwoName: string
+    playerThreeName?: string
+    playerFourName?: string
+    createdByEmail?: string
+  })[], total: number, hasMore: boolean
+}> {
   try {
     const user = await getCurrentUser()
-    
+
     // Check if user has admin access
     if (!user || !isAdmin(user.email)) {
       return { matches: [], total: 0, hasMore: false }
@@ -1029,7 +1032,7 @@ export async function getAllMatchesWithPlayers(options: {
     // When searching, we need to load more matches to search across ALL matches
     // When not searching, use efficient pagination
     const queries = [Query.orderDesc("$createdAt")]
-    
+
     if (isSearching) {
       // Load more matches for comprehensive search
       // Adjust this number based on your database size and performance requirements
@@ -1043,8 +1046,8 @@ export async function getAllMatchesWithPlayers(options: {
 
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_MATCHES_COLLECTION_ID,
         queries
       )
     )
@@ -1054,7 +1057,7 @@ export async function getAllMatchesWithPlayers(options: {
     // Get unique player IDs and user IDs to batch fetch
     const playerIds = new Set<string>()
     const userIds = new Set<string>()
-    
+
     matches.forEach(match => {
       if (match.playerOneId && !match.playerOneId.startsWith('anonymous')) playerIds.add(match.playerOneId)
       if (match.playerTwoId && !match.playerTwoId.startsWith('anonymous')) playerIds.add(match.playerTwoId)
@@ -1086,7 +1089,7 @@ export async function getAllMatchesWithPlayers(options: {
       return {
         ...match,
         playerOneName: getPlayerName(playerOne),
-        playerTwoName: getPlayerName(playerTwo), 
+        playerTwoName: getPlayerName(playerTwo),
         playerThreeName: playerThree ? getPlayerName(playerThree) : undefined,
         playerFourName: playerFour ? getPlayerName(playerFour) : undefined,
         createdByEmail: creator,
@@ -1123,17 +1126,17 @@ export async function getAllMatchesWithPlayers(options: {
       const paginatedMatches = filteredMatches.slice(offset, offset + limit)
       const hasMore = (offset + limit) < total
 
-      return { 
-        matches: paginatedMatches, 
-        total, 
-        hasMore 
+      return {
+        matches: paginatedMatches,
+        total,
+        hasMore
       }
     } else {
       // For non-search results, get total count for pagination info
       const totalResponse = await withRetry(() =>
         databases.listDocuments(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_MATCHES_COLLECTION_ID!,
+          env.APPWRITE_DATABASE_ID,
+          env.APPWRITE_MATCHES_COLLECTION_ID,
           [Query.orderDesc("$createdAt")]
         )
       )
@@ -1141,10 +1144,10 @@ export async function getAllMatchesWithPlayers(options: {
       const total = totalResponse.total
       const hasMore = (offset + limit) < total
 
-      return { 
-        matches: enhancedMatches, 
-        total, 
-        hasMore 
+      return {
+        matches: enhancedMatches,
+        total,
+        hasMore
       }
     }
   } catch (error) {
@@ -1156,26 +1159,26 @@ export async function getAllMatchesWithPlayers(options: {
 // Batch fetch players to reduce API calls
 async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>> {
   if (playerIds.length === 0) return new Map()
-  
+
   try {
     const { databases } = await createAdminClient()
-    
+
     const response = await withRetry(() =>
       databases.listDocuments<Player>(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [
           Query.equal("$id", playerIds),
           Query.limit(100) // Batch limit
         ]
       )
     )
-    
+
     const playersMap = new Map<string, Player>()
     response.documents.forEach((player) => {
       playersMap.set(player.$id, player)
     })
-    
+
     return playersMap
   } catch (error) {
     console.error("Error batch fetching players:", error)
@@ -1186,11 +1189,11 @@ async function batchGetPlayers(playerIds: string[]): Promise<Map<string, Player>
 // Batch fetch user emails using Appwrite Users API
 async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
   if (userIds.length === 0) return new Map()
-  
+
   try {
     const { users } = await createAdminClient()
     const usersMap = new Map<string, string>()
-    
+
     // Appwrite Users API doesn't support batch queries, so we need to fetch individually
     // But we can do it in parallel to optimize performance
     const userPromises = userIds.map(async (userId) => {
@@ -1202,12 +1205,12 @@ async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
         return { id: userId, email: 'Unknown User' }
       }
     })
-    
+
     const userResults = await Promise.all(userPromises)
     userResults.forEach(({ id, email }) => {
       usersMap.set(id, email)
     })
-    
+
     return usersMap
   } catch (error) {
     console.error("Error batch fetching users:", error)
@@ -1230,4 +1233,3 @@ async function batchGetUsers(userIds: string[]): Promise<Map<string, string>> {
 //   }
 // }
 
- 

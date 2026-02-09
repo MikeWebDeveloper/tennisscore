@@ -40,7 +40,7 @@ const THRESHOLDS = {
 function getRating(name: string, value: number): 'good' | 'needs-improvement' | 'poor' {
   const threshold = THRESHOLDS[name as keyof typeof THRESHOLDS]
   if (!threshold) return 'good'
-  
+
   if (value <= threshold.good) return 'good'
   if (value <= threshold.poor) return 'needs-improvement'
   return 'poor'
@@ -48,7 +48,7 @@ function getRating(name: string, value: number): 'good' | 'needs-improvement' | 
 
 function getNavigationType(): string {
   if (typeof window === 'undefined') return 'unknown'
-  
+
   const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
   return navEntry?.type || 'unknown'
 }
@@ -108,8 +108,8 @@ class PerformanceMonitor {
     }
 
     // Example: Google Analytics 4
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', data.name, {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', data.name, {
         custom_parameter_1: data.value,
         custom_parameter_2: data.rating,
       })
@@ -155,10 +155,10 @@ class PerformanceMonitor {
 
   private generateRecommendations(metrics: (PerformanceData | null)[]): string[] {
     const recommendations: string[] = []
-    
+
     metrics.forEach(metric => {
       if (!metric) return
-      
+
       if (metric.rating === 'poor' || metric.rating === 'needs-improvement') {
         switch (metric.name) {
           case 'LCP':
@@ -195,7 +195,7 @@ class PerformanceMonitor {
 
   public subscribe(callback: (summary: PerformanceSummary) => void) {
     this.subscribers.push(callback)
-    
+
     // Immediately call with current data if available
     if (this.metrics.size > 0) {
       callback(this.getSummary())
@@ -229,7 +229,7 @@ export const performanceMonitor = new PerformanceMonitor()
 
 // Convenience hooks for React components
 export function useWebVitals() {
-  const [summary, setSummary] = React.useState<PerformanceSummary>(() => 
+  const [summary, setSummary] = React.useState<PerformanceSummary>(() =>
     performanceMonitor.getSummary()
   )
 
@@ -243,18 +243,18 @@ export function useWebVitals() {
 // Additional performance utilities
 export function measureInteractionLatency(name: string, fn: () => void | Promise<void>) {
   const start = performance.now()
-  
+
   const measure = () => {
     const duration = performance.now() - start
     console.log(`🎯 ${name} completed in ${duration.toFixed(2)}ms`)
-    
+
     if (duration > 100) {
       console.warn(`⚠️ Slow interaction detected: ${name} took ${duration.toFixed(2)}ms`)
     }
   }
 
   const result = fn()
-  
+
   if (result instanceof Promise) {
     return result.finally(measure)
   } else {
@@ -267,7 +267,7 @@ export function measureComponentRender(componentName: string) {
   return (WrappedComponent: React.ComponentType<any>) => {
     const MeasuredComponent = React.memo((props: any) => {
       const renderStart = React.useRef<number>(0)
-      
+
       React.useLayoutEffect(() => {
         if (renderStart.current) {
           const duration = performance.now() - renderStart.current
@@ -276,9 +276,9 @@ export function measureComponentRender(componentName: string) {
           }
         }
       })
-      
+
       renderStart.current = performance.now()
-      
+
       return React.createElement(WrappedComponent, props)
     })
 

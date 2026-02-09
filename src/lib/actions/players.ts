@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { Player } from "@/lib/types"
+import { env } from "@/lib/env"
 
 // Helper function to generate legacy rating from BH and CZ ratings
 function generateLegacyRating(bhRating?: string, czRanking?: number): string | undefined {
@@ -42,10 +43,10 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
     if (!user) {
       return { error: "Unauthorized" }
     }
-    
+
     const bhRating = (formData.get("bhRating") as string) || undefined
     const czRanking = formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined
-    
+
     const data = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
@@ -62,18 +63,18 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
       // Legacy field populated from new fields
       rating: (formData.get("rating") as string) || generateLegacyRating(bhRating, czRanking),
     }
-    
+
     const validatedData = playerSchema.parse(data)
-    
+
     const { databases, storage } = await createAdminClient()
-    
+
     // Handle profile picture upload
     let profilePictureId: string | undefined
     const profilePicture = formData.get("profilePicture") as File
     if (profilePicture && profilePicture.size > 0) {
       try {
         const uploadedFile = await storage.createFile(
-          process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID!,
+          env.APPWRITE_PROFILE_PICTURES_BUCKET_ID,
           ID.unique(),
           profilePicture
         )
@@ -82,30 +83,30 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
         console.error("Error uploading profile picture:", error)
       }
     }
-    
+
     // If this is set as main player, unset other main players
     if (validatedData.isMainPlayer) {
       const existingPlayers = await databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
       )
-      
+
       // Remove main player status from existing players
       for (const existingPlayer of existingPlayers.documents) {
         await databases.updateDocument(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+          env.APPWRITE_DATABASE_ID,
+          env.APPWRITE_PLAYERS_COLLECTION_ID,
           existingPlayer.$id,
           { isMainPlayer: false }
         )
       }
     }
-    
-    const player = await withRetry(() => 
+
+    const player = await withRetry(() =>
       databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         ID.unique(),
         {
           ...validatedData,
@@ -114,7 +115,7 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
         }
       )
     )
-    
+
     revalidatePath("/players")
     revalidatePath("/dashboard")
     return { success: true, player: player as unknown as Player }
@@ -133,10 +134,10 @@ export async function getPlayersByUser(): Promise<Player[]> {
   try {
     const response = await withRetry(() =>
       databases.listDocuments<Player>(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [
-          Query.equal("userId", user.$id), 
+          Query.equal("userId", user.$id),
           Query.orderDesc("$createdAt"),
           Query.limit(100) // Reduce limit for faster queries
         ]
@@ -146,7 +147,7 @@ export async function getPlayersByUser(): Promise<Player[]> {
 
     const playersWithPictures = response.documents.map(player => {
       if (player.profilePictureId) {
-        const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+        const url = `${env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${env.NEXT_PUBLIC_APPWRITE_PROJECT}`
         return { ...player, profilePictureUrl: url }
       }
       return player
@@ -192,7 +193,7 @@ export async function getPlayersByUserPaginated(options: {
 
     // Build base query for regular pagination
     const queries = [Query.equal("userId", user.$id)]
-    
+
     // Add sorting
     switch (sortBy) {
       case 'name':
@@ -220,23 +221,23 @@ export async function getPlayersByUserPaginated(options: {
     }
 
     const response = await databases.listDocuments<Player>(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_PLAYERS_COLLECTION_ID,
       queries
     )
 
     // Get total count for pagination info
     const totalResponse = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [Query.equal("userId", user.$id)]
       )
     )
 
     let players = response.documents.map(player => {
       if (player.profilePictureId) {
-        const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+        const url = `${env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${env.NEXT_PUBLIC_APPWRITE_PROJECT}`
         return { ...player, profilePictureUrl: url }
       }
       return player
@@ -260,20 +261,20 @@ export async function getPlayersByUserPaginated(options: {
 // Helper function to get players with main player first on first page
 async function getPlayersMainFirst(userId: string, limit: number): Promise<PaginatedPlayersResult> {
   const { databases } = await createAdminClient()
-  
+
   // First, get the main player
   const mainPlayerResponse = await databases.listDocuments<Player>(
-    process.env.APPWRITE_DATABASE_ID!,
-    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    env.APPWRITE_DATABASE_ID,
+    env.APPWRITE_PLAYERS_COLLECTION_ID,
     [Query.equal("userId", userId), Query.equal("isMainPlayer", true), Query.limit(1)]
   )
 
   // Then get other players (excluding main player)
   const otherPlayersResponse = await databases.listDocuments<Player>(
-    process.env.APPWRITE_DATABASE_ID!,
-    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    env.APPWRITE_DATABASE_ID,
+    env.APPWRITE_PLAYERS_COLLECTION_ID,
     [
-      Query.equal("userId", userId), 
+      Query.equal("userId", userId),
       Query.equal("isMainPlayer", false),
       Query.orderDesc("$createdAt"),
       Query.limit(limit - (mainPlayerResponse.documents.length > 0 ? 1 : 0))
@@ -283,18 +284,18 @@ async function getPlayersMainFirst(userId: string, limit: number): Promise<Pagin
   // Get total count
   const totalResponse = await withRetry(() =>
     databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_PLAYERS_COLLECTION_ID,
       [Query.equal("userId", userId)]
     )
   )
 
   // Combine players with main player first
   const allPlayers = [...mainPlayerResponse.documents, ...otherPlayersResponse.documents]
-  
+
   const players = allPlayers.map(player => {
     if (player.profilePictureId) {
-      const url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`
+      const url = `${env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${env.NEXT_PUBLIC_APPWRITE_PROJECT}`
       return { ...player, profilePictureUrl: url }
     }
     return player
@@ -308,18 +309,18 @@ async function getPlayersMainFirst(userId: string, limit: number): Promise<Pagin
 
 // Helper function to search players with server-side filtering
 async function searchPlayersWithQuery(
-  userId: string, 
-  searchQuery: string, 
-  limit: number, 
-  offset: number, 
+  userId: string,
+  searchQuery: string,
+  limit: number,
+  offset: number,
   sortBy: string
 ): Promise<PaginatedPlayersResult> {
   const { databases } = await createAdminClient()
-  
+
   // Get all players for the user (we need to do client-side filtering for diacritic search)
   const allPlayersResponse = await databases.listDocuments<Player>(
-    process.env.APPWRITE_DATABASE_ID!,
-    process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+    env.APPWRITE_DATABASE_ID,
+    env.APPWRITE_PLAYERS_COLLECTION_ID,
     [Query.equal("userId", userId), Query.limit(1000)]
   )
 
@@ -335,26 +336,26 @@ async function searchPlayersWithQuery(
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
-    
+
     const normalizedFirstName = player.firstName
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
-    
+
     const normalizedLastName = player.lastName
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
-    
+
     const normalizedBhRating = player.bhRating ? player.bhRating
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase() : ""
 
     return normalizedPlayerName.includes(normalizedSearch) ||
-           normalizedFirstName.includes(normalizedSearch) ||
-           normalizedLastName.includes(normalizedSearch) ||
-           normalizedBhRating.includes(normalizedSearch)
+      normalizedFirstName.includes(normalizedSearch) ||
+      normalizedLastName.includes(normalizedSearch) ||
+      normalizedBhRating.includes(normalizedSearch)
   })
 
   // Apply sorting
@@ -403,26 +404,26 @@ export async function getMainPlayer(): Promise<Player | null> {
     if (!user) {
       return null
     }
-    
+
     const { databases } = await createAdminClient()
-    
+
     const response = await withRetry(() =>
       databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [
-          Query.equal("userId", user.$id), 
+          Query.equal("userId", user.$id),
           Query.equal("isMainPlayer", true),
           Query.limit(1) // We only need one main player
         ]
       ),
       'NAVIGATION' // Use fast-fail retry config for navigation
     )
-    
+
     if (response.documents.length > 0) {
       return response.documents[0] as unknown as Player
     }
-    
+
     return null
   } catch (error: unknown) {
     console.error("Error fetching main player:", error)
@@ -436,10 +437,10 @@ export async function updatePlayer(playerId: string, formData: FormData) {
     if (!user) {
       return { error: "Unauthorized" }
     }
-    
+
     const bhRating = (formData.get("bhRating") as string) || undefined
     const czRanking = formData.get("czRanking") ? parseInt(formData.get("czRanking") as string) : undefined
-    
+
     const data = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
@@ -459,18 +460,18 @@ export async function updatePlayer(playerId: string, formData: FormData) {
       // Legacy field populated from new fields
       rating: (formData.get("rating") as string) || generateLegacyRating(bhRating, czRanking),
     }
-    
+
     const validatedData = playerSchema.parse(data)
-    
+
     const { databases, storage } = await createAdminClient()
-    
+
     // Handle profile picture upload
     let profilePictureId: string | undefined
     const profilePicture = formData.get("profilePicture") as File
     if (profilePicture && profilePicture.size > 0) {
       try {
         const uploadedFile = await storage.createFile(
-          process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID!,
+          env.APPWRITE_PROFILE_PICTURES_BUCKET_ID,
           ID.unique(),
           profilePicture
         )
@@ -479,42 +480,42 @@ export async function updatePlayer(playerId: string, formData: FormData) {
         console.error("Error uploading profile picture:", error)
       }
     }
-    
+
     // If this is set as main player, unset other main players
     if (validatedData.isMainPlayer) {
       const existingPlayers = await databases.listDocuments(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
       )
-      
+
       // Remove main player status from existing players (except current one)
       for (const existingPlayer of existingPlayers.documents) {
         if (existingPlayer.$id !== playerId) {
           await databases.updateDocument(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+            env.APPWRITE_DATABASE_ID,
+            env.APPWRITE_PLAYERS_COLLECTION_ID,
             existingPlayer.$id,
             { isMainPlayer: false }
           )
         }
       }
     }
-    
+
     const updateData: Record<string, unknown> = { ...validatedData }
     if (profilePictureId) {
       updateData.profilePictureId = profilePictureId
     }
-    
+
     const player = await withRetry(() =>
       databases.updateDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         playerId,
         updateData
       )
     )
-    
+
     revalidatePath("/players")
     revalidatePath("/dashboard")
     return { success: true, player }
@@ -533,23 +534,23 @@ export async function getPlayersByIds(playerIds: string[]): Promise<Record<strin
 
     const { databases } = await createAdminClient()
     const players: Record<string, Player> = {}
-    
+
     // Filter out invalid IDs (anonymous players, empty strings, etc.)
-    const validPlayerIds = playerIds.filter(id => 
-      id && 
-      typeof id === 'string' && 
-      id.trim() !== '' && 
+    const validPlayerIds = playerIds.filter(id =>
+      id &&
+      typeof id === 'string' &&
+      id.trim() !== '' &&
       !id.startsWith('anonymous-') &&
       id.length > 10 // Appwrite IDs are typically longer
     )
-    
+
     // Fetch all players that match the valid IDs  
     for (const playerId of validPlayerIds) {
       try {
         const player = await withRetry(() =>
           databases.getDocument(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+            env.APPWRITE_DATABASE_ID,
+            env.APPWRITE_PLAYERS_COLLECTION_ID,
             playerId
           )
         )
@@ -559,7 +560,7 @@ export async function getPlayersByIds(playerIds: string[]): Promise<Record<strin
         // Don't create fallback entries - let formatPlayerFromObject handle null properly
       }
     }
-    
+
     return players
   } catch (error: unknown) {
     console.error("Error fetching players by IDs:", error)
@@ -573,14 +574,14 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
     if (!user) {
       return { error: "Unauthorized" }
     }
-    
+
     const { databases } = await createAdminClient()
-    
+
     // Verify ownership
     const existingPlayer = await withRetry(() =>
       databases.getDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         playerId
       )
     )
@@ -588,15 +589,15 @@ export async function deletePlayer(playerId: string): Promise<{ success?: boolea
     if (existingPlayer.userId !== user.$id) {
       return { error: "Unauthorized to delete this player" }
     }
-    
+
     await withRetry(() =>
       databases.deleteDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         playerId
       )
     )
-    
+
     revalidatePath("/players")
     revalidatePath("/dashboard")
     return { success: true }
@@ -617,8 +618,8 @@ export async function updatePlayerProfilePicture(
 
   try {
     const player = await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_PLAYERS_COLLECTION_ID,
       playerId,
       {
         profilePictureId: fileId,
@@ -637,17 +638,17 @@ export async function getPlayerById(playerId: string): Promise<Player | null> {
     if (!user) {
       return null
     }
-    
+
     const { databases } = await createAdminClient()
-    
+
     const response = await withRetry(() =>
       databases.getDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
         playerId
       )
     )
-    
+
     return response as unknown as Player
   } catch (error: unknown) {
     console.error("Error fetching player:", error)
@@ -664,8 +665,8 @@ export async function removePlayerProfilePicture(playerId: string) {
   try {
     // First, find the document to get the fileId
     const player = await databases.getDocument<Player>(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_PLAYERS_COLLECTION_ID!,
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_PLAYERS_COLLECTION_ID,
       playerId
     )
 
@@ -697,4 +698,3 @@ export async function removePlayerProfilePicture(playerId: string) {
   }
 }
 
- 

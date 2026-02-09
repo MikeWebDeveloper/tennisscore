@@ -54,7 +54,7 @@ export const deepEqual = (a: unknown, b: unknown, path: string = '', depth: numb
   // Handle arrays
   if (Array.isArray(a)) {
     if (!Array.isArray(b) || a.length !== b.length) return false
-    return a.every((item, index) => 
+    return a.every((item, index) =>
       deepEqual(item, b[index], `${path}[${index}]`, depth + 1)
     )
   }
@@ -63,14 +63,14 @@ export const deepEqual = (a: unknown, b: unknown, path: string = '', depth: numb
   if (typeof a === 'object') {
     const keysA = Object.keys(a)
     const keysB = Object.keys(b)
-    
+
     if (keysA.length !== keysB.length) return false
-    
+
     for (const key of keysA) {
       if (!keysB.includes(key)) return false
-      if (!deepEqual((a as any)[key], (b as any)[key], `${path}.${key}`, depth + 1)) return false
+      if (!deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key], `${path}.${key}`, depth + 1)) return false
     }
-    
+
     return true
   }
 
@@ -91,19 +91,19 @@ export const deepEqual = (a: unknown, b: unknown, path: string = '', depth: numb
  */
 export const shallowEqual = (objA: unknown, objB: unknown): boolean => {
   if (objA === objB) return true
-  
+
   if (objA == null || objB == null) return objA === objB
-  
+
   const keysA = Object.keys(objA)
   const keysB = Object.keys(objB)
-  
+
   if (keysA.length !== keysB.length) return false
-  
+
   for (const key of keysA) {
     if (!Object.prototype.hasOwnProperty.call(objB, key)) return false
-    if ((objA as any)[key] !== (objB as any)[key]) return false
+    if ((objA as Record<string, unknown>)[key] !== (objB as Record<string, unknown>)[key]) return false
   }
-  
+
   return true
 }
 
@@ -116,33 +116,33 @@ export const createSelectiveComparator = (options: {
   custom?: Record<string, (a: any, b: any) => boolean>
 } = {}) => {
   const { ignore = [], deep = [], custom = {} } = options
-  
+
   return (prevProps: any, nextProps: any): boolean => {
     const prevKeys = Object.keys(prevProps).filter(key => !ignore.includes(key))
     const nextKeys = Object.keys(nextProps).filter(key => !ignore.includes(key))
-    
+
     if (prevKeys.length !== nextKeys.length) return false
-    
+
     for (const key of prevKeys) {
       const prevValue = prevProps[key]
       const nextValue = nextProps[key]
-      
+
       // Use custom comparator if provided
       if (custom[key]) {
         if (!custom[key](prevValue, nextValue)) return false
         continue
       }
-      
+
       // Use deep comparison for specified props
       if (deep.includes(key)) {
         if (!deepEqual(prevValue, nextValue)) return false
         continue
       }
-      
+
       // Default shallow comparison
       if (prevValue !== nextValue) return false
     }
-    
+
     return true
   }
 }
@@ -179,7 +179,7 @@ export const memoWithMetrics = <P extends object>(
   const enhancedPropsComparator = (prevProps: P, nextProps: P): boolean => {
     const startTime = performance.now()
     const metrics = memoizationMetrics.get(componentName)!
-    
+
     let areEqual = true
     const changedProps: string[] = []
 
@@ -189,7 +189,7 @@ export const memoWithMetrics = <P extends object>(
       // Default shallow comparison with change tracking
       const prevKeys = Object.keys(prevProps) as (keyof P)[]
       const nextKeys = Object.keys(nextProps) as (keyof P)[]
-      
+
       if (prevKeys.length !== nextKeys.length) {
         areEqual = false
       } else {
@@ -203,7 +203,7 @@ export const memoWithMetrics = <P extends object>(
     }
 
     const comparisonTime = performance.now() - startTime
-    
+
     // Update metrics
     if (enablePerformanceMonitoring) {
       if (areEqual) {
@@ -212,7 +212,7 @@ export const memoWithMetrics = <P extends object>(
         metrics.memoMisses++
         metrics.propsChanged = changedProps
       }
-      
+
       if (comparisonTime > comparisonThreshold) {
         metrics.slowComparisons++
         if (logSlowComparisons) {
@@ -253,10 +253,10 @@ export const useMemoWithMetrics = <T>(
     const startTime = performance.now()
     const result = factory()
     const computationTime = performance.now() - startTime
-    
+
     computationCount.current++
     totalComputationTime.current += computationTime
-    
+
     // Log slow computations
     if (computationTime > 5) {
       logger.debug('Slow useMemo computation', {
@@ -267,7 +267,7 @@ export const useMemoWithMetrics = <T>(
         depsChanged: !shallowEqual(previousDeps.current, deps)
       })
     }
-    
+
     previousDeps.current = deps
     return result
   }, [factory, computationName, ...(deps || [])])
@@ -291,7 +291,7 @@ export const useCallbackWithMetrics = <T extends (...args: any[]) => any>(
     const startTime = performance.now()
     const result = callback(...args)
     const executionTime = performance.now() - startTime
-    
+
     // Log slow callbacks
     if (executionTime > 5) {
       logger.debug('Slow callback execution', {
@@ -301,7 +301,7 @@ export const useCallbackWithMetrics = <T extends (...args: any[]) => any>(
         recreationCount: recreationCount.current
       })
     }
-    
+
     return result
   }, [callback, callbackName, ...deps]) as T
 }
@@ -324,21 +324,21 @@ export const memoizeFunction = <Args extends any[], Return>(
   } = options
 
   const fnName = fn.name || 'anonymous'
-  
+
   if (!functionCache.has(fnName)) {
     functionCache.set(fnName, new Map())
   }
-  
+
   const cache = functionCache.get(fnName)!
 
   return (...args: Args): Return => {
     const key = keyGenerator(...args)
-    
+
     // Check cache
     const cached = cache.get(key)
     if (cached) {
       const { value, timestamp } = cached
-      
+
       // Check TTL
       if (!ttl || Date.now() - timestamp < ttl) {
         return value
@@ -351,7 +351,7 @@ export const memoizeFunction = <Args extends any[], Return>(
     const startTime = performance.now()
     const value = fn(...args)
     const computationTime = performance.now() - startTime
-    
+
     // Cache result
     cache.set(key, {
       value,
@@ -391,7 +391,7 @@ export const useStaleMemo = <T>(
   } = {}
 ): { data: T; isStale: boolean; revalidate: () => void } => {
   const { staleTime = 5000, name = 'anonymous' } = options
-  
+
   const valueRef = useRef<T | undefined>(undefined)
   const timestampRef = useRef<number>(0)
   const depsRef = useRef<DependencyList>(deps)
@@ -401,7 +401,7 @@ export const useStaleMemo = <T>(
     const now = Date.now()
     const depsChanged = !shallowEqual(depsRef.current, deps)
     const timeStale = now - timestampRef.current > staleTime
-    
+
     return depsChanged || timeStale || valueRef.current === undefined
   }, [deps, staleTime])
 
@@ -410,7 +410,7 @@ export const useStaleMemo = <T>(
     valueRef.current = factory()
     timestampRef.current = Date.now()
     depsRef.current = deps
-    
+
     const computationTime = performance.now() - startTime
     if (computationTime > 5) {
       logger.debug('Slow stale memo revalidation', {
@@ -418,7 +418,7 @@ export const useStaleMemo = <T>(
         computationTime
       })
     }
-    
+
     forceRender({})
   }, [factory, deps, name])
 

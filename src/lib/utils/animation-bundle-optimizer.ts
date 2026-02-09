@@ -32,7 +32,7 @@ export const initializeGSAPOptimizations = (): void => {
   // Optimize for mobile devices
   if (typeof window !== 'undefined') {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    
+
     if (isMobile) {
       // Mobile optimizations are handled via the config above
     }
@@ -51,10 +51,10 @@ export const analyzeAnimationBundle = (): {
   const gsapCoreSize = 60 // KB - GSAP core with tree-shaking
   const gsapEasingSize = 8 // KB - Custom easing functions
   const framerMotionSize = 250 // KB - Framer Motion full bundle
-  
+
   const estimatedGSAPSize = gsapCoreSize + gsapEasingSize
   const totalSavings = framerMotionSize - estimatedGSAPSize
-  
+
   const recommendations = [
     'GSAP tree-shaking enabled - unused features automatically removed',
     'Custom easing functions optimized for performance',
@@ -83,13 +83,13 @@ export const createAnimationPerformanceMonitor = () => {
     startAnimation: (name: string) => {
       animationCount++
       const startTime = performance.now()
-      
+
       return {
         end: () => {
           const endTime = performance.now()
           const duration = endTime - startTime
           totalRenderTime += duration
-          
+
           if (duration > 16) { // Longer than one frame
             slowAnimations++
             console.warn(`Slow animation detected: ${name} took ${duration.toFixed(2)}ms`)
@@ -97,14 +97,14 @@ export const createAnimationPerformanceMonitor = () => {
         }
       }
     },
-    
+
     getStats: () => ({
       totalAnimations: animationCount,
       averageRenderTime: animationCount > 0 ? totalRenderTime / animationCount : 0,
       slowAnimations,
       performanceScore: Math.max(0, 100 - (slowAnimations / animationCount) * 100)
     }),
-    
+
     reset: () => {
       animationCount = 0
       totalRenderTime = 0
@@ -123,7 +123,7 @@ export const createAnimationCleanupManager = () => {
   return {
     registerAnimation: (animation: gsap.core.Animation) => {
       activeAnimations.add(animation)
-      
+
       // Auto-cleanup when animation completes
       animation.eventCallback('onComplete', () => {
         activeAnimations.delete(animation)
@@ -132,7 +132,7 @@ export const createAnimationCleanupManager = () => {
 
     registerTimeline: (timeline: gsap.core.Timeline) => {
       activeTimelines.add(timeline)
-      
+
       // Auto-cleanup when timeline completes
       timeline.eventCallback('onComplete', () => {
         activeTimelines.delete(timeline)
@@ -143,7 +143,7 @@ export const createAnimationCleanupManager = () => {
       // Kill all active animations
       activeAnimations.forEach(animation => animation.kill())
       activeTimelines.forEach(timeline => timeline.kill())
-      
+
       // Clear sets
       activeAnimations.clear()
       activeTimelines.clear()
@@ -207,14 +207,11 @@ export const optimizeAnimationMemory = () => {
     clearCache,
     setupPeriodicCleanup,
     getMemoryUsage: () => {
-      if (typeof window !== 'undefined' && 'memory' in performance) {
-        return {
-          used: (performance as any).memory.usedJSHeapSize,
-          total: (performance as any).memory.totalJSHeapSize,
-          limit: (performance as any).memory.jsHeapSizeLimit
-        }
+      return {
+        used: performance.memory?.usedJSHeapSize ?? 0,
+        total: performance.memory?.totalJSHeapSize ?? 0,
+        limit: performance.memory?.jsHeapSizeLimit ?? 0
       }
-      return null
     }
   }
 }
@@ -223,13 +220,13 @@ export const optimizeAnimationMemory = () => {
  * Prefers-reduced-motion integration
  */
 export const createMotionPreferenceManager = () => {
-  const prefersReducedMotion = typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
     : false
 
   return {
     prefersReduced: prefersReducedMotion,
-    
+
     // Configure GSAP based on motion preference
     applyMotionPreference: () => {
       if (prefersReducedMotion) {
@@ -238,7 +235,7 @@ export const createMotionPreferenceManager = () => {
           duration: 0.01,
           ease: 'none'
         })
-        
+
         // Set global timeline speed to near-zero
         gsap.globalTimeline.timeScale(0.01)
       }
@@ -248,10 +245,10 @@ export const createMotionPreferenceManager = () => {
     watchPreference: (callback: (prefersReduced: boolean) => void) => {
       if (typeof window !== 'undefined') {
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-        
+
         const handler = (e: MediaQueryListEvent) => {
           callback(e.matches)
-          
+
           // Apply new preference immediately
           if (e.matches) {
             gsap.globalTimeline.timeScale(0.01)
@@ -259,7 +256,7 @@ export const createMotionPreferenceManager = () => {
             gsap.globalTimeline.timeScale(1)
           }
         }
-        
+
         mediaQuery.addEventListener('change', handler)
         return () => mediaQuery.removeEventListener('change', handler)
       }

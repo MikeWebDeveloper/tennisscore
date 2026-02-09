@@ -12,6 +12,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   label: string
   description: string
+  target?: string
 }
 
 interface CollapsibleMobileNavProps {
@@ -35,7 +36,7 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
   }
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: 0 }}
       className="fixed bottom-0 left-0 right-0 z-40"
       role="navigation"
@@ -71,7 +72,7 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
               <span className="text-sm font-medium text-muted-foreground">Menu</span>
             )}
           </div>
-          
+
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -106,10 +107,11 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                       <Link
                         href={item.href}
                         onClick={handleNavigation}
+                        target={item.target}
                         className={cn(
                           "flex flex-col items-center space-y-1 px-3 py-2 text-xs transition-all rounded-xl",
-                          isActive 
-                            ? "text-primary bg-primary/10" 
+                          isActive
+                            ? "text-primary bg-primary/10"
                             : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         )}
                         role="menuitem"
@@ -122,7 +124,7 @@ export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) 
                     </motion.div>
                   )
                 })}
-                
+
                 {/* Special "New Match" Button */}
                 <motion.div
                   whileTap={{ scale: 0.9 }}

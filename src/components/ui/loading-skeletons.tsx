@@ -12,12 +12,12 @@ export function StatCardSkeleton() {
             <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
             <Skeleton className="h-6 w-6 md:h-8 md:w-8 rounded-full" />
           </div>
-          
+
           {/* Value */}
           <div className="flex-1 flex items-center">
             <Skeleton className="h-6 md:h-8 lg:h-10 w-12 md:w-16 lg:w-20" />
           </div>
-          
+
           {/* Subtitle */}
           <div className="mt-1">
             <Skeleton className="h-2 md:h-3 w-16 md:w-20" />
@@ -95,7 +95,7 @@ export function MatchesListSkeleton({ count = 6 }: { count?: number }) {
         <Skeleton className="h-10 flex-1" />
         <Skeleton className="h-10 w-[140px]" />
       </div>
-      
+
       {/* Grid skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {Array.from({ length: count }).map((_, i) => (
@@ -136,7 +136,7 @@ export function PlayersListSkeleton({ count = 4 }: { count?: number }) {
       <div className="relative max-w-md">
         <Skeleton className="h-10 w-full" />
       </div>
-      
+
       {/* Grid skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Array.from({ length: count }).map((_, i) => (
@@ -159,13 +159,13 @@ export function ChartSkeleton() {
         {/* Animated bars */}
         <div className="absolute bottom-0 left-0 right-0 flex items-end justify-around h-full p-4">
           {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton 
-              key={i} 
-              className="w-6 animate-pulse" 
-              style={{ 
-                height: `${Math.random() * 60 + 20}%`,
+            <Skeleton
+              key={i}
+              className="w-6 animate-pulse"
+              style={{
+                height: `${(i + 1) * 10 + 20}%`, // Deterministic height to avoid hydration mismatch
                 animationDelay: `${i * 0.1}s`
-              }} 
+              }}
             />
           ))}
         </div>

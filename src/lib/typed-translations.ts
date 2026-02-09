@@ -11,23 +11,32 @@ import { useTranslations as useNextIntlTranslations } from 'next-intl'
  */
 export function useTypedTranslations<T extends keyof IntlMessages>(namespace: T) {
   const t = useNextIntlTranslations(namespace)
-  
+
+  // Define a permissive type to allow string keys
+  type PermissiveTranslator = {
+    (key: string, values?: Record<string, unknown>): string
+    rich: (key: string, values?: Record<string, unknown>) => string | React.ReactNode
+    has: (key: string) => boolean
+  }
+
+  const permissiveT = t as unknown as PermissiveTranslator
+
   return {
     // Basic translation function with string key support
     t: (key: string, values?: Record<string, any>) => {
-      return (t as any)(key, values)
+      return permissiveT(key, values)
     },
-    
+
     // Rich text translation
     rich: (key: string, values?: Record<string, any>) => {
-      return (t as any).rich(key, values)
+      return permissiveT.rich(key, values)
     },
-    
+
     // Check if key exists
     has: (key: string): boolean => {
-      return (t as any).has(key)
+      return permissiveT.has(key)
     },
-    
+
     // Original function for backwards compatibility
     original: t
   }

@@ -11,7 +11,7 @@ declare module 'recharts' {
     height?: number
     children?: React.ReactNode
   }
-  
+
   export const BarChart: React.ComponentType<ChartProps>
   export const LineChart: React.ComponentType<ChartProps>
   export const RadarChart: React.ComponentType<ChartProps>
@@ -42,7 +42,7 @@ declare module 'gsap' {
     pause: () => GSAPTimeline
     reverse: () => GSAPTimeline
   }
-  
+
   export interface GSAP {
     to: (target: any, duration: number, vars?: any) => GSAPTimeline
     from: (target: any, duration: number, vars?: any) => GSAPTimeline
@@ -50,7 +50,7 @@ declare module 'gsap' {
     timeline: () => GSAPTimeline
     registerPlugin: (...plugins: any[]) => void
   }
-  
+
   const gsap: GSAP
   export default gsap
 }
@@ -68,9 +68,9 @@ declare module 'web-vitals' {
     id: string
     entries: any[]
   }
-  
+
   export type ReportHandler = (metric: Metric) => void
-  
+
   export function getCLS(onReport: ReportHandler): void
   export function getFID(onReport: ReportHandler): void
   export function getFCP(onReport: ReportHandler): void
@@ -82,7 +82,42 @@ declare module 'web-vitals' {
 declare global {
   interface Window {
     __BUNDLE_OPTIMIZATION_CACHE__?: Map<string, boolean>
+    gtag?: (...args: any[]) => void
+    gc?: () => void
+    reportServerActionError?: (action: string, error: Error) => void
+    getEventListeners?: (element: EventTarget) => Record<string, any[]>
+  }
+
+  var reportServerActionError: ((action: string, error: Error) => void) | undefined
+
+  type ConnectionType = 'wifi' | 'bluetooth' | 'cellular' | 'ethernet' | 'none' | 'unknown' | 'wimax' | 'other'
+  type EffectiveConnectionType = '2g' | '3g' | '4g' | 'slow-2g'
+
+  interface NetworkInformation {
+    effectiveType: EffectiveConnectionType
+    saveData: boolean
+    type: ConnectionType
+    downlink: number
+    rtt: number
+    onchange: EventListener
+  }
+
+  interface Navigator {
+    connection?: NetworkInformation
+    mozConnection?: NetworkInformation
+    webkitConnection?: NetworkInformation
+    deviceMemory?: number
+  }
+
+  interface PerformanceMemory {
+    jsHeapSizeLimit: number
+    totalJSHeapSize: number
+    usedJSHeapSize: number
+  }
+
+  interface Performance {
+    memory?: PerformanceMemory
   }
 }
 
-export {}
+export { }

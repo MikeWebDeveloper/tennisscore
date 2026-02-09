@@ -1,25 +1,30 @@
 // Dynamic imports for jsPDF - loaded only when needed
-let jsPDF: any = null
-let autoTable: any = null
+import type { jsPDF as JsPDFType } from 'jspdf'
+
+// Define a flexible type for autoTable since we load it dynamically
+type AutoTableFunction = (doc: any, options: any) => void
+
+let jsPDF: typeof JsPDFType | null = null
+let autoTable: AutoTableFunction | null = null
 
 // Lazy loader for PDF libraries
 async function loadPDFLibraries() {
   if (!jsPDF || !autoTable) {
     console.log('📦 Loading PDF libraries...')
     const start = performance.now()
-    
+
     const [jsPDFModule, autoTableModule] = await Promise.all([
       import('jspdf'),
       import('jspdf-autotable')
     ])
-    
-    jsPDF = jsPDFModule.default
-    autoTable = autoTableModule.default
-    
+
+    jsPDF = jsPDFModule.default as unknown as typeof JsPDFType
+    autoTable = autoTableModule.default as unknown as AutoTableFunction
+
     const duration = Math.round(performance.now() - start)
     console.log(`✅ PDF libraries loaded in ${duration}ms`)
   }
-  
+
   return { jsPDF, autoTable }
 }
 import { Match, MatchFormat, PointDetail as StorePointDetail } from '@/stores/matchStore'
@@ -149,7 +154,7 @@ export class MatchExporter {
   }
 
   private jsPDFClass: any
-  
+
   constructor(jsPDFInstance?: any) {
     this.jsPDFClass = jsPDFInstance
     // If jsPDF is provided, create document immediately
@@ -158,7 +163,7 @@ export class MatchExporter {
       this.initializeDimensions()
     }
   }
-  
+
   private initializeDimensions() {
     this.pageWidth = this.doc.internal.pageSize.getWidth()
     this.pageHeight = this.doc.internal.pageSize.getHeight()
@@ -168,15 +173,20 @@ export class MatchExporter {
   async exportMatch(match: Match, playerNames: [string, string], options: ExportOptions): Promise<Blob> {
     // Ensure PDF libraries are loaded if not already initialized
     if (!this.doc && !this.jsPDFClass) {
-      const { jsPDF, autoTable: loadedAutoTable } = await loadPDFLibraries()
-      this.jsPDFClass = jsPDF
-      this.doc = new jsPDF('p', 'mm', 'a4')
+      const { jsPDF: LoadedJsPDF, autoTable: loadedAutoTable } = await loadPDFLibraries()
+
+      if (!LoadedJsPDF) {
+        throw new Error('Failed to load jsPDF')
+      }
+
+      this.jsPDFClass = LoadedJsPDF
+      this.doc = new LoadedJsPDF('p', 'mm', 'a4')
       this.initializeDimensions()
       // autoTable is already set globally by loadPDFLibraries
     }
-    
+
     const exportData = this.prepareExportData(match, playerNames, options)
-    
+
     // Generate PDF based on template
     switch (options.template) {
       case 'professional':
@@ -219,10 +229,10 @@ export class MatchExporter {
       isMatchWinning: point.isMatchWinning,
       notes: point.notes
     }))
-    
+
     const statistics = calculateMatchStats(pointLog)
     const detailedStats = calculateDetailedMatchStats(pointLog)
-    
+
     // Prepare header
     const header: MatchReportHeader = {
       title: options.exportType === 'live_set' ? `Set ${options.setNumber} Report` : 'Match Report',
@@ -275,17 +285,17 @@ export class MatchExporter {
     this.addModernHeader(data.header, data.players, data.summary)
     this.addMatchOverview(data.summary)
     this.addCoreStatistics(data.statistics, data.players)
-    
+
     if (data.detailedStats?.hasDetailedData && data.options.includeAdvancedStats) {
       this.addAdvancedStatistics(data.detailedStats, data.players)
     }
-    
+
     this.addSetAnalysis(data.setBreakdowns)
-    
+
     if (data.pointByPoint && data.options.includePointByPoint) {
       this.addPointByPointAnalysis(data.pointByPoint)
     }
-    
+
     this.addFooter()
   }
 
@@ -293,26 +303,26 @@ export class MatchExporter {
     this.addModernHeader(data.header, data.players, data.summary)
     this.addMatchOverview(data.summary)
     this.addCoreStatistics(data.statistics, data.players)
-    
+
     if (data.detailedStats?.hasDetailedData) {
       this.addAdvancedStatistics(data.detailedStats, data.players)
       this.addTacticalAnalysis(data.detailedStats, data.players)
       this.addPressurePointAnalysis(data.detailedStats)
     }
-    
+
     this.addSetAnalysis(data.setBreakdowns)
-    
+
     if (data.pointByPoint && data.options.includePointByPoint) {
       this.addPointByPointAnalysis(data.pointByPoint)
     }
-    
+
     this.addFooter()
   }
 
   private generateBasicReport(data: MatchExportData): void {
     this.addModernHeader(data.header, data.players, data.summary)
     this.addMatchOverview(data.summary)
-    
+
     // Simplified core statistics for basic template
     this.addSectionHeader('MATCH STATISTICS')
     const basicData = [
@@ -325,9 +335,9 @@ export class MatchExporter {
       ['Winners', data.statistics.winnersByPlayer[0].toString(), data.statistics.winnersByPlayer[1].toString()],
       ['Unforced Errors', data.statistics.unforcedErrorsByPlayer[0].toString(), data.statistics.unforcedErrorsByPlayer[1].toString()]
     ]
-    
+
     this.addStyledTable(basicData, this.colors.primary)
-    
+
     this.addSetAnalysis(data.setBreakdowns)
     this.addFooter()
   }
@@ -342,12 +352,12 @@ export class MatchExporter {
     this.doc.setFontSize(28)
     this.doc.setFont('helvetica', 'bold')
     this.doc.text('TENNIS MATCH REPORT', this.pageWidth / 2, 20, { align: 'center' })
-    
+
     // Match date and format
     this.doc.setFontSize(12)
     this.doc.setFont('helvetica', 'normal')
     this.doc.text(`${header.matchDate} • ${header.format}`, this.pageWidth / 2, 32, { align: 'center' })
-    
+
     if (header.tournament) {
       this.doc.text(header.tournament, this.pageWidth / 2, 40, { align: 'center' })
     }
@@ -366,16 +376,16 @@ export class MatchExporter {
     if (summary.winner) {
       this.doc.setFillColor(...this.colors.success)
       this.doc.roundedRect(this.margin, this.currentY - 5, this.contentWidth, 25, 3, 3, 'F')
-      
+
       this.doc.setTextColor(255, 255, 255)
       this.doc.setFontSize(16)
       this.doc.setFont('helvetica', 'bold')
       this.doc.text(`Winner: ${summary.winner.name}`, this.pageWidth / 2, this.currentY + 8, { align: 'center' })
-      
+
       this.doc.setFontSize(14)
       this.doc.setFont('helvetica', 'normal')
       this.doc.text(`Final Score: ${summary.finalScore}`, this.pageWidth / 2, this.currentY + 18, { align: 'center' })
-      
+
       this.currentY += 35
     }
 
@@ -384,12 +394,12 @@ export class MatchExporter {
 
   private addMatchOverview(summary: MatchSummary): void {
     this.addSectionHeader('MATCH OVERVIEW')
-    
+
     // Overview cards in a grid
     const cardWidth = (this.contentWidth - 10) / 3
     const cardHeight = 20
     const cardSpacing = 5
-    
+
     // Duration card
     this.doc.setFillColor(...this.colors.light)
     this.doc.roundedRect(this.margin, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
@@ -400,7 +410,7 @@ export class MatchExporter {
     this.doc.setFontSize(14)
     this.doc.setFont('helvetica', 'bold')
     this.doc.text(summary.matchDuration, this.margin + 2, this.currentY + 15)
-    
+
     // Total points card
     this.doc.setFillColor(...this.colors.light)
     this.doc.roundedRect(this.margin + cardWidth + cardSpacing, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
@@ -410,7 +420,7 @@ export class MatchExporter {
     this.doc.setFontSize(14)
     this.doc.setFont('helvetica', 'bold')
     this.doc.text(summary.totalPoints.toString(), this.margin + cardWidth + cardSpacing + 2, this.currentY + 15)
-    
+
     // Sets played card
     this.doc.setFillColor(...this.colors.light)
     this.doc.roundedRect(this.margin + (cardWidth + cardSpacing) * 2, this.currentY, cardWidth, cardHeight, 2, 2, 'F')
@@ -421,24 +431,24 @@ export class MatchExporter {
     this.doc.setFont('helvetica', 'bold')
     const setsPlayed = summary.finalScore.split(',').length
     this.doc.text(setsPlayed.toString(), this.margin + (cardWidth + cardSpacing) * 2 + 2, this.currentY + 15)
-    
+
     this.currentY += cardHeight + 15
 
     // Key moments section
     if (summary.keyMoments.length > 0) {
       this.addSubsectionHeader('Key Moments')
-      
+
       summary.keyMoments.slice(0, 8).forEach((moment, index) => {
         this.doc.setFillColor(...this.colors.light)
         this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 8, 1, 1, 'F')
-        
+
         this.doc.setTextColor(...this.colors.text)
         this.doc.setFontSize(9)
         this.doc.setFont('helvetica', 'normal')
         this.doc.text(`${index + 1}. ${moment}`, this.margin + 3, this.currentY + 5)
         this.currentY += 10
       })
-      
+
       this.currentY += 5
     }
 
@@ -490,35 +500,37 @@ export class MatchExporter {
 
   private addStyledTable(data: string[][], headerColor: [number, number, number]): void {
     // autoTable should already be loaded by exportMatch
-    autoTable(this.doc, {
-      head: [data[0]],
-      body: data.slice(1),
-      startY: this.currentY,
-      styles: {
-        fontSize: 9,
-        cellPadding: 6,
-        lineColor: [230, 230, 230],
-        lineWidth: 0.5,
-        textColor: this.colors.text
-      },
-      headStyles: {
-        fillColor: headerColor,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 10
-      },
-      alternateRowStyles: {
-        fillColor: [248, 249, 250]
-      },
-      columnStyles: {
-        0: { cellWidth: 55, fontStyle: 'bold', halign: 'left' },
-        1: { cellWidth: 55, halign: 'center' },
-        2: { cellWidth: 55, halign: 'center' }
-      },
-      margin: { left: this.margin, right: this.margin },
-      tableLineColor: [200, 200, 200],
-      tableLineWidth: 0.5
-    })
+    if (autoTable) {
+      autoTable(this.doc, {
+        head: [data[0]],
+        body: data.slice(1),
+        startY: this.currentY,
+        styles: {
+          fontSize: 9,
+          cellPadding: 6,
+          lineColor: [230, 230, 230],
+          lineWidth: 0.5,
+          textColor: this.colors.text
+        },
+        headStyles: {
+          fillColor: headerColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250]
+        },
+        columnStyles: {
+          0: { cellWidth: 55, fontStyle: 'bold', halign: 'left' },
+          1: { cellWidth: 55, halign: 'center' },
+          2: { cellWidth: 55, halign: 'center' }
+        },
+        margin: { left: this.margin, right: this.margin },
+        tableLineColor: [200, 200, 200],
+        tableLineWidth: 0.5
+      })
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.currentY = (this.doc as any).lastAutoTable.finalY + 15
@@ -535,15 +547,15 @@ export class MatchExporter {
 
       const serveData = [
         ['Direction', `${players[0].name}`, `${players[1].name}`],
-        ['Wide Serves', 
-         `${stats.serveDirectionStats.playerOne.wide.attempts} (${stats.serveDirectionStats.playerOne.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.wide.successful / stats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.wide.attempts} (${stats.serveDirectionStats.playerTwo.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.wide.successful / stats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}%)`],
-        ['Body Serves', 
-         `${stats.serveDirectionStats.playerOne.body.attempts} (${stats.serveDirectionStats.playerOne.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.body.successful / stats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.body.attempts} (${stats.serveDirectionStats.playerTwo.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.body.successful / stats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}%)`],
-        ['T Serves (Center)', 
-         `${stats.serveDirectionStats.playerOne.t.attempts} (${stats.serveDirectionStats.playerOne.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.t.successful / stats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}%)`,
-         `${stats.serveDirectionStats.playerTwo.t.attempts} (${stats.serveDirectionStats.playerTwo.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.t.successful / stats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}%)`],
+        ['Wide Serves',
+          `${stats.serveDirectionStats.playerOne.wide.attempts} (${stats.serveDirectionStats.playerOne.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.wide.successful / stats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}%)`,
+          `${stats.serveDirectionStats.playerTwo.wide.attempts} (${stats.serveDirectionStats.playerTwo.wide.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.wide.successful / stats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}%)`],
+        ['Body Serves',
+          `${stats.serveDirectionStats.playerOne.body.attempts} (${stats.serveDirectionStats.playerOne.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.body.successful / stats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}%)`,
+          `${stats.serveDirectionStats.playerTwo.body.attempts} (${stats.serveDirectionStats.playerTwo.body.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.body.successful / stats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}%)`],
+        ['T Serves (Center)',
+          `${stats.serveDirectionStats.playerOne.t.attempts} (${stats.serveDirectionStats.playerOne.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerOne.t.successful / stats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}%)`,
+          `${stats.serveDirectionStats.playerTwo.t.attempts} (${stats.serveDirectionStats.playerTwo.t.attempts > 0 ? Math.round((stats.serveDirectionStats.playerTwo.t.successful / stats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}%)`],
         ['Preferred Direction', stats.serveDirectionStats.playerOne.bestDirection || 'N/A', stats.serveDirectionStats.playerTwo.bestDirection || 'N/A']
       ]
 
@@ -558,15 +570,15 @@ export class MatchExporter {
     if (stats.shotDirectionStats.playerOne.totalShots > 0 || stats.shotDirectionStats.playerTwo.totalShots > 0) {
       const shotData = [
         ['Shot Pattern', `${players[0].name}`, `${players[1].name}`],
-        ['Long Shots', 
-         `${stats.shotDirectionStats.playerOne.long.attempts} (W:${stats.shotDirectionStats.playerOne.long.winners}/E:${stats.shotDirectionStats.playerOne.long.errors})`,
-         `${stats.shotDirectionStats.playerTwo.long.attempts} (W:${stats.shotDirectionStats.playerTwo.long.winners}/E:${stats.shotDirectionStats.playerTwo.long.errors})`],
-        ['Wide Shots', 
-         `${stats.shotDirectionStats.playerOne.wide.attempts} (W:${stats.shotDirectionStats.playerOne.wide.winners}/E:${stats.shotDirectionStats.playerOne.wide.errors})`,
-         `${stats.shotDirectionStats.playerTwo.wide.attempts} (W:${stats.shotDirectionStats.playerTwo.wide.winners}/E:${stats.shotDirectionStats.playerTwo.wide.errors})`],
-        ['Net Shots', 
-         `${stats.shotDirectionStats.playerOne.net.attempts} (W:${stats.shotDirectionStats.playerOne.net.winners}/E:${stats.shotDirectionStats.playerOne.net.errors})`,
-         `${stats.shotDirectionStats.playerTwo.net.attempts} (W:${stats.shotDirectionStats.playerTwo.net.winners}/E:${stats.shotDirectionStats.playerTwo.net.errors})`],
+        ['Long Shots',
+          `${stats.shotDirectionStats.playerOne.long.attempts} (W:${stats.shotDirectionStats.playerOne.long.winners}/E:${stats.shotDirectionStats.playerOne.long.errors})`,
+          `${stats.shotDirectionStats.playerTwo.long.attempts} (W:${stats.shotDirectionStats.playerTwo.long.winners}/E:${stats.shotDirectionStats.playerTwo.long.errors})`],
+        ['Wide Shots',
+          `${stats.shotDirectionStats.playerOne.wide.attempts} (W:${stats.shotDirectionStats.playerOne.wide.winners}/E:${stats.shotDirectionStats.playerOne.wide.errors})`,
+          `${stats.shotDirectionStats.playerTwo.wide.attempts} (W:${stats.shotDirectionStats.playerTwo.wide.winners}/E:${stats.shotDirectionStats.playerTwo.wide.errors})`],
+        ['Net Shots',
+          `${stats.shotDirectionStats.playerOne.net.attempts} (W:${stats.shotDirectionStats.playerOne.net.winners}/E:${stats.shotDirectionStats.playerOne.net.errors})`,
+          `${stats.shotDirectionStats.playerTwo.net.attempts} (W:${stats.shotDirectionStats.playerTwo.net.winners}/E:${stats.shotDirectionStats.playerTwo.net.errors})`],
         ['Preferred Shot', stats.shotDirectionStats.playerOne.preferredDirection || 'N/A', stats.shotDirectionStats.playerTwo.preferredDirection || 'N/A']
       ]
 
@@ -596,23 +608,23 @@ export class MatchExporter {
 
     setBreakdowns.forEach((setData, index) => {
       this.checkPageBreak(60)
-      
+
       // Set header with score
       this.doc.setFillColor(...this.colors.light)
       this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 15, 2, 2, 'F')
-      
+
       this.doc.setTextColor(...this.colors.text)
       this.doc.setFontSize(14)
       this.doc.setFont('helvetica', 'bold')
       this.doc.text(`SET ${setData.setNumber}`, this.margin + 5, this.currentY + 10)
-      
+
       this.doc.setFontSize(12)
       this.doc.text(`${setData.score[0]} - ${setData.score[1]}`, this.margin + 60, this.currentY + 10)
-      
+
       this.doc.setFontSize(10)
       this.doc.setFont('helvetica', 'normal')
       this.doc.text(`Duration: ${setData.duration}`, this.pageWidth - this.margin - 40, this.currentY + 10, { align: 'right' })
-      
+
       this.currentY += 25
 
       // Set statistics summary
@@ -631,7 +643,7 @@ export class MatchExporter {
       // Game progression (only for first 2 sets to save space)
       if (index < 2 && setData.gameBreakdown.length > 0) {
         this.addSubsectionHeader('Game Progression')
-        
+
         const gameData = setData.gameBreakdown.slice(0, 12).map(game => [
           game.gameNumber.toString(),
           game.winner === 'p1' ? 'P1' : 'P2',
@@ -644,7 +656,7 @@ export class MatchExporter {
           ...gameData
         ], this.colors.secondary)
       }
-      
+
       this.currentY += 10
     })
   }
@@ -655,7 +667,7 @@ export class MatchExporter {
     // Key points summary first
     this.addSubsectionHeader('Critical Points Summary')
     const criticalPoints = pointByPoint.filter(p => p.isBreakPoint || p.isSetPoint || p.isMatchPoint)
-    
+
     if (criticalPoints.length > 0) {
       const criticalData = criticalPoints.slice(0, 15).map(point => [
         point.pointNumber.toString(),
@@ -689,7 +701,7 @@ export class MatchExporter {
       const chunk = detailedPoints.slice(i, i + chunkSize)
       const startPoint = i + 1
       const endPoint = Math.min(i + chunkSize, detailedPoints.length)
-      
+
       this.doc.setTextColor(...this.colors.dark)
       this.doc.setFontSize(10)
       this.doc.setFont('helvetica', 'bold')
@@ -700,7 +712,7 @@ export class MatchExporter {
         ['Point', 'Score', 'Server', 'Winner', 'Type', 'Context'],
         ...chunk
       ], this.colors.dark)
-      
+
       if (i + chunkSize < detailedPoints.length) {
         this.currentY += 5
       }
@@ -709,15 +721,15 @@ export class MatchExporter {
 
   private addSectionHeader(title: string): void {
     this.checkPageBreak(25)
-    
+
     this.doc.setFillColor(...this.colors.primary)
     this.doc.roundedRect(this.margin, this.currentY, this.contentWidth, 12, 2, 2, 'F')
-    
+
     this.doc.setTextColor(255, 255, 255)
     this.doc.setFontSize(14)
     this.doc.setFont('helvetica', 'bold')
     this.doc.text(title, this.margin + 5, this.currentY + 8)
-    
+
     this.currentY += 20
   }
 
@@ -726,12 +738,12 @@ export class MatchExporter {
     this.doc.setFontSize(12)
     this.doc.setFont('helvetica', 'bold')
     this.doc.text(title, this.margin, this.currentY)
-    
+
     // Add underline
     this.doc.setDrawColor(...this.colors.secondary)
     this.doc.setLineWidth(0.5)
     this.doc.line(this.margin, this.currentY + 2, this.margin + 40, this.currentY + 2)
-    
+
     this.currentY += 12
   }
 
@@ -741,7 +753,7 @@ export class MatchExporter {
     this.doc.setFontSize(8)
     this.doc.setFont('helvetica', 'normal')
     this.doc.text('Generated by TennisScore App', this.pageWidth / 2, this.pageHeight - 10, { align: 'center' })
-    
+
     // Add page number on first page
     this.doc.setTextColor(...this.colors.light)
     this.doc.setFontSize(8)
@@ -776,7 +788,7 @@ export class MatchExporter {
 
   private extractKeyMoments(pointLog: PointDetail[]): string[] {
     const keyMoments: string[] = []
-    
+
     pointLog.forEach(point => {
       if (point.isMatchPoint && point.isMatchWinning) {
         keyMoments.push(`Match Point: ${point.winner === 'p1' ? 'Player 1' : 'Player 2'} wins at ${point.gameScore}`)
@@ -792,25 +804,25 @@ export class MatchExporter {
         keyMoments.push(`Ace: ${point.winner === 'p1' ? 'Player 1' : 'Player 2'} at ${point.gameScore}`)
       }
     })
-    
+
     return keyMoments.slice(0, 10) // Limit to top 10 moments
   }
 
   private prepareSetBreakdowns(match: Match, pointLog: PointDetail[], options: ExportOptions): SetBreakdown[] {
     const setBreakdowns: SetBreakdown[] = []
-    
+
     // If live export, only include completed sets
     const completedSets = options.exportType === 'live_set' ? match.score.sets.length : match.score.sets.length
-    
+
     for (let setNum = 1; setNum <= completedSets; setNum++) {
       const setPoints = pointLog.filter(p => p.setNumber === setNum)
       const setScore = match.score.sets[setNum - 1] || [0, 0]
-      
+
       // Calculate games from point log
       const gameBreakdown: GameResult[] = []
       let currentGame = 1
       let currentGamePoints: PointDetail[] = []
-      
+
       setPoints.forEach(point => {
         if (point.gameNumber === currentGame) {
           currentGamePoints.push(point)
@@ -830,7 +842,7 @@ export class MatchExporter {
           currentGamePoints = [point]
         }
       })
-      
+
       // Process final game
       if (currentGamePoints.length > 0) {
         const gameWinner = currentGamePoints[currentGamePoints.length - 1]
@@ -842,7 +854,7 @@ export class MatchExporter {
           isBreak
         })
       }
-      
+
       // Calculate set stats
       const setStats = calculateMatchStats(setPoints)
       const keyStats: SetStats = {
@@ -856,7 +868,7 @@ export class MatchExporter {
           converted: setStats.breakPointsByPlayer.converted as [number, number]
         }
       }
-      
+
       setBreakdowns.push({
         setNumber: setNum,
         score: setScore as [number, number],
@@ -865,7 +877,7 @@ export class MatchExporter {
         keyStats
       })
     }
-    
+
     return setBreakdowns
   }
 
@@ -887,9 +899,9 @@ export class MatchExporter {
   private generatePointDescription(point: PointDetail, players: [PlayerInfo, PlayerInfo]): string {
     const winner = point.winner === 'p1' ? players[0].name : players[1].name
     const server = point.server === 'p1' ? players[0].name : players[1].name
-    
+
     let description = `${winner} wins`
-    
+
     if (point.pointOutcome === 'ace') {
       description = `${server} serves an ace`
     } else if (point.pointOutcome === 'double_fault') {
@@ -900,11 +912,11 @@ export class MatchExporter {
       const errorPlayer = point.winner === 'p1' ? players[1].name : players[0].name
       description = `${errorPlayer} unforced error`
     }
-    
+
     if (point.isBreakPoint) description += ' (Break Point)'
     if (point.isSetPoint) description += ' (Set Point)'
     if (point.isMatchPoint) description += ' (Match Point)'
-    
+
     return description
   }
 
@@ -920,7 +932,7 @@ export class MatchExporter {
 export async function exportMatchToPDF(match: Match, playerNames: [string, string], options: ExportOptions): Promise<Blob> {
   // Load PDF libraries before creating exporter
   const { jsPDF } = await loadPDFLibraries()
-  
+
   const exporter = new MatchExporter(jsPDF)
   return await exporter.exportMatch(match, playerNames, options)
 }
@@ -939,7 +951,7 @@ export function downloadPDF(blob: Blob, filename: string): void {
 // Share functionality
 export async function shareMatchReport(blob: Blob, matchTitle: string): Promise<void> {
   const file = new File([blob], `${matchTitle}.pdf`, { type: 'application/pdf' })
-  
+
   if (navigator.share && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -962,7 +974,7 @@ export async function shareMatchReport(blob: Blob, matchTitle: string): Promise<
 export function shareToWhatsApp(blob: Blob, matchTitle: string): void {
   // For WhatsApp, we'll need to save the file first and then open WhatsApp
   downloadPDF(blob, `${matchTitle}.pdf`)
-  
+
   // Open WhatsApp with a message
   const message = `Check out this tennis match report: ${matchTitle}`
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
@@ -973,7 +985,7 @@ export function shareToWhatsApp(blob: Blob, matchTitle: string): void {
 export function shareToEmail(blob: Blob, matchTitle: string): void {
   // For email, we'll download the PDF and compose an email
   downloadPDF(blob, `${matchTitle}.pdf`)
-  
+
   const subject = `Tennis Match Report: ${matchTitle}`
   const body = `Please find attached the tennis match report for ${matchTitle}.`
   const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`

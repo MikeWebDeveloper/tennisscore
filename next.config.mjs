@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   // Build quality checks enabled - temporarily allow warnings for deployment
   eslint: {
     ignoreDuringBuilds: true,
@@ -12,14 +13,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Experimental features compatible with Next.js 14
   experimental: {
     serverActions: {
       bodySizeLimit: '12mb', // Profile picture upload optimization
     },
   },
-  
+
   // Enhanced webpack configuration for build performance
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Development optimizations
@@ -29,13 +30,13 @@ const nextConfig = {
         poll: 1000,
         aggregateTimeout: 300,
       }
-      
+
       // Reduce memory usage during development
       config.optimization.removeAvailableModules = false;
       config.optimization.removeEmptyChunks = false;
       config.optimization.splitChunks = false;
     }
-    
+
     // Production optimizations
     if (!dev && !isServer) {
       // Enhanced tree shaking configuration
@@ -125,29 +126,29 @@ const nextConfig = {
           },
         },
       };
-      
+
       // Advanced tree shaking optimizations
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
       config.optimization.providedExports = true;
       config.optimization.mangleExports = 'size';
       config.optimization.concatenateModules = true;
-      
+
       // Memory optimization
       config.optimization.mergeDuplicateChunks = true;
       config.optimization.flagIncludedChunks = true;
     }
-    
+
     return config;
   },
-  
+
   // Production compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn']
     } : false,
   },
-  
+
   // Optimized image configuration for Appwrite
   images: {
     remotePatterns: [
@@ -166,21 +167,21 @@ const nextConfig = {
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none';",
     // Performance optimization
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
     loader: 'default', // Ensures server-side processing
     unoptimized: false, // Force optimization on server
   },
-  
+
   // Standalone output for optimal production deployment
   output: 'standalone',
-  
+
   // Comprehensive security and performance-focused headers
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     // Build Content Security Policy for production security
     const csp = [
       "default-src 'self'",
@@ -197,7 +198,7 @@ const nextConfig = {
       "frame-src 'none'",
       "upgrade-insecure-requests"
     ].join('; ');
-    
+
     return [
       // Comprehensive security headers for all routes
       {
@@ -314,7 +315,7 @@ const nextConfig = {
       },
     ]
   },
-  
+
   // Service worker rewrites
   async rewrites() {
     return [
@@ -324,7 +325,7 @@ const nextConfig = {
       },
     ]
   },
-  
+
   // Build-time optimizations
   onDemandEntries: {
     // Period (in ms) where the server will keep pages in the buffer
@@ -332,10 +333,10 @@ const nextConfig = {
     // Number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
-  
+
   // Output configuration
   // outputFileTracingRoot removed - not supported in Next.js 14
-  
+
   // Performance monitoring
   logging: {
     fetches: {

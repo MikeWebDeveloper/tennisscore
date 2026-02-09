@@ -30,11 +30,11 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const t = useTranslations('common')
   const containerRef = useRef<HTMLDivElement>(null)
   const controls = useAnimation()
-  
+
   // Wizard state
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  
+
   // Form state
   const [matchType, setMatchType] = useState<"singles" | "doubles">("singles")
   const [playerOne, setPlayerOne] = useState("")
@@ -42,17 +42,17 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const [playerThree, setPlayerThree] = useState("")
   const [playerFour, setPlayerFour] = useState("")
   const [tournamentName, setTournamentName] = useState("")
-  
+
   // Anonymous player tracking
   const [playerOneAnonymous, setPlayerOneAnonymous] = useState(false)
   const [playerTwoAnonymous, setPlayerTwoAnonymous] = useState(false)
   const [playerThreeAnonymous, setPlayerThreeAnonymous] = useState(false)
   const [playerFourAnonymous, setPlayerFourAnonymous] = useState(false)
-  
+
   const [sets, setSets] = useState<1 | 3 | 5 | null>(null)
   const [scoring, setScoring] = useState<"ad" | "no-ad" | "">("")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">("")
-  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "complex" | "">("")
+  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "complex" | "custom" | "">("")
 
   const totalSteps = 5
 
@@ -65,16 +65,16 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
         opacity: 0.7,
         transition: { duration: 0.2, ease: "easeInOut" }
       })
-      
+
       // Change step
       setCurrentStep(currentStep - 1)
-      
+
       // Animate in
       await controls.start({
         x: 0,
         opacity: 1,
-        transition: { 
-          duration: 0.3, 
+        transition: {
+          duration: 0.3,
           ease: [0.175, 0.885, 0.32, 1.275] // back.out easing
         }
       })
@@ -123,7 +123,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
     setCurrentStep(currentStep + 1)
   }, [currentStep])
 
-  const handleCreateMatch = async (finalDetailLevel: "points" | "simple" | "detailed" | "complex") => {
+  const handleCreateMatch = async (finalDetailLevel: "points" | "simple" | "detailed" | "complex" | "custom") => {
     setLoading(true)
 
     if (!sets || !scoring || !finalSet) {
@@ -255,19 +255,18 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
             <p className="text-xs text-muted-foreground">{t("step")} {currentStep}/{totalSteps}</p>
           </div>
         </div>
-        
+
         {/* Progress Indicator */}
         <div className="flex items-center gap-1">
           {Array.from({ length: totalSteps }, (_, index) => (
             <div
               key={index}
-              className={`h-2 w-6 rounded-full transition-all duration-300 ${
-                index + 1 === currentStep
-                  ? 'bg-primary'
-                  : index + 1 < currentStep
+              className={`h-2 w-6 rounded-full transition-all duration-300 ${index + 1 === currentStep
+                ? 'bg-primary'
+                : index + 1 < currentStep
                   ? 'bg-primary/60'
                   : 'bg-muted'
-              }`}
+                }`}
             />
           ))}
         </div>
@@ -277,8 +276,8 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
       <div className="flex-1 flex flex-col items-center p-4 min-h-0">
         {/* Mobile-first: Start content near top, desktop: centered */}
         <div className="w-full max-w-md mt-4 md:mt-0 md:flex-1 md:flex md:flex-col md:justify-center">
-          <motion.div 
-            ref={containerRef} 
+          <motion.div
+            ref={containerRef}
             className="w-full"
             animate={controls}
             initial={{ x: 0, opacity: 1 }}

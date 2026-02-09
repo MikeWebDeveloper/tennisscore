@@ -6,10 +6,10 @@
  */
 
 import { logger } from './logger'
-import { 
-  dynamicImport, 
-  lazyLoadComponent, 
-  conditionalImport, 
+import {
+  dynamicImport,
+  lazyLoadComponent,
+  conditionalImport,
   smartConditionalImport,
   createLazyErrorBoundaryWrapper
 } from './bundle-optimization'
@@ -59,7 +59,7 @@ export const loadChartLibrary = async () => {
   // Fallback to a simple chart implementation
   logger.warn('uPlot not available, using fallback chart')
   return {
-    default: ({ data, width = 400, height = 300 }: any) => {
+    default: ({ data, width = 400, height = 300 }: { data: any[], width?: number, height?: number }) => {
       return `<div>Chart fallback: ${data?.length || 0} data points</div>`
     }
   }
@@ -79,11 +79,11 @@ export const loadDateUtilities = async () => {
     'date-fns-utils',
     {
       cache: true,
-      fallback: {} as any
+      fallback: {} as unknown as typeof import('date-fns')
     }
   )
 
-  return (dateFns || {}) as any
+  return (dateFns || {}) as unknown as typeof import('date-fns')
 }
 
 // ============================================================================
@@ -113,13 +113,13 @@ export const createLazyStatisticsChart = () => {
       return React.createElement('div', {
         className: 'p-4 border-2 border-dashed border-gray-300 rounded-lg text-center'
       }, [
-        React.createElement('p', { 
+        React.createElement('p', {
           key: 'title',
-          className: 'text-gray-600 mb-2' 
+          className: 'text-gray-600 mb-2'
         }, 'Chart failed to load'),
-        React.createElement('p', { 
+        React.createElement('p', {
           key: 'error',
-          className: 'text-sm text-red-500 mb-3' 
+          className: 'text-sm text-red-500 mb-3'
         }, error.message),
         React.createElement('button', {
           key: 'retry',
@@ -181,13 +181,13 @@ export const loadAdvancedFeatures = async (userPermissions: string[]) => {
  */
 export const enhanceWithPerformanceFeatures = async () => {
   const startTime = performance.now()
-  
+
   // Load web vitals for performance monitoring (optional)
   const webVitals = await smartConditionalImport(
     'web-vitals',
     () => import('web-vitals'),
     'web-vitals',
-    { 
+    {
       cache: true,
       fallback: {} as any
     }
@@ -291,7 +291,7 @@ export const loadServerOnlyUtilities = async () => {
       () => import('@/lib/server-utilities'),
       'server-utils'
     )
-    
+
     return serverUtils
   }
 

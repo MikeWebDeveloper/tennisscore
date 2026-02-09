@@ -43,6 +43,29 @@ export interface WebVitalsReport {
   }
 }
 
+// Augment PerformanceEntry for specific metric types
+interface LayoutShift extends PerformanceEntry {
+  value: number
+  hadRecentInput: boolean
+  sources: Array<{
+    node?: Node
+    previousRect: DOMRectReadOnly
+    currentRect: DOMRectReadOnly
+  }>
+}
+
+interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: number
+  processingEnd: number
+  duration: number
+}
+
+interface PerformanceNavigationTiming extends PerformanceEntry {
+  type: 'navigate' | 'reload' | 'back_forward' | 'prerender'
+  responseStart: number
+  requestStart: number
+}
+
 class WebVitalsMonitor {
   private metrics: WebVitalMetric[] = []
   private observers: PerformanceObserver[] = []
@@ -62,7 +85,7 @@ class WebVitalsMonitor {
         const lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries()
           const lastEntry = entries[entries.length - 1] as PerformanceEntry
-          
+
           if (lastEntry) {
             this.recordMetric({
               name: 'LCP',
@@ -77,7 +100,7 @@ class WebVitalsMonitor {
             })
           }
         })
-        
+
         lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true })
         this.observers.push(lcpObserver)
       } catch (error) {
@@ -104,7 +127,7 @@ class WebVitalsMonitor {
             }
           })
         })
-        
+
         fcpObserver.observe({ type: 'paint', buffered: true })
         this.observers.push(fcpObserver)
       } catch (error) {
@@ -116,12 +139,13 @@ class WebVitalsMonitor {
         let clsValue = 0
         const clsObserver = new PerformanceObserver((list) => {
           list.getEntries().forEach((entry: PerformanceEntry) => {
-            if (!(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value
+            const layoutShift = entry as LayoutShift
+            if (!layoutShift.hadRecentInput) {
+              clsValue += layoutShift.value
               this.recordMetric({
                 name: 'CLS',
                 value: clsValue,
-                delta: (entry as any).value,
+                delta: layoutShift.value,
                 id: this.generateId(),
                 navigationType: this.getNavigationType(),
                 timestamp: Date.now(),
@@ -132,7 +156,7 @@ class WebVitalsMonitor {
             }
           })
         })
-        
+
         clsObserver.observe({ type: 'layout-shift', buffered: true })
         this.observers.push(clsObserver)
       } catch (error) {
@@ -145,8 +169,9 @@ class WebVitalsMonitor {
           let maxINP = 0
           const inpObserver = new PerformanceObserver((list) => {
             list.getEntries().forEach((entry: PerformanceEntry) => {
-              if ((entry as any).processingStart && (entry as any).processingEnd) {
-                const duration = (entry as any).processingEnd - entry.startTime
+              const eventTiming = entry as PerformanceEventTiming
+              if (eventTiming.processingStart && eventTiming.processingEnd) {
+                const duration = eventTiming.processingEnd - eventTiming.startTime
                 if (duration > maxINP) {
                   maxINP = duration
                   this.recordMetric({
@@ -164,7 +189,7 @@ class WebVitalsMonitor {
               }
             })
           })
-          
+
           inpObserver.observe({ type: 'event', buffered: true })
           this.observers.push(inpObserver)
         } catch (error) {
@@ -179,20 +204,23 @@ class WebVitalsMonitor {
 
   private measureTTFB(): void {
     if ('performance' in window && 'getEntriesByType' in performance) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceEntry
-      if (navigation && (navigation as any).responseStart) {
-        const ttfb = (navigation as any).responseStart - (navigation as any).requestStart
-        this.recordMetric({
-          name: 'TTFB',
-          value: ttfb,
-          delta: ttfb,
-          id: this.generateId(),
-          navigationType: this.getNavigationType(),
-          timestamp: Date.now(),
-          url: window.location.href,
-          userAgent: navigator.userAgent,
-          rating: this.getRating('TTFB', ttfb)
-        })
+      const navigationEntries = performance.getEntriesByType('navigation')
+      if (navigationEntries.length > 0) {
+        const navigation = navigationEntries[0] as PerformanceNavigationTiming
+        if (navigation.responseStart) {
+          const ttfb = navigation.responseStart - navigation.requestStart
+          this.recordMetric({
+            name: 'TTFB',
+            value: ttfb,
+            delta: ttfb,
+            id: this.generateId(),
+            navigationType: this.getNavigationType(),
+            timestamp: Date.now(),
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+            rating: this.getRating('TTFB', ttfb)
+          })
+        }
       }
     }
   }
@@ -200,7 +228,7 @@ class WebVitalsMonitor {
   private recordMetric(metric: WebVitalMetric): void {
     this.metrics.push(metric)
     this.callbacks.forEach(callback => callback(metric))
-    
+
     // Log in development
     if (process.env.NODE_ENV === 'development') {
       console.info(`📊 Web Vital - ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`)
@@ -227,8 +255,11 @@ class WebVitalsMonitor {
 
   private getNavigationType(): WebVitalMetric['navigationType'] {
     if ('performance' in window && 'getEntriesByType' in performance) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceEntry
-      return (navigation as any)?.type || 'navigate'
+      const navigationEntries = performance.getEntriesByType('navigation')
+      if (navigationEntries.length > 0) {
+        const navigation = navigationEntries[0] as PerformanceNavigationTiming
+        return (navigation.type as WebVitalMetric['navigationType']) || 'navigate'
+      }
     }
     return 'navigate'
   }
@@ -253,19 +284,19 @@ class WebVitalsMonitor {
 
   public getLatestMetrics(): Partial<Record<WebVitalMetric['name'], WebVitalMetric>> {
     const latest: Partial<Record<WebVitalMetric['name'], WebVitalMetric>> = {}
-    
+
     this.metrics.forEach(metric => {
       if (!latest[metric.name] || metric.timestamp > latest[metric.name]!.timestamp) {
         latest[metric.name] = metric
       }
     })
-    
+
     return latest
   }
 
   public generateReport(): WebVitalsReport {
     const latest = this.getLatestMetrics()
-    
+
     const aggregatedData = {
       avgLCP: latest.LCP?.value || 0,
       avgINP: latest.INP?.value || 0,
@@ -285,8 +316,8 @@ class WebVitalsMonitor {
         width: window.innerWidth,
         height: window.innerHeight
       },
-      connection: (navigator as any).connection?.effectiveType || 'unknown',
-      deviceMemory: (navigator as any).deviceMemory,
+      connection: navigator.connection?.effectiveType || 'unknown',
+      deviceMemory: navigator.deviceMemory,
       hardwareConcurrency: navigator.hardwareConcurrency
     }
 
@@ -383,7 +414,7 @@ class WebVitalsMonitor {
       url: window.location.href,
       userAgent: navigator.userAgent
     }
-    
+
     this.recordMetric(metric)
   }
 
@@ -423,34 +454,34 @@ export const stopWebVitalsMonitoring = (): void => {
 export function useWebVitals() {
   const [report, setReport] = React.useState<WebVitalsReport | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
-  
+
   React.useEffect(() => {
     const monitor = getWebVitalsMonitor()
     monitor.startMonitoring()
-    
+
     const unsubscribe = monitor.onMetric(() => {
       const newReport = monitor.generateReport()
       setReport(newReport)
       setIsLoading(false)
     })
-    
+
     // Initial report
     setTimeout(() => {
       setReport(monitor.generateReport())
       setIsLoading(false)
     }, 100)
-    
+
     return () => {
       unsubscribe()
       monitor.stopMonitoring()
     }
   }, [])
-  
+
   const recordCustomMetric = React.useCallback((name: string, value: number, unit: string) => {
     const monitor = getWebVitalsMonitor()
     monitor.recordCustomMetric(name, value, unit)
   }, [])
-  
+
   const getPerformanceSummary = React.useCallback(() => {
     return report?.performance || {
       score: 0,
@@ -458,7 +489,7 @@ export function useWebVitals() {
       recommendations: []
     }
   }, [report])
-  
+
   return {
     report,
     isLoading,

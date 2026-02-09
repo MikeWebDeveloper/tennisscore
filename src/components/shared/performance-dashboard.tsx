@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { 
-  Activity, 
-  Zap, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Activity,
+  Zap,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   BarChart3,
   RefreshCw,
@@ -21,7 +21,7 @@ import { cacheManager, CacheStats } from '@/lib/utils/cache-manager'
 
 interface CoreWebVitals {
   LCP?: WebVitalMetric
-  FID?: WebVitalMetric  
+  FID?: WebVitalMetric
   CLS?: WebVitalMetric
   FCP?: WebVitalMetric
   TTFB?: WebVitalMetric
@@ -71,7 +71,7 @@ function PerformanceCard({ title, value, metric, threshold, icon, description }:
 
   const getProgressValue = (value: number, threshold?: { good: number; needsImprovement: number }) => {
     if (!threshold) return 0
-    
+
     if (value <= threshold.good) return 100
     if (value <= threshold.needsImprovement) return 60
     return 30
@@ -96,7 +96,7 @@ function PerformanceCard({ title, value, metric, threshold, icon, description }:
         <p className="text-xs text-muted-foreground mt-1">{description}</p>
         {metric && threshold && (
           <div className="mt-2">
-            <Progress 
+            <Progress
               value={getProgressValue(metric.value, threshold)}
               className="w-full h-2"
             />
@@ -117,6 +117,7 @@ export function PerformanceDashboard() {
     score: number;
     status: 'poor' | 'excellent' | 'good' | 'fair';
     recommendations: string[];
+    sessionId?: string;
   } | null>(null)
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null)
 
@@ -124,7 +125,7 @@ export function PerformanceDashboard() {
     const updateSummary = () => {
       const perfSummary = getPerformanceSummary()
       setSummary(perfSummary)
-      
+
       const stats = cacheManager.getStats()
       setCacheStats(stats)
     }
@@ -160,7 +161,7 @@ export function PerformanceDashboard() {
   }
 
   const mockMetric = {
-    value: 0, 
+    value: 0,
     rating: 'good',
     delta: 0,
     navigationType: 'navigate',
@@ -329,7 +330,7 @@ export function PerformanceDashboard() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {cacheStats.hits + cacheStats.misses > 0 
+                  {cacheStats.hits + cacheStats.misses > 0
                     ? `${Math.round((cacheStats.hits / (cacheStats.hits + cacheStats.misses)) * 100)}%`
                     : '0%'
                   }
@@ -357,7 +358,7 @@ export function PerformanceDashboard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium">Session ID:</span> {Math.random().toString(36).substring(7)}
+              <span className="font-medium">Session ID:</span> {summary?.sessionId || 'Loading...'}
             </div>
             <div>
               <span className="font-medium">Page URL:</span> {window.location.href}

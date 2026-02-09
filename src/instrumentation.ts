@@ -1,11 +1,11 @@
 export async function register() {
   // OTel registration is disabled locally to avoid optional peer dependency issues.
   // In production on Vercel, prefer enabling platform OTel integration instead.
-  
+
   // Add custom instrumentation for development
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
     console.log('🔧 Instrumentation loaded - Development mode active')
-    
+
     // Add global error handlers for server actions
     if (typeof globalThis !== 'undefined') {
       const originalError = console.error
@@ -22,16 +22,16 @@ export async function register() {
       }
     }
   }
-  
+
   // Performance monitoring setup
   if (typeof globalThis !== 'undefined') {
-    (globalThis as any).reportServerActionError = (action: string, error: Error) => {
+    globalThis.reportServerActionError = (action: string, error: Error) => {
       console.error(`🔥 Server Action "${action}" failed:`, {
         message: error.message,
         stack: error.stack,
         timestamp: new Date().toISOString()
       })
-      
+
       // In production, you would send this to your monitoring service
       if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
         // Example: Sentry, DataDog, etc.

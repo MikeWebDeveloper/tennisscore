@@ -1,5 +1,5 @@
 import { databases, users } from '@/lib/appwrite-admin';
-import { Databases, Query, Models } from 'appwrite';
+import { Databases, Query, Models } from 'node-appwrite';
 
 interface QueryPerformanceMetric {
   operation: string;
@@ -37,19 +37,20 @@ class AppwritePerformanceMonitor {
     metadata?: Record<string, unknown>
   ): Promise<T> {
     const startTime = performance.now();
-    
+
     try {
       const result = await operation_fn();
       const duration = performance.now() - startTime;
-      
+
       let resultCount: number | undefined;
-      
+
       // Extract result count based on result type
       if (result && typeof result === 'object') {
-        if ('documents' in result && Array.isArray((result as any).documents)) {
-          resultCount = (result as any).documents.length;
-        } else if ('total' in result && typeof (result as any).total === 'number') {
-          resultCount = (result as any).total;
+        const listResult = result as Partial<Models.DocumentList<any>>;
+        if (listResult.documents && Array.isArray(listResult.documents)) {
+          resultCount = listResult.documents.length;
+        } else if (listResult.total !== undefined && typeof listResult.total === 'number') {
+          resultCount = listResult.total;
         } else if (Array.isArray(result)) {
           resultCount = result.length;
         }
@@ -72,7 +73,7 @@ class AppwritePerformanceMonitor {
       return result;
     } catch (error: any) {
       const duration = performance.now() - startTime;
-      
+
       this.collectMetric({
         operation,
         collection,
@@ -90,7 +91,7 @@ class AppwritePerformanceMonitor {
 
   private collectMetric(metric: QueryPerformanceMetric): void {
     this.metrics.push(metric);
-    
+
     if (this.metrics.length >= this.BATCH_SIZE) {
       this.flushMetrics();
     }
@@ -134,7 +135,7 @@ const appwritePerformanceMonitor = new AppwritePerformanceMonitor();
 
 // Enhanced Appwrite client wrapper with performance monitoring
 export class MonitoredAppwriteClient {
-  constructor(private client: Databases) {}
+  constructor(private client: Databases) { }
 
   async listDocuments(
     databaseId: string,
@@ -237,7 +238,7 @@ export class MonitoredAppwriteClient {
 }
 
 // Create monitored database client
-export const monitoredDatabases = new MonitoredAppwriteClient(databases as any);
+export const monitoredDatabases = new MonitoredAppwriteClient(databases);
 
 // Specialized monitoring functions for common TennisScore operations
 export async function measureMatchStatistics<T>(

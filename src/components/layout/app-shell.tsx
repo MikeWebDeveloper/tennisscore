@@ -129,13 +129,14 @@ export function AppShell({ children, user }: AppShellProps) {
   ]
 
   // Add admin link only for privileged users
-  const localizedNavigation = isAdmin(user.email) 
+  const localizedNavigation = isAdmin(user.email)
     ? [...baseNavigation, {
-        href: "/admin",
-        icon: Shield,
-        label: t("adminLabel"),
-        description: t("adminDescription")
-      }]
+      href: "/admin",
+      icon: Shield,
+      label: t("adminLabel"),
+      description: t("adminDescription"),
+      target: "_blank"
+    }]
     : baseNavigation
 
   // Prevent hydration mismatch
@@ -192,10 +193,11 @@ export function AppShell({ children, user }: AppShellProps) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      target={(item as any).target}
                       className={cn(
                         "flex items-center space-x-3 rounded-lg px-3 py-3 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
-                        isActive 
-                          ? "bg-foreground text-background shadow-sm" 
+                        isActive
+                          ? "bg-foreground text-background shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     >
@@ -304,7 +306,7 @@ export function AppShell({ children, user }: AppShellProps) {
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
-            
+
             <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <div className="h-6 w-6 rounded bg-foreground flex items-center justify-center">
                 <Trophy className="h-4 w-4 text-background" />
@@ -383,8 +385,8 @@ export function AppShell({ children, user }: AppShellProps) {
                             onClick={() => setSidebarOpen(false)}
                             className={cn(
                               "flex items-center space-x-3 rounded-lg px-3 py-3 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
-                              isActive 
-                                ? "bg-foreground text-background shadow-sm" 
+                              isActive
+                                ? "bg-foreground text-background shadow-sm"
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >

@@ -24,6 +24,7 @@ import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
 import { UltraSimplePointLogger } from "./ultra-simple-point-logger"
+import { DynamicPointLogger } from "./dynamic-point-logger"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Switch } from "@/components/ui/switch"
@@ -52,7 +53,7 @@ const triggerMatchWinConfetti = () => {
     spread: 70,
     origin: { y: 0.6 }
   })
-  
+
   // Side bursts for more dramatic effect
   setTimeout(() => {
     confetti({
@@ -68,7 +69,7 @@ const triggerMatchWinConfetti = () => {
       origin: { x: 1 }
     })
   }, 250)
-  
+
   // Final burst with gold colors
   setTimeout(() => {
     confetti({
@@ -122,9 +123,9 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
   const fullMessage = `${shareText}\n${shareUrl}`
 
   const shareOptions = [
-    { 
-      name: t('copyLink'), 
-      icon: Copy, 
+    {
+      name: t('copyLink'),
+      icon: Copy,
       action: async () => {
         try {
           await navigator.clipboard.writeText(shareUrl)
@@ -136,12 +137,12 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
       },
       color: "bg-gray-900 dark:bg-gray-700"
     },
-    { 
-      name: t('whatsApp'), 
-      icon: MessageSquare, 
+    {
+      name: t('whatsApp'),
+      icon: MessageSquare,
       action: () => {
         const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        const whatsappUrl = isMobile 
+        const whatsappUrl = isMobile
           ? `whatsapp://send?text=${encodeURIComponent(fullMessage)}`
           : `https://wa.me/?text=${encodeURIComponent(fullMessage)}`
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
@@ -149,13 +150,13 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
       },
       color: "bg-green-500"
     },
-    { 
-      name: t('sms'), 
-      icon: Mail, 
+    {
+      name: t('sms'),
+      icon: Mail,
       action: () => {
         // SMS works differently on iOS vs Android
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-        const smsUrl = isIOS 
+        const smsUrl = isIOS
           ? `sms:&body=${encodeURIComponent(fullMessage)}`
           : `sms:?body=${encodeURIComponent(fullMessage)}`
         window.location.href = smsUrl
@@ -163,9 +164,9 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
       },
       color: "bg-blue-500"
     },
-    { 
-      name: t('facebook'), 
-      icon: MessageCircle, 
+    {
+      name: t('facebook'),
+      icon: MessageCircle,
       action: () => {
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
         window.open(fbUrl, '_blank', 'noopener,noreferrer')
@@ -208,7 +209,7 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
 const LiveScoreboard = SharedLiveScoreboard
 
 // Point Entry Component
-function PointEntry({ 
+function PointEntry({
   onPointWin,
   score,
   isTiebreak,
@@ -217,7 +218,7 @@ function PointEntry({
   players,
   p1Streak,
   p2Streak,
-}: { 
+}: {
   onPointWin: (winner: "p1" | "p2") => void,
   score: Score,
   isTiebreak: boolean,
@@ -232,16 +233,16 @@ function PointEntry({
     if (isTiebreak) {
       return score.tiebreakPoints?.[playerIndex] || 0
     }
-    
+
     const p1 = score.points[0]
     const p2 = score.points[1]
-    
+
     if (p1 >= 3 && p2 >= 3) {
       if (p1 === p2) return "40"
       if (p1 > p2 && playerIndex === 0) return "AD"
       if (p2 > p1 && playerIndex === 1) return "AD"
     }
-    
+
     const pointMap = ["0", "15", "30", "40"]
     return pointMap[score.points[playerIndex]] || "40"
   }
@@ -253,9 +254,9 @@ function PointEntry({
 
   const getSituationText = () => {
     if (!pointSituation) return null
-    
+
     const playerName = getPlayerDisplayName(pointSituation.player as 'p1' | 'p2')
-    
+
     switch (pointSituation.type) {
       case 'matchPoint':
         return t('hasMatchPoint', { player: playerName })
@@ -294,7 +295,7 @@ function PointEntry({
 
       {/* Player buttons */}
       <div className="grid grid-cols-2 gap-3">
-        <motion.div 
+        <motion.div
           onClick={() => onPointWin("p1")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
@@ -311,7 +312,7 @@ function PointEntry({
               </Badge>
             </div>
           )}
-          
+
           {/* Player info */}
           <div className="flex flex-col items-center gap-2">
             <PlayerAvatar player={players.p1} className="h-12 w-12" />
@@ -322,19 +323,19 @@ function PointEntry({
               )}
             </div>
           </div>
-          
+
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            pointSituation && pointSituation.player === 'p1' 
+            pointSituation && pointSituation.player === 'p1'
               ? pointSituation.textColor
               : "text-card-foreground"
           )}>
             {getPointDisplay(0)}
           </span>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           onClick={() => onPointWin("p2")}
           className={cn(
             "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
@@ -351,7 +352,7 @@ function PointEntry({
               </Badge>
             </div>
           )}
-          
+
           {/* Player info */}
           <div className="flex flex-col items-center gap-2">
             <PlayerAvatar player={players.p2} className="h-12 w-12" />
@@ -362,11 +363,11 @@ function PointEntry({
               )}
             </div>
           </div>
-          
+
           {/* Score display */}
           <span className={cn(
             "text-4xl sm:text-6xl font-black font-mono text-center",
-            pointSituation && pointSituation.player === 'p2' 
+            pointSituation && pointSituation.player === 'p2'
               ? pointSituation.textColor
               : "text-card-foreground"
           )}>
@@ -382,20 +383,20 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
-  
+
   // Use match store
-  const { 
-    score, 
-    pointLog, 
+  const {
+    score,
+    pointLog,
     currentServer,
     p1Streak,
     p2Streak,
-    initializeMatch, 
-    awardPoint, 
-    undoLastPoint, 
+    initializeMatch,
+    awardPoint,
+    undoLastPoint,
     setServer
   } = useMatchStore()
-  
+
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
@@ -410,7 +411,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [startTime, setStartTime] = useState<string | null>(null)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   const [showCustomModeDialog, setShowCustomModeDialog] = useState(false)
-  
+
   const playerNames = {
     p1: formatPlayerFromObject(match.playerOne),
     p2: formatPlayerFromObject(match.playerTwo),
@@ -433,7 +434,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     // Preserve the original pointOutcome
     pointOutcome: point.pointOutcome || 'winner'
   }))
-  
+
   // Parse match format properly
   const parsedMatchFormat = useMemo(() => {
     try {
@@ -456,11 +457,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }
     }
   }, [match.matchFormat])
-  
+
   // Get detailLevel directly from match object (not from parsed format)
   const detailLevel = match.detailLevel || "simple"
   const isTiebreak = score.isTiebreak || false
-  
+
   // Calculate current breakpoint status
   const getBreakPointStatus = () => {
     if (!currentServer || isTiebreak) return { isBreakPoint: false, facingBreakPoint: null }
@@ -488,16 +489,16 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     const currentGames = score.games as [number, number]
     const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
     const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
-    
+
     if (isTiebreak) {
       // In tiebreak, check if either player is close to winning
       const p1TbPoints = score.tiebreakPoints?.[0] || 0
       const p2TbPoints = score.tiebreakPoints?.[1] || 0
       // Determine tiebreak target based on whether it's a deciding set and format
       const isDecidingSet = currentP1SetsWon === setsNeededToWin - 1 && currentP2SetsWon === setsNeededToWin - 1
-      const tiebreakTarget = (isDecidingSet && parsedMatchFormat.finalSetTiebreak === "super") ? 
+      const tiebreakTarget = (isDecidingSet && parsedMatchFormat.finalSetTiebreak === "super") ?
         (parsedMatchFormat.finalSetTiebreakAt || 10) : 7
-      
+
       if ((p1TbPoints >= tiebreakTarget - 1 && p1TbPoints >= p2TbPoints) && p1CouldWinSetNextGame) {
         isSetPoint = true
         facingSetPoint = 'p1'
@@ -519,10 +520,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Check if either player is at game point AND could win the set
       const p1AtGamePoint = (p1Score >= 3 && (p1Score > p2Score || (p1Score === 3 && p2Score < 3)))
       const p2AtGamePoint = (p2Score >= 3 && (p2Score > p1Score || (p2Score === 3 && p1Score < 3)))
-      
+
       // Deuce set point: At deuce, if either player could win the set
       const isDeuceSetPoint = (p1Score === 3 && p2Score === 3)
-      
+
       if ((p1AtGamePoint && p1CouldWinSetNextGame) || (isDeuceSetPoint && p1CouldWinSetNextGame)) {
         isSetPoint = true
         facingSetPoint = 'p1'
@@ -531,22 +532,22 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         facingSetPoint = 'p2'
       }
     }
-    
+
     // Check for match point
     let isMatchPoint = false
     let facingMatchPoint: 'p1' | 'p2' | null = null
-    
+
     if (isSetPoint && facingSetPoint) {
       // If this is a set point, check if winning this set would win the match
       const newP1Sets = currentP1SetsWon + (facingSetPoint === 'p1' ? 1 : 0)
       const newP2Sets = currentP2SetsWon + (facingSetPoint === 'p2' ? 1 : 0)
-      
+
       if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
         isMatchPoint = true
         facingMatchPoint = facingSetPoint
       }
     }
-    
+
     return {
       isSetPoint,
       isMatchPoint,
@@ -554,10 +555,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       facingMatchPoint
     }
   }
-  
+
   const breakPointStatus = getBreakPointStatus()
   const setMatchPointStatus = getSetAndMatchPointStatus()
-  
+
   // Determine the highest priority situation for display
   const getPointSituation = () => {
     if (setMatchPointStatus.isMatchPoint) {
@@ -593,37 +594,37 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
     return null
   }
-  
-  const pointSituation = getPointSituation()
-  
 
-  
+  const pointSituation = getPointSituation()
+
+
+
   // Initialize match data
   useEffect(() => {
     if (!match || !match.$id) {
       return
     }
 
-    const existingPointLog: StorePointDetail[] = match.pointLog 
+    const existingPointLog: StorePointDetail[] = match.pointLog
       ? match.pointLog.map(pointStr => {
-          try {
-            return JSON.parse(pointStr)
-          } catch (error) {
-            console.error("Failed to parse point:", error)
-            return null
-          }
-        }).filter(Boolean)
+        try {
+          return JSON.parse(pointStr)
+        } catch (error) {
+          console.error("Failed to parse point:", error)
+          return null
+        }
+      }).filter(Boolean)
       : []
-    
+
     let dbScore: DbScore
     try {
       dbScore = JSON.parse(match.score)
     } catch (error) {
       console.error("Failed to parse match score:", error)
-      dbScore = { 
-        sets: [], 
-        games: [{player1: 0, player2: 0}], 
-        points: {player1: '0', player2: '0'}, 
+      dbScore = {
+        sets: [],
+        games: [{ player1: 0, player2: 0 }],
+        points: { player1: '0', player2: '0' },
         isTiebreak: false,
         server: 'p1'
       }
@@ -632,7 +633,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     // Convert the database score object to the format used by the store
     const storeScore: Score = {
       sets: (dbScore.sets || []).map(s => [s.player1, s.player2]),
-      games: dbScore.games && dbScore.games.length > 0 ? [dbScore.games[dbScore.games.length - 1].player1, dbScore.games[dbScore.games.length - 1].player2] : [0,0],
+      games: dbScore.games && dbScore.games.length > 0 ? [dbScore.games[dbScore.games.length - 1].player1, dbScore.games[dbScore.games.length - 1].player2] : [0, 0],
       points: [parseInt(dbScore.points?.player1, 10) || 0, parseInt(dbScore.points?.player2, 10) || 0],
       isTiebreak: dbScore.isTiebreak || false,
       tiebreakPoints: dbScore.tiebreakPoints ? [dbScore.tiebreakPoints.player1, dbScore.tiebreakPoints.player2] : [0, 0]
@@ -651,7 +652,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       events: [],
       userId: match.playerOne.userId || ''
     }
-    
+
     try {
       initializeMatch(matchData)
       if (existingPointLog.length === 0) {
@@ -683,20 +684,20 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       const p2 = score.tiebreakPoints?.[1] || 0
       return `${p1} - ${p2}`
     }
-    
+
     const p1Points = score.points[0]
     const p2Points = score.points[1]
-    
+
     if (p1Points >= 3 && p2Points >= 3) {
       if (p1Points === p2Points) return t('deuce')
       if (p1Points > p2Points) return t('advantage', { player: playerNames.p1.split(' ')[0].toUpperCase() })
       return t('advantage', { player: playerNames.p2.split(' ')[0].toUpperCase() })
     }
-    
+
     const pointMap = ["0", "15", "30", "40"]
     const p1Display = pointMap[Math.min(p1Points, 3)]
     const p2Display = pointMap[Math.min(p2Points, 3)]
-    
+
     return `${p1Display} - ${p2Display}`
   }
 
@@ -706,7 +707,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       toast.error(t('matchNotReady'))
       return
     }
-    
+
     if (match.status === 'Completed') {
       toast.error(t('matchAlreadyComplete'))
       return
@@ -741,10 +742,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
-    // For complex mode, use the detailed sheet
-    console.log('Complex mode - opening detailed sheet')
-    setPendingPointWinner(winner)
-    setShowPointDetail(true)
+    // For custom/complex mode, use the dynamic logger (currently pointing to UltraSimplePointLogger as placeholder)
+    if (detailLevel === 'custom' || detailLevel === 'complex') {
+      console.log('Custom/Complex mode - opening dynamic logger')
+      setPendingPointWinner(winner)
+      setShowPointDetail(true)
+      return
+    }
   }
 
   const handleAwardPoint = async (
@@ -818,12 +822,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
       if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
-        
+
         // Trigger celebratory confetti
         triggerMatchWinConfetti()
-        
+
         toast.success(t('matchCompletedWinner', { winner: winnerName }))
-        
+
         // Navigate to match details after a short delay
         setTimeout(() => {
           router.push(`/matches/${match.$id}`)
@@ -838,7 +842,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const handleSimpleStatsOutcome = (outcome: SimplePointOutcome) => {
     if (pendingPointWinner) {
       let lastShotPlayer: "p1" | "p2";
-      
+
       if (outcome === 'ace') {
         lastShotPlayer = currentServer;
       } else if (outcome === 'winner') {
@@ -861,7 +865,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         lastShotType: 'serve',
         lastShotPlayer: lastShotPlayer,
       }
-      
+
       handleAwardPoint(pendingPointWinner, storePointDetail)
       setPendingPointWinner(null)
       setShowSimpleStats(false)
@@ -886,15 +890,15 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     try {
       const result = undoLastPoint()
-      
+
       await updateMatchScore(match.$id, {
         score: result.newScore,
         pointLog: result.newPointLog
       })
-      
+
       // Play undo sound effect
       playSound('undo')
-      
+
       setIsInGame(result.newPointLog.length > 0)
       toast.success(t('pointUndone'))
     } catch (error) {
@@ -946,19 +950,19 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         pointLog,
         ...updateData
       })
-      
-      const reasonText = reason === 'retired' ? t('retirement') : 
-                        reason === 'weather' ? t('weatherConditionsReason') : t('injury')
+
+      const reasonText = reason === 'retired' ? t('retirement') :
+        reason === 'weather' ? t('weatherConditionsReason') : t('injury')
       const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
-      
+
       // Trigger celebratory confetti for match completion
       triggerMatchWinConfetti()
-      
+
       toast.success(t('matchEndedDueToReason', { reason: reasonText, winner: winnerName }))
       setShowRetireDialog(false)
       setRetireReason('')
       setSelectedWinner('')
-      
+
       // Navigate to match details after a short delay
       setTimeout(() => {
         router.push(`/matches/${match.$id}`)
@@ -974,7 +978,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/live/${match.$id}` : ''
     const shareTitle = `${playerNames.p1} vs ${playerNames.p2} - Live Tennis Match`
     const shareText = `Watch this live tennis match between ${playerNames.p1} and ${playerNames.p2}!`
-    
+
     // Try native share first (works best on mobile)
     if (typeof navigator !== 'undefined' && navigator.share && /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       try {
@@ -991,7 +995,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         // Fall through to show dialog
       }
     }
-    
+
     // Show custom share dialog as fallback
     setShowShareDialog(true)
   }
@@ -1043,9 +1047,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled
-                className="opacity-50 cursor-not-allowed relative flex items-center gap-2 min-w-0"
-                title={t('comingSoon')}
+                onClick={() => setShowCustomModeDialog(true)}
+                className="flex items-center gap-2 min-w-0"
+                title={t('configureStats')}
               >
                 <BarChart3 className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate min-w-0 hidden xs:block">{t('advancedStats')}</span>
@@ -1135,8 +1139,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         />
 
         {/* Point Entry Interface */}
-        <PointEntry 
-          onPointWin={handlePointWin} 
+        <PointEntry
+          onPointWin={handlePointWin}
           score={score}
           isTiebreak={isTiebreak}
           pointSituation={pointSituation}
@@ -1170,7 +1174,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           </Button>
 
           {/* Match Timer */}
-          <MatchTimerDisplay 
+          <MatchTimerDisplay
             startTime={match.startTime}
             endTime={match.endTime}
             setDurations={match.setDurations}
@@ -1179,11 +1183,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
           {/* Compact Serve Type Switcher */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
-              serveType === 'first' 
-                ? 'bg-primary text-primary-foreground shadow-sm' 
-                : 'text-muted-foreground'
-            }`}>
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${serveType === 'first'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground'
+              }`}>
               <Activity className="h-3 w-3" />
               {t('firstServe')}
             </span>
@@ -1193,11 +1196,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
               className="data-[state=checked]:bg-orange-500 scale-75"
             />
-            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
-              serveType === 'second' 
-                ? 'bg-orange-500 text-white shadow-sm' 
-                : 'text-muted-foreground'
-            }`}>
+            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${serveType === 'second'
+              ? 'bg-orange-500 text-white shadow-sm'
+              : 'text-muted-foreground'
+              }`}>
               <Activity className="h-3 w-3" />
               {t('secondServe')}
             </span>
@@ -1210,9 +1212,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             <TabsTrigger value="stats">{t('statsTab')}</TabsTrigger>
             <TabsTrigger value="points">{t('pointsTab')}</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="stats" className="mt-4">
-            <MatchStatsComponentSimpleFixed 
+            <MatchStatsComponentSimpleFixed
               stats={calculateMatchStatsByLevel(convertedPointLog, detailLevel)}
               playerNames={{
                 p1: playerNames.p1,
@@ -1222,9 +1224,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               pointLog={convertedPointLog}
             />
           </TabsContent>
-          
+
           <TabsContent value="points" className="mt-4">
-            <PointByPointView 
+            <PointByPointView
               pointLog={convertedPointLog}
               playerObjects={{
                 p1: match.playerOne,
@@ -1243,8 +1245,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* End Match Button */}
         <div className="mt-8 pb-20">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full h-12"
             onClick={() => setShowRetireDialog(true)}
           >
@@ -1255,7 +1257,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       </div>
 
       {/* Dialogs */}
-      <ShareDialog 
+      <ShareDialog
         open={showShareDialog}
         onOpenChange={setShowShareDialog}
         matchId={match.$id}
@@ -1278,24 +1280,45 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }}
       />
 
-      <UltraSimplePointLogger
-        open={showPointDetail}
-        onOpenChange={setShowPointDetail}
-        onSave={handlePointDetailSave}
-        pointContext={{
-          pointNumber: pointLog.length + 1,
-          setNumber: score.sets.length + 1,
-          gameNumber: score.games[0] + score.games[1] + 1,
-          gameScore: getGameScore(),
-          winner: pendingPointWinner || 'p1',
-          server: currentServer || 'p1',
-          serveType: serveType,
-          isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
-          isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
-          isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
-          playerNames
-        }}
-      />
+      {(detailLevel === 'custom' || detailLevel === 'complex') ? (
+        <DynamicPointLogger
+          open={showPointDetail}
+          onOpenChange={setShowPointDetail}
+          onSave={handlePointDetailSave}
+          pointContext={{
+            pointNumber: pointLog.length + 1,
+            setNumber: score.sets.length + 1,
+            gameNumber: score.games[0] + score.games[1] + 1,
+            gameScore: getGameScore(),
+            winner: pendingPointWinner || 'p1',
+            server: currentServer || 'p1',
+            serveType: serveType,
+            isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
+            playerNames
+          }}
+        />
+      ) : (
+        <UltraSimplePointLogger
+          open={showPointDetail}
+          onOpenChange={setShowPointDetail}
+          onSave={handlePointDetailSave}
+          pointContext={{
+            pointNumber: pointLog.length + 1,
+            setNumber: score.sets.length + 1,
+            gameNumber: score.games[0] + score.games[1] + 1,
+            gameScore: getGameScore(),
+            winner: pendingPointWinner || 'p1',
+            server: currentServer || 'p1',
+            serveType: serveType,
+            isBreakPoint: Boolean(pointSituation && pointSituation.type === 'breakPoint'),
+            isSetPoint: Boolean(pointSituation && pointSituation.type === 'setPoint'),
+            isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
+            playerNames
+          }}
+        />
+      )}
 
       <Dialog open={showRetireDialog} onOpenChange={setShowRetireDialog}>
         <DialogContent>
@@ -1307,7 +1330,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               <p className="text-muted-foreground mb-4">
                 {t('whyEndingMatch')}
               </p>
-              
+
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -1320,7 +1343,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   />
                   <span>{t('matchCompletedNormally')}</span>
                 </label>
-                
+
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
@@ -1332,7 +1355,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   />
                   <span>{t('playerRetired')}</span>
                 </label>
-                
+
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
@@ -1344,7 +1367,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   />
                   <span>{t('weatherConditions')}</span>
                 </label>
-                
+
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
@@ -1365,7 +1388,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 <p className="text-muted-foreground mb-4">
                   {t('whichPlayerWon')}
                 </p>
-                
+
                 <div className="space-y-2">
                   <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                     <input
@@ -1379,7 +1402,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     <PlayerAvatar player={match.playerOne} className="h-6 w-6" />
                     <span className="font-medium">{playerNames.p1}</span>
                   </label>
-                  
+
                   <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                     <input
                       type="radio"
@@ -1393,14 +1416,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     <span className="font-medium">{playerNames.p2}</span>
                   </label>
                 </div>
-                
+
                 <p className="text-xs text-muted-foreground mt-2">
                   {t('finalScoreWillBe')}
                 </p>
               </div>
             )}
           </div>
-          
+
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => {
               setShowRetireDialog(false)
@@ -1409,7 +1432,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             }}>
               {tCommon('cancel')}
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 if (retireReason === 'completed') {
                   router.push(`/matches/${match.$id}`)
@@ -1418,7 +1441,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 } else if (retireReason && !selectedWinner) {
                   toast.error(t('pleaseSelectWinner'))
                 }
-                
+
                 if (retireReason === 'completed') {
                   setShowRetireDialog(false)
                   setRetireReason('')

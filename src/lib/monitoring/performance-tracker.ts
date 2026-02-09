@@ -57,7 +57,7 @@ class PerformanceTracker {
   constructor() {
     this.sessionId = this.generateSessionId()
     this.startTime = Date.now()
-    
+
     if (typeof window !== 'undefined') {
       this.init()
     }
@@ -69,16 +69,16 @@ class PerformanceTracker {
 
     // Monitor performance metrics
     this.setupMetricMonitoring()
-    
+
     // Monitor errors
     this.setupErrorMonitoring()
-    
+
     // Monitor resource loading
     this.setupResourceMonitoring()
-    
+
     // Monitor user interactions
     this.setupInteractionMonitoring()
-    
+
     // Send data periodically
     this.setupDataTransmission()
   }
@@ -122,7 +122,7 @@ class PerformanceTracker {
       list.getEntries().forEach((entry) => {
         if (entry.entryType === 'resource') {
           const resourceEntry = entry as PerformanceResourceTiming
-          
+
           // Alert on slow resources
           if (resourceEntry.duration > 3000) {
             this.createAlert({
@@ -144,7 +144,7 @@ class PerformanceTracker {
 
   private setupInteractionMonitoring() {
     let interactionStart: number
-    
+
     ['click', 'keydown', 'touchstart'].forEach(eventType => {
       document.addEventListener(eventType, () => {
         interactionStart = performance.now()
@@ -196,7 +196,7 @@ class PerformanceTracker {
     // Process navigation timing
     if (entry.entryType === 'navigation') {
       const navEntry = entry as PerformanceNavigationTiming
-      
+
       // Check TTFB
       if (navEntry.responseStart - navEntry.requestStart > 1000) {
         this.createAlert({
@@ -214,7 +214,7 @@ class PerformanceTracker {
 
   private createAlert(alert: PerformanceAlert) {
     this.alerts.push(alert)
-    
+
     // Immediate critical alerts
     if (alert.severity === 'critical') {
       this.sendCriticalAlert(alert)
@@ -228,7 +228,7 @@ class PerformanceTracker {
 
   private trackError(error: ErrorInfo) {
     this.errors.push(error)
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.error('💥 Performance Error:', error)
     }
@@ -237,17 +237,17 @@ class PerformanceTracker {
   private getDeviceInfo(): DeviceInfo {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     const isTablet = /iPad|Android.*Tablet/i.test(navigator.userAgent)
-    
+
     return {
       type: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop',
-      memory: (navigator as any).deviceMemory,
+      memory: navigator.deviceMemory,
       cores: navigator.hardwareConcurrency,
     }
   }
 
   private getConnectionInfo(): ConnectionInfo {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
-    
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
+
     return {
       effectiveType: connection?.effectiveType || 'unknown',
       downlink: connection?.downlink || 0,
@@ -274,11 +274,11 @@ class PerformanceTracker {
       } else {
         await this.sendToAnalytics(sessionData)
       }
-      
+
       // Clear sent data
       this.errors = []
       this.alerts = []
-      
+
     } catch (error) {
       console.error('Failed to transmit performance data:', error)
     }
@@ -319,7 +319,7 @@ class PerformanceTracker {
       const offlineData = localStorage.getItem('tennis-performance-offline') || '[]'
       const parsedData = JSON.parse(offlineData)
       parsedData.push(data)
-      
+
       // Keep only last 10 sessions to avoid storage bloat
       localStorage.setItem('tennis-performance-offline', JSON.stringify(parsedData.slice(-10)))
     } catch (error) {

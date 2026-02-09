@@ -4,6 +4,7 @@
 // Only imports what we actually use, reducing bundle size
 
 import { Account, Databases, Storage, Client } from 'appwrite'
+import { env } from './env'
 
 // Lazy initialize clients only when needed
 let _client: Client | null = null
@@ -14,8 +15,8 @@ let _storage: Storage | null = null
 const initClient = () => {
   if (!_client) {
     _client = new Client()
-      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!)
+      .setEndpoint(env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
+      .setProject(env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || env.NEXT_PUBLIC_APPWRITE_PROJECT)
   }
   return _client
 }

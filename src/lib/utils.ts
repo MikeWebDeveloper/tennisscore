@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { env } from "@/lib/env"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -19,14 +20,14 @@ export function formatPlayerName(firstName: string, lastName: string, options: {
   }
 
   const { shortened = false, maxLength = 20, isDoubles = false } = options
-  
+
   // Full format: "Last Name First Name"
   const fullName = `${lastName} ${firstName}`
-  
+
   // If explicitly shortened or auto-shorten based on length/context
-  const shouldShorten = shortened || 
-    fullName.length > maxLength || 
-    (isDoubles && fullName.length > 15) || 
+  const shouldShorten = shortened ||
+    fullName.length > maxLength ||
+    (isDoubles && fullName.length > 15) ||
     fullName.length > 25
 
   if (shouldShorten) {
@@ -59,33 +60,33 @@ export function formatDoublesTeam(
   options: { shortened?: boolean; maxLength?: number } = {}
 ): string {
   const { shortened = false, maxLength = 40 } = options
-  
-  const name1 = formatPlayerName(player1.firstName, player1.lastName, { 
-    shortened, 
-    maxLength: 15, 
-    isDoubles: true 
+
+  const name1 = formatPlayerName(player1.firstName, player1.lastName, {
+    shortened,
+    maxLength: 15,
+    isDoubles: true
   })
-  const name2 = formatPlayerName(player2.firstName, player2.lastName, { 
-    shortened, 
-    maxLength: 15, 
-    isDoubles: true 
+  const name2 = formatPlayerName(player2.firstName, player2.lastName, {
+    shortened,
+    maxLength: 15,
+    isDoubles: true
   })
-  
+
   const fullTeamName = `${name1} / ${name2}`
-  
+
   // If team name is too long, force shortening
   if (fullTeamName.length > maxLength) {
-    const shortName1 = formatPlayerName(player1.firstName, player1.lastName, { 
-      shortened: true, 
-      isDoubles: true 
+    const shortName1 = formatPlayerName(player1.firstName, player1.lastName, {
+      shortened: true,
+      isDoubles: true
     })
-    const shortName2 = formatPlayerName(player2.firstName, player2.lastName, { 
-      shortened: true, 
-      isDoubles: true 
+    const shortName2 = formatPlayerName(player2.firstName, player2.lastName, {
+      shortened: true,
+      isDoubles: true
     })
     return `${shortName1} / ${shortName2}`
   }
-  
+
   return fullTeamName
 }
 
@@ -103,10 +104,10 @@ export function getInitials(firstName: string, lastName: string): string {
 
 export function formatDuration(duration: number | null | undefined): string {
   if (!duration) return "--"
-  
+
   const hours = Math.floor(duration / 60)
   const minutes = duration % 60
-  
+
   if (hours > 0) {
     return `${hours}h ${minutes}m`
   }
@@ -126,9 +127,10 @@ export function formatDate(date: string | Date, locale: string = 'en-US'): strin
  * Get the URL for a profile picture from Appwrite storage
  */
 export function getProfilePictureUrl(profilePictureId: string): string {
-  const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT
-  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT
-  const bucketId = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID
+  const endpoint = env.NEXT_PUBLIC_APPWRITE_ENDPOINT
+  const projectId = env.NEXT_PUBLIC_APPWRITE_PROJECT
+  const bucketId = env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID
+  // Env vars are already validated by env.ts, so we can skip the check or keep it for runtime safety if env.ts failed gracefully
   if (!endpoint || !projectId || !bucketId) {
     throw new Error("Missing required Appwrite environment variables for profile picture URL.")
   }
@@ -154,18 +156,18 @@ export function normalizeTextForSearch(text: string): string {
 export function logError(error: Error | unknown, context?: string): void {
   const errorMessage = error instanceof Error ? error.message : String(error)
   const errorStack = error instanceof Error ? error.stack : undefined
-  
+
   const timestamp = new Date().toISOString()
   const contextPrefix = context ? `[${context}] ` : ''
-  
+
   console.error(`${timestamp} - ${contextPrefix}Error:`, errorMessage)
-  
+
   if (errorStack) {
     console.error(`${timestamp} - ${contextPrefix}Stack:`, errorStack)
   }
-  
+
   // In development, also log additional error details
-  if (process.env.NODE_ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     console.error(`${timestamp} - ${contextPrefix}Full Error Object:`, error)
   }
 }

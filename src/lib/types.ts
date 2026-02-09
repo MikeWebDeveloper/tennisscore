@@ -103,11 +103,11 @@ export interface SearchResult {
   bhRating: string
   uniqueId: string
   chunk: string
-  
+
   // Enhanced info from chunk (available after chunk loads)
   yearOfBirth?: number
   cztennisUrl?: string
-  
+
   // UI state
   isLoading?: boolean
   isEnhanced?: boolean
@@ -138,17 +138,17 @@ export interface Match extends Models.Document {
   retirementReason?: string // Reason if match was retired
   detailLevel?: "points" | "simple" | "complex" | "detailed"
   tournamentName?: string // Tournament/League name
-  
+
   // Timing fields
   startTime?: string // ISO timestamp when first point is awarded
   endTime?: string // ISO timestamp when match completes
   setDurations?: number[] // Duration of each completed set in milliseconds
-  
+
   // Soft delete fields
   deletedAt?: string // ISO timestamp when match was deleted
   deletedBy?: string // User ID who deleted the match
   isDeleted?: boolean // Flag to quickly filter deleted matches
-  
+
   userId: string
 }
 
@@ -158,7 +158,7 @@ export interface MatchFormat {
   tiebreakAt: number
   finalSetTiebreak?: 'standard' | 'super' | 'none'
   noAd: boolean
-  detailLevel?: "points" | "simple" | "complex" | "detailed"
+  detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
 }
 
 export interface Score {
@@ -201,24 +201,24 @@ export interface PointDetail {
   setNumber: number // Current set number (1-indexed)
   gameNumber: number // Current game number in the set (1-indexed)
   gameScore: string // Game score at start of point (e.g., "30-15")
-  
+
   // Point Winner
   winner: "p1" | "p2" // Player who won the point
   server: "p1" | "p2" // Player who served
-  
+
   // Serve Details
   serveType: ServeType
   serveOutcome: PointOutcome // What happened with the serve
   servePlacement?: "wide" | "body" | "t" // Serve placement
   serveSpeed?: number // Optional serve speed
-  
+
   // Rally Details
   rallyLength: number // Number of shots in the rally (including serve)
   pointOutcome: PointOutcome // How the point ended
   lastShotType?: ShotType // Type of shot that ended the point
   lastShotPlayer?: "p1" | "p2" // Player who hit the last shot
   actionPlayer?: "p1" | "p2" // Player who performed the point-ending action
-  
+
   // Context
   isBreakPoint: boolean // Was this a break point?
   isSetPoint: boolean // Was this a set point?
@@ -226,7 +226,7 @@ export interface PointDetail {
   isGameWinning: boolean // Did this point win the game?
   isSetWinning: boolean // Did this point win the set?
   isMatchWinning: boolean // Did this point win the match?
-  
+
   // Optional Additional Details
   notes?: string // Free text notes about the point
   courtPosition?: CourtPosition // Where the point was played
@@ -252,7 +252,7 @@ export interface PlayerStats {
   doubleFaults: number
   unforcedErrors: number
   forcedErrors: number
-  
+
   // Serve Stats
   firstServesAttempted: number
   firstServesMade: number
@@ -262,13 +262,13 @@ export interface PlayerStats {
   servicePointsWon: number
   serviceGamesPlayed: number
   serviceGamesLost: number
-  
+
   // Break Point Stats
   breakPointsFaced: number
   breakPointsSaved: number
   breakPointsWon: number
   breakPointsCreated?: number
-  
+
   // Return Stats
   totalReturnPointsWon: number
   firstReturnPointsWon: number

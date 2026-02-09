@@ -69,7 +69,7 @@ export class MemoryMonitor {
           }
         })
       })
-      
+
       this.performanceObserver.observe({ entryTypes: ['measure'] })
     }
 
@@ -124,7 +124,7 @@ export class MemoryMonitor {
   private collectMemoryMetrics(): void {
     if (typeof window === 'undefined' || !('performance' in window)) return
 
-    const memory = (performance as Record<string, any>).memory
+    const memory = performance.memory
     if (!memory) return
 
     const metrics: MemoryMetrics = {
@@ -141,11 +141,11 @@ export class MemoryMonitor {
     if (this.metrics.length > 0) {
       const lastMetric = this.metrics[this.metrics.length - 1]
       const memoryIncrease = metrics.usedJSHeapSize - lastMetric.usedJSHeapSize
-      
+
       if (memoryIncrease > this.leakThreshold) {
         metrics.leakDetected = true
         metrics.leakSeverity = memoryIncrease > this.leakThreshold * 2 ? 'high' : 'medium'
-        
+
         this.recordMemoryLeak({
           componentName: 'Unknown',
           leakType: 'closure',
@@ -180,13 +180,13 @@ export class MemoryMonitor {
   private detectMemoryLeaks(): void {
     // Check for event listener leaks
     this.detectEventListenerLeaks()
-    
+
     // Check for timer leaks
     this.detectTimerLeaks()
-    
+
     // Check for DOM reference leaks
     this.detectDOMReferenceLeaks()
-    
+
     // Check for subscription leaks
     this.detectSubscriptionLeaks()
   }
@@ -197,7 +197,7 @@ export class MemoryMonitor {
   private detectEventListenerLeaks(): void {
     if (typeof window === 'undefined') return
 
-    const eventListeners = (window as any).getEventListeners?.(document) || {}
+    const eventListeners = window.getEventListeners?.(document) || {}
     const listenerCount = Object.keys(eventListeners).reduce((count, eventType) => {
       return count + (eventListeners[eventType]?.length || 0)
     }, 0)
@@ -221,7 +221,7 @@ export class MemoryMonitor {
     // Check for excessive number of timers
     // This is a simplified check - real implementation would track timers
     const timerCount = this.cleanupFunctions.size
-    
+
     if (timerCount > 50) {
       this.recordMemoryLeak({
         componentName: 'Global',
@@ -241,7 +241,7 @@ export class MemoryMonitor {
     if (typeof document === 'undefined') return
 
     const nodeCount = document.getElementsByTagName('*').length
-    
+
     if (nodeCount > 10000) {
       this.recordMemoryLeak({
         componentName: 'DOM',
@@ -260,7 +260,7 @@ export class MemoryMonitor {
   private detectSubscriptionLeaks(): void {
     const subscriptionCount = Array.from(this.cleanupFunctions.values())
       .filter(cleanup => cleanup.type === 'subscription').length
-    
+
     if (subscriptionCount > 20) {
       this.recordMemoryLeak({
         componentName: 'Global',
@@ -311,7 +311,7 @@ export class MemoryMonitor {
    */
   private recordMemoryLeak(leak: MemoryLeakDetection): void {
     this.leakDetections.push(leak)
-    
+
     // Keep only last 50 leak detections
     if (this.leakDetections.length > 50) {
       this.leakDetections = this.leakDetections.slice(-50)
@@ -354,7 +354,7 @@ export class MemoryMonitor {
    */
   public executeAllCleanups(): void {
     const cleanups = Array.from(this.cleanupFunctions.values())
-    
+
     // Sort by priority
     cleanups.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 }
@@ -404,8 +404,8 @@ export class MemoryMonitor {
    * Force garbage collection (if available)
    */
   public forceGarbageCollection(): void {
-    if (typeof window !== 'undefined' && (window as any).gc) {
-      (window as any).gc()
+    if (typeof window !== 'undefined' && window.gc) {
+      window.gc()
       logger.debug('Forced garbage collection')
     } else {
       logger.debug('Garbage collection not available')
@@ -570,7 +570,7 @@ export const cleanupUtils = {
     options?: AddEventListenerOptions
   ): string => {
     element.addEventListener(event, handler, options)
-    
+
     return registerCleanup({
       cleanup: () => element.removeEventListener(event, handler, options),
       priority: 'medium',

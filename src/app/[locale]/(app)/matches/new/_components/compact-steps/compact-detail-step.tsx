@@ -9,9 +9,9 @@ import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 
 interface CompactDetailStepProps {
-  value: "points" | "simple" | "detailed" | "complex" | ""
-  onChange: (value: "points" | "simple" | "detailed" | "complex") => void
-  onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "complex") => Promise<void>
+  value: "points" | "simple" | "detailed" | "custom" | ""
+  onChange: (value: "points" | "simple" | "detailed" | "custom") => void
+  onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
   loading: boolean
 }
 
@@ -41,11 +41,11 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
       disabled: false
     },
     {
-      value: "complex",
+      value: "custom",
       icon: Microscope,
-      title: t("complexAnalytics"),
-      description: t("comingSoon"),
-      disabled: true
+      title: t("customStats"),
+      description: t("configureYourTracking"),
+      disabled: false
     }
   ]
 
@@ -65,7 +65,7 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
           const Icon = option.icon
           const isSelected = value === option.value
           const isDisabled = option.disabled
-          
+
           return (
             <motion.div
               key={option.value}
@@ -73,34 +73,34 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
               whileTap={!isDisabled ? { scale: 0.99 } : undefined}
               onClick={() => {
                 if (!isDisabled && !loading) {
-                  const selectedValue = option.value as "points" | "simple" | "complex" | "detailed"
+                  const selectedValue = option.value as "points" | "simple" | "detailed" | "custom"
                   onChange(selectedValue)
                   onStartMatch(selectedValue)
                 }
               }}
               className={`
                 p-3 rounded-lg border cursor-pointer transition-all duration-200 relative
-                ${isDisabled 
-                  ? 'opacity-50 cursor-not-allowed bg-muted/30' 
-                  : isSelected 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-border hover:border-primary/50'
+                ${isDisabled
+                  ? 'opacity-50 cursor-not-allowed bg-muted/30'
+                  : isSelected
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
                 }
               `}
             >
               <div className="flex items-center space-x-3">
                 <div className={`
                   p-1.5 rounded-md transition-colors
-                  ${isDisabled 
-                    ? 'bg-muted text-muted-foreground' 
-                    : isSelected 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted'
+                  ${isDisabled
+                    ? 'bg-muted text-muted-foreground'
+                    : isSelected
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
                   }
                 `}>
                   <Icon className="h-4 w-4" />
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <div className="font-medium text-sm">{option.title}</div>
