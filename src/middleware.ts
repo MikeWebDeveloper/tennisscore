@@ -47,6 +47,16 @@ export async function middleware(request: NextRequest) {
 
   // Skip intl middleware for public routes
   if (isPublicRoute) {
+    // Public live-match links are shared without a locale prefix (e.g.
+    // "/live/<id>"). The live page lives at /[locale]/live/[matchId] with
+    // localePrefix: 'always', so a bare link 404s. Redirect it to the default
+    // locale to keep all previously-shared links working.
+    if (!pathnameHasLocale && actualPathname.startsWith("/live/")) {
+      return NextResponse.redirect(
+        new URL(`/${routing.defaultLocale}${pathname}`, request.url)
+      )
+    }
+
     // Still apply auth logic for non-api routes
     if (!actualPathname.startsWith("/api/")) {
       let hasValidSession = false
