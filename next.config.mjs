@@ -1,6 +1,11 @@
 import createNextIntlPlugin from 'next-intl/plugin'
+import withBundleAnalyzer from '@next/bundle-analyzer'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,14 +15,24 @@ const nextConfig = {
   },
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
+    // React Compiler 1.0 (stable) — automatic memoization, fewer re-renders
+    reactCompiler: true,
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      'date-fns',
+    ],
     serverActions: {
       bodySizeLimit: '12mb', // Increase limit for profile picture uploads (10MB + buffer)
     },
   },
-  
+
   // Image optimization configuration
   images: {
+    // Serve modern formats for next/image (e.g. Appwrite avatars)
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -115,4 +130,4 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig); 
+export default bundleAnalyzer(withNextIntl(nextConfig)); 

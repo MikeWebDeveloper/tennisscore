@@ -92,6 +92,8 @@
   "appUpdated": "Aplikace aktualizována",
   "refreshToGetLatest": "Aplikace byla aktualizována. Obnovte stránku pro získání nejnovější verze.",
   "somethingWentWrong": "Něco se pokazilo.",
+  "errorBoundaryDescription": "Došlo k neočekávané chybě. Můžete to zkusit znovu, a pokud problém přetrvává, znovu načtěte aplikaci.",
+  "backToDashboard": "Zpět na přehled",
   "pleaseRefresh": "Obnovte stránku a zkuste to znovu.",
   "wins": "výhry",
   "ongoing": "Probíhající",

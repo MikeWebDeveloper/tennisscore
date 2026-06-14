@@ -30,14 +30,9 @@ import {
   Activity
 } from 'lucide-react'
 import { Match } from '@/stores/matchStore'
-import { 
-  exportMatchToPDF, 
-  downloadPDF, 
-  shareMatchReport, 
-  shareToWhatsApp, 
-  shareToEmail,
-  ExportOptions 
-} from '@/lib/utils/match-export'
+// Runtime export helpers (which pull in jspdf/jspdf-autotable) are imported
+// dynamically inside the handler so they stay out of the initial bundle.
+import type { ExportOptions } from '@/lib/utils/match-export'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { useTranslations } from '@/i18n'
@@ -88,9 +83,18 @@ export function MatchExportDialog({
     setIsExporting(true)
     
     try {
+      // Lazy-load the PDF/export module (jspdf, jspdf-autotable) on demand.
+      const {
+        exportMatchToPDF,
+        downloadPDF,
+        shareMatchReport,
+        shareToWhatsApp,
+        shareToEmail,
+      } = await import('@/lib/utils/match-export')
+
       const blob = await exportMatchToPDF(match, playerNames, exportOptions)
       const title = generateMatchTitle()
-      
+
       switch (action) {
         case 'download':
           downloadPDF(blob, title)

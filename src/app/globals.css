@@ -13,10 +13,8 @@
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Google Fonts - Import statements must be first */
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+/* Fonts are self-hosted via next/font (Inter, JetBrains Mono) in the locale layout.
+   Satoshi is not on Google Fonts; --font-satoshi falls back to Inter below. */
 
 @layer base {
   :root {
@@ -46,6 +44,8 @@
     --chart-3: 128 128 128;
     --chart-4: 160 160 160;
     --chart-5: 192 192 192;
+    /* Satoshi isn't self-hosted; alias heading font to the Inter web font */
+    --font-satoshi: var(--font-inter);
   }
 
   .dark {
@@ -85,7 +85,7 @@
   
   html {
     /* Clay court background for overscroll areas */
-    background-image: url('/claycourt.png');
+    background-image: url('/claycourt.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

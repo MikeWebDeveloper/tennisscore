@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -46,15 +45,18 @@ import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 import { LiveSetExportButton } from "@/components/features/match-export-dialog"
 import { useLiveViewers } from "@/hooks/use-live-viewers"
 
-// Confetti celebration function
-const triggerMatchWinConfetti = () => {
+// Confetti celebration function — canvas-confetti is loaded on demand so it
+// stays out of the initial live-scoring bundle (only fires on a match win).
+const triggerMatchWinConfetti = async () => {
+  const { default: confetti } = await import("canvas-confetti")
+
   // Main burst from the center
   confetti({
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 }
   })
-  
+
   // Side bursts for more dramatic effect
   setTimeout(() => {
     confetti({
@@ -70,7 +72,7 @@ const triggerMatchWinConfetti = () => {
       origin: { x: 1 }
     })
   }, 250)
-  
+
   // Final burst with gold colors
   setTimeout(() => {
     confetti({
