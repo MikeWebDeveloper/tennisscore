@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useMatchStore } from "@/stores/matchStore"
+import { useShallow } from "zustand/react/shallow"
 import { Clock } from "lucide-react"
 
 interface MatchTimerDisplayProps {
@@ -20,7 +21,16 @@ export function MatchTimerDisplay({
   setDurations: propSetDurations,
   isMatchComplete: propIsMatchComplete
 }: MatchTimerDisplayProps) {
-  const storeData = useMatchStore()
+  // Only the timing fields are needed here — selecting them keeps this
+  // (always-mounted, 1s-interval) component from re-rendering on every point.
+  const storeData = useMatchStore(
+    useShallow((s) => ({
+      startTime: s.startTime,
+      endTime: s.endTime,
+      setDurations: s.setDurations,
+      isMatchComplete: s.isMatchComplete
+    }))
+  )
   const [currentTime, setCurrentTime] = useState<string>(new Date().toISOString())
 
   // Use props if provided, otherwise fall back to store

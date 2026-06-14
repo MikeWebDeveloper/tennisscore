@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { 
   isGameWon, 
   isSetWon, 
@@ -19,6 +20,10 @@ import {
   type StreakAnalysis
 } from '@/lib/utils/tennis-scoring'
 import { CourtPosition } from '@/lib/types'
+
+// Gate verbose per-point scoring logs so they (and the objects they build) are
+// skipped entirely in production — this runs on the hot path for every point.
+const DEBUG = process.env.NODE_ENV !== "production"
 
 export interface MatchFormat {
   sets: 1 | 3 | 5
@@ -231,6 +236,12 @@ interface MatchState {
   endTime: string | null
   setDurations: number[]  // Duration of each completed set in milliseconds
   currentSetStartTime: string | null  // When current set started
+
+  // Offline persistence: true when locally-persisted progress is ahead of the
+  // server (e.g. after a reload/disconnect with unsynced points) and needs a
+  // one-off push back to the server.
+  needsResync: boolean
+  clearResync: () => void
   
   // Detailed logging mode
   detailedLoggingEnabled: boolean
@@ -627,9 +638,12 @@ export const getMatchDataEnhancementLevel = (pointLog: PointDetail[]): 'basic' |
 // The calculateScoreFromPointLog function is being moved to tennis-scoring.ts
 // to centralize scoring logic. It will be removed from this file.
 
-export const useMatchStore = create<MatchState>((set, get) => ({
+export const useMatchStore = create<MatchState>()(persist((set, get) => ({
   currentMatch: null,
   setCurrentMatch: (match) => set({ currentMatch: match }),
+
+  needsResync: false,
+  clearResync: () => set({ needsResync: false }),
   
   score: initialScore,
   pointLog: [],
@@ -671,6 +685,18 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const rawPointLog = match.pointLog || []
     // Normalize point log for backward compatibility
     const pointLog = rawPointLog.map(normalizePointDetail)
+
+    // Offline recovery: if we have locally-persisted progress for THIS same
+    // match that is ahead of the server (unsynced points after a reload or
+    // connectivity drop), keep the local state and flag it for re-sync instead
+    // of overwriting it with the older server snapshot.
+    const localState = get()
+    const sameMatch = !!localState.currentMatch?.$id && localState.currentMatch.$id === match.$id
+    const serverCompleted = match.status === 'Completed'
+    if (sameMatch && !serverCompleted && localState.pointLog.length > pointLog.length) {
+      set({ currentMatch: match, needsResync: true })
+      return
+    }
     let calculatedServer: 'p1' | 'p2' | null = null
     let startingServer: 'p1' | 'p2' = 'p1' // Default to p1 if not set
     
@@ -692,6 +718,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       
       set({
         currentMatch: match,
+        needsResync: false,
         score: recalculatedScore,
         pointLog,
         currentServer: calculatedServer,
@@ -716,6 +743,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       
       set({
         currentMatch: match,
+        needsResync: false,
         score,
         pointLog,
         currentServer: calculatedServer,
@@ -811,7 +839,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             tempGames[winner === 'p1' ? 0 : 1]++
             
             // Debug logging for Set Point detection
-            console.log('🎾 SET POINT Detection (Game Winning):', {
+            DEBUG && console.log('🎾 SET POINT Detection (Game Winning):', {
                 currentGames: previousScore.games,
                 tempGames,
                 winner,
@@ -825,7 +853,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
-                console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
+                DEBUG && console.log('✅ SET POINT DETECTED! (via game win)', { winner, games: tempGames })
                 
                 // MATCH POINT: Check if winning this set would win the match
                 const newP1Sets = currentP1SetsWon + (winner === 'p1' ? 1 : 0)
@@ -833,11 +861,11 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchWinning = true
                     isThisPointMatchPoint = true
-                    console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
+                    DEBUG && console.log('✅ MATCH POINT DETECTED!', { winner, newP1Sets, newP2Sets, setsNeeded: setsNeededToWin })
                 }
             }
         } else {
-            console.log('❌ NOT Game Point:', {
+            DEBUG && console.log('❌ NOT Game Point:', {
                 currentPoints: previousScore.points,
                 tempPoints: [temp_p1_score, temp_p2_score],
                 winner,
@@ -863,7 +891,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
             const isDeuceSetPoint = (p1Score === 3 && p2Score === 3) && 
                 ((winner === 'p1' && p1CouldWinSetNextGame) || (winner === 'p2' && p2CouldWinSetNextGame))
             
-            console.log('🎾 Additional Set Point Check:', {
+            DEBUG && console.log('🎾 Additional Set Point Check:', {
                 currentGames,
                 currentPoints: previousScore.points,
                 p1Score,
@@ -884,7 +912,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 (winner === 'p2' && p2AtGamePoint && p2CouldWinSetNextGame) ||
                 isDeuceSetPoint) {
                 isThisPointSetPoint = true
-                console.log('✅ SET POINT DETECTED! (player at game point position)', { 
+                DEBUG && console.log('✅ SET POINT DETECTED! (player at game point position)', {
                     winner, 
                     currentGames,
                     points: previousScore.points,
@@ -898,10 +926,10 @@ export const useMatchStore = create<MatchState>((set, get) => ({
                 const newP2Sets = currentP2SetsWon + (winner === 'p2' ? 1 : 0)
                 if (newP1Sets >= setsNeededToWin || newP2Sets >= setsNeededToWin) {
                     isThisPointMatchPoint = true
-                    console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
+                    DEBUG && console.log('✅ MATCH POINT DETECTED! (via set point)', { winner, newP1Sets, newP2Sets })
                 }
             } else {
-                console.log('❌ SET POINT NOT DETECTED:', {
+                DEBUG && console.log('❌ SET POINT NOT DETECTED:', {
                     winner,
                     p1AtGamePoint,
                     p2AtGamePoint, 
@@ -932,7 +960,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       : getTennisScore(tempScore.points[0], tempScore.points[1]);
 
     // Debug log for breakpoint detection in point storage
-    console.log('💾 Storing Point - BP Detection:', {
+    DEBUG && console.log('💾 Storing Point - BP Detection:', {
       currentServer,
       scoreBEFORE: `${previousScore.points[0]}-${previousScore.points[1]}`,
       scoreAFTER: gameScoreToStore,
@@ -1152,6 +1180,32 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       level: 1,
       selectedCategories: ['serve-placement', 'rally-type'],
     },
+    needsResync: false,
+  }),
+}), {
+  name: 'tennis-match-progress',
+  storage: createJSONStorage(() => localStorage),
+  // Persist only the in-progress match data (not the action functions) so a
+  // reload or connectivity drop never loses unsynced points.
+  partialize: (state) => ({
+    currentMatch: state.currentMatch,
+    score: state.score,
+    pointLog: state.pointLog,
+    currentServer: state.currentServer,
+    startingServer: state.startingServer,
+    matchFormat: state.matchFormat,
+    initialTiebreakServer: state.initialTiebreakServer,
+    isMatchComplete: state.isMatchComplete,
+    winnerId: state.winnerId,
+    p1Streak: state.p1Streak,
+    p2Streak: state.p2Streak,
+    startTime: state.startTime,
+    endTime: state.endTime,
+    setDurations: state.setDurations,
+    currentSetStartTime: state.currentSetStartTime,
+    detailedLoggingEnabled: state.detailedLoggingEnabled,
+    customMode: state.customMode,
+    events: state.events,
   }),
 }))
 

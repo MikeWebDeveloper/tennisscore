@@ -19,7 +19,7 @@ import {
   BarChart3
 } from "lucide-react"
 import { toast } from "sonner"
-import { updateMatchScore } from "@/lib/actions/matches"
+import { syncMatchScore } from "@/lib/utils/sync-match-score"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PointByPointView } from "../../../[id]/_components/point-by-point-view"
@@ -34,6 +34,7 @@ import { cn, formatPlayerFromObject } from "@/lib/utils"
 import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
+import { useShallow } from "zustand/react/shallow"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
@@ -387,18 +388,31 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
   
-  // Use match store
-  const { 
-    score, 
-    pointLog, 
+  // Use match store with a shallow selector so this component only re-renders
+  // when the fields it actually uses change (not on every unrelated store write).
+  const {
+    score,
+    pointLog,
     currentServer,
     p1Streak,
     p2Streak,
-    initializeMatch, 
-    awardPoint, 
-    undoLastPoint, 
+    initializeMatch,
+    awardPoint,
+    undoLastPoint,
     setServer
-  } = useMatchStore()
+  } = useMatchStore(
+    useShallow((s) => ({
+      score: s.score,
+      pointLog: s.pointLog,
+      currentServer: s.currentServer,
+      p1Streak: s.p1Streak,
+      p2Streak: s.p2Streak,
+      initializeMatch: s.initializeMatch,
+      awardPoint: s.awardPoint,
+      undoLastPoint: s.undoLastPoint,
+      setServer: s.setServer
+    }))
+  )
   
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
@@ -659,6 +673,27 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     
     try {
       initializeMatch(matchData)
+
+      // Offline recovery: if the persisted store kept local points that never
+      // reached the server (reload/disconnect mid-match), push them once now.
+      const restored = useMatchStore.getState()
+      if (restored.needsResync) {
+        syncMatchScore(match.$id, {
+          score: restored.score,
+          pointLog: restored.pointLog,
+          ...(restored.startTime ? { startTime: restored.startTime } : {}),
+          ...(restored.endTime ? { endTime: restored.endTime } : {}),
+          ...(restored.setDurations ? { setDurations: restored.setDurations } : {}),
+          ...(restored.isMatchComplete && restored.winnerId
+            ? { status: 'Completed' as const, winnerId: restored.winnerId }
+            : {})
+        })
+          .then(() => useMatchStore.getState().clearResync())
+          .catch(() => {
+            // Leave the flag set; the next synced point will carry these too.
+          })
+      }
+
       if (existingPointLog.length === 0) {
         setServer(dbScore.server || 'p1')
       }
@@ -819,7 +854,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }
       }
 
-      await updateMatchScore(match.$id, updatePayload)
+      await syncMatchScore(match.$id, updatePayload)
 
       if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
@@ -892,7 +927,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     try {
       const result = undoLastPoint()
       
-      await updateMatchScore(match.$id, {
+      await syncMatchScore(match.$id, {
         score: result.newScore,
         pointLog: result.newPointLog
       })
@@ -946,7 +981,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         updateData.duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
       }
 
-      await updateMatchScore(match.$id, {
+      await syncMatchScore(match.$id, {
         score: retiredScore,
         pointLog,
         ...updateData
