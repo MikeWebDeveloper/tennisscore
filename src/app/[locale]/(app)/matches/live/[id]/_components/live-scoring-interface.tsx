@@ -34,6 +34,7 @@ import { cn, formatPlayerFromObject } from "@/lib/utils"
 import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
+import { useShallow } from "zustand/react/shallow"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
@@ -387,18 +388,31 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
   
-  // Use match store
-  const { 
-    score, 
-    pointLog, 
+  // Use match store with a shallow selector so this component only re-renders
+  // when the fields it actually uses change (not on every unrelated store write).
+  const {
+    score,
+    pointLog,
     currentServer,
     p1Streak,
     p2Streak,
-    initializeMatch, 
-    awardPoint, 
-    undoLastPoint, 
+    initializeMatch,
+    awardPoint,
+    undoLastPoint,
     setServer
-  } = useMatchStore()
+  } = useMatchStore(
+    useShallow((s) => ({
+      score: s.score,
+      pointLog: s.pointLog,
+      currentServer: s.currentServer,
+      p1Streak: s.p1Streak,
+      p2Streak: s.p2Streak,
+      initializeMatch: s.initializeMatch,
+      awardPoint: s.awardPoint,
+      undoLastPoint: s.undoLastPoint,
+      setServer: s.setServer
+    }))
+  )
   
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
