@@ -92,6 +92,8 @@
   "appUpdated": "App updated",
   "refreshToGetLatest": "The app has been updated. Please refresh the page to get the latest version.",
   "somethingWentWrong": "Something went wrong.",
+  "errorBoundaryDescription": "An unexpected error occurred. You can try again, and if it keeps happening, reload the app.",
+  "backToDashboard": "Back to dashboard",
   "pleaseRefresh": "Please refresh the page and try again.",
   "wins": "wins",
   "ongoing": "Ongoing",

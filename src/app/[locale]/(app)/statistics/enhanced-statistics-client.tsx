@@ -24,12 +24,32 @@ import {
   aggregatePlayerStatsAcrossMatches,
   calculateDetailedMatchStats
 } from "@/lib/utils/match-stats"
-import { PerformanceTrends } from "./_components/performance-trends"
-import { ServeReturnAnalysis } from "./_components/serve-return-analysis"
-import { ClutchPerformance } from "./_components/clutch-performance"
-import { HeadToHeadAnalysis } from "./_components/head-to-head-analysis"
-import { MatchPatterns } from "./_components/match-patterns"
+import dynamic from "next/dynamic"
+import { ChartSkeleton } from "@/components/ui/loading-skeletons"
 import { Button } from "@/components/ui/button"
+
+// Recharts-heavy tab panels are code-split so each tab's chart bundle only
+// loads when that tab is opened, shrinking the initial statistics payload.
+const PerformanceTrends = dynamic(
+  () => import("./_components/performance-trends").then((m) => m.PerformanceTrends),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
+const ServeReturnAnalysis = dynamic(
+  () => import("./_components/serve-return-analysis").then((m) => m.ServeReturnAnalysis),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
+const ClutchPerformance = dynamic(
+  () => import("./_components/clutch-performance").then((m) => m.ClutchPerformance),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
+const HeadToHeadAnalysis = dynamic(
+  () => import("./_components/head-to-head-analysis").then((m) => m.HeadToHeadAnalysis),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
+const MatchPatterns = dynamic(
+  () => import("./_components/match-patterns").then((m) => m.MatchPatterns),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
 
 interface EnhancedStatisticsClientProps {
   mainPlayer: Player

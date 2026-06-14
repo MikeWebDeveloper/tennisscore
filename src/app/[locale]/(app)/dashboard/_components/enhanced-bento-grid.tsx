@@ -28,7 +28,7 @@ import {
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import { Suspense } from "react"
-import { PerformanceCharts } from "./performance-charts"
+import dynamic from "next/dynamic"
 import { Match, Player, PointDetail } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { aggregatePlayerStatsAcrossMatches, calculatePlayerWinStreak } from "@/lib/utils/match-stats"
@@ -38,6 +38,12 @@ import { CreatePlayerDialog } from "../../players/_components/create-player-dial
 import { useState } from "react"
 import { useGSAPCardAnimation } from "@/hooks/use-gsap-card-animation"
 import { ChartSkeleton } from "@/components/ui/loading-skeletons"
+
+// Recharts-based dashboard charts are code-split out of the initial bundle.
+const PerformanceCharts = dynamic(
+  () => import("./performance-charts").then((m) => m.PerformanceCharts),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+)
 
 interface EnhancedBentoGridProps {
   matches: Match[]
