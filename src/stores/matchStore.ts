@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { 
   isGameWon, 
   isSetWon, 
@@ -235,6 +236,12 @@ interface MatchState {
   endTime: string | null
   setDurations: number[]  // Duration of each completed set in milliseconds
   currentSetStartTime: string | null  // When current set started
+
+  // Offline persistence: true when locally-persisted progress is ahead of the
+  // server (e.g. after a reload/disconnect with unsynced points) and needs a
+  // one-off push back to the server.
+  needsResync: boolean
+  clearResync: () => void
   
   // Detailed logging mode
   detailedLoggingEnabled: boolean
@@ -631,9 +638,12 @@ export const getMatchDataEnhancementLevel = (pointLog: PointDetail[]): 'basic' |
 // The calculateScoreFromPointLog function is being moved to tennis-scoring.ts
 // to centralize scoring logic. It will be removed from this file.
 
-export const useMatchStore = create<MatchState>((set, get) => ({
+export const useMatchStore = create<MatchState>()(persist((set, get) => ({
   currentMatch: null,
   setCurrentMatch: (match) => set({ currentMatch: match }),
+
+  needsResync: false,
+  clearResync: () => set({ needsResync: false }),
   
   score: initialScore,
   pointLog: [],
@@ -675,6 +685,18 @@ export const useMatchStore = create<MatchState>((set, get) => ({
     const rawPointLog = match.pointLog || []
     // Normalize point log for backward compatibility
     const pointLog = rawPointLog.map(normalizePointDetail)
+
+    // Offline recovery: if we have locally-persisted progress for THIS same
+    // match that is ahead of the server (unsynced points after a reload or
+    // connectivity drop), keep the local state and flag it for re-sync instead
+    // of overwriting it with the older server snapshot.
+    const localState = get()
+    const sameMatch = !!localState.currentMatch?.$id && localState.currentMatch.$id === match.$id
+    const serverCompleted = match.status === 'Completed'
+    if (sameMatch && !serverCompleted && localState.pointLog.length > pointLog.length) {
+      set({ currentMatch: match, needsResync: true })
+      return
+    }
     let calculatedServer: 'p1' | 'p2' | null = null
     let startingServer: 'p1' | 'p2' = 'p1' // Default to p1 if not set
     
@@ -696,6 +718,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       
       set({
         currentMatch: match,
+        needsResync: false,
         score: recalculatedScore,
         pointLog,
         currentServer: calculatedServer,
@@ -720,6 +743,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       
       set({
         currentMatch: match,
+        needsResync: false,
         score,
         pointLog,
         currentServer: calculatedServer,
@@ -1156,6 +1180,32 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       level: 1,
       selectedCategories: ['serve-placement', 'rally-type'],
     },
+    needsResync: false,
+  }),
+}), {
+  name: 'tennis-match-progress',
+  storage: createJSONStorage(() => localStorage),
+  // Persist only the in-progress match data (not the action functions) so a
+  // reload or connectivity drop never loses unsynced points.
+  partialize: (state) => ({
+    currentMatch: state.currentMatch,
+    score: state.score,
+    pointLog: state.pointLog,
+    currentServer: state.currentServer,
+    startingServer: state.startingServer,
+    matchFormat: state.matchFormat,
+    initialTiebreakServer: state.initialTiebreakServer,
+    isMatchComplete: state.isMatchComplete,
+    winnerId: state.winnerId,
+    p1Streak: state.p1Streak,
+    p2Streak: state.p2Streak,
+    startTime: state.startTime,
+    endTime: state.endTime,
+    setDurations: state.setDurations,
+    currentSetStartTime: state.currentSetStartTime,
+    detailedLoggingEnabled: state.detailedLoggingEnabled,
+    customMode: state.customMode,
+    events: state.events,
   }),
 }))
 
