@@ -74,6 +74,41 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          // Enforce HTTPS for a year (Vercel serves the site over HTTPS).
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          // Limit referrer leakage to other origins.
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // Disable powerful features the app doesn't use.
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+          },
+          // Report-only so it can never break the app, but still advertises a
+          // defined content policy to reputation scanners. Scoped to the app's
+          // own origin plus the Appwrite backend (REST + realtime WebSocket).
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://fra.cloud.appwrite.io https://cloud.appwrite.io",
+              "font-src 'self' data:",
+              "connect-src 'self' https://fra.cloud.appwrite.io https://cloud.appwrite.io wss://fra.cloud.appwrite.io wss://cloud.appwrite.io",
+              "worker-src 'self' blob:",
+              "manifest-src 'self'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+            ].join('; '),
+          },
         ],
       },
       {
