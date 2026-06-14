@@ -1,7 +1,7 @@
 // TennisScore Service Worker - Production Ready
-// Version: 1.3.4 - Vercel Preview URL Fixes
-const CACHE_NAME = 'tennisscore-v1.3.4'
-const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.4'
+// Version: 1.3.5 - Safari PWA redirect fix
+const CACHE_NAME = 'tennisscore-v1.3.5'
+const DYNAMIC_CACHE = 'tennisscore-dynamic-v1.3.5'
 
 // Robust development detection
 const isDevelopment = (() => {
@@ -66,7 +66,7 @@ const BYPASS_PATTERNS = [
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v1.3.4...')
+  console.log('[SW] Installing service worker v1.3.5...')
   
   if (isDevelopment) {
     console.log('[SW] Development mode - skipping cache setup')
@@ -332,8 +332,10 @@ async function fetchAndCache(request, cache) {
       mode: request.mode === 'navigate' ? 'cors' : request.mode
     })
     
-    if (response.ok && response.status === 200) {
-      // Clone before caching (response can only be consumed once)
+    if (response.ok && response.status === 200 && !response.redirected) {
+      // Clone before caching (response can only be consumed once).
+      // Never cache a redirected response — replaying it for a navigation would
+      // trigger Safari's "Response served by service worker has redirections".
       cache.put(request, response.clone()).catch(() => {
         // Ignore cache errors
       })
@@ -349,21 +351,21 @@ async function fetchAndCache(request, cache) {
 // Handle navigation requests
 async function handleNavigation(request) {
   try {
-    // Create a new request with explicit redirect handling for proxy scenarios
-    const url = request.url
-    const navigationRequest = new Request(url, {
-      method: 'GET',
-      headers: request.headers,
-      mode: request.mode === 'navigate' ? 'cors' : request.mode,
-      credentials: request.credentials,
-      redirect: 'follow',
-      cache: 'default'
-    })
-    
-    const response = await fetch(navigationRequest)
-    
+    // Use the ORIGINAL navigation request. Navigation requests use redirect
+    // mode "manual", so a server redirect (e.g. /dashboard -> /login or
+    // /cs/dashboard) comes back as an opaqueredirect response that the browser
+    // follows natively. Returning a *followed* (redirected) response is what
+    // makes Safari throw "Response served by service worker has redirections"
+    // and breaks the installed PWA until it is re-added to the home screen.
+    const response = await fetch(request)
+
+    // Safety net: never hand a redirected response back for a navigation.
+    if (response.redirected) {
+      return Response.redirect(response.url, 302)
+    }
+
     return response
-    
+
   } catch (error) {
     console.error('[SW] Navigation failed for:', request.url, error)
     
@@ -505,7 +507,7 @@ self.addEventListener('message', (event) => {
       break
       
     case 'GET_VERSION':
-      event.ports[0]?.postMessage({ version: '1.3.4' })
+      event.ports[0]?.postMessage({ version: '1.3.5' })
       break
       
     default:
