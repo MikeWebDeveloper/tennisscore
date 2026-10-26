@@ -1154,6 +1154,8 @@
     "switchToDarkMode": "Switch to dark mode",
     "mainContent": "Main content",
     "skipToContent": "Skip to main content",
+    "installApp": "Install app",
+    "installAppIos": "To install: tap Share, then “Add to Home Screen”",
     "theme": "Theme",
     "themeDark": "Dark",
     "themeDim": "Dim",

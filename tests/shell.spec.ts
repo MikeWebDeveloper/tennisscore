@@ -105,3 +105,21 @@ test.describe('desktop shell (1280px)', () => {
     await expect(page.locator('aside').first()).toBeHidden()
   })
 })
+
+test.describe('install hint (iPhone Safari)', () => {
+  test.use({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
+  })
+
+  for (const [locale, text] of [['en', 'Add to Home Screen'], ['cs', 'Přidat na plochu']] as const) {
+    test(`${locale}: menu explains Add to Home Screen`, async ({ page }) => {
+      await page.goto(`/${locale}/matches`, { waitUntil: 'networkidle' })
+      await page.locator('header button').first().click()
+      await expect(page.locator('aside.fixed.left-0.z-50')).toContainText(text)
+    })
+  }
+})

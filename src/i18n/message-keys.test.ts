@@ -12,7 +12,7 @@ const REQUIRED: Record<string, string[]> = {
   navigation: [
     'skipToContent', 'theme', 'themeDark', 'themeDim', 'themeLight', 'switchTheme',
     'openNavigationMenu', 'collapseNavigation', 'mainContent', 'new', 'createNewMatch',
-    'newMatchButton', 'settings', 'signOut',
+    'newMatchButton', 'settings', 'signOut', 'installApp', 'installAppIos',
   ],
 }
 

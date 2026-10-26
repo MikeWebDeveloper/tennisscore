@@ -12,6 +12,7 @@ import { ThemeSwitcher, ThemeCycleButton } from "@/components/ui/theme-switcher"
 import { User } from "@/lib/types"
 import { isAdmin } from "@/lib/auth"
 import { MobileTabBar } from "./collapsible-mobile-nav"
+import { InstallAppItem } from "@/components/shared/install-app-item"
 import { useTranslations } from "@/i18n"
 import { ExtensionConflictNotice } from "@/components/shared/extension-conflict-notice"
 import { HydrationErrorBoundary } from "@/components/shared/hydration-error-boundary"
@@ -207,6 +208,7 @@ export function AppShell({ children, user }: AppShellProps) {
             </div>
             <nav className="flex-1 space-y-1 overflow-y-auto p-3">{renderNavLinks(true)}</nav>
             <div className="space-y-3 border-t border-border p-4">
+              <InstallAppItem />
               <ThemeSwitcher />
               {userBlock}
               <div className="grid grid-cols-2 gap-2">
