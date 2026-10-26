@@ -837,19 +837,21 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
             // Check if winning this game would win the set
             const tempGames = [...previousScore.games] as [number, number];
             tempGames[winner === 'p1' ? 0 : 1]++
+            const isAdvantageFinalSet = matchFormat.finalSetTiebreak === 'none' &&
+                currentP1SetsWon === setsNeededToWin - 1 && currentP2SetsWon === setsNeededToWin - 1
             
             // Debug logging for Set Point detection
             DEBUG && console.log('🎾 SET POINT Detection (Game Winning):', {
                 currentGames: previousScore.games,
                 tempGames,
                 winner,
-                wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat),
+                wouldWinSet: isSetWon(tempGames[0], tempGames[1], matchFormat, isAdvantageFinalSet),
                 currentPoints: previousScore.points,
                 tempPoints: [temp_p1_score, temp_p2_score],
                 explanation: `${winner} wins this point → wins game → ${tempGames[0]}-${tempGames[1]} games`
             })
             
-            if (isSetWon(tempGames[0], tempGames[1], matchFormat)) {
+            if (isSetWon(tempGames[0], tempGames[1], matchFormat, isAdvantageFinalSet)) {
                 isThisPointSetWinning = true
                 isThisPointSetPoint = true
                 
