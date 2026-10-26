@@ -58,12 +58,6 @@ const LazyComponents = {
     'admin-page'
   ),
   
-  // Heavy chart components
-  RechartsComponents: lazyLoadComponent(
-    () => import('recharts').then(m => ({ default: m.BarChart || m })),
-    'recharts-bundle'
-  ),
-  
   // Form components
   FormComponents: lazyLoadComponent(
     () => import('@/components/ui/form').then(m => ({ default: m.Form || m })),
@@ -132,7 +126,7 @@ const DefaultErrorFallback: React.FC<{ error: unknown; resetErrorBoundary: () =>
 
 // Route preloading map
 const ROUTE_PRELOAD_MAP: Record<string, string[]> = {
-  '/dashboard': ['dashboard-page', 'dashboard-bento-grid', 'recharts-bundle'],
+  '/dashboard': ['dashboard-page', 'dashboard-bento-grid'],
   '/matches': ['matches-page', 'form-components', 'date-picker'],
   '/players': ['players-page', 'form-components', 'data-table'],
   '/admin': ['admin-page', 'data-table', 'form-components'],

@@ -27,7 +27,6 @@ const nextConfig = {
       '@radix-ui/react-icons',
       'lucide-react',
       'framer-motion',
-      'recharts',
       'date-fns',
     ],
     serverActions: {
@@ -61,7 +60,7 @@ const nextConfig = {
       };
 
       // Code splitting: rely on Next.js defaults. A forced `chunks: 'all'` cacheGroups
-      // config merged lazy-loaded libraries (jspdf, recharts, ...) into bundles every page loads.
+      // config merged lazy-loaded libraries (jspdf, ...) into bundles every page loads.
 
       // Advanced tree shaking optimizations
       config.optimization.usedExports = true;

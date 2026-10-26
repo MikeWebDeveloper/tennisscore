@@ -3,20 +3,6 @@
  * These modules may or may not be installed, so we provide fallback types
  */
 
-// Optional chart libraries (migrated to uPlot)
-declare module 'recharts' {
-  export interface ChartProps {
-    data?: any[]
-    width?: number
-    height?: number
-    children?: React.ReactNode
-  }
-
-  export const BarChart: React.ComponentType<ChartProps>
-  export const LineChart: React.ComponentType<ChartProps>
-  export const RadarChart: React.ComponentType<ChartProps>
-  export const PieChart: React.ComponentType<ChartProps>
-}
 
 // Optional utility libraries
 declare module 'lodash' {

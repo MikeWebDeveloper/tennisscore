@@ -47,13 +47,11 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 - Tests: unit tests (scoring engine, doubles rotation, sync, share card, i18n keys), Playwright shell tests, CI (types, tests, build, budget)
 
 ### 🚧 In Development
-- Complete chart migration to uPlot across all views
 - Performance monitoring (web-vitals, dashboards)
 - Enhanced dashboard with analytics widgets
 
 ### 📋 Planned
 - Idempotent client IDs for points (today: persisted store + full-snapshot sync, which is already safe to repeat)
-- Move the remaining `recharts` charts to a lighter library (uPlot)
 - Practice session tracking, social features
 
 ## Testing
