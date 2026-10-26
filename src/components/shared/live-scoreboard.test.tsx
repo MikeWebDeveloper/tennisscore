@@ -54,3 +54,21 @@ describe('LiveScoreboard doubles serving marker', () => {
     expect(underlined(c)).toEqual([])
   })
 })
+
+describe('LiveScoreboard server selection', () => {
+  const doubles = { playerThreeName: 'Cara', playerFourName: 'Dan' }
+
+  it('makes only the serving team partners tappable and reports the choice', () => {
+    const onSelect = jest.fn()
+    const c = render({ ...doubles, servingPlayer: 'p1', onSelectServingPlayer: onSelect })
+    const buttons = Array.from(c.querySelectorAll('h3 [role="button"]'))
+    expect(buttons.map((b) => b.textContent)).toEqual(['Ann', 'Cara'])
+    act(() => { (buttons[1] as HTMLElement).click() })
+    expect(onSelect).toHaveBeenCalledWith('p3')
+  })
+
+  it('has no tappable names when no handler is given', () => {
+    const c = render({ ...doubles, servingPlayer: 'p1' })
+    expect(c.querySelectorAll('h3 [role="button"]').length).toBe(0)
+  })
+})

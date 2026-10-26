@@ -5,9 +5,10 @@
  * A team's partners alternate each time that team begins a service turn:
  *   - a normal game is one turn
  *   - in a tiebreak the first point is a turn, then every two points is a turn
- * The rotation continues across sets (the order may be changed between sets in the rules;
- * that can be added later by passing a different `order`). Recomputing from the log keeps
- * undo, edits and replays consistent.
+ * The rotation continues across sets. When a logged point records who actually served
+ * (`serverPlayer`), that is authoritative and the rotation continues from it, so a scorer can
+ * correct the server or change the order between sets. Points without it fall back to the
+ * derived rotation (older matches). Recomputing from the log keeps undo and replays consistent.
  */
 
 export type DoublesTeam = 'p1' | 'p2'
@@ -33,6 +34,8 @@ export interface ServeLogPoint {
   /** Serving team for this point. */
   server: DoublesTeam
   isTiebreak?: boolean
+  /** The individual who actually served, when recorded. */
+  serverPlayer?: DoublesPlayer
 }
 
 interface ScoreLike {
@@ -41,11 +44,14 @@ interface ScoreLike {
   tiebreakPoints?: readonly [number, number]
 }
 
-const playerFor = (team: DoublesTeam, turnOrdinal: number, order: DoublesServeOrder): DoublesPlayer => {
-  const partners = TEAM_PARTNERS[team]
-  const start = partners.indexOf(order[team] as DoublesPlayer) === 1 ? 1 : 0
-  return partners[(start + turnOrdinal) % 2]
+const otherPartner = (player: DoublesPlayer, team: DoublesTeam): DoublesPlayer => {
+  const [a, b] = TEAM_PARTNERS[team]
+  return player === a ? b : a
 }
+
+/** Next partner in a team's rotation: the other one than last time, or the configured first server. */
+const nextForTeam = (team: DoublesTeam, last: DoublesPlayer | null, order: DoublesServeOrder): DoublesPlayer =>
+  last ? otherPartner(last, team) : (order[team] as DoublesPlayer)
 
 /** Service-turn key per logged point: one per game, or per tiebreak turn (1 point, then 2 each). */
 function turnKeys(log: readonly ServeLogPoint[]): string[] {
@@ -66,20 +72,33 @@ function turnKeys(log: readonly ServeLogPoint[]): string[] {
   })
 }
 
+/** Walks the log and resolves the individual server of every point. */
+function resolve(log: readonly ServeLogPoint[], order: DoublesServeOrder) {
+  const keys = turnKeys(log)
+  const lastByTeam: Record<DoublesTeam, DoublesPlayer | null> = { p1: null, p2: null }
+  const servers: DoublesPlayer[] = []
+  let current: DoublesPlayer = TEAM_PARTNERS.p1[0]
+
+  log.forEach((point, i) => {
+    const newTurn = i === 0 || keys[i] !== keys[i - 1]
+    if (point.serverPlayer) {
+      current = point.serverPlayer
+      if (newTurn) lastByTeam[point.server] = current
+    } else if (newTurn) {
+      current = nextForTeam(point.server, lastByTeam[point.server], order)
+      lastByTeam[point.server] = current
+    }
+    servers.push(current)
+  })
+  return { servers, lastByTeam }
+}
+
 /** Individual server for each logged point, in log order. */
 export function getDoublesServers(
   log: readonly ServeLogPoint[],
   order: DoublesServeOrder = DEFAULT_SERVE_ORDER
 ): DoublesPlayer[] {
-  const keys = turnKeys(log)
-  const turnsByTeam: Record<DoublesTeam, number> = { p1: 0, p2: 0 }
-  let current: DoublesPlayer = TEAM_PARTNERS.p1[0]
-  return log.map((point, i) => {
-    if (i === 0 || keys[i] !== keys[i - 1]) {
-      current = playerFor(point.server, turnsByTeam[point.server]++, order)
-    }
-    return current
-  })
+  return resolve(log, order).servers
 }
 
 /** True when the next point begins a new service turn (new game, or tiebreak point 1, 2, 4, 6, ...). */
@@ -101,16 +120,7 @@ export function getNextDoublesServer(
   newTurn: boolean,
   order: DoublesServeOrder = DEFAULT_SERVE_ORDER
 ): DoublesPlayer {
-  if (!newTurn && log.length > 0) {
-    const servers = getDoublesServers(log, order)
-    return servers[servers.length - 1]
-  }
-
-  // Count this team's completed turns, then take the next partner in the rotation
-  const keys = turnKeys(log)
-  let turns = 0
-  log.forEach((point, i) => {
-    if ((i === 0 || keys[i] !== keys[i - 1]) && point.server === currentTeam) turns++
-  })
-  return playerFor(currentTeam, turns, order)
+  const { servers, lastByTeam } = resolve(log, order)
+  if (!newTurn && servers.length > 0) return servers[servers.length - 1]
+  return nextForTeam(currentTeam, lastByTeam[currentTeam], order)
 }

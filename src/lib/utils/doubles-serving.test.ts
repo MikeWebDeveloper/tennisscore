@@ -80,3 +80,46 @@ describe('next server (before the point is played)', () => {
     expect(startsNewServeTurn({ points: [0, 0], isTiebreak: true, tiebreakPoints: [2, 1] })).toBe(true)  // point 4
   })
 })
+
+describe('recorded servers (scorer overrides)', () => {
+  const rec = (set: number, g: number, server: Team, serverPlayer: ServeLogPoint['serverPlayer'], n = 4): ServeLogPoint[] =>
+    Array.from({ length: n }, () => ({ ...pt(set, g, server), serverPlayer }))
+
+  it('uses the recorded server and continues the rotation from it', () => {
+    // Scorer picked p3 to serve first for team p1; team p2 then defaults to p2
+    const log = [...rec(1, 1, 'p1', 'p3'), ...game(1, 2, 'p2'), ...game(1, 3, 'p1')]
+    const servers = getDoublesServers(log)
+    expect([0, 4, 8].map((i) => servers[i])).toEqual(['p3', 'p2', 'p1'])
+  })
+
+  it('lets the order change between sets', () => {
+    const log = [
+      ...rec(1, 1, 'p1', 'p1'), ...rec(1, 2, 'p2', 'p2'), ...rec(1, 3, 'p1', 'p3'), ...rec(1, 4, 'p2', 'p4'),
+      // New set: team p1 chooses p3 again (instead of the rotated p1), team p2 chooses p4
+      ...rec(2, 1, 'p1', 'p3'), ...rec(2, 2, 'p2', 'p4'),
+    ]
+    const servers = getDoublesServers(log)
+    expect(servers[16]).toBe('p3')
+    expect(servers[20]).toBe('p4')
+    // And the suggestion for the next game continues from the override
+    expect(getNextDoublesServer(log, 'p1', true)).toBe('p1')
+    expect(getNextDoublesServer(log, 'p2', true)).toBe('p2')
+  })
+
+  it('suggests the other partner after a recorded server', () => {
+    const log = rec(1, 1, 'p2', 'p4')
+    expect(getNextDoublesServer(log, 'p2', true)).toBe('p2')
+    expect(getNextDoublesServer(log, 'p2', false)).toBe('p4')
+  })
+
+  it('mixes recorded and unrecorded (older) points', () => {
+    const log = [...game(1, 1, 'p1'), ...rec(1, 2, 'p2', 'p4'), ...game(1, 3, 'p1')]
+    const servers = getDoublesServers(log)
+    expect([0, 4, 8].map((i) => servers[i])).toEqual(['p1', 'p4', 'p3'])
+  })
+
+  it('ignores nothing: the recorded server wins even mid-game', () => {
+    const log = [pt(1, 1, 'p1'), { ...pt(1, 1, 'p1'), serverPlayer: 'p3' as const }]
+    expect(getDoublesServers(log)).toEqual(['p1', 'p3'])
+  })
+})

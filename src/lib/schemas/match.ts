@@ -95,6 +95,7 @@ export const basePointDetailSchema = z.object({
   // Point outcome
   winner: z.enum(["p1", "p2"]),
   server: z.enum(["p1", "p2"]),
+  serverPlayer: z.enum(["p1", "p2", "p3", "p4"]).optional(),
 
   // Context flags
   isBreakPoint: z.boolean().default(false),

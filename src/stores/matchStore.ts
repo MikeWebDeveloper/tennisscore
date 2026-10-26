@@ -121,6 +121,8 @@ export interface PointDetail {
   gameScore: string
   winner: 'p1' | 'p2'
   server: 'p1' | 'p2'
+  /** Doubles: the individual who served this point */
+  serverPlayer?: 'p1' | 'p2' | 'p3' | 'p4'
   isBreakPoint: boolean
   isSetPoint: boolean
   isMatchPoint: boolean
@@ -563,6 +565,7 @@ export const normalizePointDetail = (point: Partial<PointDetail> & { winner: 'p1
     gameScore: point.gameScore || '0-0',
     winner: point.winner || 'p1',
     server: point.server || 'p1',
+    serverPlayer: point.serverPlayer,
     
     // Context flags
     isBreakPoint: point.isBreakPoint || false,

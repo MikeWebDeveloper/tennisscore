@@ -38,6 +38,7 @@ import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/
 import { useShallow } from "zustand/react/shallow"
 import { useWakeLock } from "@/hooks/use-wake-lock"
 import { useDoublesServingPlayer } from "@/hooks/use-doubles-serving-player"
+import { startsNewServeTurn, TEAM_PARTNERS, type DoublesPlayer } from "@/lib/utils/doubles-serving"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
@@ -411,7 +412,15 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setServer: state.setServer,
   })))
   useWakeLock(match.status === "In Progress")
-  const servingPlayer = useDoublesServingPlayer(!!(match.playerThree && match.playerFour), pointLog, score, currentServer)
+  const isDoublesMatch = !!(match.playerThree && match.playerFour)
+  const suggestedServer = useDoublesServingPlayer(isDoublesMatch, pointLog, score, currentServer)
+  // The scorer may pick which partner serves at the start of a service turn (first game, new set, corrections)
+  const [serverOverride, setServerOverride] = useState<DoublesPlayer | null>(null)
+  const canPickServer = isDoublesMatch && !!currentServer && startsNewServeTurn(score)
+  const servingPlayer =
+    canPickServer && serverOverride && TEAM_PARTNERS[currentServer!].includes(serverOverride)
+      ? serverOverride
+      : suggestedServer
 
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
@@ -772,7 +781,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     pointDetails?: Partial<StorePointDetail>
   ) => {
     try {
-      const result = awardPoint(winner, pointDetails || {})
+      const result = awardPoint(winner, {
+        ...(pointDetails || {}),
+        ...(servingPlayer ? { serverPlayer: servingPlayer } : {}),
+      })
+      setServerOverride(null)
       setIsInGame(true)
 
       // Play appropriate sound effects
@@ -1147,6 +1160,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           score={score}
           currentServer={currentServer}
           servingPlayer={servingPlayer}
+          onSelectServingPlayer={canPickServer ? setServerOverride : undefined}
           status={match.status}
           playerOneId={match.playerOne.$id}
           playerTwoId={match.playerTwo.$id}

@@ -204,7 +204,8 @@ export interface PointDetail {
 
   // Point Winner
   winner: "p1" | "p2" // Player who won the point
-  server: "p1" | "p2" // Player who served
+  server: "p1" | "p2" // Player who served (team side)
+  serverPlayer?: "p1" | "p2" | "p3" | "p4" // Doubles: individual who served
 
   // Serve Details
   serveType: ServeType

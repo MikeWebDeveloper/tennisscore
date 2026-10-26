@@ -31,6 +31,8 @@ interface LiveScoreboardProps {
   currentServer?: "p1" | "p2" | null
   /** Doubles only: the individual serving player, highlighted in the team name. */
   servingPlayer?: "p1" | "p2" | "p3" | "p4" | null
+  /** Doubles: when provided, the serving team's partner names are tappable to choose who serves. */
+  onSelectServingPlayer?: (player: "p1" | "p2" | "p3" | "p4") => void
   status?: string
   winnerId?: string
   playerOneId?: string
@@ -63,6 +65,7 @@ export function LiveScoreboard({
   score,
   currentServer,
   servingPlayer,
+  onSelectServingPlayer,
   status = "In Progress",
   winnerId,
   playerOneId,
@@ -98,14 +101,33 @@ export function LiveScoreboard({
     : playerTwoName
 
 
-  // Doubles: underline the partner who is serving
-  const renderTeamName = (first: string, second: string, firstId: "p1" | "p2", secondId: "p3" | "p4") => (
-    <>
-      <span className={servingPlayer === firstId ? "underline decoration-2 underline-offset-2" : undefined}>{first}</span>
-      {" / "}
-      <span className={servingPlayer === secondId ? "underline decoration-2 underline-offset-2" : undefined}>{second}</span>
-    </>
-  )
+  // Doubles: underline the partner who is serving; they are tappable to change the server
+  const renderTeamName = (
+    team: "p1" | "p2",
+    first: string,
+    second: string,
+    firstId: "p1" | "p2",
+    secondId: "p3" | "p4"
+  ) => {
+    const partner = (name: string, id: "p1" | "p2" | "p3" | "p4") => {
+      const className = servingPlayer === id ? "underline decoration-2 underline-offset-2" : undefined
+      if (!onSelectServingPlayer || currentServer !== team) return <span className={className}>{name}</span>
+      return (
+        <span
+          role="button"
+          tabIndex={0}
+          className={cn(className, "cursor-pointer")}
+          onClick={(e) => { e.stopPropagation(); onSelectServingPlayer(id) }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onSelectServingPlayer(id) }
+          }}
+        >
+          {name}
+        </span>
+      )
+    }
+    return <>{partner(first, firstId)}{" / "}{partner(second, secondId)}</>
+  }
 
   // Dynamic font sizing based on name length
   const getNameFontSize = (name: string) => {
@@ -264,7 +286,7 @@ export function LiveScoreboard({
                       getNameFontSize(teamOneName)
                     )}
                   >
-                    {isDoubles ? renderTeamName(playerOneName, playerThreeName!, "p1", "p3") : teamOneName}
+                    {isDoubles ? renderTeamName("p1", playerOneName, playerThreeName!, "p1", "p3") : teamOneName}
                   </h3>
                   {/* Game situation badges with priority: MP > SP > BP */}
                   {gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p1' && (
@@ -447,7 +469,7 @@ export function LiveScoreboard({
                       getNameFontSize(teamTwoName)
                     )}
                   >
-                    {isDoubles ? renderTeamName(playerTwoName, playerFourName!, "p2", "p4") : teamTwoName}
+                    {isDoubles ? renderTeamName("p2", playerTwoName, playerFourName!, "p2", "p4") : teamTwoName}
                   </h3>
                   {/* Game situation badges with priority: MP > SP > BP */}
                   {gameStatus.isMatchPoint && gameStatus.matchPointPlayer === 'p2' && (
