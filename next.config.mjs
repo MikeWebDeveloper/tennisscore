@@ -46,90 +46,11 @@ const nextConfig = {
         'node-appwrite': false, // Use client-side only
       };
 
-      // Advanced code splitting strategy
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        minSize: 20000,
-        maxSize: 244000,
-        maxAsyncRequests: 30,
-        maxInitialRequests: 25,
-        automaticNameDelimiter: '-',
-        cacheGroups: {
-          // Critical framework chunk (highest priority)
-          frameworkCritical: {
-            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
-            name: 'framework-critical',
-            priority: 40,
-            chunks: 'all',
-            enforce: true,
-          },
-          // UI library chunk
-          uiLibraries: {
-            test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|lucide-react)[\\/]/,
-            name: 'ui-libraries',
-            priority: 35,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          // Data visualization chunk
-          dataViz: {
-            test: /[\\/]node_modules[\\/](uplot|d3-)[\\/]/,
-            name: 'data-viz',
-            priority: 30,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          // State management chunk
-          stateManagement: {
-            test: /[\\/]node_modules[\\/](zustand|@tanstack\/react-query)[\\/]/,
-            name: 'state-management',
-            priority: 28,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          // Utilities chunk
-          utilities: {
-            test: /[\\/]node_modules[\\/](date-fns|clsx|class-variance-authority)[\\/]/,
-            name: 'utilities',
-            priority: 25,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          // Application UI components
-          appUI: {
-            test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-            name: 'app-ui',
-            priority: 20,
-            reuseExistingChunk: true,
-          },
-          // Application features
-          appFeatures: {
-            test: /[\\/]src[\\/]components[\\/]features[\\/]/,
-            name: 'app-features',
-            priority: 18,
-            reuseExistingChunk: true,
-          },
-          // Tennis-specific logic
-          tennisCore: {
-            test: /[\\/]src[\\/]lib[\\/]utils[\\/]tennis/,
-            name: 'tennis-core',
-            priority: 22,
-            reuseExistingChunk: true,
-          },
-          // Default vendor chunk
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            priority: 10,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-        },
-      };
+      // Code splitting: rely on Next.js defaults. A forced `chunks: 'all'` cacheGroups
+      // config merged lazy-loaded libraries (jspdf, recharts, ...) into bundles every page loads.
 
       // Advanced tree shaking optimizations
       config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
       config.optimization.providedExports = true;
       config.optimization.mangleExports = 'size';
       config.optimization.concatenateModules = true;
