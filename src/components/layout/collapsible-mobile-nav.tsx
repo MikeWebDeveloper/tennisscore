@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { Link, usePathname } from "@/i18n/navigation"
-import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
 import { Plus } from "lucide-react"
-import { ChevronUp } from "lucide-react"
+import { useTranslations } from "@/i18n"
 
 interface NavItem {
   href: string
@@ -15,138 +13,57 @@ interface NavItem {
   target?: string
 }
 
-interface CollapsibleMobileNavProps {
+interface MobileTabBarProps {
   navigation: NavItem[]
 }
 
-export function CollapsibleMobileNav({ navigation }: CollapsibleMobileNavProps) {
+/** Flat, always-visible bottom tab bar: four destinations with a centred "New" action. */
+export function MobileTabBar({ navigation }: MobileTabBarProps) {
   const pathname = usePathname()
-  const [isExpanded, setIsExpanded] = useState(false)
+  const t = useTranslations('navigation')
 
-  const handleNavigation = () => {
-    // Haptic feedback for navigation
-    if ('vibrate' in navigator) {
-      navigator.vibrate(30)
-    }
-    setIsExpanded(false) // Auto-collapse after navigation
-  }
+  // Admin opens in a new tab and lives in the drawer, not the bar
+  const tabs = navigation.filter(item => !item.target).slice(0, 4)
+  const left = tabs.slice(0, 2)
+  const right = tabs.slice(2)
 
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded)
+  const renderTab = (item: NavItem) => {
+    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors",
+          isActive ? "text-foreground" : "text-muted-foreground"
+        )}
+      >
+        <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} aria-hidden="true" />
+        <span className="max-w-full truncate px-1">{item.label}</span>
+      </Link>
+    )
   }
 
   return (
-    <motion.nav
-      initial={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 z-40"
-      role="navigation"
-      aria-label="Main navigation"
+    <nav
+      aria-label={t('mainContent')}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      <motion.div
-        animate={{ height: isExpanded ? "auto" : "3rem" }}
-        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-        className="bg-card border-t border-border shadow-lg relative overflow-hidden"
-      >
-        {/* Compact Handle - Always Visible */}
-        <motion.button
-          onClick={toggleExpanded}
-          whileTap={{ scale: 0.95 }}
-          className="w-full h-12 flex items-center justify-center bg-card/95 backdrop-blur-sm hover:bg-accent/50 transition-colors group relative"
-          aria-expanded={isExpanded}
-          aria-controls="mobile-navigation-content"
-          aria-label={isExpanded ? "Collapse navigation" : "Expand navigation"}
+      <div className="mx-auto flex h-16 max-w-md items-stretch">
+        {left.map(renderTab)}
+        <Link
+          href="/matches/new"
+          aria-label={t('createNewMatch')}
+          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-foreground"
         >
-          {/* Compact indicator showing current page */}
-          <div className="flex items-center gap-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              if (!isActive) return null
-              return (
-                <div key={item.href} className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <span className="text-sm font-medium text-foreground">{item.label}</span>
-                </div>
-              )
-            })}
-            {!navigation.some(item => pathname === item.href) && (
-              <span className="text-sm font-medium text-muted-foreground">Menu</span>
-            )}
-          </div>
-
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="absolute right-4 group-hover:scale-125 transition-transform"
-          >
-            <ChevronUp className="w-4 h-4 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
-          </motion.div>
-        </motion.button>
-
-        {/* Full Navigation Content - Collapsible */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              key="nav-content"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: 0.1, duration: 0.3 } }}
-              exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
-              className="px-4 py-3 border-t border-border/50"
-              id="mobile-navigation-content"
-              role="menu"
-              aria-label="Navigation options"
-            >
-              <div className="flex items-center justify-around">
-                {navigation.map((item) => {
-                  const isActive = pathname === item.href
-                  return (
-                    <motion.div
-                      key={item.href}
-                      whileTap={{ scale: 0.9 }}
-                      className="min-w-[4rem]"
-                    >
-                      <Link
-                        href={item.href}
-                        onClick={handleNavigation}
-                        target={item.target}
-                        className={cn(
-                          "flex flex-col items-center space-y-1 px-3 py-2 text-xs transition-all rounded-xl",
-                          isActive
-                            ? "text-primary bg-primary/10"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                        )}
-                        role="menuitem"
-                        aria-current={isActive ? "page" : undefined}
-                        aria-label={`Navigate to ${item.label}`}
-                      >
-                        <item.icon className="h-5 w-5" aria-hidden="true" />
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    </motion.div>
-                  )
-                })}
-
-                {/* Special "New Match" Button */}
-                <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className="min-w-[4rem]"
-                >
-                  <Link
-                    href="/matches/new"
-                    onClick={handleNavigation}
-                    className="flex flex-col items-center space-y-1 px-3 py-2 text-xs text-foreground font-medium"
-                    aria-label="Create new match"
-                  >
-                    <div className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center shadow-sm transition-colors">
-                      <Plus className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
-                    </div>
-                    <span>New</span>
-                  </Link>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.nav>
+          <span className="flex h-8 w-11 items-center justify-center rounded-full bg-foreground text-background">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="max-w-full truncate px-1">{t('new')}</span>
+        </Link>
+        {right.map(renderTab)}
+      </div>
+    </nav>
   )
 }

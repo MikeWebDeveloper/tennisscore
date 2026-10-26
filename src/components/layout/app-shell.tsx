@@ -2,28 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { Link, usePathname } from "@/i18n/navigation"
-import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { Home } from "lucide-react"
-import { Trophy } from "lucide-react"
-import { Users } from "lucide-react"
-import { Menu } from "lucide-react"
-import { X } from "lucide-react"
-import { Plus } from "lucide-react"
-import { Sun } from "lucide-react"
-import { Moon } from "lucide-react"
-import { LogOut } from "lucide-react"
-import { Settings } from "lucide-react"
-import { Shield } from "lucide-react"
-import { BarChart3 } from "lucide-react"
+import { Home, Trophy, Users, Menu, X, Plus, Sun, Moon, LogOut, Settings, Shield, BarChart3 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { useTheme } from "next-themes"
 import { User } from "@/lib/types"
 import { isAdmin } from "@/lib/auth"
-import { CollapsibleMobileNav } from "./collapsible-mobile-nav"
+import { MobileTabBar } from "./collapsible-mobile-nav"
 import { useTranslations } from "@/i18n"
 import { ExtensionConflictNotice } from "@/components/shared/extension-conflict-notice"
 import { HydrationErrorBoundary } from "@/components/shared/hydration-error-boundary"
@@ -33,436 +21,246 @@ interface AppShellProps {
   user: User
 }
 
-const navigation = [
-  {
-    href: "/dashboard",
-    icon: Home,
-    label: "Dashboard",
-    description: "Overview & stats"
-  },
-  {
-    href: "/matches",
-    icon: Trophy,
-    label: "Matches",
-    description: "Match history"
-  },
-  {
-    href: "/players",
-    icon: Users,
-    label: "Players",
-    description: "Manage players"
-  },
-  {
-    href: "/statistics",
-    icon: BarChart3,
-    label: "Statistics",
-    description: "Detailed stats"
-  }
-]
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
 
-// Animation variants
-const sidebarVariants = {
-  open: {
-    x: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 30
-    }
-  },
-  closed: {
-    x: "-100%",
-    transition: {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 30
-    }
-  }
+/** Both icons are always rendered; CSS picks one, so no mount gate is needed. */
+function ThemeIcon({ className }: { className?: string }) {
+  return (
+    <>
+      <Sun className={cn("hidden dark:block", className)} aria-hidden="true" />
+      <Moon className={cn("block dark:hidden", className)} aria-hidden="true" />
+    </>
+  )
 }
-
-const overlayVariants = {
-  open: {
-    opacity: 1,
-    transition: { duration: 0.2 }
-  },
-  closed: {
-    opacity: 0,
-    transition: { duration: 0.2 }
-  }
-}
-
-
 
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
   const t = useTranslations('navigation')
 
-  // Localized navigation
   const baseNavigation = [
-    {
-      href: "/dashboard",
-      icon: Home,
-      label: t('dashboard'),
-      description: t('overviewStats')
-    },
-    {
-      href: "/matches",
-      icon: Trophy,
-      label: t('matches'),
-      description: t('matchHistory')
-    },
-    {
-      href: "/players",
-      icon: Users,
-      label: t('players'),
-      description: t('managePlayers')
-    },
-    {
-      href: "/statistics",
-      icon: BarChart3,
-      label: t('statistics') || 'Statistics',
-      description: t('detailedStats') || 'Detailed stats'
-    }
+    { href: "/dashboard", icon: Home, label: t('dashboard'), description: t('overviewStats') },
+    { href: "/matches", icon: Trophy, label: t('matches'), description: t('matchHistory') },
+    { href: "/players", icon: Users, label: t('players'), description: t('managePlayers') },
+    { href: "/statistics", icon: BarChart3, label: t('statistics'), description: t('detailedStats') },
   ]
 
-  // Add admin link only for privileged users
-  const localizedNavigation = isAdmin(user.email)
+  const navigation = isAdmin(user.email)
     ? [...baseNavigation, {
       href: "/admin",
       icon: Shield,
       label: t("adminLabel"),
       description: t("adminDescription"),
-      target: "_blank"
+      target: "_blank" as const,
     }]
     : baseNavigation
 
-  // Prevent hydration mismatch
+  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark")
+
+  // Close the drawer on navigation, lock page scroll while it is open
+  useEffect(() => { setDrawerOpen(false) }, [pathname])
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    if (!drawerOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => { document.body.style.overflow = prev }
+  }, [drawerOpen])
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
+  // Live scoring has its own fixed controls at the bottom of the screen
+  const hideTabBar = pathname.startsWith("/matches/live")
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+  const renderNavLinks = (compact: boolean) =>
+    navigation.map((item) => {
+      const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          target={(item as { target?: string }).target}
+          aria-current={isActive ? "page" : undefined}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 text-sm transition-colors",
+            compact ? "py-2.5" : "py-3",
+            isActive
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          )}
+        >
+          <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <div className="flex min-w-0 flex-col">
+            <span className="font-medium">{item.label}</span>
+            {!compact && <span className="text-xs opacity-70">{item.description}</span>}
+          </div>
+        </Link>
+      )
+    })
 
-  // Show loading state until mounted to prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-background" suppressHydrationWarning>
-        <div className="flex items-center justify-center min-h-screen" suppressHydrationWarning>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" suppressHydrationWarning></div>
-        </div>
+  const userBlock = (
+    <div className="flex items-center gap-3">
+      <Avatar className="h-9 w-9 border border-border">
+        <AvatarImage src="" />
+        <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
+          {getInitials(user.name || user.email)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{user.name || t("defaultUserName")}</p>
+        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <HydrationErrorBoundary>
-      <div className="min-h-screen bg-background" suppressHydrationWarning>
-        {/* Desktop Sidebar */}
-        <div className="hidden md:flex" suppressHydrationWarning>
-          <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border shadow-lg">
-            <div className="flex h-full flex-col">
-              {/* Logo */}
-              <div className="flex h-16 items-center border-b border-border px-6">
-                <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                  <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-                    <Trophy className="h-5 w-5 text-background" />
-                  </div>
-                  <span className="text-xl font-bold text-foreground">Tenis.click</span>
-                </Link>
+      <div className="min-h-dvh bg-background">
+        {/* Desktop sidebar */}
+        <aside className="fixed left-0 top-0 z-40 hidden h-dvh w-60 flex-col border-r border-border bg-card md:flex">
+          <div className="flex h-14 items-center border-b border-border px-5">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
+                <Trophy className="h-4 w-4 text-background" aria-hidden="true" />
               </div>
+              <span className="text-lg font-semibold tracking-tight text-foreground">Tenis.click</span>
+            </Link>
+          </div>
 
-              {/* Navigation */}
-              <nav className="flex-1 space-y-2 p-4">
-                {localizedNavigation.map((item) => {
-                  const isActive = pathname === item.href
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      target={(item as any).target}
-                      className={cn(
-                        "flex items-center space-x-3 rounded-lg px-3 py-3 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
-                        isActive
-                          ? "bg-foreground text-background shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{item.label}</span>
-                        <span className="text-xs opacity-70">{item.description}</span>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </nav>
+          <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label={t('mainContent')}>
+            {renderNavLinks(false)}
+          </nav>
 
-              {/* New Match CTA - More Prominent */}
-              <div className="p-4 border-t border-border">
-                <Button asChild className="w-full minimal-button font-medium shadow-sm">
-                  <Link href="/matches/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('newMatchButton')}
+          <div className="space-y-2 border-t border-border p-3">
+            <Button asChild className="w-full">
+              <Link href="/matches/new">
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                {t('newMatchButton')}
+              </Link>
+            </Button>
+            <div className="flex items-center justify-between gap-2">
+              <Button variant="ghost" size="sm" onClick={toggleTheme} className="flex-1 justify-start text-muted-foreground">
+                <ThemeIcon className="h-4 w-4" />
+                <span className="hidden dark:inline">{t('lightMode')}</span>
+                <span className="dark:hidden">{t('darkMode')}</span>
+              </Button>
+              <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} />
+            </div>
+          </div>
+
+          <div className="border-t border-border p-3">
+            {userBlock}
+            <div className="mt-2 flex gap-1">
+              <Button variant="ghost" size="sm" asChild className="flex-1 text-muted-foreground">
+                <Link href="/settings">
+                  <Settings className="h-4 w-4" aria-hidden="true" />
+                  {t('settings')}
+                </Link>
+              </Button>
+              <form action={signOut} className="flex-1">
+                <Button variant="ghost" size="sm" type="submit" className="w-full text-muted-foreground">
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  {t('signOut')}
+                </Button>
+              </form>
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile header */}
+        <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 px-2 pt-[env(safe-area-inset-top)] backdrop-blur md:hidden box-content">
+          <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} aria-label={t('openNavigationMenu')}>
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </Button>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground">
+              <Trophy className="h-3.5 w-3.5 text-background" aria-hidden="true" />
+            </div>
+            <span className="font-semibold tracking-tight text-foreground">Tenis.click</span>
+          </Link>
+          <div className="flex items-center">
+            <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label={resolvedTheme === "dark" ? t('switchToLightMode') : t('switchToDarkMode')}
+            >
+              <ThemeIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </header>
+
+        {/* Mobile drawer: CSS-only transition, always mounted so it opens instantly */}
+        <div className={cn("md:hidden", drawerOpen ? "pointer-events-auto" : "pointer-events-none")} aria-hidden={!drawerOpen}>
+          <div
+            className={cn(
+              "fixed inset-0 z-50 bg-black/50 transition-opacity duration-200",
+              drawerOpen ? "opacity-100" : "opacity-0"
+            )}
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside
+            className={cn(
+              "fixed left-0 top-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-card pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] transition-transform duration-200 ease-out",
+              drawerOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+          >
+            <div className="flex h-14 items-center justify-between border-b border-border px-4">
+              <span className="font-semibold tracking-tight text-foreground">Tenis.click</span>
+              <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(false)} aria-label={t('collapseNavigation')}>
+                <X className="h-5 w-5" aria-hidden="true" />
+              </Button>
+            </div>
+            <nav className="flex-1 space-y-1 overflow-y-auto p-3">{renderNavLinks(true)}</nav>
+            <div className="space-y-3 border-t border-border p-4">
+              {userBlock}
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" size="sm" asChild className="min-h-11">
+                  <Link href="/settings">
+                    <Settings className="h-4 w-4" aria-hidden="true" />
+                    {t('settings')}
                   </Link>
                 </Button>
-              </div>
-
-              {/* Theme Toggle & Language */}
-              <div className="px-4 pb-2 space-y-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleTheme}
-                  className="w-full text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                >
-                  {theme === "dark" ? (
-                    <>
-                      <Sun className="h-4 w-4 mr-2" />
-                      {t('lightMode')}
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="h-4 w-4 mr-2" />
-                      {t('darkMode')}
-                    </>
-                  )}
-                </Button>
-                <div className="flex justify-center">
-                  <LanguageSwitcher variant="dropdown" size="sm" showFlags={true} showNativeNames={false} />
-                </div>
-              </div>
-
-              {/* User Profile */}
-              <div className="p-4 border-t border-border">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Avatar className="h-10 w-10 border border-border">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="bg-muted text-muted-foreground font-medium">
-                      {getInitials(user.name || user.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {user.name || t("defaultUserName")}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" asChild className="hover:bg-accent text-muted-foreground">
-                      <Link href="/settings">
-                        <Settings className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <form action={signOut}>
-                      <Button variant="ghost" size="sm" type="submit" className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
-                        <LogOut className="h-4 w-4" />
-                      </Button>
-                    </form>
-                  </div>
-                </div>
+                <form action={signOut}>
+                  <Button variant="outline" size="sm" type="submit" className="min-h-11 w-full">
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    {t('signOut')}
+                  </Button>
+                </form>
               </div>
             </div>
           </aside>
-
-          {/* Main Content */}
-          <main className="ml-64 flex-1" id="main-content" role="main">
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-3 py-2 rounded-md z-50"
-            >
-              Skip to main content
-            </a>
-            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-              <ExtensionConflictNotice />
-              {children}
-            </div>
-          </main>
         </div>
 
-        {/* Mobile Layout */}
-        <div className="md:hidden w-full max-w-full overflow-x-hidden">
-          {/* Mobile Header */}
-          <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-card border-b border-border flex items-center justify-between px-4 shadow-sm w-full max-w-full overflow-x-hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(true)}
-              className="hover:bg-accent"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            </Button>
+        {/* Single content tree for every breakpoint */}
+        <main
+          id="main-content"
+          role="main"
+          aria-label={t('mainContent')}
+          className={cn(
+            "w-full max-w-full pt-[calc(3.5rem+env(safe-area-inset-top))] md:ml-60 md:w-[calc(100%-15rem)] md:pt-0",
+            hideTabBar ? "pb-[env(safe-area-inset-bottom)]" : "pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0"
+          )}
+        >
+          <a
+            href="#main-content"
+            className="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
+          >
+            {t('skipToContent')}
+          </a>
+          <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 md:py-6 lg:px-8">
+            <ExtensionConflictNotice />
+            {children}
+          </div>
+        </main>
 
-            <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-              <div className="h-6 w-6 rounded bg-foreground flex items-center justify-center">
-                <Trophy className="h-4 w-4 text-background" />
-              </div>
-              <span className="font-bold text-foreground">Tenis.click</span>
-            </Link>
-
-            <div className="flex items-center space-x-2">
-              <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} className="mr-1" />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Moon className="h-4 w-4" aria-hidden="true" />
-                )}
-              </Button>
-              <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
-                  {getInitials(user.name || user.email)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-          </header>
-
-          {/* Mobile Sidebar */}
-          <AnimatePresence>
-            {sidebarOpen && (
-              <>
-                <motion.div
-                  className="fixed inset-0 z-50 bg-black/50"
-                  variants={overlayVariants}
-                  initial="closed"
-                  animate="open"
-                  exit="closed"
-                  onClick={() => setSidebarOpen(false)}
-                />
-                <motion.aside
-                  className="fixed left-0 top-0 z-50 h-screen w-80 max-w-[100vw] bg-card border-r border-border shadow-xl overflow-x-hidden"
-                  variants={sidebarVariants}
-                  initial="closed"
-                  animate="open"
-                  exit="closed"
-                >
-                  <div className="flex h-full flex-col">
-                    {/* Mobile Header */}
-                    <div className="flex h-16 items-center justify-between border-b border-border px-6">
-                      <Link href="/dashboard" onClick={() => setSidebarOpen(false)} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                          <Trophy className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <span className="text-xl font-bold text-foreground">Tenis.click</span>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSidebarOpen(false)}
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </div>
-
-                    {/* Mobile Navigation */}
-                    <nav className="flex-1 space-y-2 p-4">
-                      {localizedNavigation.map((item) => {
-                        const isActive = pathname === item.href
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={cn(
-                              "flex items-center space-x-3 rounded-lg px-3 py-3 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
-                              isActive
-                                ? "bg-foreground text-background shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                          >
-                            <item.icon className="h-5 w-5" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">{item.label}</span>
-                              <span className="text-xs opacity-70">{item.description}</span>
-                            </div>
-                          </Link>
-                        )
-                      })}
-                    </nav>
-
-                    {/* Mobile New Match CTA */}
-                    <div className="p-4 border-t border-border">
-                      <Button asChild className="w-full minimal-button font-medium shadow-sm" onClick={() => setSidebarOpen(false)}>
-                        <Link href="/matches/new">
-                          <Plus className="h-4 w-4 mr-2" />
-                          {t('newMatchButton')}
-                        </Link>
-                      </Button>
-                    </div>
-
-                    {/* Mobile User Profile */}
-                    <div className="p-4 border-t border-border">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <Avatar className="h-10 w-10 border border-border">
-                          <AvatarImage src="" />
-                          <AvatarFallback className="bg-muted text-muted-foreground font-medium">
-                            {getInitials(user.name || user.email)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {user.name || t("defaultUserName")}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Button variant="ghost" size="sm" asChild className="w-full hover:bg-accent text-muted-foreground border border-border" onClick={() => setSidebarOpen(false)}>
-                          <Link href="/settings">
-                            <Settings className="h-4 w-4 mr-2" />
-                            {t('settings')}
-                          </Link>
-                        </Button>
-                        <form action={signOut}>
-                          <Button variant="ghost" size="sm" type="submit" className="w-full hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-border">
-                            <LogOut className="h-4 w-4 mr-2" />
-                            {t('signOut')}
-                          </Button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </motion.aside>
-                {/* Prevent body scroll when sidebar is open */}
-                {typeof window !== 'undefined' && document && (document.body.style.overflow = 'hidden')}
-              </>
-            )}
-            {/* Restore body scroll when sidebar is closed */}
-            {!sidebarOpen && typeof window !== 'undefined' && document && (document.body.style.overflow = '')}
-          </AnimatePresence>
-
-          {/* Mobile Main Content */}
-          <main className="pt-16 w-full max-w-full overflow-x-hidden" role="main" aria-label="Main content">
-            <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8 overflow-x-hidden">
-              <ExtensionConflictNotice />
-              {children}
-            </div>
-          </main>
-
-          {/* Enhanced Collapsible Mobile Bottom Navigation */}
-          <CollapsibleMobileNav navigation={localizedNavigation} />
-        </div>
+        {!hideTabBar && <MobileTabBar navigation={navigation} />}
       </div>
     </HydrationErrorBoundary>
   )
-} 
+}

@@ -1,8 +1,11 @@
 import type { Viewport } from "next"
- 
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  themeColor: "#B85441", // Clay court color for status bar
-} 
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+  ],
+}

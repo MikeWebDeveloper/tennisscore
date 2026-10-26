@@ -1182,6 +1182,7 @@
     "switchToLightMode": "Přepnout na světlý režim",
     "switchToDarkMode": "Přepnout na tmavý režim",
     "mainContent": "Hlavní obsah",
+    "skipToContent": "Přeskočit na hlavní obsah",
     "menu": "Menu",
     "navigationOptions": "Možnosti navigace",
     "navigateTo": "Přejít na {label}",

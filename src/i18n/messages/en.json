@@ -1150,6 +1150,7 @@
     "switchToLightMode": "Switch to light mode",
     "switchToDarkMode": "Switch to dark mode",
     "mainContent": "Main content",
+    "skipToContent": "Skip to main content",
     "menu": "Menu",
     "navigationOptions": "Navigation options",
     "navigateTo": "Navigate to {label}",
