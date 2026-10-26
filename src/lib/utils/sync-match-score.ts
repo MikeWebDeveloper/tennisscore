@@ -39,3 +39,30 @@ export async function syncMatchScore(
     ? lastError
     : new Error(typeof lastError === "string" ? lastError : "Failed to sync match score")
 }
+
+interface SnapshotState {
+  score: ScorePayload["score"]
+  pointLog: ScorePayload["pointLog"]
+  startTime?: string | null
+  endTime?: string | null
+  setDurations?: number[] | null
+  isMatchComplete?: boolean
+  winnerId?: string | null
+}
+
+/**
+ * Build the full-snapshot payload from the match store state. Because every sync sends the
+ * entire point log, pushing this again after a failure is always safe and idempotent.
+ */
+export function buildScorePayload(state: SnapshotState): ScorePayload {
+  return {
+    score: state.score,
+    pointLog: state.pointLog,
+    ...(state.startTime ? { startTime: state.startTime } : {}),
+    ...(state.endTime ? { endTime: state.endTime } : {}),
+    ...(state.setDurations ? { setDurations: state.setDurations } : {}),
+    ...(state.isMatchComplete && state.winnerId
+      ? { status: "Completed" as const, winnerId: state.winnerId }
+      : {}),
+  }
+}

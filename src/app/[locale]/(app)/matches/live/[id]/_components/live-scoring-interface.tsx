@@ -18,7 +18,9 @@ import { Activity } from "lucide-react"
 import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
-import { syncMatchScore } from "@/lib/utils/sync-match-score"
+import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
+import { useSyncStatus } from "@/hooks/use-sync-status"
+import { SyncStatusBadge } from "@/components/shared/sync-status-badge"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -425,6 +427,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       ? serverOverride
       : suggestedServer
 
+  // Saved / saving / unsent indicator; unsent points are retried automatically when back online
+  const { state: syncState, run: runSync } = useSyncStatus(() =>
+    syncMatchScore(match.$id, buildScorePayload(useMatchStore.getState()))
+  )
+
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [showPointDetail, setShowPointDetail] = useState(false)
@@ -688,16 +695,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // reached the server (reload/disconnect mid-match), push them once now.
       const restored = useMatchStore.getState()
       if (restored.needsResync) {
-        syncMatchScore(match.$id, {
-          score: restored.score,
-          pointLog: restored.pointLog,
-          ...(restored.startTime ? { startTime: restored.startTime } : {}),
-          ...(restored.endTime ? { endTime: restored.endTime } : {}),
-          ...(restored.setDurations ? { setDurations: restored.setDurations } : {}),
-          ...(restored.isMatchComplete && restored.winnerId
-            ? { status: 'Completed' as const, winnerId: restored.winnerId }
-            : {})
-        })
+        runSync(() => syncMatchScore(match.$id, buildScorePayload(restored)))
           .then(() => useMatchStore.getState().clearResync())
           .catch(() => {
             // Leave the flag set; the next synced point will carry these too.
@@ -871,7 +869,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }
       }
 
-      await syncMatchScore(match.$id, updatePayload)
+      await runSync(() => syncMatchScore(match.$id, updatePayload))
 
       if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
@@ -944,10 +942,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     try {
       const result = undoLastPoint()
       
-      await syncMatchScore(match.$id, {
+      await runSync(() => syncMatchScore(match.$id, {
         score: result.newScore,
         pointLog: result.newPointLog
-      })
+      }))
 
       // Play undo sound effect
       playSound('undo')
@@ -998,11 +996,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         updateData.duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
       }
 
-      await syncMatchScore(match.$id, {
+      await runSync(() => syncMatchScore(match.$id, {
         score: retiredScore,
         pointLog,
         ...updateData
-      })
+      }))
 
       const reasonText = reason === 'retired' ? t('retirement') :
         reason === 'weather' ? t('weatherConditionsReason') : t('injury')
@@ -1161,6 +1159,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
       {/* Main Content */}
       <div className="flex-1 max-w-6xl mx-auto w-full p-3 space-y-4">
+        <div className="flex justify-end">
+          <SyncStatusBadge state={syncState} />
+        </div>
+
         {/* Live Scoreboard */}
         <LiveScoreboard
           playerOneName={playerNames.p1}
