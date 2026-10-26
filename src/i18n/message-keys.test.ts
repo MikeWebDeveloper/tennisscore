@@ -8,7 +8,7 @@ const get = (obj: any, ns: string, key: string) => obj?.[ns]?.[key]
 
 // Keys added for the sync indicator, themes and shell. Every active locale must define them.
 const REQUIRED: Record<string, string[]> = {
-  match: ['syncSaved', 'syncSaving', 'syncUnsent'],
+  match: ['syncSaved', 'syncSaving', 'syncUnsent', 'shareScoreCard', 'scoreCardFailed'],
   navigation: [
     'skipToContent', 'theme', 'themeDark', 'themeDim', 'themeLight', 'switchTheme',
     'openNavigationMenu', 'collapseNavigation', 'mainContent', 'new', 'createNewMatch',

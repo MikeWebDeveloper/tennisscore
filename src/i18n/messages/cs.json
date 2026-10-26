@@ -1063,6 +1063,8 @@
     "syncSaved": "Uloženo",
     "syncSaving": "Ukládání…",
     "syncUnsent": "Neodesláno, zkusím znovu",
+    "shareScoreCard": "Karta výsledku",
+    "scoreCardFailed": "Kartu výsledku se nepodařilo vytvořit",
     "matchCompletedWinner": "Zápas dokončen! {winner} vyhrává!",
     "whyEndingMatch": "Proč ukončujete tento zápas?",
     "matchCompletedNormally": "Zápas dokončen normálně",

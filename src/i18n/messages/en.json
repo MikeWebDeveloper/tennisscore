@@ -1031,6 +1031,8 @@
     "syncSaved": "Saved",
     "syncSaving": "Saving…",
     "syncUnsent": "Not sent – will retry",
+    "shareScoreCard": "Score card",
+    "scoreCardFailed": "Could not create the score card",
     "matchCompletedWinner": "Match completed! {winner} wins!",
     "whyEndingMatch": "Why are you ending this match?",
     "matchCompletedNormally": "Match completed normally",

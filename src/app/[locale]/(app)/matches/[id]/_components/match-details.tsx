@@ -29,6 +29,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
+import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 
 interface MatchDetailsProps {
   match: {
@@ -263,6 +264,22 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   className="flex items-center gap-1 text-xs px-2 py-1 h-8"
                 />
               )}
+              <ShareScoreCardButton
+                fileName={`score-${match.$id}.png`}
+                input={{
+                  teamOne: isDoubles
+                    ? `${match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')} / ${match.playerThree ? formatPlayerFromObject(match.playerThree) : t('unknownPlayer')}`
+                    : (match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')),
+                  teamTwo: isDoubles
+                    ? `${match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')} / ${match.playerFour ? formatPlayerFromObject(match.playerFour) : t('unknownPlayer')}`
+                    : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')),
+                  sets: match.scoreParsed?.sets ?? [],
+                  winner: match.status === "Completed"
+                    ? (match.winnerId && match.winnerId === match.playerOne?.$id ? 'p1' : match.winnerId && match.winnerId === match.playerTwo?.$id ? 'p2' : null)
+                    : null,
+                  subtitle: new Date(match.matchDate).toLocaleDateString(),
+                }}
+              />
               <Button 
                 variant="outline" 
                 size="sm" 
