@@ -32,28 +32,30 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 ## Features
 
 ### ✅ Implemented
-- Authentication (signup/signin/signout)
+- Authentication (signup/signin/signout) and protected routes
 - Internationalization: English + Czech
-- Player profiles with image upload/crop
-- Live match scoring with real-time sharing (public route)
-- Soft delete for matches (7‑day retention)
-- Performance optimizations (first load ~200 KB on the dashboard, ~265 KB on live scoring)
-- Framer Motion animations (LazyMotion)
-- Protected routes with middleware
-- TypeScript + ESLint
+- Mobile-first shell: single content tree, flat bottom tab bar, three themes (Dark / Dim / Light), `N` shortcut, print styles
+- Live match scoring with a point log as the single source of truth (3/5 sets, no-ad, tiebreaks, super tiebreak, advantage final set)
+- **Doubles**: four players, the serving partner is shown and can be chosen (recorded per point, no schema change)
+- **Offline-safe saving**: retried saves, persisted in-progress match, "Saved / Saving / Not sent" indicator with automatic retry
+- Screen stays awake while scoring (Screen Wake Lock)
+- Live sharing with a public link, plus a shareable PNG **score card**
+- PWA: network-first service worker (no stale pages after deploys), install button (Android) / Add-to-Home-Screen hint (iPhone)
+- Player profiles with image upload/crop, statistics, soft delete (7-day retention)
+- Performance: first load ~200 KB (dashboard) / ~275 KB (live scoring), enforced by a CI bundle budget
+- Tests: unit tests (scoring engine, doubles rotation, sync, share card, i18n keys), Playwright shell tests, CI (types, tests, build, budget)
 
 ### 🚧 In Development
 - Complete chart migration to uPlot across all views
-- Performance monitoring (web‑vitals, budgets, dashboards)
-- Database and query optimization
-- PWA polish (offline flows, caching strategy)
+- Performance monitoring (web-vitals, dashboards)
 - Enhanced dashboard with analytics widgets
 
 ### 📋 Planned
-- Advanced statistics visualization
-- Doubles scoring
-- Practice session tracking
-- Social features
+- Match setup screen option for "who serves first" in doubles (currently chosen on the scoring screen)
+- More formats (Fast4, pro set) once the exact rules are confirmed against the ITF text
+- Lighter read-only spectator page (cached polling instead of one live connection per viewer)
+- IndexedDB outbox with idempotent client IDs (today: persisted store + full-snapshot sync)
+- Practice session tracking, social features
 
 ## Getting Started
 
