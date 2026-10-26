@@ -6,7 +6,7 @@ import {
   useMemo, 
   useCallback, 
   startTransition,
-  experimental_useEffectEvent as useEffectEvent
+  useEffectEvent
 } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslations } from '@/i18n'

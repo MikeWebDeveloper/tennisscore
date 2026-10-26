@@ -9,7 +9,7 @@ import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 
 interface CompactDetailStepProps {
-  value: "points" | "simple" | "detailed" | "custom" | ""
+  value: "points" | "simple" | "detailed" | "complex" | "custom" | ""
   onChange: (value: "points" | "simple" | "detailed" | "custom") => void
   onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
   loading: boolean

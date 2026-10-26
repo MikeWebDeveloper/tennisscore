@@ -103,7 +103,7 @@ export function useDeleteMatchMutation(
 
   return useMutation({
     mutationFn: async (matchId: string) => await deleteMatch(matchId),
-    onSuccess: (_, matchId) => {
+    onSuccess: (data, matchId, onMutateResult, context) => {
       // Remove match from all caches
       queryClient.removeQueries({ queryKey: queryKeys.matches.detail(matchId) })
       queryClient.removeQueries({ queryKey: queryKeys.matches.live(matchId) })
@@ -121,7 +121,7 @@ export function useDeleteMatchMutation(
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
       
       // Call the options onSuccess if provided
-      options?.onSuccess?.(_, matchId, undefined)
+      options?.onSuccess?.(data, matchId, onMutateResult, context)
     },
     ...options,
   })
@@ -137,7 +137,7 @@ export function useRestoreMatchMutation(
 
   return useMutation({
     mutationFn: async (matchId: string) => await restoreMatch(matchId),
-    onSuccess: (_, matchId) => {
+    onSuccess: (data, matchId, onMutateResult, context) => {
       // Invalidate matches list to show restored match
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.lists() })
       
@@ -151,7 +151,7 @@ export function useRestoreMatchMutation(
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all })
       
       // Call the options onSuccess if provided
-      options?.onSuccess?.(_, matchId, undefined)
+      options?.onSuccess?.(data, matchId, onMutateResult, context)
     },
     ...options,
   })

@@ -234,10 +234,10 @@ export function DynamicPointLogger({
       pointOutcome: finalOutcome,
       lastShotType: currentData.winnerType as ShotType | undefined,
       lastShotPlayer: pointContext.winner,
-      shotDirection: currentData.shotDirection,
+      shotDirection: currentData.shotDirection ?? undefined,
 
       // Custom fields bucket
-      ...((currentData.serveSpeed || currentData.returnQuality || currentData.courtPosition) ? {
+      ...((currentData.serveSpeed || currentData.returnQuality) ? {
         customFields: {
           serveSpeed: currentData.serveSpeed,
           returnQuality: currentData.returnQuality,

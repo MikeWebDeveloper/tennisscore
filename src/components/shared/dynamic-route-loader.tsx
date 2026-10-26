@@ -21,7 +21,7 @@ import { logger } from '@/lib/utils/logger'
 interface DynamicRouteLoaderProps {
   children: React.ReactNode
   fallback?: React.ComponentType
-  errorFallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>
+  errorFallback?: React.ComponentType<{ error: unknown; resetErrorBoundary: () => void }>
   enablePreloading?: boolean
   enableErrorRecovery?: boolean
 }
@@ -94,7 +94,7 @@ const DefaultLoadingFallback: React.FC = () => (
 )
 
 // Default error fallback
-const DefaultErrorFallback: React.FC<{ error: Error; resetErrorBoundary: () => void }> = ({ 
+const DefaultErrorFallback: React.FC<{ error: unknown; resetErrorBoundary: () => void }> = ({ 
   error, 
   resetErrorBoundary 
 }) => (
@@ -109,7 +109,7 @@ const DefaultErrorFallback: React.FC<{ error: Error; resetErrorBoundary: () => v
       <div className="text-sm text-muted-foreground">
         <p>An error occurred while loading this component:</p>
         <code className="block mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-          {error.message}
+          {error instanceof Error ? error.message : String(error)}
         </code>
       </div>
       
@@ -222,7 +222,7 @@ export const DynamicRouteLoader: React.FC<DynamicRouteLoaderProps> = ({
   }, [enablePreloading, preloadChunks, preloadedRoutes])
 
   // Error recovery function
-  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+  const handleError = (error: unknown, errorInfo: React.ErrorInfo) => {
     logger.error('Route component error:', { error, errorInfo })
     
     // Attempt to recover by reloading the chunk
