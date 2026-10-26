@@ -37,7 +37,7 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 - Player profiles with image upload/crop
 - Live match scoring with real-time sharing (public route)
 - Soft delete for matches (7‑day retention)
-- Performance optimizations (first load ~693 KB)
+- Performance optimizations (first load ~200 KB on the dashboard, ~265 KB on live scoring)
 - Framer Motion animations (LazyMotion)
 - Protected routes with middleware
 - TypeScript + ESLint
@@ -187,3 +187,10 @@ For questions or support, please open an issue on GitHub or contact the developm
 ---
 
 Built with ❤️ for the tennis community
+
+## Testing
+
+- `npm test` – unit tests (scoring engine, service-worker caching strategy)
+- `npm run test:e2e:shell` – Playwright tests for the app shell (mobile/desktop layout, themes, shortcuts).
+  Needs a running production build with the test auth bypass:
+  `PLAYWRIGHT=1 DISABLE_AUTH_FOR_TEST=1 npm run build && npx next start -p 3100`
