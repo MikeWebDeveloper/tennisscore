@@ -1,9 +1,9 @@
 // Tenis.click Service Worker - Performance Optimized
-// Version: 2.1.0 - Navigation & API Response Caching
-const CACHE_NAME = 'tenisclick-v2.1.0'
-const STATIC_CACHE = 'tenisclick-static-v2.1.0'
-const DYNAMIC_CACHE = 'tenisclick-dynamic-v2.1.0'
-const API_CACHE = 'tenisclick-api-v2.1.0'
+// Version: 3.0.0 - Network-first navigations (fixes stale HTML / server-action skew after deploys)
+const CACHE_NAME = 'tenisclick-v3.0.0'
+const STATIC_CACHE = 'tenisclick-static-v3.0.0'
+const DYNAMIC_CACHE = 'tenisclick-dynamic-v3.0.0'
+const API_CACHE = 'tenisclick-api-v3.0.0'
 
 // Development detection
 const isDevelopment = (() => {
@@ -59,7 +59,7 @@ const CACHE_STRATEGIES = {
 
 // Install event - pre-cache critical assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v2.1.0...')
+  console.log('[SW] Installing service worker v3.0.0...')
   
   event.waitUntil(
     (async () => {
@@ -93,7 +93,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker v2.1.0...')
+  console.log('[SW] Activating service worker v3.0.0...')
   
   event.waitUntil(
     (async () => {
@@ -104,7 +104,8 @@ self.addEventListener('activate', (event) => {
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME && 
                 cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE) {
+                cacheName !== DYNAMIC_CACHE &&
+                cacheName !== API_CACHE) {
               console.log('[SW] Deleting old cache:', cacheName)
               return caches.delete(cacheName)
             }
@@ -113,13 +114,6 @@ self.addEventListener('activate', (event) => {
         
         // Take control of all clients
         await self.clients.claim()
-        
-        // Prefetch common routes in background
-        if (!isDevelopment) {
-          setTimeout(() => {
-            prefetchRoutes()
-          }, 5000) // Wait 5s after activation
-        }
         
         console.log('[SW] Activation complete - ready for fast navigation!')
       } catch (error) {
@@ -174,9 +168,10 @@ self.addEventListener('fetch', (event) => {
     return
   }
   
-  // App routes (navigation) - stale while revalidate for instant navigation
+  // App routes (navigation) - network first so HTML always matches the deployed build;
+  // the cache is only an offline fallback
   if (request.mode === 'navigate' || CACHE_STRATEGIES.APP_ROUTES.test(url.pathname)) {
-    event.respondWith(navigationStaleWhileRevalidate(request))
+    event.respondWith(networkFirstWithOffline(request))
     return
   }
   

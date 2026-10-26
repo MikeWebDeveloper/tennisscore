@@ -251,10 +251,17 @@ export function getTiebreakWinner(p1Points: number, p2Points: number, targetPoin
   return null
 }
 
-export function isSetWon(p1Games: number, p2Games: number, format: MatchFormat): boolean {
+export function isSetWon(
+  p1Games: number,
+  p2Games: number,
+  format: MatchFormat,
+  /** Deciding set played without a tiebreak: only a two-game lead wins it. */
+  advantageSet: boolean = false
+): boolean {
   const targetGames = format.shortSets ? 4 : 6
   if (p1Games >= targetGames && p1Games - p2Games >= 2) return true
   if (p2Games >= targetGames && p2Games - p1Games >= 2) return true
+  if (advantageSet) return false
   if (format.tiebreak) {
     const tiebreakAt = format.shortSets ? 4 : 6
     if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
@@ -458,7 +465,7 @@ export const calculateScoreFromPointLog = (log: PointDetail[], format: MatchForm
         if (shouldStartTiebreak(newScore.games[0], newScore.games[1], format) && (!isDecidingSet || format.finalSetTiebreak === "standard")) {
             newScore.isTiebreak = true;
             newScore.initialTiebreakServer = point.server === 'p1' ? (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p1' : 'p2' : (newScore.games[0] + newScore.games[1]) % 2 !== 0 ? 'p2' : 'p1';
-        } else if (isSetWon(newScore.games[0], newScore.games[1], format)) {
+        } else if (isSetWon(newScore.games[0], newScore.games[1], format, isDecidingSet && format.finalSetTiebreak === "none")) {
             newScore.sets.push([...newScore.games]);
             newScore.games = [0, 0];
         }
