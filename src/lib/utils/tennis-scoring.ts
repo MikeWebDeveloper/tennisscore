@@ -251,6 +251,17 @@ export function getTiebreakWinner(p1Points: number, p2Points: number, targetPoin
   return null
 }
 
+/**
+ * Games needed to win a set and the games score at which a tiebreak is played.
+ * Defaults: standard sets (6, tiebreak at 6-6); legacy `shortSets` (4, tiebreak at 4-4).
+ * Explicit `gamesPerSet` / `tiebreakAt` support e.g. Fast4 (4, 3-3) and pro set (8, 8-8).
+ */
+export function getSetRules(format: MatchFormat): { games: number; tiebreakAt: number } {
+  const games = format.gamesPerSet ?? (format.shortSets ? 4 : 6)
+  const tiebreakAt = format.tiebreakAt ?? (format.shortSets ? 4 : games)
+  return { games, tiebreakAt }
+}
+
 export function isSetWon(
   p1Games: number,
   p2Games: number,
@@ -258,17 +269,17 @@ export function isSetWon(
   /** Deciding set played without a tiebreak: only a two-game lead wins it. */
   advantageSet: boolean = false
 ): boolean {
-  const targetGames = format.shortSets ? 4 : 6
+  const { games: targetGames } = getSetRules(format)
   if (p1Games >= targetGames && p1Games - p2Games >= 2) return true
   if (p2Games >= targetGames && p2Games - p1Games >= 2) return true
   if (advantageSet) return false
   if (format.tiebreak) {
-    const tiebreakAt = format.shortSets ? 4 : 6
+    const { tiebreakAt } = getSetRules(format)
     if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
   if (format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super") {
-    const tiebreakAt = format.shortSets ? 4 : 6
+    const { tiebreakAt } = getSetRules(format)
     if ((p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) ||
         (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt)) return true
   }
@@ -276,7 +287,7 @@ export function isSetWon(
 }
 
 export function getSetWinner(p1Games: number, p2Games: number, format: MatchFormat, currentSets: number[][]): "p1" | "p2" | null {
-  const targetGames = format.shortSets ? 4 : 6
+  const { games: targetGames } = getSetRules(format)
   
   if (p1Games >= targetGames && p1Games - p2Games >= 2) return "p1"
   if (p2Games >= targetGames && p2Games - p1Games >= 2) return "p2"
@@ -289,14 +300,14 @@ export function getSetWinner(p1Games: number, p2Games: number, format: MatchForm
   
   // Tiebreak scenario
   if (format.tiebreak && !isFinalSet) {
-    const tiebreakAt = format.shortSets ? 4 : 6
+    const { tiebreakAt } = getSetRules(format)
     if (p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) return "p1"
     if (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt) return "p2"
   }
 
   // Final set tiebreak
   if (isFinalSet && (format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super")) {
-    const tiebreakAt = format.shortSets ? 4 : 6
+    const { tiebreakAt } = getSetRules(format)
     if (p1Games === tiebreakAt + 1 && p2Games === tiebreakAt) return "p1"
     if (p2Games === tiebreakAt + 1 && p1Games === tiebreakAt) return "p2"
   }
@@ -316,14 +327,9 @@ export function isMatchWon(currentSets: number[][], format: MatchFormat): { won:
 }
 
 export function shouldStartTiebreak(p1Games: number, p2Games: number, format: MatchFormat): boolean {
-  const targetGames = format.shortSets ? 4 : 6
-  if (format.tiebreak && p1Games === targetGames && p2Games === targetGames) {
-    return true
-  }
-  if ((format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super") && p1Games === targetGames && p2Games === targetGames) {
-    return true
-  }
-  return false
+  const { tiebreakAt } = getSetRules(format)
+  if (p1Games !== tiebreakAt || p2Games !== tiebreakAt) return false
+  return format.tiebreak || format.finalSetTiebreak === "standard" || format.finalSetTiebreak === "super"
 }
 
 export function shouldBeInSuperTiebreak(currentSets: number[][], format: MatchFormat): boolean {

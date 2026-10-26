@@ -13,9 +13,15 @@ interface CompactDetailStepProps {
   onChange: (value: "points" | "simple" | "detailed" | "custom") => void
   onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
   loading: boolean
+  /** Doubles only: choose which partner of each pair serves first */
+  doubles?: {
+    names: { p1: string; p2: string; p3: string; p4: string }
+    order: { p1: 'p1' | 'p3'; p2: 'p2' | 'p4' }
+    onOrderChange: (order: { p1: 'p1' | 'p3'; p2: 'p2' | 'p4' }) => void
+  }
 }
 
-export function CompactDetailStep({ value, onChange, onStartMatch, loading }: CompactDetailStepProps) {
+export function CompactDetailStep({ value, onChange, onStartMatch, loading, doubles }: CompactDetailStepProps) {
   const t = useTranslations('common')
 
   const options = [
@@ -59,6 +65,38 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading }: Co
         <h2 className="text-base font-semibold">{t("scoringDetailLevel")}</h2>
         <p className="text-xs text-muted-foreground">{t("chooseTrackingLevel")}</p>
       </div>
+
+      {doubles && (
+        <div className="mb-3 space-y-1.5 rounded-md border border-border p-2">
+          <div className="text-xs font-medium text-muted-foreground">{t("firstServer")}</div>
+          {([
+            ["p1", "p1", "p3"],
+            ["p2", "p2", "p4"],
+          ] as const).map(([team, a, b]) => (
+            <div key={team} role="radiogroup" aria-label={t("firstServer")} className="grid grid-cols-2 gap-1.5">
+              {[a, b].map((player) => {
+                const selected = doubles.order[team] === player
+                return (
+                  <button
+                    key={player}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => doubles.onOrderChange({ ...doubles.order, [team]: player })}
+                    className={`min-h-10 truncate rounded-md border px-2 text-sm transition-colors ${
+                      selected ? "border-primary bg-primary/10 font-semibold text-primary" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {doubles.names[player]}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
+          <p className="text-[11px] text-muted-foreground">{t("firstServerHint")}</p>
+        </div>
+      )}
+
 
       <div className="space-y-2">
         {options.map((option) => {

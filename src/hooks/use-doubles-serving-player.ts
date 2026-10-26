@@ -5,6 +5,7 @@ import {
   getNextDoublesServer,
   startsNewServeTurn,
   type DoublesPlayer,
+  type DoublesServeOrder,
   type DoublesTeam,
   type ServeLogPoint,
 } from "@/lib/utils/doubles-serving"
@@ -20,10 +21,11 @@ export function useDoublesServingPlayer(
   isDoubles: boolean,
   pointLog: readonly ServeLogPoint[],
   score: ScoreLike,
-  currentServer: DoublesTeam | null | undefined
+  currentServer: DoublesTeam | null | undefined,
+  order?: DoublesServeOrder
 ): DoublesPlayer | null {
   return useMemo(() => {
     if (!isDoubles || !currentServer) return null
-    return getNextDoublesServer(pointLog, currentServer, startsNewServeTurn(score))
-  }, [isDoubles, pointLog, score, currentServer])
+    return getNextDoublesServer(pointLog, currentServer, startsNewServeTurn(score), order)
+  }, [isDoubles, pointLog, score, currentServer, order])
 }

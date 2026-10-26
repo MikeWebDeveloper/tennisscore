@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { idbStorage } from '@/lib/utils/idb-storage'
 import { 
   isGameWon, 
   isSetWon, 
+  getSetRules,
   isTiebreakWon,
   getTiebreakServer,
   getTennisScore,
@@ -32,6 +34,12 @@ export interface MatchFormat {
   finalSetTiebreak: "standard" | "super" | "none"
   finalSetTiebreakAt?: number
   shortSets?: boolean
+  /** Doubles: which partner of each team serves that team's first game */
+  doublesServeOrder?: { p1: 'p1' | 'p3'; p2: 'p2' | 'p4' }
+  /** Games needed to win a set (default 6; Fast4 = 4, pro set = 8) */
+  gamesPerSet?: number
+  /** Games score at which a tiebreak is played (default = gamesPerSet; Fast4 = 3) */
+  tiebreakAt?: number
   detailLevel?: "points" | "simple" | "complex"
 }
 
@@ -884,8 +892,9 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
             const currentGames = [...previousScore.games] as [number, number]
             
             // Check if player would be close to winning set if they get to a winning position
-            const p1CouldWinSetNextGame = currentGames[0] + 1 >= 6 && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === 7 && currentGames[1] === 6))
-            const p2CouldWinSetNextGame = currentGames[1] + 1 >= 6 && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === 7 && currentGames[0] === 6))
+            const setRules = getSetRules(matchFormat)
+            const p1CouldWinSetNextGame = currentGames[0] + 1 >= setRules.games && (currentGames[0] + 1 - currentGames[1] >= 2 || (currentGames[0] + 1 === setRules.tiebreakAt + 1 && currentGames[1] === setRules.tiebreakAt))
+            const p2CouldWinSetNextGame = currentGames[1] + 1 >= setRules.games && (currentGames[1] + 1 - currentGames[0] >= 2 || (currentGames[1] + 1 === setRules.tiebreakAt + 1 && currentGames[0] === setRules.tiebreakAt))
             
             // Check if this player is at 40 (3 points) or in advantage position and opponent has fewer points
             // UPDATED: Also consider deuce situations when player could win set
@@ -1189,7 +1198,9 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
   }),
 }), {
   name: 'tennis-match-progress',
-  storage: createJSONStorage(() => localStorage),
+  // IndexedDB (with localStorage fallback + migration): roomier and not blocking the main thread.
+  // Hydration is async, so screens that read persisted progress must wait for it (see useStoreHydrated).
+  storage: createJSONStorage(() => idbStorage),
   // Persist only the in-progress match data (not the action functions) so a
   // reload or connectivity drop never loses unsynced points.
   partialize: (state) => ({

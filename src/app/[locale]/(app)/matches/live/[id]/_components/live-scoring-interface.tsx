@@ -19,6 +19,8 @@ import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
+import { normalizeMatchFormat } from "@/lib/utils/match-format"
+import { useStoreHydrated } from "@/hooks/use-store-hydrated"
 import { useSyncStatus } from "@/hooks/use-sync-status"
 import { SyncStatusBadge } from "@/components/shared/sync-status-badge"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
@@ -418,7 +420,10 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   })))
   useWakeLock(match.status === "In Progress")
   const isDoublesMatch = !!(match.playerThree && match.playerFour)
-  const suggestedServer = useDoublesServingPlayer(isDoublesMatch, pointLog, score, currentServer)
+  // The persisted match loads asynchronously; initializing before it would overwrite unsent local points
+  const storeHydrated = useStoreHydrated(useMatchStore.persist)
+  const doublesOrder = useMemo(() => normalizeMatchFormat(match.matchFormat).doublesServeOrder, [match.matchFormat])
+  const suggestedServer = useDoublesServingPlayer(isDoublesMatch, pointLog, score, currentServer, doublesOrder)
   // The scorer may pick which partner serves at the start of a service turn (first game, new set, corrections)
   const [serverOverride, setServerOverride] = useState<DoublesPlayer | null>(null)
   const canPickServer = isDoublesMatch && !!currentServer && startsNewServeTurn(score)
@@ -470,28 +475,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     pointOutcome: point.pointOutcome || 'winner'
   }))
 
-  // Parse match format properly
-  const parsedMatchFormat = useMemo(() => {
-    try {
-      const parsed = JSON.parse(match.matchFormat)
-      return {
-        sets: parsed.sets || 3,
-        noAd: parsed.noAd || false,
-        tiebreak: parsed.tiebreak !== false,
-        finalSetTiebreak: parsed.finalSetTiebreak || "standard",
-        finalSetTiebreakAt: parsed.finalSetTiebreakAt || 10,
-      }
-    } catch (error) {
-      console.error("Failed to parse match format:", error)
-      return {
-        sets: 3,
-        noAd: false,
-        tiebreak: true,
-        finalSetTiebreak: "standard" as const,
-        finalSetTiebreakAt: 10,
-      }
-    }
-  }, [match.matchFormat])
+  // Parse match format (keeps set length / tiebreak point so Fast4 and pro set score correctly)
+  const parsedMatchFormat = useMemo(() => normalizeMatchFormat(match.matchFormat), [match.matchFormat])
 
   // Get detailLevel directly from match object (not from parsed format)
   const detailLevel = match.detailLevel || "simple"
@@ -640,6 +625,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
+    // Wait for the persisted (possibly unsynced) match to load so it is not overwritten by the server copy
+    if (!storeHydrated) return
+
     const existingPointLog: StorePointDetail[] = match.pointLog
       ? match.pointLog.map(pointStr => {
         try {
@@ -711,7 +699,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     } catch (error) {
       console.error("Failed to initialize match:", error)
     }
-  }, [match, parsedMatchFormat, initializeMatch, setServer])
+  }, [match, parsedMatchFormat, initializeMatch, setServer, storeHydrated])
 
   // Show loading state until match is initialized
   if (!isMatchInitialized || !currentServer) {

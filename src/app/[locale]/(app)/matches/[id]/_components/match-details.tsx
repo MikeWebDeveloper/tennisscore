@@ -30,6 +30,7 @@ import { formatPlayerFromObject } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
+import { normalizeMatchFormat } from "@/lib/utils/match-format"
 
 interface MatchDetailsProps {
   match: {
@@ -97,13 +98,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const t = useTranslations('common')
   
   // Parse match format
-  const parsedFormat = (() => {
-    try {
-      return JSON.parse(match.matchFormat)
-    } catch {
-      return { sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: "standard", finalSetTiebreakAt: 10 }
-    }
-  })()
+  const parsedFormat = normalizeMatchFormat(match.matchFormat)
 
   // Debug timing data
   console.log('Match timing data received:', {
@@ -234,13 +229,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     playerOneId: match.playerOneId,
                     playerTwoId: match.playerTwoId,
                     matchDate: match.matchDate,
-                    matchFormat: {
-                      sets: parsedFormat?.sets || 3,
-                      noAd: parsedFormat?.noAd || false,
-                      tiebreak: parsedFormat?.tiebreak !== false,
-                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
-                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
-                    },
+                    matchFormat: parsedFormat,
                     status: match.status as 'Completed',
                     score: {
                       sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],
@@ -373,13 +362,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     playerOneId: match.playerOneId,
                     playerTwoId: match.playerTwoId,
                     matchDate: match.matchDate,
-                    matchFormat: {
-                      sets: parsedFormat?.sets || 3,
-                      noAd: parsedFormat?.noAd || false,
-                      tiebreak: parsedFormat?.tiebreak !== false,
-                      finalSetTiebreak: parsedFormat?.finalSetTiebreak || "standard",
-                      finalSetTiebreakAt: parsedFormat?.finalSetTiebreakAt || 10,
-                    },
+                    matchFormat: parsedFormat,
                     status: match.status as 'Completed',
                     score: {
                       sets: match.scoreParsed?.sets.map(s => [s.p1, s.p2]) || [],

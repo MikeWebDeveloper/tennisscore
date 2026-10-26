@@ -20,6 +20,8 @@ import { CompactPlayersStep } from "./compact-steps/compact-players-step"
 import { CompactTournamentStep } from "./compact-steps/compact-tournament-step"
 import { CompactFormatStep } from "./compact-steps/compact-format-step"
 import { CompactDetailStep } from "./compact-steps/compact-detail-step"
+import { SET_FORMATS, type SetFormat } from "@/lib/utils/match-format"
+import { formatPlayerFromObject } from "@/lib/utils"
 
 interface CompactMatchWizardProps {
   players: Player[]
@@ -50,11 +52,21 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const [playerFourAnonymous, setPlayerFourAnonymous] = useState(false)
 
   const [sets, setSets] = useState<1 | 3 | 5 | null>(null)
+  const [setFormat, setSetFormat] = useState<SetFormat>("standard")
+  // Doubles: which partner of each pair serves first (defaults: player 1 and player 2)
+  const [serveOrder, setServeOrder] = useState<{ p1: "p1" | "p3"; p2: "p2" | "p4" }>({ p1: "p1", p2: "p2" })
   const [scoring, setScoring] = useState<"ad" | "no-ad" | "">("")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">("")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "complex" | "custom" | "">("")
 
   const totalSteps = 5
+
+  // Display name for a selected (or anonymous) player
+  const nameOf = (id: string, anonymous: boolean, fallback: string) => {
+    if (anonymous || !id) return fallback
+    const player = players.find((p) => p.$id === id.split(' ')[0])
+    return player ? formatPlayerFromObject(player) : fallback
+  }
 
   // Navigation functions with animations
   const goToBack = async () => {
@@ -146,9 +158,10 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
         tournamentName: tournamentName.trim() || undefined,
         matchFormat: {
           sets: sets,
-          gamesPerSet: 6,
-          tiebreakAt: 6,
+          gamesPerSet: SET_FORMATS[setFormat].gamesPerSet,
+          tiebreakAt: SET_FORMATS[setFormat].tiebreakAt,
           noAd: scoring === "no-ad",
+          ...(matchType === "doubles" ? { doublesServeOrder: serveOrder } : {}),
           finalSetTiebreak: finalSet === "super-tb" ? "super" : "standard",
           detailLevel: finalDetailLevel,
         },
@@ -217,6 +230,12 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
       case 4:
         return (
           <CompactFormatStep
+            setFormat={setFormat}
+            onSetFormatChange={(value) => {
+              setSetFormat(value)
+              // Fast4 is normally played with no-ad scoring
+              if (value === "fast4") setScoring("no-ad")
+            }}
             sets={sets}
             scoring={scoring}
             finalSet={finalSet}
@@ -233,6 +252,16 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
             onChange={setDetailLevel}
             onStartMatch={handleCreateMatch}
             loading={loading}
+            doubles={matchType === "doubles" ? {
+              names: {
+                p1: nameOf(playerOne, playerOneAnonymous, t('player1')),
+                p2: nameOf(playerTwo, playerTwoAnonymous, t('player2')),
+                p3: nameOf(playerThree, playerThreeAnonymous, t('player3')),
+                p4: nameOf(playerFour, playerFourAnonymous, t('player4')),
+              },
+              order: serveOrder,
+              onOrderChange: setServeOrder,
+            } : undefined}
           />
         )
       default:

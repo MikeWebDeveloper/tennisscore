@@ -26,6 +26,7 @@ import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
 import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-serving"
+import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { useTranslations, useLocale } from "@/i18n"
 
 type Score = import("@/stores/matchStore").Score
@@ -321,7 +322,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   // Doubles: which partner serves the next point (derived from the point log)
   const servingPlayer =
     match.playerThree && match.playerFour && currentServer
-      ? getNextDoublesServer(pointLog, currentServer, startsNewServeTurn(score))
+      ? getNextDoublesServer(pointLog, currentServer, startsNewServeTurn(score), normalizeMatchFormat(match.matchFormatParsed).doublesServeOrder)
       : null
 
   const generateMetaTags = useCallback(() => {
@@ -457,10 +458,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             currentServer={currentServer}
             servingPlayer={servingPlayer}
             matchFormat={{
-              noAd: match.matchFormatParsed.noAd,
-              sets: match.matchFormatParsed.sets as 1 | 3 | 5,
+              ...normalizeMatchFormat(match.matchFormatParsed),
               tiebreak: match.matchFormatParsed.finalSetTiebreak !== "none",
-              finalSetTiebreak: match.matchFormatParsed.finalSetTiebreak || "standard"
             }}
           />
         </motion.div>

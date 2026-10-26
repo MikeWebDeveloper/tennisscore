@@ -3,11 +3,14 @@
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 import { useRef, useEffect } from "react"
+import type { SetFormat } from "@/lib/utils/match-format"
 
 interface CompactFormatStepProps {
+  setFormat: SetFormat
   sets: 1 | 3 | 5 | null
   scoring: "ad" | "no-ad" | ""
   finalSet: "full" | "super-tb" | ""
+  onSetFormatChange: (value: SetFormat) => void
   onSetsChange: (value: 1 | 3 | 5) => void
   onScoringChange: (value: "ad" | "no-ad") => void
   onFinalSetChange: (value: "full" | "super-tb") => void
@@ -15,6 +18,8 @@ interface CompactFormatStepProps {
 }
 
 export function CompactFormatStep({
+  setFormat,
+  onSetFormatChange,
   sets,
   scoring,
   finalSet,
@@ -61,6 +66,34 @@ export function CompactFormatStep({
       </div>
 
       <div className="space-y-3">
+        {/* Set length (default Standard so the three required choices below still auto-advance) */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("setLength")}</label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {([
+              ["standard", t("setFormatStandard")],
+              ["fast4", t("setFormatFast4")],
+              ["pro", t("setFormatPro")],
+            ] as const).map(([value, label]) => (
+              <motion.button
+                key={value}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => onSetFormatChange(value)}
+                aria-pressed={setFormat === value}
+                className={`
+                  p-1.5 rounded-md border text-center transition-all duration-200
+                  ${setFormat === value
+                    ? 'border-primary bg-primary/10 text-primary font-semibold'
+                    : 'border-border hover:border-primary/50'
+                  }
+                `}
+              >
+                <div className="text-sm">{label}</div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
         {/* Sets Selection */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">{t("numberOfSets")}</label>

@@ -7,6 +7,8 @@ export const matchFormatSchema = z.object({
   tiebreakAt: z.number().default(6),
   finalSetTiebreak: z.enum(["standard", "super", "none"]).default("standard"),
   noAd: z.boolean(),
+  // Doubles: which partner of each team serves that team's first game
+  doublesServeOrder: z.object({ p1: z.enum(["p1", "p3"]), p2: z.enum(["p2", "p4"]) }).optional(),
   detailLevel: z.enum(["points", "simple", "detailed", "complex", "custom"]).default("simple"),
   // Custom mode configuration
   customModeConfig: z.object({
