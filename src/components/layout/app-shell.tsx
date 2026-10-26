@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, usePathname } from "@/i18n/navigation"
+import { Link, usePathname, useRouter } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { Home, Trophy, Users, Menu, X, Plus, Sun, Moon, LogOut, Settings, Shield, BarChart3 } from "lucide-react"
+import { Home, Trophy, Users, Menu, X, Plus, LogOut, Settings, Shield, BarChart3 } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
-import { useTheme } from "next-themes"
+import { ThemeSwitcher, ThemeCycleButton } from "@/components/ui/theme-switcher"
 import { User } from "@/lib/types"
 import { isAdmin } from "@/lib/auth"
 import { MobileTabBar } from "./collapsible-mobile-nav"
@@ -29,20 +29,10 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2)
 
-/** Both icons are always rendered; CSS picks one, so no mount gate is needed. */
-function ThemeIcon({ className }: { className?: string }) {
-  return (
-    <>
-      <Sun className={cn("hidden dark:block", className)} aria-hidden="true" />
-      <Moon className={cn("block dark:hidden", className)} aria-hidden="true" />
-    </>
-  )
-}
-
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const { resolvedTheme, setTheme } = useTheme()
+  const router = useRouter()
   const t = useTranslations('navigation')
 
   const baseNavigation = [
@@ -62,8 +52,6 @@ export function AppShell({ children, user }: AppShellProps) {
     }]
     : baseNavigation
 
-  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark")
-
   // Close the drawer on navigation, lock page scroll while it is open
   useEffect(() => { setDrawerOpen(false) }, [pathname])
   useEffect(() => {
@@ -72,6 +60,18 @@ export function AppShell({ children, user }: AppShellProps) {
     document.body.style.overflow = "hidden"
     return () => { document.body.style.overflow = prev }
   }, [drawerOpen])
+
+  // "N" jumps to the new-match form (ignored while typing or with modifiers)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "n" || e.metaKey || e.ctrlKey || e.altKey) return
+      const el = e.target as HTMLElement | null
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
+      router.push("/matches/new")
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [router])
 
   // Live scoring has its own fixed controls at the bottom of the screen
   const hideTabBar = pathname.startsWith("/matches/live")
@@ -142,12 +142,8 @@ export function AppShell({ children, user }: AppShellProps) {
                 {t('newMatchButton')}
               </Link>
             </Button>
-            <div className="flex items-center justify-between gap-2">
-              <Button variant="ghost" size="sm" onClick={toggleTheme} className="flex-1 justify-start text-muted-foreground">
-                <ThemeIcon className="h-4 w-4" />
-                <span className="hidden dark:inline">{t('lightMode')}</span>
-                <span className="dark:hidden">{t('darkMode')}</span>
-              </Button>
+            <ThemeSwitcher />
+            <div className="flex justify-center">
               <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} />
             </div>
           </div>
@@ -184,14 +180,7 @@ export function AppShell({ children, user }: AppShellProps) {
           </Link>
           <div className="flex items-center">
             <LanguageSwitcher variant="compact" size="sm" showFlags={true} showNativeNames={false} />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label={resolvedTheme === "dark" ? t('switchToLightMode') : t('switchToDarkMode')}
-            >
-              <ThemeIcon className="h-4 w-4" />
-            </Button>
+            <ThemeCycleButton />
           </div>
         </header>
 
@@ -218,6 +207,7 @@ export function AppShell({ children, user }: AppShellProps) {
             </div>
             <nav className="flex-1 space-y-1 overflow-y-auto p-3">{renderNavLinks(true)}</nav>
             <div className="space-y-3 border-t border-border p-4">
+              <ThemeSwitcher />
               {userBlock}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" size="sm" asChild className="min-h-11">

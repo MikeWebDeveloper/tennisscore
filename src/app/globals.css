@@ -76,6 +76,35 @@
     --chart-4: 96 96 96;
     --chart-5: 64 64 64;
   }
+
+  .dim {
+    /* Dim theme - slate twilight, between dark and light */
+    --background: 36 39 48;
+    --foreground: 233 236 243;
+    --card: 45 49 60;
+    --card-foreground: 233 236 243;
+    --popover: 45 49 60;
+    --popover-foreground: 233 236 243;
+    --primary: 233 236 243;
+    --primary-foreground: 36 39 48;
+    --secondary: 52 56 68;
+    --secondary-foreground: 233 236 243;
+    --muted: 52 56 68;
+    --muted-foreground: 160 166 182;
+    --accent: 60 65 79;
+    --accent-foreground: 233 236 243;
+    --destructive: 248 113 113;
+    --destructive-foreground: 36 39 48;
+    --border: 66 71 86;
+    --input: 66 71 86;
+    --ring: 233 236 243;
+    --radius: 0.75rem;
+    --chart-1: 233 236 243;
+    --chart-2: 190 196 210;
+    --chart-3: 140 147 165;
+    --chart-4: 104 111 130;
+    --chart-5: 78 84 102;
+  }
 }
 
 @layer base {
@@ -512,4 +541,11 @@ h1, h2, h3, h4, h5, h6 {
     /* Very minimal reset - only what's necessary */
     contain: layout;
   }
+}
+
+/* Print / "Export PDF": hide app chrome, keep content */
+@media print {
+  aside, header, nav[aria-label], [data-print-hidden] { display: none !important; }
+  main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+  body, html { background: #fff !important; color: #000 !important; }
 }
