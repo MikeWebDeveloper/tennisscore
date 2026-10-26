@@ -69,9 +69,10 @@ export function CompactFormatStep({
         {/* Set length (default Standard so the three required choices below still auto-advance) */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">{t("setLength")}</label>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
             {([
               ["standard", t("setFormatStandard")],
+              ["short", t("setFormatShort")],
               ["fast4", t("setFormatFast4")],
               ["pro", t("setFormatPro")],
             ] as const).map(([value, label]) => (

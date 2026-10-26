@@ -24,112 +24,13 @@ import { MomentumBar } from "@/components/ui/momentum-bar"
 import { formatPlayerFromObject, formatDate } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LanguageToggle } from "@/components/ui/language-toggle"
-import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
+import { deriveCurrentServer } from "@/lib/utils/current-server"
 import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-serving"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
+import { parseDbScore } from "@/lib/utils/db-score"
 import { useTranslations, useLocale } from "@/i18n"
 
 type Score = import("@/stores/matchStore").Score
-
-const defaultScore: Score = {
-  sets: [],
-  games: [0, 0],
-  points: [0, 0],
-  isTiebreak: false,
-  tiebreakPoints: [0, 0],
-}
-
-// Utility to parse and convert score from DB format to store format
-function parseAndConvertScore(scoreString: string | undefined): Score {
-  if (!scoreString) return defaultScore
-  try {
-    const dbScore = JSON.parse(scoreString)
-    console.log("📊 Parsing score from DB:", dbScore)
-    
-    // Handle both modern format (arrays) and legacy format (objects with player1/player2)
-    let sets: [number, number][] = []
-    let games: [number, number] = [0, 0]
-    let points: [number, number] = [0, 0]
-    let tiebreakPoints: [number, number] = [0, 0]
-    
-    // Parse sets - handle both formats
-    if (dbScore.sets && Array.isArray(dbScore.sets)) {
-      sets = dbScore.sets.map((s: unknown) => {
-        if (Array.isArray(s)) {
-          // Modern format: [6, 4]
-          return [s[0] || 0, s[1] || 0] as [number, number]
-        } else if (s && typeof s === 'object' && s !== null) {
-          // Legacy format: {player1: 6, player2: 4}
-          const legacySet = s as { player1?: number; player2?: number; [key: number]: number }
-          return [legacySet.player1 || legacySet[0] || 0, legacySet.player2 || legacySet[1] || 0] as [number, number]
-        }
-        return [0, 0] as [number, number]
-      })
-    }
-    
-    // Parse games - handle both formats
-    if (dbScore.games) {
-      if (Array.isArray(dbScore.games)) {
-        if (dbScore.games.length === 2 && typeof dbScore.games[0] === 'number') {
-          // Modern simple format: [2, 0]
-          games = [dbScore.games[0] || 0, dbScore.games[1] || 0]
-        } else if (dbScore.games.length > 0) {
-          // Complex format: array of game objects or arrays
-          const lastGame = dbScore.games[dbScore.games.length - 1]
-          if (Array.isArray(lastGame)) {
-            // Format: [[0,0], [1,1]] -> use last element
-            games = [lastGame[0] || 0, lastGame[1] || 0]
-          } else if (typeof lastGame === 'object') {
-            // Format: [{player1: 0, player2: 0}] -> use last element
-            games = [lastGame.player1 || 0, lastGame.player2 || 0]
-          }
-        }
-      } else if (typeof dbScore.games === 'object') {
-        // Legacy single object format: {player1: 0, player2: 0}
-        games = [dbScore.games.player1 || 0, dbScore.games.player2 || 0]
-      }
-    }
-    
-    // Parse points - handle both formats
-    if (dbScore.points) {
-      if (Array.isArray(dbScore.points)) {
-        // Modern format: [1, 1]
-        points = [dbScore.points[0] || 0, dbScore.points[1] || 0]
-      } else if (typeof dbScore.points === 'object') {
-        // Legacy format: {player1: "1", player2: "1"}
-        points = [
-          parseInt(dbScore.points.player1, 10) || 0,
-          parseInt(dbScore.points.player2, 10) || 0
-        ]
-      }
-    }
-    
-    // Parse tiebreak points - handle both formats
-    if (dbScore.tiebreakPoints) {
-      if (Array.isArray(dbScore.tiebreakPoints)) {
-        // Modern format: [0, 0]
-        tiebreakPoints = [dbScore.tiebreakPoints[0] || 0, dbScore.tiebreakPoints[1] || 0]
-      } else if (typeof dbScore.tiebreakPoints === 'object') {
-        // Legacy format: {player1: 0, player2: 0}
-        tiebreakPoints = [dbScore.tiebreakPoints.player1 || 0, dbScore.tiebreakPoints.player2 || 0]
-      }
-    }
-    
-    const convertedScore: Score = {
-      sets,
-      games,
-      points,
-      isTiebreak: dbScore.isTiebreak || false,
-      tiebreakPoints,
-    }
-    
-    console.log("✅ Converted score:", convertedScore)
-    return convertedScore
-  } catch (e) {
-    console.error("Failed to parse score:", e)
-    return defaultScore
-  }
-}
 
 interface PublicLiveMatchProps {
   match: {
@@ -174,7 +75,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const tCommon = useTranslations('common')
   const locale = useLocale()
   const [match, setMatch] = useState(initialMatch)
-  const [score, setScore] = useState<Score>(() => parseAndConvertScore(initialMatch.score))
+  const [score, setScore] = useState<Score>(() => parseDbScore(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [mounted, setMounted] = useState(false)
   
@@ -202,7 +103,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   useEffect(() => {
     if (lastUpdate && mounted) {
       console.log("🔄 Real-time update received:", lastUpdate)
-      const newScore = parseAndConvertScore(lastUpdate.score)
+      const newScore = parseDbScore(lastUpdate.score)
       setScore(newScore)
 
       setMatch(prev => ({
@@ -301,23 +202,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     p4: match.playerFour ? formatPlayerFromObject(match.playerFour) : undefined,
   }
 
-  // Extract current server from the latest point or score
-  let currentServer: "p1" | "p2" | undefined = undefined
-  if (pointLog.length > 0 && score) {
-    const totalGames =
-      score.sets.reduce((sum, set) => sum + (set[0] || 0) + (set[1] || 0), 0) +
-      (score.games[0] || 0) +
-      (score.games[1] || 0)
-    const firstServer = pointLog[0]?.server || "p1"
-    if (score.isTiebreak) {
-      const totalTiebreakPoints = (score.tiebreakPoints?.[0] || 0) + (score.tiebreakPoints?.[1] || 0)
-      // Find the initial tiebreak server: the player who would normally serve this game
-      const tiebreakStartServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
-      currentServer = getTiebreakServer(totalTiebreakPoints, tiebreakStartServer)
-    } else {
-      currentServer = totalGames % 2 === 0 ? firstServer : (firstServer === 'p1' ? 'p2' : 'p1')
-    }
-  }
+  // Current server from the point log and score
+  const currentServer = deriveCurrentServer(pointLog, score)
 
   // Doubles: which partner serves the next point (derived from the point log)
   const servingPlayer =
@@ -385,6 +271,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           {/* Right: Language Toggle, Share & Reload Buttons */}
           <div className="flex gap-2 ml-auto items-center">
             <LanguageToggle />
+            <a
+              href={`/${locale}/watch/${match.$id}`}
+              className="shrink-0 text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+            >
+              {t('watchLiteView')}
+            </a>
             <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
               <Share2 className="w-4 h-4 mr-2" />
               {t('share')}

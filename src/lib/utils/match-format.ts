@@ -1,13 +1,15 @@
 import type { MatchFormat } from '@/stores/matchStore'
 
-export type SetFormat = 'standard' | 'fast4' | 'pro'
+export type SetFormat = 'standard' | 'short' | 'fast4' | 'pro'
 
 /** Set length presets: games needed to win a set and the games score where a tiebreak is played. */
 export const SET_FORMATS: Record<SetFormat, { gamesPerSet: number; tiebreakAt: number }> = {
   standard: { gamesPerSet: 6, tiebreakAt: 6 },
+  /** ITF short sets: first to 4 games, tiebreak at 4-4. */
+  short: { gamesPerSet: 4, tiebreakAt: 4 },
   /** Fast4: first to 4 games, tiebreak at 3-3 (normally played with no-ad scoring). */
   fast4: { gamesPerSet: 4, tiebreakAt: 3 },
-  /** Pro set: first to 8 games (two clear), tiebreak at 8-8. */
+  /** Pro set (common club/USTA format, not an ITF-defined rule): first to 8 games, tiebreak at 8-8. */
   pro: { gamesPerSet: 8, tiebreakAt: 8 },
 }
 

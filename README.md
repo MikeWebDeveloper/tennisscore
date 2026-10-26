@@ -36,11 +36,11 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 - Internationalization: English + Czech
 - Mobile-first shell: single content tree, flat bottom tab bar, three themes (Dark / Dim / Light), `N` shortcut, print styles
 - Live match scoring with a point log as the single source of truth (3/5 sets, no-ad, tiebreaks, super tiebreak, advantage final set)
-- Formats: standard, **Fast4** (to 4, tiebreak at 3-3) and **pro set** (to 8, tiebreak at 8-8), chosen in the match wizard
+- Formats chosen in the match wizard: standard, **ITF short sets** (to 4, tiebreak at 4-4), **Fast4** (to 4, tiebreak at 3-3, no-ad) and **pro set** (to 8, tiebreak at 8-8; a common club/USTA format, not an ITF-defined one)
 - **Doubles**: four players, first server chosen at match setup, serving partner shown and changeable (recorded per point, no schema change)
 - **Offline-safe saving**: retried saves, in-progress match persisted in IndexedDB (localStorage fallback), "Saved / Saving / Not sent" indicator with automatic retry
 - Screen stays awake while scoring (Screen Wake Lock)
-- Live sharing with a public link, plus a shareable PNG **score card**
+- Live sharing with a public link, a **lightweight spectator view** at `/watch/<id>` (server-rendered, ~107 KB first load vs ~255 KB, refreshes with plain HTML), plus a shareable PNG **score card**
 - PWA: network-first service worker (no stale pages after deploys), install button (Android) / Add-to-Home-Screen hint (iPhone)
 - Player profiles with image upload/crop, statistics, soft delete (7-day retention)
 - Performance: first load ~200 KB (dashboard) / ~275 KB (live scoring), enforced by a CI bundle budget
@@ -52,9 +52,8 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 - Enhanced dashboard with analytics widgets
 
 ### 📋 Planned
-- Truly lighter spectator page (static HTML + cached polling). Today the public page is ~255 KB first load, dominated by the React/Next runtime; lazy-loading its panels was measured and gave no gain
 - Idempotent client IDs for points (today: persisted store + full-snapshot sync, which is already safe to repeat)
-- Short sets (ITF) once the exact tiebreak point is confirmed against the ITF text
+- Move the remaining `recharts` charts to a lighter library (uPlot)
 - Practice session tracking, social features
 
 ## Testing
@@ -63,3 +62,4 @@ TennisScore is a modern web application for tennis scoring, statistics tracking,
 - `npm run test:e2e:shell` – Playwright tests for the app shell (mobile/desktop layout, themes, shortcuts).
   Needs a running production build with the test auth bypass:
   `PLAYWRIGHT=1 DISABLE_AUTH_FOR_TEST=1 npm run build && npx next start -p 3100`
+- Lite spectator page end-to-end: `node tools/fake-appwrite.js`, build with `NEXT_PUBLIC_APPWRITE_ENDPOINT=http://localhost:4100/v1 NEXT_PUBLIC_APPWRITE_DATABASE_ID=d NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID=m APPWRITE_DATABASE_ID=d APPWRITE_MATCHES_COLLECTION_ID=m APPWRITE_PLAYERS_COLLECTION_ID=p`, start the app, then `FAKE_APPWRITE=1 npm run test:e2e:shell`

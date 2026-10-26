@@ -4,6 +4,13 @@ process.env.NEXT_PUBLIC_APPWRITE_PROJECT ||= 'test'
 process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID ||= 'test'
 process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID ||= 'test'
 process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID ||= 'test'
+// Server-side placeholders (never real secrets) so server-rendered modules can be imported in tests
+process.env.APPWRITE_API_KEY ||= 'test'
+process.env.APPWRITE_DATABASE_ID ||= 'test'
+process.env.APPWRITE_MATCHES_COLLECTION_ID ||= 'test'
+process.env.APPWRITE_PLAYERS_COLLECTION_ID ||= 'test'
+process.env.APPWRITE_PROFILE_PICTURES_BUCKET_ID ||= 'test'
+process.env.SESSION_SECRET ||= 'test-session-secret-0123456789abcdef0123456789'
 
 import '@testing-library/jest-dom'
 

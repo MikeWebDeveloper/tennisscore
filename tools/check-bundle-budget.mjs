@@ -13,6 +13,8 @@ const ROUTE_BUDGETS_KB = {
   '/[locale]/statistics': 340,
   // Public spectator page: dominated by the React/Next runtime; keep it from growing
   '/[locale]/live/[matchId]': 260,
+  // Lightweight spectator view: server-rendered, no client components of its own
+  '/[locale]/watch/[matchId]': 125,
 }
 
 const toKb = (n, unit) => (unit === 'MB' ? n * 1024 : unit === 'B' ? n / 1024 : n)

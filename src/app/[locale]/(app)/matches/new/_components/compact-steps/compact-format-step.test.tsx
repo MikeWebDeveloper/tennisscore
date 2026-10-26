@@ -28,11 +28,12 @@ describe('CompactFormatStep set length', () => {
   beforeEach(() => jest.useFakeTimers())
   afterEach(() => jest.useRealTimers())
 
-  it('offers standard, Fast4 and pro set, with the current one pressed', () => {
+  it('offers standard, short sets, Fast4 and pro set, with the current one pressed', () => {
     const { c } = render({ setFormat: 'fast4' })
     expect(buttonByText(c, 'common.setFormatStandard').getAttribute('aria-pressed')).toBe('false')
     expect(buttonByText(c, 'common.setFormatFast4').getAttribute('aria-pressed')).toBe('true')
     expect(buttonByText(c, 'common.setFormatPro').getAttribute('aria-pressed')).toBe('false')
+    expect(buttonByText(c, 'common.setFormatShort').getAttribute('aria-pressed')).toBe('false')
   })
 
   it('reports the chosen set length', () => {

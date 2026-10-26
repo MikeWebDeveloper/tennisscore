@@ -83,6 +83,22 @@ describe('Pro set (first to 8, tiebreak at 8-8)', () => {
   })
 })
 
+describe('ITF short sets (first to 4, tiebreak at 4-4)', () => {
+  const short: MatchFormat = { ...base, ...SET_FORMATS.short }
+  it('matches the legacy shortSets behaviour exactly', () => {
+    expect(getSetRules(short)).toEqual(getSetRules({ ...base, shortSets: true }))
+    for (const [a, b] of [[4, 0], [4, 2], [4, 3], [5, 4], [3, 3], [4, 4]]) {
+      expect(isSetWon(a, b, short)).toBe(isSetWon(a, b, { ...base, shortSets: true }))
+    }
+  })
+  it('plays a tiebreak at 4-4 (not 3-3) and wins the set 5-4', () => {
+    expect(shouldStartTiebreak(4, 4, short)).toBe(true)
+    expect(shouldStartTiebreak(3, 3, short)).toBe(false)
+    expect(isSetWon(4, 3, short)).toBe(false) // 4-3 is not enough: keep playing
+    expect(isSetWon(5, 4, short)).toBe(true)
+  })
+})
+
 describe('standard sets are unchanged', () => {
   it('still tiebreaks at 6-6 and wins at 6-4', () => {
     expect(shouldStartTiebreak(6, 6, base)).toBe(true)
@@ -114,6 +130,7 @@ describe('normalizeMatchFormat', () => {
     expect(getSetFormat({ gamesPerSet: 6, tiebreakAt: 6 })).toBe('standard')
     expect(getSetFormat({ gamesPerSet: 4, tiebreakAt: 3 })).toBe('fast4')
     expect(getSetFormat({ gamesPerSet: 8 })).toBe('pro')
+    expect(getSetFormat({ gamesPerSet: 4, tiebreakAt: 4 })).toBe('short')
     expect(getSetFormat({ gamesPerSet: 5, tiebreakAt: 5 })).toBe('standard')
   })
 })
