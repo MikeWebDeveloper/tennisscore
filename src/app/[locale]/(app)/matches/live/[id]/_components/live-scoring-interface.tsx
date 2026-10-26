@@ -35,6 +35,8 @@ import { cn, formatPlayerFromObject } from "@/lib/utils"
 import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
+import { useShallow } from "zustand/react/shallow"
+import { useWakeLock } from "@/hooks/use-wake-lock"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
@@ -385,6 +387,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const tCommon = useTranslations('common')
 
   // Use match store
+  // Narrow subscription: unrelated store updates must not re-render this large screen
   const {
     score,
     pointLog,
@@ -395,7 +398,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     awardPoint,
     undoLastPoint,
     setServer
-  } = useMatchStore()
+  } = useMatchStore(useShallow((state) => ({
+    score: state.score,
+    pointLog: state.pointLog,
+    currentServer: state.currentServer,
+    p1Streak: state.p1Streak,
+    p2Streak: state.p2Streak,
+    initializeMatch: state.initializeMatch,
+    awardPoint: state.awardPoint,
+    undoLastPoint: state.undoLastPoint,
+    setServer: state.setServer,
+  })))
+  useWakeLock(match.status === "In Progress")
 
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
