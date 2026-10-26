@@ -18,7 +18,7 @@ import { Activity } from "lucide-react"
 import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
-import { updateMatchScore } from "@/lib/actions/matches"
+import { syncMatchScore } from "@/lib/utils/sync-match-score"
 import { Player, PointDetail as LibPointDetail } from "@/lib/types"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -49,8 +49,11 @@ import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
 import { LazyLiveSetExportButton as LiveSetExportButton } from "@/components/features/lazy-match-export"
 
-// Confetti celebration function
-const triggerMatchWinConfetti = () => {
+// Confetti celebration function — canvas-confetti is loaded on demand so it
+// stays out of the initial live-scoring bundle (only fires on a match win).
+const triggerMatchWinConfetti = async () => {
+  const { default: confetti } = await import("canvas-confetti")
+
   // Main burst from the center
   confetti({
     particleCount: 100,
@@ -387,9 +390,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
-
-  // Use match store
-  // Narrow subscription: unrelated store updates must not re-render this large screen
+  
+  // Use match store with a shallow selector so this component only re-renders
+  // when the fields it actually uses change (not on every unrelated store write).
   const {
     score,
     pointLog,
@@ -680,6 +683,27 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     try {
       initializeMatch(matchData)
+
+      // Offline recovery: if the persisted store kept local points that never
+      // reached the server (reload/disconnect mid-match), push them once now.
+      const restored = useMatchStore.getState()
+      if (restored.needsResync) {
+        syncMatchScore(match.$id, {
+          score: restored.score,
+          pointLog: restored.pointLog,
+          ...(restored.startTime ? { startTime: restored.startTime } : {}),
+          ...(restored.endTime ? { endTime: restored.endTime } : {}),
+          ...(restored.setDurations ? { setDurations: restored.setDurations } : {}),
+          ...(restored.isMatchComplete && restored.winnerId
+            ? { status: 'Completed' as const, winnerId: restored.winnerId }
+            : {})
+        })
+          .then(() => useMatchStore.getState().clearResync())
+          .catch(() => {
+            // Leave the flag set; the next synced point will carry these too.
+          })
+      }
+
       if (existingPointLog.length === 0) {
         setServer(dbScore.server || 'p1')
       }
@@ -847,7 +871,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }
       }
 
-      await updateMatchScore(match.$id, updatePayload)
+      await syncMatchScore(match.$id, updatePayload)
 
       if (result.isMatchComplete && result.winnerId) {
         const winnerName = result.winnerId === match.playerOne.$id ? playerNames.p1 : playerNames.p2
@@ -919,8 +943,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     try {
       const result = undoLastPoint()
-
-      await updateMatchScore(match.$id, {
+      
+      await syncMatchScore(match.$id, {
         score: result.newScore,
         pointLog: result.newPointLog
       })
@@ -974,7 +998,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         updateData.duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
       }
 
-      await updateMatchScore(match.$id, {
+      await syncMatchScore(match.$id, {
         score: retiredScore,
         pointLog,
         ...updateData

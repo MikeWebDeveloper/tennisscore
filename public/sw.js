@@ -275,9 +275,15 @@ async function networkFirstWithOffline(request) {
   try {
     // Try network first
     const response = await fetch(request)
-    
-    // Cache successful responses
-    if (response.ok) {
+
+    // Never hand a redirected response back for a navigation: Safari throws
+    // "Response served by service worker has redirections" and breaks the installed PWA.
+    if (response.redirected && request.mode === 'navigate') {
+      return Response.redirect(response.url, 302)
+    }
+
+    // Cache successful, non-redirected responses
+    if (response.ok && !response.redirected) {
       const cache = await caches.open(DYNAMIC_CACHE)
       cache.put(request, response.clone())
     }

@@ -1,7 +1,12 @@
 import createNextIntlPlugin from 'next-intl/plugin'
+import withBundleAnalyzer from '@next/bundle-analyzer'
 
 // Build system optimization - Force new build with enhanced performance
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -16,6 +21,15 @@ const nextConfig = {
 
   // Experimental features compatible with Next.js 14
   experimental: {
+    // React Compiler 1.0 (stable) — automatic memoization, fewer re-renders
+    reactCompiler: true,
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      'date-fns',
+    ],
     serverActions: {
       bodySizeLimit: '12mb', // Profile picture upload optimization
     },
@@ -72,6 +86,8 @@ const nextConfig = {
 
   // Optimized image configuration for Appwrite
   images: {
+    // Serve modern formats for next/image (e.g. Appwrite avatars)
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -266,4 +282,4 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default bundleAnalyzer(withNextIntl(nextConfig)); 

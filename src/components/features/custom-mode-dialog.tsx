@@ -8,10 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useMatchStore, CustomModeConfig } from '@/stores/matchStore'
-import { BarChart3 } from "lucide-react"
-import { Clock } from "lucide-react"
-import { Target } from "lucide-react"
-import { Zap } from "lucide-react"
+import { useShallow } from 'zustand/react/shallow'
+import { BarChart3, Clock, Target, Zap } from 'lucide-react'
 
 interface CustomModeDialogProps {
   open: boolean
@@ -82,7 +80,9 @@ const CATEGORIES = {
 }
 
 export function CustomModeDialog({ open, onOpenChange }: CustomModeDialogProps) {
-  const { customMode, setCustomMode } = useMatchStore()
+  const { customMode, setCustomMode } = useMatchStore(
+    useShallow((s) => ({ customMode: s.customMode, setCustomMode: s.setCustomMode }))
+  )
   const [localConfig, setLocalConfig] = useState<CustomModeConfig>(customMode)
   const t = useTranslations('match')
 
