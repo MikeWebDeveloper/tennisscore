@@ -1,3 +1,10 @@
+// Placeholder public config so modules that validate env at import time can load in tests
+process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ||= 'https://example.invalid/v1'
+process.env.NEXT_PUBLIC_APPWRITE_PROJECT ||= 'test'
+process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID ||= 'test'
+process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID ||= 'test'
+process.env.NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID ||= 'test'
+
 import '@testing-library/jest-dom'
 
 // Mock Next.js router

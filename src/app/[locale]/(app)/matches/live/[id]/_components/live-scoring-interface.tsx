@@ -37,6 +37,7 @@ import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
 import { useShallow } from "zustand/react/shallow"
 import { useWakeLock } from "@/hooks/use-wake-lock"
+import { useDoublesServingPlayer } from "@/hooks/use-doubles-serving-player"
 import { isBreakPoint } from "@/lib/utils/tennis-scoring"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { MatchTimerDisplay } from "./MatchTimerDisplay"
@@ -410,6 +411,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     setServer: state.setServer,
   })))
   useWakeLock(match.status === "In Progress")
+  const servingPlayer = useDoublesServingPlayer(!!(match.playerThree && match.playerFour), pointLog, score, currentServer)
 
   // Local state for UI
   const [showShareDialog, setShowShareDialog] = useState(false)
@@ -1144,6 +1146,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerFourClub={match.playerFour?.club}
           score={score}
           currentServer={currentServer}
+          servingPlayer={servingPlayer}
           status={match.status}
           playerOneId={match.playerOne.$id}
           playerTwoId={match.playerTwo.$id}

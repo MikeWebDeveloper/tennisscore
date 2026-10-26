@@ -25,6 +25,7 @@ import { formatPlayerFromObject, formatDate } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { getTiebreakServer } from "@/lib/utils/tennis-scoring"
+import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-serving"
 import { useTranslations, useLocale } from "@/i18n"
 
 type Score = import("@/stores/matchStore").Score
@@ -317,6 +318,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     }
   }
 
+  // Doubles: which partner serves the next point (derived from the point log)
+  const servingPlayer =
+    match.playerThree && match.playerFour && currentServer
+      ? getNextDoublesServer(pointLog, currentServer, startsNewServeTurn(score))
+      : null
+
   const generateMetaTags = useCallback(() => {
     const title = `${formatPlayerFromObject(match.playerOne)} ${t('vs')} ${formatPlayerFromObject(match.playerTwo)} - ${t('liveTennisMatch')}`
     const description = `Follow the live tennis match between ${formatPlayerFromObject(match.playerOne)} and ${formatPlayerFromObject(match.playerTwo)}`
@@ -448,6 +455,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
+            servingPlayer={servingPlayer}
             matchFormat={{
               noAd: match.matchFormatParsed.noAd,
               sets: match.matchFormatParsed.sets as 1 | 3 | 5,
