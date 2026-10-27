@@ -813,7 +813,9 @@
     "playerImported": "Hráč importován",
     "czechImport": "Český import",
     "importFromCzechRankings": "Importovat z českého žebříčku",
-    "viewOnCztenis": "Zobrazit na cztenis.cz"
+    "viewOnCztenis": "Zobrazit na cztenis.cz",
+    "errorBoundaryDescription": "Došlo k neočekávané chybě. Zkuste to znovu nebo se vraťte na přehled.",
+    "backToDashboard": "Zpět na přehled"
   },
   "dashboard": {
     "welcomeBack": "Vítejte zpět",

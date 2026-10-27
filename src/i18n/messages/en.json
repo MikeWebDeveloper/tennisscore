@@ -784,7 +784,9 @@
     "playerImported": "Player Imported",
     "czechImport": "Czech Import",
     "importFromCzechRankings": "Import from Czech Rankings",
-    "viewOnCztenis": "View on cztenis.cz"
+    "viewOnCztenis": "View on cztenis.cz",
+    "errorBoundaryDescription": "An unexpected error occurred. You can try again or go back to the dashboard.",
+    "backToDashboard": "Back to dashboard"
   },
   "dashboard": {
     "welcomeBack": "Welcome back",
