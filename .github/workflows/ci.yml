@@ -52,6 +52,7 @@ jobs:
       PLAYWRIGHT: "1"
       DISABLE_AUTH_FOR_TEST: "1"
       FAKE_APPWRITE: "1"
+      PW_CHROMIUM_PATH: /usr/bin/google-chrome
       SESSION_SECRET: ci-placeholder-secret-0123456789abcdef0123456789
       NEXT_PUBLIC_APPWRITE_ENDPOINT: http://localhost:4100/v1
       NEXT_PUBLIC_APPWRITE_PROJECT: ci
@@ -71,8 +72,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-        timeout-minutes: 8
+      # Use the Chrome that ships on the runner instead of downloading Chromium (that download
+      # intermittently stalls on GitHub runners)
+      - run: google-chrome --version
       - name: Start fake Appwrite backend
         run: |
           node tools/fake-appwrite.js &
