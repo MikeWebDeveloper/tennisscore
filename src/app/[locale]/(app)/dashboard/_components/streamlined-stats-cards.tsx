@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"

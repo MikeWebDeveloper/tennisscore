@@ -355,6 +355,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
             Query.equal("playerOneId", playerId),
             Query.equal("playerTwoId", playerId)
           ]),
+          Query.select(MATCH_LIST_FIELDS), // Dashboard cards never use point logs or events
           Query.limit(1000) // Appwrite returns 25 by default, which silently truncated stats
         ]
       )

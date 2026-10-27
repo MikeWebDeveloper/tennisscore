@@ -93,3 +93,4 @@ routing-debug.png
 
 # Build artifacts
 tsconfig.tsbuildinfo
+.gstack/

@@ -84,6 +84,7 @@ export function AppShell({ children, user }: AppShellProps) {
         <Link
           key={item.href}
           href={item.href}
+          prefetch={!(item as { target?: string }).target}
           target={(item as { target?: string }).target}
           aria-current={isActive ? "page" : undefined}
           className={cn(

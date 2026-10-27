@@ -226,15 +226,6 @@ export async function getPlayersByUserPaginated(options: {
       queries
     )
 
-    // Get total count for pagination info
-    const totalResponse = await withRetry(() =>
-      databases.listDocuments(
-        env.APPWRITE_DATABASE_ID,
-        env.APPWRITE_PLAYERS_COLLECTION_ID,
-        [Query.equal("userId", user.$id)]
-      )
-    )
-
     let players = response.documents.map(player => {
       if (player.profilePictureId) {
         const url = `${env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${env.NEXT_PUBLIC_APPWRITE_PROJECT}`
@@ -248,7 +239,7 @@ export async function getPlayersByUserPaginated(options: {
       players = players.filter(player => !player.isMainPlayer)
     }
 
-    const total = totalResponse.total
+    const total = response.total
     const hasMore = (offset + limit) < total
 
     return { players, total, hasMore }
@@ -262,36 +253,27 @@ export async function getPlayersByUserPaginated(options: {
 async function getPlayersMainFirst(userId: string, limit: number): Promise<PaginatedPlayersResult> {
   const { databases } = await createAdminClient()
 
-  // First, get the main player
-  const mainPlayerResponse = await databases.listDocuments<Player>(
-    env.APPWRITE_DATABASE_ID,
-    env.APPWRITE_PLAYERS_COLLECTION_ID,
-    [Query.equal("userId", userId), Query.equal("isMainPlayer", true), Query.limit(1)]
-  )
-
-  // Then get other players (excluding main player)
-  const otherPlayersResponse = await databases.listDocuments<Player>(
-    env.APPWRITE_DATABASE_ID,
-    env.APPWRITE_PLAYERS_COLLECTION_ID,
-    [
-      Query.equal("userId", userId),
-      Query.equal("isMainPlayer", false),
-      Query.orderDesc("$createdAt"),
-      Query.limit(limit - (mainPlayerResponse.documents.length > 0 ? 1 : 0))
-    ]
-  )
-
-  // Get total count
-  const totalResponse = await withRetry(() =>
-    databases.listDocuments(
+  // Both reads are independent. Fetch one extra non-main player rather than
+  // making every navigation wait for the main-player lookup and a count query.
+  const [mainPlayerResponse, otherPlayersResponse] = await Promise.all([
+    withRetry(() => databases.listDocuments<Player>(
       env.APPWRITE_DATABASE_ID,
       env.APPWRITE_PLAYERS_COLLECTION_ID,
-      [Query.equal("userId", userId)]
-    )
-  )
+      [Query.equal("userId", userId), Query.equal("isMainPlayer", true), Query.limit(1)]
+    ), 'NAVIGATION'),
+    withRetry(() => databases.listDocuments<Player>(
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_PLAYERS_COLLECTION_ID,
+      [
+        Query.equal("userId", userId),
+        Query.equal("isMainPlayer", false),
+        Query.orderDesc("$createdAt"),
+        Query.limit(limit)
+      ]
+    ), 'NAVIGATION'),
+  ])
 
-  // Combine players with main player first
-  const allPlayers = [...mainPlayerResponse.documents, ...otherPlayersResponse.documents]
+  const allPlayers = [...mainPlayerResponse.documents, ...otherPlayersResponse.documents].slice(0, limit)
 
   const players = allPlayers.map(player => {
     if (player.profilePictureId) {
@@ -301,7 +283,7 @@ async function getPlayersMainFirst(userId: string, limit: number): Promise<Pagin
     return player
   }) as Player[]
 
-  const total = totalResponse.total
+  const total = mainPlayerResponse.total + otherPlayersResponse.total
   const hasMore = limit < total
 
   return { players, total, hasMore }

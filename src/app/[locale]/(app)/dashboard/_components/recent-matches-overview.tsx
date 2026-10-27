@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import { ArrowRight, Play } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { useLocale, useTranslations } from "@/i18n"
