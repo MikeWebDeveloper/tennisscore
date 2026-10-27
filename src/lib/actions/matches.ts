@@ -1,5 +1,6 @@
 "use server"
 
+import { withNormalizedStatus } from "@/lib/utils/match-status"
 import { ID, Query } from "node-appwrite"
 import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser, isAdmin } from "@/lib/auth"
@@ -367,8 +368,9 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
       )
     )
 
-    // Filter out soft deleted matches client-side for backward compatibility
-    const matches = response.documents.filter(match => !match.isDeleted)
+    // Filter out soft deleted matches client-side for backward compatibility; the dashboard
+    // compares 'completed' / 'in-progress', the database stores "Completed" / "In Progress"
+    const matches = response.documents.filter(match => !match.isDeleted).map(match => withNormalizedStatus(match as unknown as Match))
 
     return matches as unknown as Match[]
   } catch (error) {

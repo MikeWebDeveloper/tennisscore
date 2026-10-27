@@ -2,12 +2,10 @@
 
 import { useState } from "react"
 import { Link } from "@/i18n/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Trophy } from "lucide-react"
-import { Eye } from "lucide-react"
 import { Users } from "lucide-react"
 import { Share2 } from "lucide-react"
 import { Search } from "lucide-react"
@@ -117,74 +115,6 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
     )
   }
 
-  const formatScore = (match: MatchesListProps['matches'][0]) => {
-    const { scoreParsed, status } = match
-    
-    // Handle missing or invalid scoreParsed
-    if (!scoreParsed) {
-      return "0-0"
-    }
-
-    // For completed matches, show the final set scores
-    if (status === 'Completed' && scoreParsed.sets && scoreParsed.sets.length > 0) {
-      const setsDisplay = scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
-      return setsDisplay
-    }
-
-    // For in-progress matches
-    if (status === 'In Progress') {
-      // If we have completed sets, show them plus current game score
-      if (scoreParsed.sets && scoreParsed.sets.length > 0) {
-        const completedSets = scoreParsed.sets.map((set: { p1: number; p2: number }) => `${set.p1}-${set.p2}`).join(", ")
-        
-        // Add current set/game status if available
-        if (scoreParsed.games && Array.isArray(scoreParsed.games) && scoreParsed.games.length >= 2) {
-          const currentGameScore = `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
-          return `${completedSets}, ${currentGameScore}`
-        }
-        
-        return completedSets
-      }
-      
-      // If no sets completed yet, show current game score
-      if (scoreParsed.games && Array.isArray(scoreParsed.games) && scoreParsed.games.length >= 2) {
-        return `${scoreParsed.games[0]}-${scoreParsed.games[1]}`
-      }
-    }
-
-    // Fallback
-    return "0-0"
-  }
-
-  const formatMatchTitle = (match: MatchesListProps['matches'][0]) => {
-    const isDoubles = match.playerThreeId && match.playerFourId
-    
-    if (isDoubles) {
-      return (
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <Users className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{t("doublesMatch")}</span>
-          </div>
-          <div className="text-sm font-medium leading-tight">
-            {match.playerOneName} / {match.playerThreeName}
-          </div>
-          <div className="text-xs text-muted-foreground">{t("vs")}</div>
-          <div className="text-sm font-medium leading-tight">
-            {match.playerTwoName} / {match.playerFourName}
-          </div>
-        </div>
-      )
-    }
-    
-    return `${match.playerOneName} ${t("vs")} ${match.playerTwoName}`
-  }
-
-  const getCardHeight = (match: MatchesListProps['matches'][0]) => {
-    const isDoubles = match.playerThreeId && match.playerFourId
-    return isDoubles ? "h-auto min-h-[200px]" : ""
-  }
-
   const handleShareMatch = async (matchId: string, playerOneName: string, playerTwoName: string) => {
     const shareUrl = `${window.location.origin}/live/${matchId}`
     const title = `${playerOneName} ${t("vs")} ${playerTwoName} - ${t("tennisMatchResults")}`
@@ -267,7 +197,7 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <AnimatePresence mode="popLayout">
-            {filteredMatches.map((match) => (
+            {filteredMatches.map((match, index) => (
               <motion.div
                 key={match.$id}
                 layout
@@ -282,76 +212,73 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
                   ease: "easeInOut"
                 }}
               >
-                <Card className={`hover:shadow-md transition-shadow ${getCardHeight(match)}`}>
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-base leading-tight flex-1">
-                {formatMatchTitle(match)}
-              </CardTitle>
-              <Badge 
-                variant={match.status === "Completed" ? "default" : "secondary"}
-                className="text-xs shrink-0"
-              >
-                {match.status === "Completed" ? t("completed") : t("inProgress")}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">
-                  {match.status === "Completed" ? `${t("final")}:` : `${t("score")}:`}
-                </span>
-                <span className={`font-mono text-sm ${match.status === "Completed" ? "font-bold" : ""}`}>
-                  {formatScore(match)}
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">{commonT("date")}:</span>
-                <span className="text-sm">{new Date(match.matchDate).toLocaleDateString()}</span>
-              </div>
-              
-              {match.winnerName && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{t("winner")}:</span>
-                  <span className="flex items-center gap-1 text-sm font-medium text-green-600">
-                    <Trophy className="h-3 w-3" />
-                    {match.winnerName}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 mt-3 pt-2 border-t">
-                <Button variant="outline" size="sm" asChild className="flex-1 h-8 text-xs">
-                  <Link href={`/matches/${match.$id}`}>
-                    <Eye className="h-3 w-3 mr-1" />
-                    {commonT('view')}
+                <Card className="surface-hover rise overflow-hidden p-0" style={{ "--i": index } as React.CSSProperties}>
+                  <Link href={`/matches/${match.$id}`} className="block px-4 pb-3 pt-4">
+                    <div className="mb-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-2">
+                        {match.status === "Completed" ? (
+                          <span className="rounded-full bg-foreground/10 px-2 py-0.5 font-medium text-foreground">{t("completed")}</span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 rounded-full bg-brand/15 px-2 py-0.5 font-medium text-brand">
+                            <span className="live-dot h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
+                            {t("inProgress")}
+                          </span>
+                        )}
+                        {match.playerThreeId && match.playerFourId && (
+                          <span className="flex items-center gap-1"><Users className="h-3 w-3" aria-hidden="true" />{t("doublesMatch")}</span>
+                        )}
+                      </span>
+                      <span>{new Date(match.matchDate).toLocaleDateString()}</span>
+                    </div>
+                    {([1, 2] as const).map(side => {
+                      const doubles = !!(match.playerThreeId && match.playerFourId)
+                      const name = side === 1
+                        ? (doubles ? `${match.playerOneName} / ${match.playerThreeName}` : match.playerOneName)
+                        : (doubles ? `${match.playerTwoName} / ${match.playerFourName}` : match.playerTwoName)
+                      const winnerId = side === 1 ? match.playerOneId : match.playerTwoId
+                      const isWinner = match.status === "Completed" && match.winnerId === winnerId
+                      const sets = match.scoreParsed?.sets ?? []
+                      const live = match.status !== "Completed" ? match.scoreParsed?.games : undefined
+                      return (
+                        <div key={side} className="flex items-center justify-between gap-3 py-1">
+                          <span className={`flex min-w-0 items-center gap-1.5 text-sm ${isWinner ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                            {isWinner && <Trophy className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden="true" />}
+                            <span className="truncate">{name}</span>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-1.5 font-mono text-sm tabular-nums">
+                            {sets.map((set, i) => {
+                              const mine = side === 1 ? set.p1 : set.p2
+                              const theirs = side === 1 ? set.p2 : set.p1
+                              return <span key={i} className={`w-5 text-center ${mine > theirs ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{mine}</span>
+                            })}
+                            {live && live.length >= 2 && (
+                              <span className="w-6 rounded-md bg-brand/15 py-0.5 text-center font-semibold text-brand">{live[side - 1]}</span>
+                            )}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </Link>
-                </Button>
-                
-                {/* Share button for all matches (both completed and in progress) */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleShareMatch(match.$id, match.playerOneName, match.playerTwoName)}
-                  className="h-8 px-2"
-                  title={t("shareMatchResults")}
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-                
-                <DeleteMatchButton 
-                  matchId={match.$id}
-                  playerNames={{
-                    p1: match.playerOneName,
-                    p2: match.playerTwoName,
-                  }}
-                  onDeleteSuccess={() => handleDeleteMatch(match.$id)}
-                />
-              </div>
-            </div>
-          </CardContent>
+                  <div className="flex items-center justify-end gap-1 border-t border-foreground/[0.06] px-2 py-1.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleShareMatch(match.$id, match.playerOneName, match.playerTwoName)}
+                      className="h-8 w-8 text-muted-foreground"
+                      title={t("shareMatchResults")}
+                      aria-label={t("shareMatchResults")}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <DeleteMatchButton
+                      matchId={match.$id}
+                      playerNames={{
+                        p1: match.playerOneName,
+                        p2: match.playerTwoName,
+                      }}
+                      onDeleteSuccess={() => handleDeleteMatch(match.$id)}
+                    />
+                  </div>
                 </Card>
               </motion.div>
             ))}

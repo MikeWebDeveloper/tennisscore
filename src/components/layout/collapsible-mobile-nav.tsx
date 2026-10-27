@@ -39,7 +39,9 @@ export function MobileTabBar({ navigation }: MobileTabBarProps) {
           isActive ? "text-foreground" : "text-muted-foreground"
         )}
       >
-        <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} aria-hidden="true" />
+        <span className={cn("flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200", isActive && "bg-brand/15 text-brand")}>
+          <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} aria-hidden="true" />
+        </span>
         <span className="max-w-full truncate px-1">{item.label}</span>
       </Link>
     )
@@ -48,7 +50,7 @@ export function MobileTabBar({ navigation }: MobileTabBarProps) {
   return (
     <nav
       aria-label={t('mainContent')}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t glass pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <div className="mx-auto flex h-16 max-w-md items-stretch">
         {left.map(renderTab)}

@@ -22,6 +22,12 @@ const config: Config = {
         'xs': '475px',
       },
       colors: {
+        brand: {
+          DEFAULT: "rgb(var(--brand) / <alpha-value>)",
+          foreground: "rgb(var(--brand-foreground) / <alpha-value>)",
+        },
+        win: "rgb(var(--win) / <alpha-value>)",
+        loss: "rgb(var(--loss) / <alpha-value>)",
         border: "rgb(var(--border))",
         input: "rgb(var(--input))",
         ring: "rgb(var(--ring))",

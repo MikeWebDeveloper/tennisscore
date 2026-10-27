@@ -270,32 +270,26 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Fixed Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">
-        <div className="flex items-center gap-3">
+    <div className="mx-auto flex w-full max-w-md flex-col">
+      <div className="rise px-1 pb-3">
+        <div className="flex items-center gap-2">
           <Link href="/matches">
-            <Button variant="ghost" size="icon" className="h-10 w-10">
+            <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={t("back")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-lg font-bold">{t("newMatch")}</h1>
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight">{t("newMatch")}</h1>
             <p className="text-xs text-muted-foreground">{t("step")} {currentStep}/{totalSteps}</p>
           </div>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="flex items-center gap-1">
+        {/* Progress: one segmented bar that always fits the width */}
+        <div className="mt-3 flex items-center gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={totalSteps} aria-valuenow={currentStep}>
           {Array.from({ length: totalSteps }, (_, index) => (
             <div
               key={index}
-              className={`h-2 w-6 rounded-full transition-all duration-300 ${index + 1 === currentStep
-                ? 'bg-primary'
-                : index + 1 < currentStep
-                  ? 'bg-primary/60'
-                  : 'bg-muted'
-                }`}
+              className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${index + 1 <= currentStep ? 'bg-brand' : 'bg-foreground/10'}`}
             />
           ))}
         </div>

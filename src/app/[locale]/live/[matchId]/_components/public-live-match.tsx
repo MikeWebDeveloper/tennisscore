@@ -266,24 +266,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
                 {match.tournamentName}
               </span>
             )}
-            <h1 className="text-lg font-bold text-white whitespace-nowrap">{t('liveTennis')}</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-foreground whitespace-nowrap">{t('liveTennis')}</h1>
           </div>
           {/* Right: Language Toggle, Share & Reload Buttons */}
           <div className="flex gap-2 ml-auto items-center">
             <LanguageToggle />
             <a
               href={`/${locale}/watch/${match.$id}`}
-              className="shrink-0 text-xs font-medium text-white/80 underline underline-offset-2 hover:text-white"
+              className="shrink-0 text-xs font-medium text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
             >
               {t('watchLiteView')}
             </a>
-            <Button variant="outline" size="sm" onClick={shareMatch} className="shrink-0 hover:bg-white/10">
-              <Share2 className="w-4 h-4 mr-2" />
-              {t('share')}
+            <Button variant="outline" size="icon" onClick={shareMatch} className="shrink-0" title={t('share')} aria-label={t('share')}>
+              <Share2 className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={refreshMatch} className="shrink-0 hover:bg-white/10">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              {tCommon('refresh')}
+            <Button variant="outline" size="icon" onClick={refreshMatch} className="shrink-0" title={tCommon('refresh')} aria-label={tCommon('refresh')}>
+              <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
         </motion.div>
@@ -325,10 +323,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerThreeName={playerNames.p3}
             playerFourName={playerNames.p4}
             playerOneAvatar={
-              <PlayerAvatar player={match.playerOne} className="h-4 w-4 sm:h-6 sm:w-6" />
+              <PlayerAvatar player={match.playerOne} className="h-7 w-7 text-[10px]" />
             }
             playerTwoAvatar={
-              <PlayerAvatar player={match.playerTwo} className="h-4 w-4 sm:h-6 sm:w-6" />
+              <PlayerAvatar player={match.playerTwo} className="h-7 w-7 text-[10px]" />
             }
             playerOneYearOfBirth={match.playerOne.yearOfBirth}
             playerTwoYearOfBirth={match.playerTwo.yearOfBirth}

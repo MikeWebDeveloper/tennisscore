@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { X } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { useDeleteMatchMutation, useRestoreMatchMutation } from "@/lib/tanstack-query/mutations/matches"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
@@ -83,12 +83,14 @@ export function DeleteMatchButton({ matchId, playerNames, onDeleteSuccess }: Del
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:bg-loss/10 hover:text-loss"
+          title={t('deleteMatch')}
+          aria-label={t('deleteMatch')}
         >
-          <X className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

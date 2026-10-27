@@ -23,7 +23,7 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
   const t = useTranslations('common')
   
   return (
-    <Card className={`relative group hover:shadow-md transition-all duration-200 w-full ${player.isMainPlayer ? 'bg-primary/10 border-2 border-primary' : ''}`}>
+    <Card className={`surface-hover relative group w-full ${player.isMainPlayer ? 'border-brand/50 bg-brand/[0.07]' : ''}`}>
       {/* Action buttons in corner */}
       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
         <Button 

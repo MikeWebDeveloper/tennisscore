@@ -122,7 +122,7 @@ export function AppShell({ children, user }: AppShellProps) {
     <HydrationErrorBoundary>
       <div className="min-h-dvh bg-background">
         {/* Desktop sidebar */}
-        <aside className="fixed left-0 top-0 z-40 hidden h-dvh w-60 flex-col border-r border-border bg-card md:flex">
+        <aside className="fixed left-0 top-0 z-40 hidden h-dvh w-60 flex-col border-r border-foreground/10 bg-card/60 md:flex">
           <div className="flex h-14 items-center border-b border-border px-5">
             <Link href="/dashboard" className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
@@ -169,7 +169,7 @@ export function AppShell({ children, user }: AppShellProps) {
         </aside>
 
         {/* Mobile header */}
-        <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 px-2 pt-[env(safe-area-inset-top)] backdrop-blur md:hidden box-content">
+        <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b glass px-2 pt-[env(safe-area-inset-top)] md:hidden box-content">
           <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} aria-label={t('openNavigationMenu')}>
             <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>

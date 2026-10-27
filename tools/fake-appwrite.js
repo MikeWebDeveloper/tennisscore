@@ -24,22 +24,57 @@ const samples = () => ({
   // Fresh "points only" match for live-scoring scenarios
   'm/match4': { ...base, $id: 'match4', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress', detailLevel: 'points',
     score: emptyScore, matchFormat: fmt(), pointLog: [] },
-  'p/pl1': { $id: 'pl1', userId: 'test-user', firstName: 'Michal', lastName: 'Latal' },
+  'p/pl1': { $id: 'pl1', userId: 'test-user', firstName: 'Michal', lastName: 'Latal', isMainPlayer: true, $createdAt: '2026-10-01T10:00:00.000Z' },
   'p/pl2': { $id: 'pl2', userId: 'test-user', firstName: 'Petr', lastName: 'Dvořák' },
   'p/pl3': { $id: 'pl3', userId: 'test-user', firstName: 'Karel', lastName: 'Novotný' },
   'p/pl4': { $id: 'pl4', userId: 'test-user', firstName: 'Jan', lastName: 'Procházka' },
 })
 
-let docs = samples()
+// A season of finished matches so list, dashboard and statistics screens have data to show
+const history = () => {
+  const rows = [
+    ['pl2', [[6, 4], [6, 3]], 'pl1'], ['pl3', [[4, 6], [6, 2], [7, 6]], 'pl1'], ['pl4', [[3, 6], [4, 6]], 'pl4'],
+    ['pl2', [[6, 1], [6, 2]], 'pl1'], ['pl3', [[7, 5], [6, 7], [6, 4]], 'pl1'], ['pl4', [[6, 4], [3, 6], [4, 6]], 'pl4'],
+    ['pl2', [[2, 6], [6, 4], [6, 3]], 'pl1'], ['pl3', [[6, 0], [6, 1]], 'pl1'],
+  ]
+  const out = {}
+  rows.forEach(([opp, sets, winner], i) => {
+    const id = 'hist' + (i + 1), d = new Date(Date.UTC(2026, 9, 25 - i * 3, 17, 0)).toISOString()
+    out['m/' + id] = { ...base, $id: id, $createdAt: d, matchDate: d, playerOneId: 'pl1', playerTwoId: opp, status: 'Completed', winnerId: winner,
+      score: JSON.stringify({ sets, games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }), matchFormat: fmt(), pointLog: [],
+      tournamentName: i % 2 ? 'Club Cup' : 'Friendly', startTime: d, endTime: new Date(Date.parse(d) + 5400000).toISOString() }
+  })
+  return out
+}
+Object.assign(samples, {})
+let docs = { ...samples(), ...history() }
 let failSaves = false
 const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)) }
 
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost')
-  if (url.pathname === '/__reset') { docs = samples(); failSaves = false; return json(res, 200, { ok: true }) }
+  if (url.pathname === '/__reset') { docs = { ...samples(), ...history() }; failSaves = false; return json(res, 200, { ok: true }) }
   if (url.pathname === '/__fail') { failSaves = url.searchParams.get('on') === '1'; return json(res, 200, { failSaves }) }
   const dbg = url.pathname.match(/^\/__doc\/([^/]+)\/([^/]+)$/)
   if (dbg) return docs[`${dbg[1]}/${dbg[2]}`] ? json(res, 200, docs[`${dbg[1]}/${dbg[2]}`]) : json(res, 404, {})
+
+  const list = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/?$/)
+  if (list && req.method === 'GET') {
+    let limit = 25, offset = 0
+    const filters = []
+    for (const q of url.searchParams.getAll('queries[]')) {
+      try {
+        const { method, attribute, values } = JSON.parse(q)
+        if (method === 'limit') limit = values[0]
+        if (method === 'offset') offset = values[0]
+        if (method === 'equal' && attribute && !attribute.startsWith('$')) filters.push((d) => values.includes(d[attribute]))
+        if (method === 'notEqual' && attribute) filters.push((d) => !values.includes(d[attribute]))
+      } catch { /* ignore */ }
+    }
+    const all = Object.entries(docs).filter(([k]) => k.startsWith(list[1] + '/')).map(([, v]) => v).filter((d) => filters.every((f) => f(d)))
+      .sort((a, b) => String(b.matchDate || b.$createdAt).localeCompare(String(a.matchDate || a.$createdAt)))
+    return json(res, 200, { total: all.length, documents: all.slice(offset, offset + limit) })
+  }
 
   const m = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/([^/?]+)/)
   const key = m && `${m[1]}/${m[2]}`

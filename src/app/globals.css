@@ -46,6 +46,10 @@
     --chart-3: 128 128 128;
     --chart-4: 160 160 160;
     --chart-5: 192 192 192;
+    --brand: 77 124 15;
+    --brand-foreground: 255 255 255;
+    --win: 21 128 61;
+    --loss: 220 38 38;
   }
 
   .dark {
@@ -75,6 +79,10 @@
     --chart-3: 128 128 128;
     --chart-4: 96 96 96;
     --chart-5: 64 64 64;
+    --brand: 190 242 70;
+    --brand-foreground: 10 10 11;
+    --win: 74 222 128;
+    --loss: 248 113 113;
   }
 
   .dim {
@@ -104,6 +112,10 @@
     --chart-3: 140 147 165;
     --chart-4: 104 111 130;
     --chart-5: 78 84 102;
+    --brand: 190 242 70;
+    --brand-foreground: 20 24 18;
+    --win: 74 222 128;
+    --loss: 248 113 113;
   }
 }
 
@@ -548,4 +560,81 @@ h1, h2, h3, h4, h5, h6 {
   aside, header, nav[aria-label], [data-print-hidden] { display: none !important; }
   main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
   body, html { background: #fff !important; color: #000 !important; }
+}
+
+
+/* ---------- Glass + motion system ---------- */
+@layer components {
+  /* Soft colour wash behind everything; one fixed layer, no per-card blur */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60rem 36rem at 85% -10%, rgb(var(--brand) / 0.10), transparent 60%),
+      radial-gradient(48rem 32rem at -10% 20%, rgb(99 102 241 / 0.08), transparent 60%);
+  }
+
+  /* Fixed bars only (header, tab bar, drawer): the one place backdrop blur is worth its cost */
+  .glass {
+    background: rgb(var(--background) / 0.62);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    border-color: rgb(var(--foreground) / 0.08);
+  }
+
+  /* Cards: translucent gradient + hairline + inner highlight, no blur so scrolling stays smooth */
+  .surface {
+    background: linear-gradient(180deg, rgb(var(--card) / 0.82), rgb(var(--card) / 0.58));
+    border: 1px solid rgb(var(--foreground) / 0.09);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 10px 30px -18px rgb(0 0 0 / 0.45);
+  }
+  .surface-hover {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  @media (hover: hover) {
+    .surface-hover:hover {
+      transform: translateY(-2px);
+      border-color: rgb(var(--foreground) / 0.18);
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 16px 36px -18px rgb(0 0 0 / 0.55);
+    }
+  }
+  .press {
+    transition: transform 0.12s ease;
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+
+  /* Staggered entrance: set style={{ "--i": index }} */
+  .rise {
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(min(var(--i, 0), 8) * 55ms);
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .live-dot {
+    animation: livePulse 1.6s ease-out infinite;
+  }
+  @keyframes livePulse {
+    0% { box-shadow: 0 0 0 0 rgb(var(--brand) / 0.55); }
+    100% { box-shadow: 0 0 0 8px rgb(var(--brand) / 0); }
+  }
+
+  /* Win-rate ring: --p is 0-100 */
+  .ring {
+    background: conic-gradient(rgb(var(--brand)) calc(var(--p, 0) * 1%), rgb(var(--foreground) / 0.1) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .live-dot { animation: none; }
+  .surface-hover, .press { transition: none; }
 }

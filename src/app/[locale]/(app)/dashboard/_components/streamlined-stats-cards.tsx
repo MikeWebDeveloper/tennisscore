@@ -1,157 +1,100 @@
 "use client"
 
-import { motion } from '@/lib/framer-motion-config'
-import { TrendingUp } from "lucide-react"
-import { Trophy } from "lucide-react"
-import { Target } from "lucide-react"
-import { Clock } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import Link from "next/link"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
-import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 interface StreamlinedStatsCardsProps {
   matches: Match[]
   mainPlayer: Player
 }
 
+const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+}
+
 export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsCardsProps) {
   const t = useTranslations('dashboard')
-  const router = useRouter()
 
-  // Filter for singles matches only and handle status casing
-  const singlesMatches = matches.filter(m => !m.isDoubles)
-  const completedMatches = singlesMatches.filter(m => m.status === 'completed')
-  const wonMatches = completedMatches.filter(m => m.winnerId === mainPlayer.$id)
-  const winRate = completedMatches.length > 0 ? Math.round((wonMatches.length / completedMatches.length) * 100) : 0
-  
-  // Calculate recent form (last 5 matches)
-  const recentMatches = completedMatches.slice(-5)
-  const recentWins = recentMatches.filter(m => m.winnerId === mainPlayer.$id).length
-  const recentForm = recentMatches.length > 0 ? Math.round((recentWins / recentMatches.length) * 100) : 0
+  const singles = matches.filter(m => !m.isDoubles)
+  const completed = singles
+    .filter(m => m.status === 'completed')
+    .sort((a, b) => new Date(a.matchDate || a.$createdAt).getTime() - new Date(b.matchDate || b.$createdAt).getTime())
+  const won = completed.filter(m => m.winnerId === mainPlayer.$id)
+  const winRate = completed.length > 0 ? Math.round((won.length / completed.length) * 100) : 0
 
-  // Calculate average match duration
-  const matchesWithDuration = completedMatches.filter(m => m.startTime && m.endTime)
-  const avgDuration = matchesWithDuration.length > 0 
-    ? Math.round(matchesWithDuration.reduce((sum, m) => {
-        const start = new Date(m.startTime!).getTime()
-        const end = new Date(m.endTime!).getTime()
-        return sum + ((end - start) / (1000 * 60)) // Convert to minutes
-      }, 0) / matchesWithDuration.length)
+  const lastFive = completed.slice(-5)
+  const lastFiveWins = lastFive.filter(m => m.winnerId === mainPlayer.$id).length
+  const form = lastFive.length > 0 ? Math.round((lastFiveWins / lastFive.length) * 100) : 0
+
+  const timed = completed.filter(m => m.startTime && m.endTime)
+  const avgDuration = timed.length > 0
+    ? Math.round(timed.reduce((sum, m) => sum + (new Date(m.endTime!).getTime() - new Date(m.startTime!).getTime()) / 60000, 0) / timed.length)
     : 0
+  const inProgress = singles.filter(m => m.status === 'in-progress').length
 
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
-  }
-
-  const handleRedirectToStats = () => {
-    router.push('/statistics')
-  }
-
-  const cardVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    hover: { y: -4, transition: { duration: 0.2 } }
-  }
-
-  const statsCards = [
-    {
-      icon: Trophy,
-      title: t('winRate'),
-      value: `${winRate}%`,
-      subtitle: `${wonMatches.length}/${completedMatches.length} ${t('matchesWon')}`,
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10'
-    },
-    {
-      icon: TrendingUp,
-      title: t('recentForm'),
-      value: `${recentForm}%`,
-      subtitle: t('last5Matches'),
-      color: recentForm >= winRate ? 'text-green-500' : 'text-orange-500',
-      bgColor: recentForm >= winRate ? 'bg-green-500/10' : 'bg-orange-500/10'
-    },
-    {
-      icon: Target,
-      title: t('totalMatches'),
-      value: completedMatches.length.toString(),
-      subtitle: singlesMatches.filter(m => m.status === 'in-progress').length > 0 
-        ? t('inProgressWithCount', { count: singlesMatches.filter(m => m.status === 'in-progress').length })
-        : t('completedMatches'),
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
-    },
-    {
-      icon: Clock,
-      title: t('avgDuration'),
-      value: avgDuration > 0 ? formatDuration(avgDuration) : '--',
-      subtitle: t('perMatch'),
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10'
-    }
-  ]
+  const tile = "surface surface-hover press rise flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4"
+  const label = "text-xs font-medium uppercase tracking-wide text-muted-foreground"
+  const sub = "text-xs text-muted-foreground"
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-      {statsCards.map((card, index) => {
-        const Icon = card.icon
-        return (
-          <motion.div
-            key={card.title}
-            variants={cardVariants}
-            initial="initial"
-            animate="animate"
-            whileHover="hover"
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <Card 
-              className={`group cursor-pointer transition-all duration-200 hover:shadow-sm border hover:border-primary/20 ${card.bgColor} h-[120px] sm:h-[130px] md:h-[140px]`}
-              onClick={handleRedirectToStats}
-            >
-              <CardContent className="p-2 sm:p-3 md:p-4 text-center h-full flex flex-col justify-between">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className={`p-1.5 sm:p-2 rounded-lg w-fit mx-auto mb-1.5 sm:mb-2 md:mb-3 ${card.bgColor} border ${card.color}`}>
-                    <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${card.color}`} />
-                  </div>
-                  <div className="w-full">
-                    <h4 className={`font-medium text-xs sm:text-sm ${card.color} group-hover:opacity-80 transition-opacity mb-1 text-center leading-tight break-words overflow-hidden`} 
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical' as const,
-                          wordWrap: 'break-word',
-                          maxHeight: '2.5rem'
-                        }}>
-                      {card.title}
-                    </h4>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center justify-center flex-1 min-h-0">
-                  <div className="flex items-baseline justify-center gap-1 mb-1">
-                    <span className="text-base sm:text-lg font-bold text-foreground truncate">
-                      {card.value}
-                    </span>
-                  </div>
-                  <div className="w-full px-1">
-                    <p className="text-xs text-muted-foreground leading-tight text-center break-words overflow-hidden"
-                       style={{
-                         display: '-webkit-box',
-                         WebkitLineClamp: 2,
-                         WebkitBoxOrient: 'vertical' as const,
-                         wordWrap: 'break-word',
-                         maxHeight: '2rem'
-                       }}>
-                      {card.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )
-      })}
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Link href="/statistics" className={tile} style={{ "--i": 2 } as React.CSSProperties}>
+        <div className="flex items-start justify-between gap-2">
+          <span className={label}>{t('winRate')}</span>
+          <span className="relative h-11 w-11 shrink-0">
+            <span className="ring absolute inset-0 rounded-full" style={{ "--p": winRate } as React.CSSProperties} aria-hidden="true" />
+          </span>
+        </div>
+        <div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{winRate}%</div>
+          <div className={sub}>{won.length}/{completed.length} {t('matchesWon')}</div>
+        </div>
+      </Link>
+
+      <Link href="/statistics" className={tile} style={{ "--i": 3 } as React.CSSProperties}>
+        <span className={label}>{t('recentForm')}</span>
+        <div>
+          <div className="mb-2 flex gap-1.5" aria-hidden="true">
+            {Array.from({ length: 5 }, (_, i) => {
+              const match = lastFive[lastFive.length - 5 + i]
+              const result = match ? (match.winnerId === mainPlayer.$id ? 'win' : 'loss') : 'none'
+              return (
+                <span
+                  key={i}
+                  className={cn(
+                    "h-2.5 flex-1 rounded-full",
+                    result === 'win' && "bg-win",
+                    result === 'loss' && "bg-loss/70",
+                    result === 'none' && "bg-foreground/10"
+                  )}
+                />
+              )
+            })}
+          </div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{form}%</div>
+          <div className={sub}>{t('last5Matches')}</div>
+        </div>
+      </Link>
+
+      <Link href="/matches" className={tile} style={{ "--i": 4 } as React.CSSProperties}>
+        <span className={label}>{t('totalMatches')}</span>
+        <div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{completed.length}</div>
+          <div className={sub}>{inProgress > 0 ? t('inProgressWithCount', { count: inProgress }) : t('completedMatches')}</div>
+        </div>
+      </Link>
+
+      <Link href="/statistics" className={tile} style={{ "--i": 5 } as React.CSSProperties}>
+        <span className={label}>{t('avgDuration')}</span>
+        <div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{avgDuration > 0 ? formatDuration(avgDuration) : '--'}</div>
+          <div className={sub}>{t('perMatch')}</div>
+        </div>
+      </Link>
     </div>
   )
 }

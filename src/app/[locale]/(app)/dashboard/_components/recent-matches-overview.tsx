@@ -1,17 +1,9 @@
 "use client"
 
-import { motion } from '@/lib/framer-motion-config'
-import { Calendar } from "lucide-react"
-import { Clock } from "lucide-react"
-import { Trophy } from "lucide-react"
-import { ArrowRight } from "lucide-react"
-import { Play } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { ArrowRight, Play } from "lucide-react"
 import { Match, Player } from "@/lib/types"
-import { useTranslations } from "@/i18n"
-import { useRouter } from "next/navigation"
+import { useLocale, useTranslations } from "@/i18n"
 import { formatPlayerFromObject } from "@/lib/utils"
 
 interface RecentMatchesOverviewProps {
@@ -24,208 +16,93 @@ export function RecentMatchesOverview({ matches, mainPlayer, playersMap }: Recen
   const t = useTranslations('dashboard')
   const matchT = useTranslations('match')
   const commonT = useTranslations('common')
-  const router = useRouter()
+  const locale = useLocale()
 
-  // Get last 3 matches (completed and in-progress)
-  const recentMatches = matches
-    .sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime())
-    .slice(0, 3)
+  const recent = [...matches]
+    .sort((a, b) => new Date(b.matchDate || b.$createdAt).getTime() - new Date(a.matchDate || a.$createdAt).getTime())
+    .slice(0, 4)
 
-  const getOpponentName = (match: Match) => {
-    const isPlayerOne = match.playerOneId === mainPlayer.$id
-    const opponentId = isPlayerOne ? match.playerTwoId : match.playerOneId
-    
+  const opponentName = (match: Match) => {
+    const opponentId = match.playerOneId === mainPlayer.$id ? match.playerTwoId : match.playerOneId
     if (opponentId.startsWith('anonymous-')) {
-      return opponentId.includes('player-1') ? 'Player 1' : 
-             opponentId.includes('player-2') ? 'Player 2' : 'Anonymous'
+      return opponentId.includes('player-1') ? 'Player 1' : opponentId.includes('player-2') ? 'Player 2' : 'Anonymous'
     }
-    
     const opponent = playersMap.get(opponentId)
-    return opponent ? formatPlayerFromObject(opponent) : 'Unknown Player'
+    return opponent ? formatPlayerFromObject(opponent) : '—'
   }
 
-  const getMatchResult = (match: Match) => {
-    if (match.status !== 'completed' || !match.winnerId) {
-      return null
-    }
-    
-    const isWinner = match.winnerId === mainPlayer.$id
-    return {
-      isWinner,
-      label: isWinner ? commonT('won') : commonT('lost'),
-      color: isWinner ? 'text-green-600' : 'text-red-600',
-      bgColor: isWinner ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'
-    }
-  }
-
-  const formatMatchScore = (match: Match) => {
-    if (match.status !== 'completed') return null
-    
+  const setScores = (match: Match): [number, number][] => {
     try {
       const score = JSON.parse(match.score)
-      if (score.sets && Array.isArray(score.sets) && score.sets.length > 0) {
-        return score.sets.map((set: number[]) => `${set[0]}-${set[1]}`).join(', ')
-      }
-    } catch (e) {
-      console.error('Failed to parse score:', e)
-    }
-    return null
+      if (Array.isArray(score.sets)) return score.sets.map((set: number[]) => [set[0], set[1]])
+    } catch { /* unscored match */ }
+    return []
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays === 1) return commonT('yesterday')
-    if (diffDays <= 7) return `${diffDays} days ago`
-    return date.toLocaleDateString()
-  }
-
-  const handleViewMatch = (matchId: string) => {
-    router.push(`/matches/${matchId}`)
-  }
-
-  const handleViewAllMatches = () => {
-    router.push('/matches')
-  }
-
-  const handleResumeMatch = (matchId: string) => {
-    router.push(`/matches/live/${matchId}`)
-  }
-
-  if (recentMatches.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-      >
-        <Card className="bg-gradient-to-br from-background to-muted/30 border-muted">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <Calendar className="h-4 w-4 text-primary" />
-              </div>
-              {t('recentMatches')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground mb-4">{t('noMatchesYet')}</p>
-            <Button onClick={() => router.push('/matches/new')} className="gap-2">
-              <Play className="h-4 w-4" />
-              {t('startNewMatch')}
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
+  const relativeDate = (iso: string) => {
+    const days = Math.round((new Date(iso).getTime() - Date.now()) / 86400000)
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(days, 'day')
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.3 }}
-    >
-      <Card className="bg-gradient-to-br from-background to-muted/30 border-muted">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-lg">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <Calendar className="h-4 w-4 text-primary" />
-              </div>
-              {t('recentMatches')}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleViewAllMatches}
-              className="text-xs gap-1 text-muted-foreground hover:text-primary"
-            >
-              {t('viewAll')}
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {recentMatches.map((match, index) => {
-            const result = getMatchResult(match)
-            const score = formatMatchScore(match)
-            const opponentName = getOpponentName(match)
-            
+    <section className="surface rise rounded-2xl p-2" style={{ "--i": 6 } as React.CSSProperties}>
+      <div className="flex items-center justify-between px-3 pb-1 pt-2">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">{t('recentMatches')}</h2>
+        <Link href="/matches" className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
+          {t('viewAll')}
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+        </Link>
+      </div>
+
+      {recent.length === 0 ? (
+        <div className="px-3 py-8 text-center">
+          <p className="mb-4 text-sm text-muted-foreground">{t('noMatchesYet')}</p>
+          <Link href="/matches/new" className="press inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+            <Play className="h-4 w-4" aria-hidden="true" />
+            {t('startNewMatch')}
+          </Link>
+        </div>
+      ) : (
+        <ul>
+          {recent.map(match => {
+            const live = match.status === 'in-progress'
+            const finished = match.status === 'completed' && !!match.winnerId
+            const isWin = match.winnerId === mainPlayer.$id
+            const sets = setScores(match)
             return (
-              <motion.div
-                key={match.$id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 * index }}
-                className="group flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => handleViewMatch(match.$id)}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
-                        vs {opponentName}
-                      </h4>
-                      {match.status === 'in-progress' && (
-                        <Badge 
-                          variant="secondary" 
-                          className="text-xs px-2 py-0 bg-orange-500/10 text-orange-600 border-orange-500/20"
-                        >
-                          {matchT('inProgress')}
-                        </Badge>
-                      )}
-                    </div>
-                    {result && (
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs px-2 py-0 ${result.bgColor} ${result.color}`}
-                      >
-                        {result.label}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDate(match.$createdAt)}
-                      </div>
-                      {score && (
-                        <div className="flex items-center gap-1">
-                          <Trophy className="h-3 w-3" />
-                          {score}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {match.status === 'in-progress' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleResumeMatch(match.$id)
-                        }}
-                        className="text-xs px-2 py-1 h-auto gap-1 text-primary hover:bg-primary/10"
-                      >
-                        <Play className="h-3 w-3" />
-                        {matchT('resume')}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
-              </motion.div>
+              <li key={match.$id}>
+                <Link
+                  href={live ? `/matches/live/${match.$id}` : `/matches/${match.$id}`}
+                  className="press group flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-foreground/[0.04]"
+                >
+                  <span
+                    className={
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold " +
+                      (live ? "bg-brand/15 text-brand" : finished ? (isWin ? "bg-win/15 text-win" : "bg-loss/15 text-loss") : "bg-foreground/10 text-muted-foreground")
+                    }
+                  >
+                    {live ? <span className="live-dot h-2.5 w-2.5 rounded-full bg-brand" aria-hidden="true" /> : finished ? (isWin ? commonT('won')[0] : commonT('lost')[0]) : '·'}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-foreground">{opponentName(match)}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {live ? matchT('inProgress') : relativeDate(match.matchDate || match.$createdAt)}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 gap-2 font-mono text-sm tabular-nums" aria-label={sets.map(s => `${s[0]}-${s[1]}`).join(', ')}>
+                    {sets.map((s, i) => (
+                      <span key={i} className="flex flex-col items-center leading-tight">
+                        <span className={s[0] > s[1] ? "font-semibold text-foreground" : "text-muted-foreground"}>{s[0]}</span>
+                        <span className={s[1] > s[0] ? "font-semibold text-foreground" : "text-muted-foreground"}>{s[1]}</span>
+                      </span>
+                    ))}
+                  </span>
+                </Link>
+              </li>
             )
           })}
-        </CardContent>
-      </Card>
-    </motion.div>
+        </ul>
+      )}
+    </section>
   )
 }
