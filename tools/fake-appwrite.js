@@ -1,10 +1,16 @@
-// Tiny fake Appwrite REST API for local end-to-end checks (singles, doubles and finished sample matches).
-// Usage: node tools/fake-appwrite.js   then build/start the app with NEXT_PUBLIC_APPWRITE_ENDPOINT=http://localhost:4100/v1 and database ids d / m / p.
+// Tiny fake Appwrite REST API for local end-to-end checks.
+// Usage: node tools/fake-appwrite.js   then build/start the app with
+//   NEXT_PUBLIC_APPWRITE_ENDPOINT=http://localhost:4100/v1 and database ids d (db) / m (matches) / p (players).
+// Extras for tests:  GET /__doc/<collection>/<id>  stored document,  GET /__reset  restore samples,
+//                    GET /__fail?on=1|0  make saves (PATCH) fail with 500.
 const http = require('http')
+
 const pts = (arr) => arr.map((o, i) => JSON.stringify({ id: String(i), pointNumber: i + 1, setNumber: 1, gameNumber: o.g, winner: o.w, server: o.s, isTiebreak: false, ...(o.sp ? { serverPlayer: o.sp } : {}) }))
-const base = { $id: '', $createdAt: '2026-10-26T10:00:00.000Z', $updatedAt: '2026-10-26T10:00:00.000Z', $permissions: [], $databaseId: 'd', $collectionId: 'm', matchDate: '2026-10-26T10:00:00.000Z', userId: 'u', tournamentName: 'Club Cup' }
+const base = { $id: '', $createdAt: '2026-10-26T10:00:00.000Z', $updatedAt: '2026-10-26T10:00:00.000Z', $permissions: [], $databaseId: 'd', $collectionId: 'm', matchDate: '2026-10-26T10:00:00.000Z', userId: 'test-user', tournamentName: 'Club Cup' }
 const fmt = (extra = {}) => JSON.stringify({ sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: 'standard', gamesPerSet: 6, tiebreakAt: 6, ...extra })
-const docs = {
+const emptyScore = JSON.stringify({ sets: [], games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] })
+
+const samples = () => ({
   'm/match1': { ...base, $id: 'match1', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress',
     score: JSON.stringify({ sets: [[6, 4]], games: [2, 1], points: [2, 3], isTiebreak: false, tiebreakPoints: [0, 0] }),
     matchFormat: fmt(), pointLog: pts([{ g: 1, w: 'p1', s: 'p1' }, { g: 1, w: 'p1', s: 'p1' }]) },
@@ -15,14 +21,39 @@ const docs = {
   'm/match3': { ...base, $id: 'match3', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'Completed', winnerId: 'pl2',
     score: JSON.stringify({ sets: [[4, 6], [3, 6]], games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }),
     matchFormat: fmt(), pointLog: [] },
-  'p/pl1': { $id: 'pl1', firstName: 'Michal', lastName: 'Latal' },
-  'p/pl2': { $id: 'pl2', firstName: 'Petr', lastName: 'Dvořák' },
-  'p/pl3': { $id: 'pl3', firstName: 'Karel', lastName: 'Novotný' },
-  'p/pl4': { $id: 'pl4', firstName: 'Jan', lastName: 'Procházka' },
-}
+  // Fresh "points only" match for live-scoring scenarios
+  'm/match4': { ...base, $id: 'match4', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress', detailLevel: 'points',
+    score: emptyScore, matchFormat: fmt(), pointLog: [] },
+  'p/pl1': { $id: 'pl1', userId: 'test-user', firstName: 'Michal', lastName: 'Latal' },
+  'p/pl2': { $id: 'pl2', userId: 'test-user', firstName: 'Petr', lastName: 'Dvořák' },
+  'p/pl3': { $id: 'pl3', userId: 'test-user', firstName: 'Karel', lastName: 'Novotný' },
+  'p/pl4': { $id: 'pl4', userId: 'test-user', firstName: 'Jan', lastName: 'Procházka' },
+})
+
+let docs = samples()
+let failSaves = false
+const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)) }
+
 http.createServer((req, res) => {
-  const m = req.url.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/([^/?]+)/)
+  const url = new URL(req.url, 'http://localhost')
+  if (url.pathname === '/__reset') { docs = samples(); failSaves = false; return json(res, 200, { ok: true }) }
+  if (url.pathname === '/__fail') { failSaves = url.searchParams.get('on') === '1'; return json(res, 200, { failSaves }) }
+  const dbg = url.pathname.match(/^\/__doc\/([^/]+)\/([^/]+)$/)
+  if (dbg) return docs[`${dbg[1]}/${dbg[2]}`] ? json(res, 200, docs[`${dbg[1]}/${dbg[2]}`]) : json(res, 404, {})
+
+  const m = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/([^/?]+)/)
   const key = m && `${m[1]}/${m[2]}`
-  if (key && docs[key]) { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify(docs[key])) }
-  res.writeHead(404, { 'content-type': 'application/json' }); res.end(JSON.stringify({ message: 'not found', code: 404, type: 'document_not_found' }))
+  if (!key || !docs[key]) return json(res, 404, { message: 'not found', code: 404, type: 'document_not_found' })
+
+  if (req.method === 'PATCH') {
+    let body = ''
+    req.on('data', (c) => { body += c })
+    req.on('end', () => {
+      if (failSaves) return json(res, 500, { message: 'simulated outage', code: 500, type: 'general_server_error' })
+      try { docs[key] = { ...docs[key], ...(JSON.parse(body || '{}').data || {}) } } catch { /* ignore */ }
+      json(res, 200, docs[key])
+    })
+    return
+  }
+  json(res, 200, docs[key])
 }).listen(4100, () => console.log('fake appwrite on 4100'))

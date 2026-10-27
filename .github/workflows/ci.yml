@@ -42,3 +42,54 @@ jobs:
         run: npm run build 2>&1 | tee build.log
       - name: Bundle budget
         run: npm run check:bundle -- build.log
+
+  e2e:
+    name: Browser tests (fake Appwrite backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Test-only values: auth bypass + a local fake Appwrite API (tools/fake-appwrite.js)
+      PLAYWRIGHT: "1"
+      DISABLE_AUTH_FOR_TEST: "1"
+      FAKE_APPWRITE: "1"
+      SESSION_SECRET: ci-placeholder-secret-0123456789abcdef0123456789
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: http://localhost:4100/v1
+      NEXT_PUBLIC_APPWRITE_PROJECT: ci
+      NEXT_PUBLIC_APPWRITE_PROJECT_ID: ci
+      APPWRITE_API_KEY: ci
+      NEXT_PUBLIC_APPWRITE_DATABASE_ID: d
+      APPWRITE_DATABASE_ID: d
+      NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID: m
+      APPWRITE_MATCHES_COLLECTION_ID: m
+      APPWRITE_PLAYERS_COLLECTION_ID: p
+      NEXT_PUBLIC_APPWRITE_PROFILE_PICTURES_BUCKET_ID: b
+      APPWRITE_PROFILE_PICTURES_BUCKET_ID: b
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Start fake Appwrite backend
+        run: |
+          node tools/fake-appwrite.js &
+          for i in $(seq 1 20); do curl -sf http://localhost:4100/__reset && break; sleep 1; done
+      - name: Build
+        run: npm run build
+      - name: Start the app (standalone server, as in production)
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          PORT=3100 HOSTNAME=0.0.0.0 node .next/standalone/server.js &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:3100/en/login && break; sleep 1; done
+      - name: Browser tests
+        run: npx playwright test -c playwright.config.shell.ts
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results
+          if-no-files-found: ignore

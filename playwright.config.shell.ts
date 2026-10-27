@@ -7,7 +7,7 @@ import { defineConfig } from '@playwright/test'
  */
 export default defineConfig({
   testDir: 'tests',
-  testMatch: /(shell|watch)\.spec\.ts/,
+  testMatch: /(shell|watch|live-offline)\.spec\.ts/,
   reporter: 'list',
   workers: 2,
   use: { baseURL: process.env.BASE_URL || 'http://localhost:3100', headless: true, launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH || undefined } },
