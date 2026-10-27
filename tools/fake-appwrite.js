@@ -67,6 +67,10 @@ http.createServer((req, res) => {
         const { method, attribute, values } = JSON.parse(q)
         if (method === 'limit') limit = values[0]
         if (method === 'offset') offset = values[0]
+        if (method === 'select') {
+          const bad = values.find((v) => v.startsWith('$') && !['$id', '$createdAt', '$updatedAt', '$permissions'].includes(v))
+          if (bad) return json(res, 400, { message: `Invalid query: Attribute not found in schema: ${bad}`, code: 400, type: 'general_query_invalid' })
+        }
         if (method === 'equal' && attribute && !attribute.startsWith('$')) filters.push((d) => values.includes(d[attribute]))
         if (method === 'notEqual' && attribute) filters.push((d) => !values.includes(d[attribute]))
       } catch { /* ignore */ }

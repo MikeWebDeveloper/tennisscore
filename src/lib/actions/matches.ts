@@ -1,6 +1,7 @@
 "use server"
 
 import { withNormalizedStatus } from "@/lib/utils/match-status"
+import { MATCH_LIST_FIELDS } from "@/lib/utils/match-list-fields"
 import { ID, Query } from "node-appwrite"
 import { createAdminClient, withRetry } from "@/lib/appwrite-server"
 import { getCurrentUser, isAdmin } from "@/lib/auth"
@@ -9,15 +10,6 @@ import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition,
 import { getPlayerById } from "./players"
 import { env } from "@/lib/env"
 
-// Columns the matches list renders; everything else (point log, events) is fetched on demand.
-const MATCH_LIST_FIELDS = [
-  "$id", "$createdAt", "$updatedAt", "$permissions", "$collectionId", "$databaseId",
-  "userId", "playerOneId", "playerTwoId", "playerThreeId", "playerFourId",
-  "playerOneData", "playerTwoData", "playerThreeData", "playerFourData",
-  "matchDate", "matchFormat", "status", "winnerId", "score", "isDoubles",
-  "retirementReason", "detailLevel", "tournamentName",
-  "startTime", "endTime", "setDurations", "isDeleted", "deletedAt", "deletedBy",
-]
 const MATCH_COUNT_LIMIT = 5000
 
 export async function createMatch(matchData: {
