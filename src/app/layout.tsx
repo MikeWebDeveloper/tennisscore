@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+export { viewport } from "./viewport";
+
 export const metadata: Metadata = {
   title: "TennisScore - Tennis Scoring & Statistics",
   description: "Professional tennis scoring and statistics tracking for players and coaches",

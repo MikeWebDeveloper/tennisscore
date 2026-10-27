@@ -146,9 +146,10 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* 16px form controls stop iOS Safari zooming the page on focus */
-  @media (max-width: 767px) {
-    input, select, textarea {
+  /* Keep touch-device form controls at 16px, including landscape phones.
+     The root selector must beat text-sm/text-xs utility specificity. */
+  @media (max-width: 767px), (hover: none) and (pointer: coarse) {
+    :root input, :root select, :root textarea {
       font-size: 16px;
     }
   }
