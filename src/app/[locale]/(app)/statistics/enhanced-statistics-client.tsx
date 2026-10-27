@@ -4,13 +4,11 @@ import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Activity } from "lucide-react"
 import { Trophy } from "lucide-react"
 import { Target } from "lucide-react"
 import { Brain } from "lucide-react"
-import { BarChart3 } from "lucide-react"
 import { Download } from "lucide-react"
 import { Filter } from "lucide-react"
 import { X } from "lucide-react"
@@ -219,7 +217,8 @@ function calculateDominanceScore(matches: Match[], playerId: string) {
     (stats.firstServePercentage * 0.3) + (stats.returnPointsPct * 0.4)
   
   return {
-    dominanceScore: Math.round(dominance / 5.7 * 100), // Normalize to 0-100 scale
+    // Weights sum to 4.7 and every input is a 0-100 percentage, so this is a weighted average
+    dominanceScore: Math.max(0, Math.min(100, Math.round(dominance / 4.7))),
     pointsWonPct: Math.round(serviceWinPct), // Use service win % as proxy
     gamesWonPct: Math.round(winRate), // Use match win rate as proxy
     setsWonPct: Math.round(winRate) // Use match win rate as proxy
@@ -344,36 +343,30 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
 
   return (
     <div className="space-y-6">
-      {/* Header - Mobile Optimized */}
-      <div className="space-y-3">
-        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-          <div className="flex items-center gap-2 xs:gap-3">
-            <BarChart3 className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-            <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100">
-              {t("detailedStatistics")}
-            </h1>
-          </div>
-          <div className="flex gap-2">
-            {/* Mobile Filter Toggle with Touch Target */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2 lg:hidden min-h-[44px] px-3" 
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4" />
-              <span className="hidden xs:inline">{t("filters")}</span>
-              {hasFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">!</Badge>}
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2 min-h-[44px] px-3">
-              <Download className="h-4 w-4" />
-              <span className="hidden xs:inline">{t("exportData")}</span>
-            </Button>
-          </div>
+      {/* Header */}
+      <div className="rise flex items-start justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            {t("detailedStatistics")}
+          </h1>
+          <p className="text-sm text-muted-foreground">{t("deepDiveAnalytics")}</p>
         </div>
-        <p className="text-sm xs:text-base sm:text-lg text-gray-700 dark:text-slate-400">
-          {t("deepDiveAnalytics")}
-        </p>
+        <div className="flex shrink-0 gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="relative h-10 w-10 lg:hidden"
+            onClick={() => setShowFilters(!showFilters)}
+            title={t("filters")}
+            aria-label={t("filters")}
+          >
+            <Filter className="h-4 w-4" />
+            {hasFilters && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden="true" />}
+          </Button>
+          <Button variant="outline" size="icon" className="h-10 w-10" title={t("exportData")} aria-label={t("exportData")}>
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Key Performance Indicators - Mobile First */}
@@ -384,11 +377,11 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("dominanceScore")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.dominance.dominanceScore}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("outOf", { value: 500 })}</p>
+                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("outOf")} 100</p>
               </div>
               <Trophy className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-yellow-500 flex-shrink-0" />
             </div>
-            <Progress value={Math.min((stats.dominance.dominanceScore || 0) / 5, 100)} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />
+            <Progress value={stats.dominance.dominanceScore || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />
           </CardContent>
         </Card>
 
