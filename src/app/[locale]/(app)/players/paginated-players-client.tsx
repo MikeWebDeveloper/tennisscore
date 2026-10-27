@@ -228,7 +228,7 @@ export function PaginatedPlayersClient({
           </div>
           
           <div className="flex items-center gap-2">
-            {players.length > 0 && (
+            {(players.length > 0 || searchQuery) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -244,7 +244,7 @@ export function PaginatedPlayersClient({
         </div>
 
         {/* Search and Results */}
-        {players.length > 0 && (
+        {(players.length > 0 || searchQuery) && (
           <div className="space-y-4 mb-6">
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
@@ -265,7 +265,7 @@ export function PaginatedPlayersClient({
           </div>
         )}
 
-        {players.length === 0 ? (
+        {players.length === 0 && !searchQuery ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">{commonT("noPlayersYet")}</p>
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />

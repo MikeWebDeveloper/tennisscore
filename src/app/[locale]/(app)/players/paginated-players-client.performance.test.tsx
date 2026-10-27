@@ -43,3 +43,28 @@ it('keeps server-provided players without an empty search, but fetches typed and
   act(() => root.unmount())
   container.remove()
 })
+
+it('keeps an empty-result search editable and lets the user clear it', async () => {
+  jest.mocked(getPlayersByUserPaginated)
+    .mockResolvedValueOnce({ players: [], total: 0, hasMore: false })
+    .mockResolvedValueOnce({ players, total: 1, hasMore: false })
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  act(() => root.render(<PaginatedPlayersClient initialPlayers={players} initialTotal={1} initialHasMore={false} />))
+  act(() => {
+    const input = container.querySelector('input')!
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'no-such-player')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await act(async () => { jest.advanceTimersByTime(350) })
+  expect(container.querySelector('input[role="searchbox"]')).not.toBeNull()
+  const clear = Array.from(container.querySelectorAll('button')).find(button => button.textContent === 'clearSearch')!
+  expect(clear).toBeDefined()
+  act(() => clear.click())
+  await act(async () => { jest.advanceTimersByTime(350) })
+  expect(getPlayersByUserPaginated).toHaveBeenLastCalledWith(expect.objectContaining({ searchQuery: undefined }))
+  expect(container.textContent).toContain('Loaded players')
+  act(() => root.unmount())
+  container.remove()
+})
