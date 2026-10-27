@@ -32,8 +32,8 @@ export function parseDbScore(scoreString: string | undefined): Score {
           return [s[0] || 0, s[1] || 0] as [number, number]
         } else if (s && typeof s === 'object' && s !== null) {
           // Legacy format: {player1: 6, player2: 4}
-          const legacySet = s as { player1?: number; player2?: number; [key: number]: number }
-          return [legacySet.player1 || legacySet[0] || 0, legacySet.player2 || legacySet[1] || 0] as [number, number]
+          const legacySet = s as { player1?: number; player2?: number; p1?: number; p2?: number; [key: number]: number }
+          return [legacySet.player1 ?? legacySet.p1 ?? legacySet[0] ?? 0, legacySet.player2 ?? legacySet.p2 ?? legacySet[1] ?? 0] as [number, number]
         }
         return [0, 0] as [number, number]
       })

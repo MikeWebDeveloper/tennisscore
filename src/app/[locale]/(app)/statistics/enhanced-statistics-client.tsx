@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { parseDbScore } from "@/lib/utils/db-score"
 import { motion, AnimatePresence } from '@/lib/framer-motion-config'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -107,7 +108,7 @@ function calculatePressurePerformance(matches: Match[], playerId: string) {
     // Check for tiebreaks and deciding sets
     if (match.score && typeof match.score === 'string') {
       try {
-        const scoreData = JSON.parse(match.score)
+        const scoreData = { sets: parseDbScore(match.score).sets.map(([p1, p2]) => ({ p1, p2 })) }
         if (scoreData.sets) {
           scoreData.sets.forEach((set: { p1: number; p2: number }) => {
             // Check for tiebreak (7-6 or 6-7)
@@ -161,7 +162,7 @@ function calculateMentalToughness(matches: Match[], playerId: string) {
   matches.forEach(match => {
     if (match.score && typeof match.score === 'string') {
       try {
-        const scoreData = JSON.parse(match.score)
+        const scoreData = { sets: parseDbScore(match.score).sets.map(([p1, p2]) => ({ p1, p2 })) }
         if (scoreData.sets && scoreData.sets.length >= 2) {
           // Check for comebacks (lost first set but won match)
           if (scoreData.sets[0].p1 < scoreData.sets[0].p2 && match.winnerId === playerId) {
@@ -271,7 +272,7 @@ function analyzeMatchPatterns(matches: Match[], playerId: string) {
     // Set analysis
     if (match.score && typeof match.score === 'string') {
       try {
-        const scoreData = JSON.parse(match.score)
+        const scoreData = { sets: parseDbScore(match.score).sets.map(([p1, p2]) => ({ p1, p2 })) }
         if (scoreData.sets) {
           totalSets += scoreData.sets.length
           
