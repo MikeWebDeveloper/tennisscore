@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
-import { getMainPlayer, getPlayersByUser } from "@/lib/actions/players"
+import { getPlayersByUser } from "@/lib/actions/players"
 import { getMatchesByPlayer } from "@/lib/actions/matches"
 import { Match } from "@/lib/types"
 import DashboardClient from "./dashboard-client"
@@ -12,11 +12,9 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  // Get main player and all players for dashboard
-  const [mainPlayer, players] = await Promise.all([
-    getMainPlayer(),
-    getPlayersByUser()
-  ])
+  // The main player is one of the user's players, so a single query covers both
+  const players = await getPlayersByUser()
+  const mainPlayer = players.find(player => player.isMainPlayer) ?? null
   
   // If no main player is set, we'll show a prompt to set one
   let matches: Match[] = []

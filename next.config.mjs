@@ -23,6 +23,8 @@ const nextConfig = {
   experimental: {
     // React Compiler 1.0 (stable) — automatic memoization, fewer re-renders
     reactCompiler: true,
+    // Keep visited pages in the client router cache so tab switches and Back are instant
+    staleTimes: { dynamic: 30, static: 180 },
     optimizePackageImports: [
       '@radix-ui/react-icons',
       'lucide-react',

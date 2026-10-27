@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation"
+import { cache } from "react"
 import { getSession } from "./session"
 
-export async function getCurrentUser() {
+// Memoised per request: the layout, the page and every action it calls share one lookup
+export const getCurrentUser = cache(async function getCurrentUser() {
   try {
     // Test bypass for E2E runs
     if (typeof process !== 'undefined' && (process.env.PLAYWRIGHT === '1' || process.env.DISABLE_AUTH_FOR_TEST === '1')) {
@@ -31,7 +33,7 @@ export async function getCurrentUser() {
   } catch {
     return null
   }
-}
+})
 
 export async function requireAuth() {
   const user = await getCurrentUser()
