@@ -908,6 +908,22 @@
     "noDataLabel": "Žádná data",
     "performanceBreakdownTitle": "Rozpis výkonu",
     "whatsNewUpdates": {
+      "themes": {
+        "title": "Tři motivy",
+        "description": "Tmavý, tlumený a světlý motiv s přepínačem v záhlaví a nabídkou instalace na plochu telefonu."
+      },
+      "offlineSync": {
+        "title": "Skórování i při slabém signálu",
+        "description": "Body se nejdřív uloží v zařízení a odešlou se, jakmile se vrátí připojení, s jasným indikátorem uloženo / neodesláno."
+      },
+      "newFormats": {
+        "title": "Fast4, pro set a podání ve čtyřhře",
+        "description": "Při zakládání zápasu zvolte délku setu a prvního podávajícího a ve čtyřhře uvidíte, který z partnerů podává."
+      },
+      "fasterApp": {
+        "title": "Rychlejší procházení",
+        "description": "Lehčí stránky, uložené přepínání záložek a rychlejší cesta k databázi dělají z pohybu v aplikaci okamžitou věc."
+      },
       "enhancedTranslationSystem": {
         "title": "Vylepšený překladový systém",
         "description": "Kompletní podpora českého jazyka s vylepšenou tenisovou terminologií a lepšími uživatelskými zkušenostmi na všech stránkách."

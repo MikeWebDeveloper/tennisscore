@@ -876,6 +876,22 @@
     "noDataLabel": "No Data",
     "performanceBreakdownTitle": "Performance Breakdown",
     "whatsNewUpdates": {
+      "themes": {
+        "title": "Three themes",
+        "description": "Dark, Dim and Light, with a one-tap switch in the header and an install prompt for your home screen."
+      },
+      "offlineSync": {
+        "title": "Scoring that survives bad signal",
+        "description": "Points are saved on your device first and sent when the connection returns, with a clear saved / unsent indicator."
+      },
+      "newFormats": {
+        "title": "Fast4, pro set and doubles serving",
+        "description": "Pick the set length when creating a match, choose who serves first, and see which partner is serving in doubles."
+      },
+      "fasterApp": {
+        "title": "Faster navigation",
+        "description": "Lighter pages, cached tab switches and a quicker database path make moving around the app feel instant."
+      },
       "enhancedTranslationSystem": {
         "title": "Enhanced Translation System",
         "description": "Complete Czech language support with improved tennis terminology and better user experience across all pages."
