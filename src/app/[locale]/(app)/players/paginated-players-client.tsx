@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import { motion } from '@/lib/framer-motion-config'
 import { Player } from "@/lib/types"
 import { deletePlayer, getPlayersByUserPaginated } from "@/lib/actions/players"
@@ -188,14 +188,18 @@ export function PaginatedPlayersClient({
     }
   }, [sortOrder])
 
-  // Debounce search calls
+  // The server already supplied the initial unfiltered page. Only search after
+  // the criteria change; clearing a previous search must still fetch that page.
+  const lastSearch = useRef({ query: "", sortOrder: 'none' as SortOrder })
   useEffect(() => {
+    if (lastSearch.current.query === searchQuery && lastSearch.current.sortOrder === sortOrder) return
     const timeoutId = setTimeout(() => {
+      lastSearch.current = { query: searchQuery, sortOrder }
       handleSearch(searchQuery)
     }, 300)
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, handleSearch])
+  }, [searchQuery, sortOrder, handleSearch])
 
   return (
     <motion.div 
