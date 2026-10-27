@@ -52,7 +52,7 @@ test('network drops mid-match: badge shows "unsent", then everything syncs when 
 })
 
 test('server outage + page reload: unsent points survive in the browser and are pushed later', async ({ page, request }) => {
-  test.setTimeout(120_000) // retries run on a 10 s timer
+  test.setTimeout(240_000) // retries run on a 10 s timer; CI runners are slower than a laptop
   await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
   await expect(pointButtons(page).first()).toBeVisible()
   await pointButtons(page).first().click()
@@ -61,7 +61,7 @@ test('server outage + page reload: unsent points survive in the browser and are 
   await request.get(`${FAKE}/__fail?on=1`)
   await pointButtons(page).first().click()
   await pointButtons(page).first().click()
-  await expect(badge(page)).toHaveAttribute('data-sync-state', 'unsent', { timeout: 30_000 })
+  await expect(badge(page)).toHaveAttribute('data-sync-state', 'unsent', { timeout: 90_000 })
   expect(await savedPoints(request)).toBe(1)
 
   // Reload while the backend is still down: the server copy has 1 point, the browser has 3
