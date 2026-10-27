@@ -7,9 +7,13 @@ export const SET_FORMATS: Record<SetFormat, { gamesPerSet: number; tiebreakAt: n
   standard: { gamesPerSet: 6, tiebreakAt: 6 },
   /** ITF short sets: first to 4 games, tiebreak at 4-4. */
   short: { gamesPerSet: 4, tiebreakAt: 4 },
-  /** Fast4: first to 4 games, tiebreak at 3-3 (normally played with no-ad scoring). */
+  /** Fast4: first to 4 games, tiebreak at 3-3 (normally played with no-ad scoring). Source: LTA Fast4 scoring format rules (Jan 2021). */
   fast4: { gamesPerSet: 4, tiebreakAt: 3 },
-  /** Pro set (common club/USTA format, not an ITF-defined rule): first to 8 games, tiebreak at 8-8. */
+  /**
+   * Pro set: first to 8 games, tiebreak at 8-8. Not defined by the ITF Rules of Tennis; this follows
+   * the NFHS (US school tennis) rule and common college/club practice (7-point tiebreak, win by 2).
+   * Some leagues use 7-7 or a 12-point tiebreak instead.
+   */
   pro: { gamesPerSet: 8, tiebreakAt: 8 },
 }
 
