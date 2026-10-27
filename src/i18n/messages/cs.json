@@ -818,6 +818,10 @@
     "backToDashboard": "Zpět na přehled"
   },
   "dashboard": {
+    "resumeMatch": "Pokračovat v zápase",
+    "continueYourMatch": "Pokračujte ve skórování zápasu.",
+    "singlesMatches": "Zápasy ve dvouhře",
+    "viewDetailedStatistics": "Zobrazit podrobné statistiky",
     "welcomeBack": "Vítejte zpět",
     "welcomeToTennisScore": "Vítejte v TennisScore!",
     "dashboardSubtitle": "Váš osobní záznamník tenisových zápasů.",
@@ -1354,6 +1358,8 @@
     "soundEffectsInfo": "💡 Zvukové efekty se automaticky inicializují, když začnete bodovat. Hlasitost a nastavení se ukládají automaticky."
   },
   "statistics": {
+    "loadingOlderMatches": "Načítají se starší zápasy. Statistiky se postupně aktualizují.",
+    "historyLoadFailed": "Některé starší zápasy se nepodařilo načíst. Statistiky nejsou úplné; obnovte stránku a zkuste to znovu.",
     "statistics": "Statistiky",
     "dateRange": "Časové období",
     "totalPoints": "Celkem bodů",

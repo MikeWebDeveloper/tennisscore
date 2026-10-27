@@ -18,12 +18,13 @@ export default async function DashboardPage() {
   
   // If no main player is set, we'll show a prompt to set one
   let matches: Match[] = []
+  let matchesError = false
   if (mainPlayer) {
     try {
       matches = await getMatchesByPlayer(mainPlayer.$id)
     } catch (error) {
       console.error("Error fetching matches:", error)
-      matches = []
+      matchesError = true
     }
   }
 
@@ -32,7 +33,8 @@ export default async function DashboardPage() {
       user={user} 
       mainPlayer={mainPlayer}
       matches={matches}
+      matchesError={matchesError}
       players={players}
     />
   )
-} 
+}

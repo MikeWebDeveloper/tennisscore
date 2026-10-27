@@ -789,6 +789,10 @@
     "backToDashboard": "Back to dashboard"
   },
   "dashboard": {
+    "resumeMatch": "Resume Match",
+    "continueYourMatch": "Continue scoring your match.",
+    "singlesMatches": "Singles Matches",
+    "viewDetailedStatistics": "View detailed statistics",
     "welcomeBack": "Welcome back",
     "welcomeToTennisScore": "Welcome to TennisScore!",
     "dashboardSubtitle": "Your personal tennis match tracker.",
@@ -1322,6 +1326,8 @@
     "soundEffectsInfo": "💡 Sound effects will initialize automatically when you start scoring points. Volume and settings are saved automatically."
   },
   "statistics": {
+    "loadingOlderMatches": "Loading older matches; statistics will update as your full history loads.",
+    "historyLoadFailed": "Some older matches could not be loaded. Statistics are incomplete; refresh to try again.",
     "statistics": "Statistics",
     "dateRange": "Date Range",
     "totalPoints": "Total Points",

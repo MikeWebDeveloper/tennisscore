@@ -9,6 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "check:bundle": "node tools/check-bundle-budget.mjs",
+    "check:appwrite-schema": "node tools/check-appwrite-schema.mjs",
     "analyze": "ANALYZE=true npm run build",
     "test": "jest",
     "test:watch": "jest --watch",

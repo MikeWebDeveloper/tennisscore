@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { getMainPlayer } from "@/lib/actions/players"
 import { getServerTranslator } from "@/i18n/server-translator"
 import { getMatchesWithStats } from "@/lib/actions/statistics"
-import EnhancedStatisticsClient from "./enhanced-statistics-client"
+import { StatisticsHistoryLoader } from "./statistics-history-loader"
 import { StatisticsSetupPrompt } from "./_components/statistics-setup-prompt"
 
 export default async function StatisticsPage() {
@@ -37,9 +37,9 @@ export default async function StatisticsPage() {
   const matches = await getMatchesWithStats(mainPlayer.$id)
 
   return (
-    <EnhancedStatisticsClient 
+    <StatisticsHistoryLoader
       mainPlayer={mainPlayer}
-      matches={matches}
+      initialMatches={matches}
     />
   )
 }

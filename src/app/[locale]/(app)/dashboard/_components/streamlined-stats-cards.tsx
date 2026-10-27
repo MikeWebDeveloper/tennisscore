@@ -81,7 +81,7 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
       </Link>
 
       <Link href="/matches" className={tile} style={{ "--i": 4 } as React.CSSProperties}>
-        <span className={label}>{t('totalMatches')}</span>
+        <span className={label}>{t('singlesMatches')}</span>
         <div>
           <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{completed.length}</div>
           <div className={sub}>{inProgress > 0 ? t('inProgressWithCount', { count: inProgress }) : t('completedMatches')}</div>

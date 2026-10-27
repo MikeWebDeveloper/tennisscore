@@ -13,11 +13,6 @@
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Google Fonts - Import statements must be first */
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
-
 @layer base {
   :root {
     /* Light theme - warm off-white surface, white cards, soft borders */
@@ -609,14 +604,13 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(0.97);
   }
 
-  /* Staggered entrance: set style={{ "--i": index }} */
+  /* Keep content visible immediately while gently settling into position. */
   .rise {
-    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: calc(min(var(--i, 0), 8) * 55ms);
+    animation: rise 0.16s ease-out both;
   }
   @keyframes rise {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: none; }
+    from { transform: translateY(3px); }
+    to { transform: none; }
   }
 
   .live-dot {

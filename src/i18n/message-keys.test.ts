@@ -8,6 +8,8 @@ const get = (obj: any, ns: string, key: string) => obj?.[ns]?.[key]
 
 // Keys added for the sync indicator, themes and shell. Every active locale must define them.
 const REQUIRED: Record<string, string[]> = {
+  dashboard: ['resumeMatch', 'continueYourMatch', 'singlesMatches', 'viewDetailedStatistics'],
+  statistics: ['loadingOlderMatches', 'historyLoadFailed'],
   match: ['syncSaved', 'syncSaving', 'syncUnsent', 'shareScoreCard', 'scoreCardFailed', 'watchLive', 'watchFinished', 'watchPlayer', 'watchRefreshNote', 'watchFullView', 'watchLiteView'],
   common: ['firstServer', 'firstServerHint', 'setLength', 'setFormatStandard', 'setFormatShort', 'setFormatFast4', 'setFormatPro'],
   navigation: [

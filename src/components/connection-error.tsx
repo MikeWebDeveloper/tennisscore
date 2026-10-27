@@ -7,12 +7,14 @@ interface ConnectionErrorProps {
   title?: string
   description?: string
   onRetry?: () => void
+  retryLabel?: string
 }
 
 export function ConnectionError({ 
   title = "Connection Issue",
   description = "Unable to connect to the server. Please check your internet connection and try again.",
-  onRetry
+  onRetry,
+  retryLabel = "Try Again",
 }: ConnectionErrorProps) {
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -27,7 +29,7 @@ export function ConnectionError({
         <CardContent className="text-center">
           <Button onClick={onRetry} variant="outline" className="w-full">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
+            {retryLabel}
           </Button>
         </CardContent>
       )}
@@ -45,4 +47,4 @@ export function ConnectionErrorBoundary({
       {fallback || <ConnectionError />}
     </div>
   )
-} 
+}

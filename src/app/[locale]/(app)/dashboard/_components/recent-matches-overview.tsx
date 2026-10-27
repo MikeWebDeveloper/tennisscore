@@ -5,6 +5,7 @@ import { ArrowRight, Play } from "lucide-react"
 import { Match, Player } from "@/lib/types"
 import { useLocale, useTranslations } from "@/i18n"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { matchPerspective } from "@/lib/utils/match-perspective"
 
 interface RecentMatchesOverviewProps {
   matches: Match[]
@@ -23,12 +24,14 @@ export function RecentMatchesOverview({ matches, mainPlayer, playersMap }: Recen
     .slice(0, 4)
 
   const opponentName = (match: Match) => {
-    const opponentId = match.playerOneId === mainPlayer.$id ? match.playerTwoId : match.playerOneId
-    if (opponentId.startsWith('anonymous-')) {
-      return opponentId.includes('player-1') ? 'Player 1' : opponentId.includes('player-2') ? 'Player 2' : 'Anonymous'
-    }
-    const opponent = playersMap.get(opponentId)
-    return opponent ? formatPlayerFromObject(opponent) : '—'
+    const opponents = matchPerspective(match, mainPlayer.$id).opponents
+    return opponents.map(opponentId => {
+      if (opponentId.startsWith('anonymous-')) {
+        return opponentId.includes('player-1') ? 'Player 1' : opponentId.includes('player-2') ? 'Player 2' : 'Anonymous'
+      }
+      const opponent = playersMap.get(opponentId)
+      return opponent ? formatPlayerFromObject(opponent) : '—'
+    }).join(' / ') || '—'
   }
 
   const setScores = (match: Match): [number, number][] => {
@@ -66,8 +69,8 @@ export function RecentMatchesOverview({ matches, mainPlayer, playersMap }: Recen
         <ul>
           {recent.map(match => {
             const live = match.status === 'in-progress'
-            const finished = match.status === 'completed' && !!match.winnerId
-            const isWin = match.winnerId === mainPlayer.$id
+            const isWin = matchPerspective(match, mainPlayer.$id).isWin
+            const finished = match.status === 'completed' && isWin !== null
             const sets = setScores(match)
             return (
               <li key={match.$id}>

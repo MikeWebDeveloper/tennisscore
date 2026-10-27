@@ -1,5 +1,7 @@
 {
   "statistics": "Statistics",
+  "loadingOlderMatches": "Loading older matches; statistics will update as your full history loads.",
+  "historyLoadFailed": "Some older matches could not be loaded. Statistics are incomplete; refresh to try again.",
   "dateRange": "Date Range",
   "totalPoints": "Total Points",
   "winners": "Winners",

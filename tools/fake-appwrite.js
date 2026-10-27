@@ -49,6 +49,9 @@ const history = () => {
 Object.assign(samples, {})
 let docs = { ...samples(), ...history() }
 let failSaves = false
+// Match attributes mirror the preview collection, including optional attributes absent
+// from sample documents. Validate ordinary attributes as well as system attributes.
+const matchAttributes = new Set(['playerOneId', 'playerTwoId', 'matchDate', 'matchFormat', 'status', 'winnerId', 'score', 'userId', 'pointLog', 'events', 'playerThreeId', 'playerFourId', 'isDoubles', 'detailLevel', 'endTime', 'retirementReason', 'startTime', 'setDurations', 'tournamentName', 'isDeleted', 'deletedAt', 'deletedBy'])
 const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)) }
 
 http.createServer((req, res) => {
@@ -68,10 +71,12 @@ http.createServer((req, res) => {
         if (method === 'limit') limit = values[0]
         if (method === 'offset') offset = values[0]
         if (method === 'select') {
-          const bad = values.find((v) => v.startsWith('$') && !['$id', '$createdAt', '$updatedAt', '$permissions'].includes(v))
+          const bad = values.find((v) => v.startsWith('$') ? !['$id', '$createdAt', '$updatedAt', '$permissions'].includes(v) : list[1] === 'm' && !matchAttributes.has(v))
           if (bad) return json(res, 400, { message: `Invalid query: Attribute not found in schema: ${bad}`, code: 400, type: 'general_query_invalid' })
         }
         if (method === 'equal' && attribute && !attribute.startsWith('$')) filters.push((d) => values.includes(d[attribute]))
+        if (method === 'greaterThanEqual' && attribute) filters.push((d) => d[attribute] >= values[0])
+        if (method === 'or') filters.push((d) => values.some((q) => q.method === 'isNull' ? d[q.attribute] == null : q.method === 'equal' && q.values.includes(d[q.attribute])))
         if (method === 'notEqual' && attribute) filters.push((d) => !values.includes(d[attribute]))
       } catch { /* ignore */ }
     }

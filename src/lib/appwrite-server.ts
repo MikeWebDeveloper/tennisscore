@@ -46,13 +46,18 @@ export async function withRetry<T>(
       }
 
       // Create a timeout promise
+      let timeoutId: ReturnType<typeof setTimeout> | undefined
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')),
+        timeoutId = setTimeout(() => reject(new Error('Request timeout')),
           Math.min(5000, maxTimeout - (Date.now() - startTime)))
       })
 
       // Race between operation and timeout
-      return await Promise.race([operation(), timeoutPromise])
+      try {
+        return await Promise.race([operation(), timeoutPromise])
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId)
+      }
     } catch (error: unknown) {
       lastError = error as Error
 
@@ -160,4 +165,4 @@ export async function createAdminClient() {
       return new Users(client)
     },
   }
-} 
+}

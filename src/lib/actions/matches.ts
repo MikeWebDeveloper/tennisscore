@@ -10,7 +10,6 @@ import { Match, MatchFormat, PointDetail, PointOutcome, ShotType, CourtPosition,
 import { getPlayerById } from "./players"
 import { env } from "@/lib/env"
 
-const MATCH_COUNT_LIMIT = 5000
 
 export async function createMatch(matchData: {
   playerOneId: string
@@ -260,7 +259,7 @@ export async function getMatchesByUserPaginated(options: {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return { matches: [], total: 0, hasMore: false }
+      throw new Error("Unauthorized")
     }
 
     const { databases } = await createAdminClient()
@@ -268,7 +267,9 @@ export async function getMatchesByUserPaginated(options: {
 
     // Build query with filters
     const queries = [
-      Query.equal("userId", user.$id)
+      Query.equal("userId", user.$id),
+      // Older documents may have a null deletion flag; filter before pagination.
+      Query.or([Query.equal("isDeleted", false), Query.isNull("isDeleted")]),
     ]
 
     // Add date filtering
@@ -300,39 +301,20 @@ export async function getMatchesByUserPaginated(options: {
     queries.push(Query.limit(limit))
     queries.push(Query.offset(offset))
 
-    // The list view never reads the point log or events (the bulk of each document), so leave
-    // them out; the page and the count run in parallel instead of one after the other.
-    const [response, totalResponse] = await Promise.all([
-      withRetry(() =>
-        databases.listDocuments(
-          env.APPWRITE_DATABASE_ID,
-          env.APPWRITE_MATCHES_COLLECTION_ID,
-          [...queries, Query.select(MATCH_LIST_FIELDS)]
-        )
-      ),
-      withRetry(() =>
-        databases.listDocuments(
-          env.APPWRITE_DATABASE_ID,
-          env.APPWRITE_MATCHES_COLLECTION_ID,
-          [
-            Query.equal("userId", user.$id),
-            Query.select(["$id", "isDeleted"]),
-            Query.limit(MATCH_COUNT_LIMIT)
-          ]
-        )
-      ),
-    ])
-
-    // Filter out soft deleted matches client-side for backward compatibility
-    const allMatches = response.documents.filter(match => !match.isDeleted) as unknown as Match[]
-    const totalMatches = totalResponse.documents.filter(match => !match.isDeleted)
-    const total = totalMatches.length
+    // Appwrite's total uses the same filters as the page, independently of its limit.
+    const response = await withRetry(() => databases.listDocuments(
+      env.APPWRITE_DATABASE_ID,
+      env.APPWRITE_MATCHES_COLLECTION_ID,
+      [...queries, Query.select(MATCH_LIST_FIELDS)]
+    ), 'NAVIGATION')
+    const allMatches = response.documents as unknown as Match[]
+    const total = response.total
     const hasMore = (offset + limit) < total
 
     return { matches: allMatches, total, hasMore }
   } catch (error) {
     console.error("Error fetching paginated matches:", error)
-    return { matches: [], total: 0, hasMore: false }
+    throw error
   }
 }
 
@@ -353,12 +335,15 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
           Query.equal("userId", user.$id),
           Query.or([
             Query.equal("playerOneId", playerId),
-            Query.equal("playerTwoId", playerId)
+            Query.equal("playerTwoId", playerId),
+            Query.equal("playerThreeId", playerId),
+            Query.equal("playerFourId", playerId)
           ]),
+          Query.orderDesc("matchDate"),
           Query.select(MATCH_LIST_FIELDS), // Dashboard cards never use point logs or events
           Query.limit(1000) // Appwrite returns 25 by default, which silently truncated stats
         ]
-      )
+      ), 'NAVIGATION'
     )
 
     // Filter out soft deleted matches client-side for backward compatibility; the dashboard
@@ -368,7 +353,7 @@ export async function getMatchesByPlayer(playerId: string): Promise<Match[]> {
     return matches as unknown as Match[]
   } catch (error) {
     console.error("Error fetching player matches:", error)
-    return []
+    throw error
   }
 }
 

@@ -15,6 +15,7 @@ import { useTranslations } from "@/i18n"
 import { MatchesList } from "./_components/matches-list"
 import { getMatchesByUserPaginated } from "@/lib/actions/matches"
 import { formatPlayerFromObject } from "@/lib/utils"
+import { toast } from "sonner"
 import { 
   Select,
   SelectContent,
@@ -236,6 +237,8 @@ export function PaginatedMatchesClient({
       setHasMore(result.hasMore)
     } catch (error) {
       console.error("Failed to filter matches:", error)
+      setDateFilter(dateFilter)
+      toast.error(t("unableToLoadMatches"))
     } finally {
       setIsLoading(false)
     }
@@ -257,6 +260,7 @@ export function PaginatedMatchesClient({
       setHasMore(result.hasMore)
     } catch (error) {
       console.error("Failed to load more matches:", error)
+      toast.error(t("unableToLoadMatches"))
     } finally {
       setIsLoading(false)
     }
@@ -325,6 +329,8 @@ export function PaginatedMatchesClient({
         <ConnectionError 
           title={t("unableToLoadMatches")}
           description={t("matchesConnectivityIssue")}
+          onRetry={() => window.location.reload()}
+          retryLabel={t("tryAgain")}
         />
       ) : (
         <>

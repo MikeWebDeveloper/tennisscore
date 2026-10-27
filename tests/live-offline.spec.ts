@@ -26,6 +26,13 @@ test.beforeEach(async ({ request, page }) => {
   })
 })
 
+test.afterEach(async ({ page, context }) => {
+  // Stop background retries before Playwright closes the context; otherwise a
+  // failed server action can leave the worker waiting on an in-flight request.
+  await context.setOffline(false)
+  if (!page.isClosed()) await page.goto('about:blank', { waitUntil: 'commit' })
+})
+
 test('keeps the screen awake while a match is in progress', async ({ page }) => {
   await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
   await expect(pointButtons(page).first()).toBeVisible()

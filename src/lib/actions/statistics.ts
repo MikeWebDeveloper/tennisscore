@@ -25,6 +25,7 @@ function setCachedStats(key: string, data: any) {
 
 export async function getMatchesWithStats(playerId: string, options: {
   limit?: number;
+  cursorAfter?: string;
   status?: string;
   dateAfter?: string;
 } = {}): Promise<Match[]> {
@@ -33,10 +34,12 @@ export async function getMatchesWithStats(playerId: string, options: {
 
   try {
     const { databases } = await createAdminClient()
-    const { limit = 50, status, dateAfter } = options
+    const { limit = 50, cursorAfter, status, dateAfter } = options
 
     // Build efficient query with proper indexing
     const queries = [
+      Query.equal("userId", user.$id),
+      Query.or([Query.equal("isDeleted", false), Query.isNull("isDeleted")]),
       Query.or([
         Query.equal("playerOneId", playerId),
         Query.equal("playerTwoId", playerId),
@@ -44,8 +47,9 @@ export async function getMatchesWithStats(playerId: string, options: {
         Query.equal("playerFourId", playerId)
       ]),
       Query.orderDesc("matchDate"),
-      Query.limit(limit) // Use reasonable limit instead of 1000
+      Query.limit(limit)
     ]
+    if (cursorAfter) queries.push(Query.cursorAfter(cursorAfter))
 
     // Add optional filters that work with our indexes
     if (dateAfter) {
@@ -68,13 +72,15 @@ export async function getMatchesWithStats(playerId: string, options: {
       if (match.playerFourId) playerIds.add(match.playerFourId)
     })
 
-    // Fetch all players in one query
+    // Batch the player lookup, because Appwrite defaults to only 25 results.
     const playersMap = new Map<string, Player>()
-    if (playerIds.size > 0) {
+    const ids = Array.from(playerIds).filter(id => !id.startsWith('anonymous-'))
+    for (let start = 0; start < ids.length; start += 100) {
+      const batch = ids.slice(start, start + 100)
       const playersResponse = await databases.listDocuments<Player>(
         env.APPWRITE_DATABASE_ID,
         env.APPWRITE_PLAYERS_COLLECTION_ID,
-        [Query.equal("$id", Array.from(playerIds))]
+        [Query.equal("$id", batch), Query.limit(batch.length)]
       )
 
       playersResponse.documents.forEach(player => {
@@ -95,7 +101,7 @@ export async function getMatchesWithStats(playerId: string, options: {
     }))
   } catch (error) {
     console.error("Error fetching matches with stats:", error)
-    return []
+    throw error
   }
 }
 
