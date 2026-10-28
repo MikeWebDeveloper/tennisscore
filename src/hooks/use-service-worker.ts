@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { toast } from "sonner"
+import { createControllerChangeHandler } from "./service-worker-controller"
 
 /**
  * useServiceWorker – registers /sw.js and surfaces lifecycle events
@@ -13,6 +14,13 @@ import { toast } from "sonner"
 export function useServiceWorker() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return
+
+    // Listen before registration so the first activation cannot race the listener.
+    const onControllerChange = createControllerChangeHandler(
+      Boolean(navigator.serviceWorker.controller),
+      () => window.location.reload(),
+    )
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange)
 
     const register = async () => {
       try {
@@ -45,15 +53,12 @@ export function useServiceWorker() {
           })
         })
 
-        // ➜ When the new SW activates after SKIP_WAITING
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          window.location.reload()
-        })
       } catch (err) {
         console.error("Service-worker registration failed", err)
       }
     }
 
     register()
+    return () => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange)
   }, [])
-} 
+}

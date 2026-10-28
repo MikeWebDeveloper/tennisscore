@@ -4,6 +4,8 @@
 // Extras for tests:  GET /__doc/<collection>/<id>  stored document,  GET /__reset  restore samples,
 //                    GET /__fail?on=1|0  make saves (PATCH) fail with 500.
 const http = require('http')
+// Optional latency for exercising streaming states in isolated local tests.
+const matchListDelay = Math.max(0, Math.min(5000, Number(process.env.FAKE_MATCH_LIST_DELAY_MS) || 0))
 
 const pts = (arr) => arr.map((o, i) => JSON.stringify({ id: String(i), pointNumber: i + 1, setNumber: 1, gameNumber: o.g, winner: o.w, server: o.s, isTiebreak: false, ...(o.sp ? { serverPlayer: o.sp } : {}) }))
 const base = { $id: '', $createdAt: '2026-10-26T10:00:00.000Z', $updatedAt: '2026-10-26T10:00:00.000Z', $permissions: [], $databaseId: 'd', $collectionId: 'm', matchDate: '2026-10-26T10:00:00.000Z', userId: 'test-user', tournamentName: 'Club Cup' }
@@ -118,7 +120,9 @@ http.createServer((req, res) => {
       return ascending ? compare : -compare
     })
     const start = cursorAfter ? Math.max(0, all.findIndex((doc) => doc.$id === cursorAfter) + 1) + offset : offset
-    return json(res, 200, { total: all.length, documents: all.slice(start, start + limit) })
+    const respond = () => json(res, 200, { total: all.length, documents: all.slice(start, start + limit) })
+    if (list[1] === 'm' && matchListDelay) return setTimeout(respond, matchListDelay)
+    return respond()
   }
 
   const m = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/([^/?]+)/)
