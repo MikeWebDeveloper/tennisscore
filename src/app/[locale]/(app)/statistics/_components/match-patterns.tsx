@@ -3,15 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { UPlotBarChart, UPlotRadialBarChart } from "@/components/ui/charts"
+import { UPlotBarChart } from "@/components/ui/charts"
 import { Clock } from "lucide-react"
 import { Sunrise } from "lucide-react"
 import { Sun } from "lucide-react"
 import { Sunset } from "lucide-react"
-import { Trophy } from "lucide-react"
 import { Activity } from "lucide-react"
 import { Timer } from "lucide-react"
-import { Zap } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
 interface MatchPatternsProps {
@@ -81,15 +79,6 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
     }
   ]
 
-
-  // Match intensity gauge data
-  const intensityData = [
-    {
-      name: t("matchPatterns.matchIntensity"),
-      value: Math.min(patterns.averageGamesPerMatch / 20 * 100, 100),
-      fill: "#8b5cf6"
-    }
-  ]
 
   return (
     <div className="space-y-6">
@@ -185,58 +174,7 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {/* Match Intensity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{tStats('matchIntensity')}</CardTitle>
-            <CardDescription>
-              {tStats('averageGamesAndSetsPerMatch')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground">{tStats('gamesPerMatch')}</p>
-                  <p className="text-xl sm:text-2xl font-bold">{patterns.averageGamesPerMatch}</p>
-                </div>
-                <div className="space-y-1 text-right">
-                  <p className="text-xs sm:text-sm text-muted-foreground">{tStats('setsPerMatch')}</p>
-                  <p className="text-xl sm:text-2xl font-bold">{patterns.averageSetsPerMatch}</p>
-                </div>
-              </div>
-              
-              <div className="h-[120px] xs:h-[135px] sm:h-[150px]">
-                <UPlotRadialBarChart 
-                  data={intensityData.map(item => ({
-                    name: item.name,
-                    value: item.value,
-                    fill: "#8b5cf6"
-                  }))}
-                  height={150}
-                  innerRadius={30}
-                  outerRadius={90}
-                  cornerRadius={10}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
-                <div>
-                  <Zap className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-yellow-500" />
-                  <p className="text-xs sm:text-sm font-medium">{patterns.straightSetWins}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{tStats('straightSetWins')}</p>
-                </div>
-                <div>
-                  <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-purple-500" />
-                  <p className="text-xs sm:text-sm font-medium">{patterns.fiveSetterWins}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{tStats('fiveSetWins')}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div>
         {/* Match Duration Distribution */}
         <Card>
           <CardHeader>

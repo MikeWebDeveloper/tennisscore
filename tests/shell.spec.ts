@@ -39,10 +39,53 @@ test.describe('mobile shell (390px)', () => {
   test('drawer opens and closes, and locks page scroll while open', async ({ page }) => {
     await page.goto('/en/matches', { waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'Open navigation menu' }).click()
-    await expect(page.locator('aside.fixed.left-0.z-50')).toBeVisible()
-    expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden')
+    await expect(page.getByRole('dialog', { name: 'Tenis.click' })).toBeVisible()
+    expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden')
     await page.getByRole('button', { name: 'Collapse navigation' }).click()
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('')
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden')
+  })
+
+  test('drawer traps focus and Escape closes it and restores the trigger', async ({ page }) => {
+    await page.goto('/en/matches', { waitUntil: 'networkidle' })
+    const trigger = page.getByRole('button', { name: 'Open navigation menu' })
+    await trigger.click()
+    const drawer = page.getByRole('dialog', { name: 'Tenis.click' })
+    await expect(drawer).toBeVisible()
+    for (let i = 0; i < 15; i++) {
+      await page.keyboard.press('Tab')
+      expect(await drawer.evaluate((element) => element.contains(document.activeElement))).toBe(true)
+    }
+    await page.keyboard.press('Escape')
+    await expect(drawer).toBeHidden()
+    await expect(trigger).toBeFocused()
+  })
+
+  test('drawer closes when the viewport changes to desktop', async ({ page }) => {
+    await page.goto('/en/matches', { waitUntil: 'networkidle' })
+    await page.getByRole('button', { name: 'Open navigation menu' }).click()
+    const drawer = page.getByRole('dialog', { name: 'Tenis.click' })
+    await expect(drawer).toBeVisible()
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await expect(drawer).toHaveCount(0)
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden')
+  })
+
+  test('reduced motion keeps navigation usable without drawer animation', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/en/matches', { waitUntil: 'networkidle' })
+    await page.getByRole('button', { name: 'Open navigation menu' }).click()
+    const drawer = page.getByRole('dialog', { name: 'Tenis.click' })
+    await expect(drawer).toBeVisible()
+    // The global reduced-motion rule may retain a keyframe name while
+    // reducing its duration to 0.01ms, which is effectively instantaneous.
+    const duration = await drawer.evaluate(element => getComputedStyle(element).animationDuration)
+    const maxSeconds = Math.max(...duration.split(',').map(value => {
+      const trimmed = value.trim()
+      return trimmed.endsWith('ms') ? parseFloat(trimmed) / 1000 : parseFloat(trimmed)
+    }))
+    expect(maxSeconds).toBeLessThanOrEqual(0.001)
+    await page.keyboard.press('Escape')
+    await expect(drawer).toBeHidden()
   })
 
   test('header button cycles dark → dim → light and persists across reload', async ({ page }) => {
@@ -119,7 +162,7 @@ test.describe('install hint (iPhone Safari)', () => {
     test(`${locale}: menu explains Add to Home Screen`, async ({ page }) => {
       await page.goto(`/${locale}/matches`, { waitUntil: 'networkidle' })
       await page.locator('header button').first().click()
-      await expect(page.locator('aside.fixed.left-0.z-50')).toContainText(text)
+      await expect(page.getByRole('dialog', { name: 'Tenis.click' })).toContainText(text)
     })
   }
 })

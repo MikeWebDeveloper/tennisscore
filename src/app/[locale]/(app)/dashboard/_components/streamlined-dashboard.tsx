@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import dynamic from "next/dynamic"
 import { Match, Player, User } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { StreamlinedStatsCards } from "./streamlined-stats-cards"
@@ -12,6 +14,8 @@ import { getDashboardHighlights } from "@/lib/utils/dashboard-highlights"
 import { Link } from "@/i18n/navigation"
 import { Plus, UserPlus } from "lucide-react"
 
+const CreatePlayerDialog = dynamic(() => import("../../players/_components/create-player-dialog").then(mod => mod.CreatePlayerDialog))
+
 interface StreamlinedDashboardProps {
   user: User | null
   mainPlayer: Player
@@ -21,6 +25,7 @@ interface StreamlinedDashboardProps {
 
 export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: StreamlinedDashboardProps) {
   const t = useTranslations('dashboard')
+  const [createPlayerOpen, setCreatePlayerOpen] = useState(false)
   const firstName = user?.name?.split(' ')[0] || mainPlayer?.firstName || 'User'
   const resume = findResumeMatch(matches)
   const highlights = getDashboardHighlights(matches, mainPlayer.$id)
@@ -34,9 +39,10 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
         <p className="text-sm text-muted-foreground">{t('dashboardSubtitle')}</p>
       </header>
 
-      <CreateNewMatchButton resumeMatchId={resume?.$id} />
+      <CreateNewMatchButton resume={resume ? { match: resume, mainPlayerId: mainPlayer.$id, playersMap } : undefined} />
       <div className="flex flex-wrap gap-2 px-1">
         {resume && <Link href="/matches/new" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><Plus className="h-4 w-4" />{t('startNewMatch')}</Link>}
+        <button type="button" onClick={() => setCreatePlayerOpen(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><UserPlus className="h-4 w-4" aria-hidden="true" />{t('addPlayer')}</button>
         <Link href="/players" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><UserPlus className="h-4 w-4" />{t('yourPlayers')}</Link>
       </div>
       <StreamlinedStatsCards matches={matches} mainPlayer={mainPlayer} />
@@ -56,6 +62,7 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
         <WhatsNewPanel />
       </div>
       <PWAInstallationBanner />
+      {createPlayerOpen && <CreatePlayerDialog isOpen={createPlayerOpen} onOpenChange={setCreatePlayerOpen} />}
     </div>
   )
 }

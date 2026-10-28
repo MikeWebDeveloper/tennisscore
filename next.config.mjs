@@ -119,6 +119,10 @@ const nextConfig = {
   // Comprehensive security and performance-focused headers
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
+    // Only the explicitly opted-in, auth-bypassed local fixture build uses HTTP.
+    // Real deployments always keep HTTPS upgrades and HSTS.
+    const localHttpTest = process.env.PLAYWRIGHT_LOCAL_HTTP === '1' &&
+      process.env.PLAYWRIGHT === '1' && process.env.DISABLE_AUTH_FOR_TEST === '1';
 
     // Build Content Security Policy for production security
     const csp = [
@@ -134,7 +138,7 @@ const nextConfig = {
       "form-action 'self'",
       "frame-ancestors 'none'",
       "frame-src 'none'",
-      "upgrade-insecure-requests"
+      ...(!localHttpTest ? ["upgrade-insecure-requests"] : [])
     ].join('; ');
 
     return [
@@ -168,7 +172,7 @@ const nextConfig = {
             value: 'strict-origin-when-cross-origin',
           },
           // HSTS - Force HTTPS in production
-          ...(isProduction ? [{
+          ...(isProduction && !localHttpTest ? [{
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
           }] : []),

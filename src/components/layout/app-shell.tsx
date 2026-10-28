@@ -16,6 +16,7 @@ import { InstallAppItem } from "@/components/shared/install-app-item"
 import { useTranslations } from "@/i18n"
 import { ExtensionConflictNotice } from "@/components/shared/extension-conflict-notice"
 import { HydrationErrorBoundary } from "@/components/shared/hydration-error-boundary"
+import * as Dialog from "@radix-ui/react-dialog"
 
 interface AppShellProps {
   children: React.ReactNode
@@ -53,14 +54,16 @@ export function AppShell({ children, user }: AppShellProps) {
     }]
     : baseNavigation
 
-  // Close the drawer on navigation, lock page scroll while it is open
+  // Close the drawer when navigating or moving to the desktop layout.
   useEffect(() => { setDrawerOpen(false) }, [pathname])
   useEffect(() => {
-    if (!drawerOpen) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => { document.body.style.overflow = prev }
-  }, [drawerOpen])
+    const desktop = window.matchMedia("(min-width: 768px)")
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setDrawerOpen(false)
+    }
+    desktop.addEventListener("change", closeOnDesktop)
+    return () => desktop.removeEventListener("change", closeOnDesktop)
+  }, [])
 
   // "N" jumps to the new-match form (ignored while typing or with modifiers)
   useEffect(() => {
@@ -171,9 +174,45 @@ export function AppShell({ children, user }: AppShellProps) {
 
         {/* Mobile header */}
         <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b glass px-2 pt-[env(safe-area-inset-top)] md:hidden box-content">
-          <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} aria-label={t('openNavigationMenu')}>
-            <Menu className="h-5 w-5" aria-hidden="true" />
-          </Button>
+          <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <Dialog.Trigger asChild>
+              <Button variant="ghost" size="icon" aria-label={t('openNavigationMenu')}>
+                <Menu className="h-5 w-5" aria-hidden="true" />
+              </Button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:animate-none md:hidden" />
+              <Dialog.Content
+                aria-describedby={undefined}
+                className="fixed left-0 top-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-card pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left duration-200 motion-reduce:animate-none md:hidden"
+              >
+                <div className="flex h-14 items-center justify-between border-b border-border px-4">
+                  <Dialog.Title className="font-semibold tracking-tight text-foreground">Tenis.click</Dialog.Title>
+                  <Dialog.Close asChild>
+                    <Button variant="ghost" size="icon" aria-label={t('collapseNavigation')}>
+                      <X className="h-5 w-5" aria-hidden="true" />
+                    </Button>
+                  </Dialog.Close>
+                </div>
+                <nav className="flex-1 space-y-1 overflow-y-auto p-3">{renderNavLinks(true)}</nav>
+                <div className="space-y-3 border-t border-border p-4">
+                  <InstallAppItem />
+                  <ThemeSwitcher />
+                  {userBlock}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" size="sm" asChild className="min-h-11">
+                      <Link href="/settings"><Settings className="h-4 w-4" aria-hidden="true" />{t('settings')}</Link>
+                    </Button>
+                    <form action={signOut}>
+                      <Button variant="outline" size="sm" type="submit" className="min-h-11 w-full">
+                        <LogOut className="h-4 w-4" aria-hidden="true" />{t('signOut')}
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground">
               <Trophy className="h-3.5 w-3.5 text-background" aria-hidden="true" />
@@ -185,50 +224,6 @@ export function AppShell({ children, user }: AppShellProps) {
             <ThemeCycleButton />
           </div>
         </header>
-
-        {/* Mobile drawer: CSS-only transition, always mounted so it opens instantly */}
-        <div className={cn("md:hidden", drawerOpen ? "pointer-events-auto" : "pointer-events-none")} aria-hidden={!drawerOpen}>
-          <div
-            className={cn(
-              "fixed inset-0 z-50 bg-black/50 transition-opacity duration-200",
-              drawerOpen ? "opacity-100" : "opacity-0"
-            )}
-            onClick={() => setDrawerOpen(false)}
-          />
-          <aside
-            className={cn(
-              "fixed left-0 top-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-card pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] transition-transform duration-200 ease-out",
-              drawerOpen ? "translate-x-0" : "-translate-x-full"
-            )}
-          >
-            <div className="flex h-14 items-center justify-between border-b border-border px-4">
-              <span className="font-semibold tracking-tight text-foreground">Tenis.click</span>
-              <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(false)} aria-label={t('collapseNavigation')}>
-                <X className="h-5 w-5" aria-hidden="true" />
-              </Button>
-            </div>
-            <nav className="flex-1 space-y-1 overflow-y-auto p-3">{renderNavLinks(true)}</nav>
-            <div className="space-y-3 border-t border-border p-4">
-              <InstallAppItem />
-              <ThemeSwitcher />
-              {userBlock}
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" asChild className="min-h-11">
-                  <Link href="/settings">
-                    <Settings className="h-4 w-4" aria-hidden="true" />
-                    {t('settings')}
-                  </Link>
-                </Button>
-                <form action={signOut}>
-                  <Button variant="outline" size="sm" type="submit" className="min-h-11 w-full">
-                    <LogOut className="h-4 w-4" aria-hidden="true" />
-                    {t('signOut')}
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </aside>
-        </div>
 
         {/* Single content tree for every breakpoint */}
         <main

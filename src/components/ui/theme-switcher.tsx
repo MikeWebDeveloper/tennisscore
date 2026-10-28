@@ -33,11 +33,11 @@ export function ThemeSwitcher({ className }: { className?: string }) {
             aria-checked={active}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[11px] font-medium transition-colors",
+              "group/theme flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[11px] font-medium transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" />
+            <Icon className="h-4 w-4 transition-transform duration-100 motion-reduce:transition-none motion-safe:group-active/theme:scale-95" aria-hidden="true" />
             <span className="max-w-full truncate">{t(labelKey)}</span>
           </button>
         )
@@ -61,7 +61,7 @@ export function ThemeCycleButton({ className }: { className?: string }) {
       type="button"
       onClick={next}
       aria-label={t("switchTheme")}
-      className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent", className)}
+      className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground transition-colors duration-150 motion-reduce:transition-none hover:bg-accent active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
     >
       <Sun className="hidden h-4 w-4 [.light_&]:block" aria-hidden="true" />
       <SunMoon className="hidden h-4 w-4 [.dim_&]:block" aria-hidden="true" />

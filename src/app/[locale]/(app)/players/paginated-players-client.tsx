@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react"
-import { motion } from '@/lib/framer-motion-config'
 import { Player } from "@/lib/types"
 import { deletePlayer, getPlayersByUserPaginated } from "@/lib/actions/players"
 import { formatPlayerFromObject } from "@/lib/utils"
@@ -10,6 +9,8 @@ import { CreatePlayerDialog, CreatePlayerTrigger } from "./_components/create-pl
 import { EditPlayerDialog } from "./_components/edit-player-dialog"
 import { useTranslations } from "@/i18n"
 import { Button } from "@/components/ui/button"
+import { ConnectionError } from "@/components/connection-error"
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { ArrowUpDown } from "lucide-react"
 import { ArrowUpAZ } from "lucide-react"
@@ -23,12 +24,7 @@ interface PaginatedPlayersClientProps {
   initialPlayers: Player[]
   initialTotal: number
   initialHasMore: boolean
-}
-
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
+  initialError?: boolean
 }
 
 type SortOrder = 'none' | 'asc' | 'desc'
@@ -37,7 +33,8 @@ type ViewMode = 'paginated' | 'all'
 export function PaginatedPlayersClient({ 
   initialPlayers, 
   initialTotal, 
-  initialHasMore 
+  initialHasMore,
+  initialError = false
 }: PaginatedPlayersClientProps) {
   const t = useTranslations('player')
   const commonT = useTranslations('common')
@@ -47,9 +44,22 @@ export function PaginatedPlayersClient({
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>('paginated')
   const [isLoading, setIsLoading] = useState(false)
+  const [initialLoadError, setInitialLoadError] = useState(initialError)
+  const requestVersion = useRef(0)
+  const latestSearch = useRef<{ query: string; run: (query: string) => Promise<void> } | null>(null)
+  const refreshCurrentPlayers = useCallback(() => {
+    const current = latestSearch.current
+    if (current) void current.run(current.query)
+  }, [])
+  const lastSearch = useRef<{ query: string; sortOrder: SortOrder } | null>({ query: "", sortOrder: 'none' })
+  // Invalidate immediately when criteria change, including during the debounce window.
+  const invalidateRequests = () => { requestVersion.current += 1; lastSearch.current = null; setIsLoading(true) }
+  useEffect(() => () => { requestVersion.current += 1 }, [])
   
   // Pagination state
   const [players, setPlayers] = useState<Player[]>(initialPlayers)
+  const currentPlayers = useRef(players)
+  currentPlayers.current = players
   const [total, setTotal] = useState(initialTotal)
   const [hasMore, setHasMore] = useState(initialHasMore)
 
@@ -80,13 +90,16 @@ export function PaginatedPlayersClient({
       const result = await deletePlayer(playerId)
       if (result.success) {
         // Remove player from local state instead of reloading page
+        const wasVisible = currentPlayers.current.some(p => p.$id === playerId)
         setPlayers(prev => prev.filter(p => p.$id !== playerId))
-        setTotal(prev => prev - 1)
+        if (wasVisible) setTotal(prev => Math.max(0, prev - 1))
+        refreshCurrentPlayers()
       }
     }
   }
 
   const handleSortToggle = () => {
+    invalidateRequests()
     setSortOrder(current => {
       if (current === 'none') return 'asc'
       if (current === 'asc') return 'desc'
@@ -108,6 +121,7 @@ export function PaginatedPlayersClient({
   const loadMorePlayers = async () => {
     if (isLoading || !hasMore) return
     
+    const requestId = ++requestVersion.current
     setIsLoading(true)
     try {
       const result = await getPlayersByUserPaginated({ 
@@ -117,16 +131,20 @@ export function PaginatedPlayersClient({
         searchQuery: searchQuery || undefined
       })
       
+      if (requestId !== requestVersion.current) return
       setPlayers(prev => [...prev, ...result.players])
       setHasMore(result.hasMore)
     } catch (error) {
+      if (requestId !== requestVersion.current) return
       console.error("Failed to load more players:", error)
+      toast.error(commonT("unableToConnect"))
     } finally {
-      setIsLoading(false)
+      if (requestId === requestVersion.current) setIsLoading(false)
     }
   }
 
   const loadAllPlayers = async () => {
+    const requestId = ++requestVersion.current
     setIsLoading(true)
     try {
       const result = await getPlayersByUserPaginated({ 
@@ -136,17 +154,21 @@ export function PaginatedPlayersClient({
         searchQuery: searchQuery || undefined
       })
       
+      if (requestId !== requestVersion.current) return
       setPlayers(result.players)
       setHasMore(false)
       setViewMode('all')
     } catch (error) {
+      if (requestId !== requestVersion.current) return
       console.error("Failed to load all players:", error)
+      toast.error(commonT("unableToConnect"))
     } finally {
-      setIsLoading(false)
+      if (requestId === requestVersion.current) setIsLoading(false)
     }
   }
 
   const resetToPaginated = async () => {
+    const requestId = ++requestVersion.current
     setIsLoading(true)
     try {
       const result = await getPlayersByUserPaginated({ 
@@ -156,18 +178,22 @@ export function PaginatedPlayersClient({
         searchQuery: searchQuery || undefined
       })
       
+      if (requestId !== requestVersion.current) return
       setPlayers(result.players)
       setHasMore(result.hasMore)
       setViewMode('paginated')
     } catch (error) {
+      if (requestId !== requestVersion.current) return
       console.error("Failed to reset pagination:", error)
+      toast.error(commonT("unableToConnect"))
     } finally {
-      setIsLoading(false)
+      if (requestId === requestVersion.current) setIsLoading(false)
     }
   }
 
   // Debounced search functionality
   const handleSearch = useCallback(async (query: string) => {
+    const requestId = ++requestVersion.current
     setIsLoading(true)
     try {
       const result = await getPlayersByUserPaginated({ 
@@ -177,22 +203,28 @@ export function PaginatedPlayersClient({
         searchQuery: query || undefined
       })
       
+      if (requestId !== requestVersion.current) return
       setPlayers(result.players)
       setTotal(result.total)
       setHasMore(result.hasMore)
       setViewMode('paginated')
+      setInitialLoadError(false)
     } catch (error) {
+      if (requestId !== requestVersion.current) return
       console.error("Failed to search players:", error)
+      toast.error(commonT("unableToConnect"))
     } finally {
-      setIsLoading(false)
+      if (requestId === requestVersion.current) setIsLoading(false)
     }
-  }, [sortOrder])
+  }, [sortOrder, commonT])
+
+  // Async mutations can finish after the user changes search or sort.
+  latestSearch.current = { query: searchQuery, run: handleSearch }
 
   // The server already supplied the initial unfiltered page. Only search after
   // the criteria change; clearing a previous search must still fetch that page.
-  const lastSearch = useRef({ query: "", sortOrder: 'none' as SortOrder })
   useEffect(() => {
-    if (lastSearch.current.query === searchQuery && lastSearch.current.sortOrder === sortOrder) return
+    if (lastSearch.current?.query === searchQuery && lastSearch.current?.sortOrder === sortOrder) return
     const timeoutId = setTimeout(() => {
       lastSearch.current = { query: searchQuery, sortOrder }
       handleSearch(searchQuery)
@@ -202,14 +234,7 @@ export function PaginatedPlayersClient({
   }, [searchQuery, sortOrder, handleSearch])
 
   return (
-    <motion.div 
-      className="min-h-screen bg-background p-4 md:p-6"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.3 }}
-    >
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
@@ -251,9 +276,9 @@ export function PaginatedPlayersClient({
               <Input
                 placeholder={commonT('searchPlayers')}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { invalidateRequests(); setSearchQuery(e.target.value) }}
                 className="pl-10"
-                aria-label="Search players by name or rating"
+                aria-label={commonT('searchPlayers')}
                 role="searchbox"
               />
             </div>
@@ -265,7 +290,10 @@ export function PaginatedPlayersClient({
           </div>
         )}
 
-        {players.length === 0 && !searchQuery ? (
+        {initialLoadError && players.length === 0 ? (
+          <ConnectionError title={commonT("connectionError")} description={commonT("unableToConnect")}
+            retryLabel={commonT("tryAgain")} onRetry={() => { void handleSearch(searchQuery) }} />
+        ) : players.length === 0 && !searchQuery ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">{commonT("noPlayersYet")}</p>
             <CreatePlayerTrigger onOpenDialog={() => setIsCreateDialogOpen(true)} />
@@ -273,7 +301,7 @@ export function PaginatedPlayersClient({
         ) : sortedAndFilteredPlayers.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">{t("noPlayersFoundSearch")}</p>
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
+            <Button variant="outline" onClick={() => { invalidateRequests(); setSearchQuery("") }}>
               {commonT("clearSearch")}
             </Button>
           </div>
@@ -361,14 +389,16 @@ export function PaginatedPlayersClient({
         <CreatePlayerDialog 
           isOpen={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
+          onCreated={refreshCurrentPlayers}
         />
 
         <EditPlayerDialog 
           player={editingPlayer}
           isOpen={!!editingPlayer}
           onOpenChange={(open) => !open && setEditingPlayer(null)}
+          onSaved={refreshCurrentPlayers}
         />
       </div>
-    </motion.div>
+    </div>
   )
 }

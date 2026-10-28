@@ -24,26 +24,6 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
   
   return (
     <Card className={`surface-hover relative group w-full ${player.isMainPlayer ? 'border-brand/50 bg-brand/[0.07]' : ''}`}>
-      {/* Action buttons in corner */}
-      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-        <Button 
-          size="sm" 
-          variant="ghost"
-          onClick={onEdit}
-          className="h-6 w-6 p-0 hover:bg-background/80 backdrop-blur-sm border border-border/50"
-        >
-          <Edit className="h-2.5 w-2.5" />
-        </Button>
-        <Button 
-          size="sm" 
-          variant="ghost"
-          onClick={onDelete}
-          className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive backdrop-blur-sm border border-border/50"
-        >
-          <Trash2 className="h-2.5 w-2.5" />
-        </Button>
-      </div>
-      
       <CardContent className="p-3">
         <div className="flex items-center space-x-3 w-full">
           {/* Avatar with Czech Tennis ID */}
@@ -60,7 +40,7 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
           </div>
           
           {/* Player Info */}
-          <div className="min-w-0 flex-1 pr-10">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-1.5 mb-1">
               <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
                 {formatPlayerFromObject(player)}
@@ -109,6 +89,18 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                 )}
               </div>
             </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button size="icon" variant="ghost" onClick={onEdit}
+              aria-label={`${t("edit")} ${formatPlayerFromObject(player)}`}
+              className="h-11 w-11">
+              <Edit className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button size="icon" variant="ghost" onClick={onDelete}
+              aria-label={`${t("delete")} ${formatPlayerFromObject(player)}`}
+              className="h-11 w-11 hover:bg-destructive/10 hover:text-destructive">
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
         </div>
       </CardContent>

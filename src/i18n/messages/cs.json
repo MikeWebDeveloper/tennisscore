@@ -412,6 +412,8 @@
     "left": "Levá",
     "setAsMainPlayer": "Nastavit jako hlavního hráče",
     "createPlayer": "Vytvořit hráče",
+    "createPlayerError": "Hráče se nepodařilo vytvořit. Zkuste to prosím znovu.",
+    "mainPlayerAlreadyExists": "Hlavní hráč již existuje. Vytvořte tohoto hráče bez volby hlavního hráče a hlavního hráče spravujte samostatně.",
     "deleteMatch": "Smazat zápas",
     "deleteMatchConfirm": "Opravdu chcete smazat tento zápas? Tuto akci nelze vrátit zpět.",
     "deleting": "Mazání...",
@@ -820,6 +822,8 @@
   "dashboard": {
     "resumeMatch": "Pokračovat v zápase",
     "continueYourMatch": "Pokračujte ve skórování zápasu.",
+    "yourGamesScore": "Vaše gemy {yours}, gemy soupeře {opponent}",
+    "yourGamesLabel": "Vaše gemy",
     "singlesMatches": "Zápasy ve dvouhře",
     "viewDetailedStatistics": "Zobrazit podrobné statistiky",
     "welcomeBack": "Vítejte zpět",
@@ -1358,6 +1362,10 @@
     "soundEffectsInfo": "💡 Zvukové efekty se automaticky inicializují, když začnete bodovat. Hlasitost a nastavení se ukládají automaticky."
   },
   "statistics": {
+    "loadedSample": "Vybráno: {selected} zápasů, z toho {completed} dokončených",
+    "allLoadedHistory": "Období: celá načtená historie zápasů",
+    "selectedFiltersPeriod": "Období a výběr: aktuální filtry",
+    "pointDataNote": "Některé ukazatele vyžadují údaje o jednotlivých bodech.",
     "loadingOlderMatches": "Načítají se starší zápasy. Statistiky se postupně aktualizují.",
     "historyLoadFailed": "Některé starší zápasy se nepodařilo načíst. Statistiky nejsou úplné; obnovte stránku a zkuste to znovu.",
     "statistics": "Statistiky",

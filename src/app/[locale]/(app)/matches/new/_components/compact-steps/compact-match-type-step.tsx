@@ -4,7 +4,7 @@ import { Users } from "lucide-react"
 import { User } from "lucide-react"
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 interface CompactMatchTypeStepProps {
   onChange: (value: "singles" | "doubles") => void
@@ -13,19 +13,18 @@ interface CompactMatchTypeStepProps {
 export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeStepProps & { onComplete: () => void }) {
   const t = useTranslations('common')
   const [selected, setSelected] = useState<"singles" | "doubles" | null>(null)
+  const completed = useRef(false)
 
   const handleSelect = (val: "singles" | "doubles") => {
+    if (completed.current) return
+    completed.current = true
     setSelected(val)
     onChange(val)
-    setTimeout(() => {
-      onComplete()
-    }, 300)
+    onComplete()
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
       className="p-2"
     >
       <div className="text-left mb-3">
@@ -35,12 +34,14 @@ export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeS
 
       <div className="space-y-2">
         {/* Singles Option */}
-        <motion.div
+        <motion.button
+          type="button"
+          aria-pressed={selected === "singles"}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={() => handleSelect("singles")}
           className={`
-            p-3 rounded-lg border cursor-pointer transition-all duration-200
+            w-full p-3 rounded-lg border text-left cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
             ${selected === "singles" 
               ? 'border-primary bg-primary/10' 
               : 'border-border hover:border-primary/50'
@@ -66,15 +67,17 @@ export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeS
               />
             )}
           </div>
-        </motion.div>
+        </motion.button>
 
         {/* Doubles Option */}
-        <motion.div
+        <motion.button
+          type="button"
+          aria-pressed={selected === "doubles"}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={() => handleSelect("doubles")}
           className={`
-            p-3 rounded-lg border cursor-pointer transition-all duration-200
+            w-full p-3 rounded-lg border text-left cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
             ${selected === "doubles" 
               ? 'border-primary bg-primary/10' 
               : 'border-border hover:border-primary/50'
@@ -100,7 +103,7 @@ export function CompactMatchTypeStep({ onChange, onComplete }: CompactMatchTypeS
               />
             )}
           </div>
-        </motion.div>
+        </motion.button>
       </div>
     </motion.div>
   )

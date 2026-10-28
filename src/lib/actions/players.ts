@@ -68,6 +68,19 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
 
     const { databases, storage } = await createAdminClient()
 
+    // Never unset an existing main player as part of creating a new one.
+    // Check before uploading a picture or writing a document.
+    if (validatedData.isMainPlayer) {
+      const existingPlayers = await databases.listDocuments(
+        env.APPWRITE_DATABASE_ID,
+        env.APPWRITE_PLAYERS_COLLECTION_ID,
+        [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true), Query.limit(1)]
+      )
+      if (existingPlayers.total > 0 || existingPlayers.documents.length > 0) {
+        return { error: "MAIN_PLAYER_EXISTS" }
+      }
+    }
+
     // Handle profile picture upload
     let profilePictureId: string | undefined
     const profilePicture = formData.get("profilePicture") as File
@@ -81,25 +94,6 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
         profilePictureId = uploadedFile.$id
       } catch (error) {
         console.error("Error uploading profile picture:", error)
-      }
-    }
-
-    // If this is set as main player, unset other main players
-    if (validatedData.isMainPlayer) {
-      const existingPlayers = await databases.listDocuments(
-        env.APPWRITE_DATABASE_ID,
-        env.APPWRITE_PLAYERS_COLLECTION_ID,
-        [Query.equal("userId", user.$id), Query.equal("isMainPlayer", true)]
-      )
-
-      // Remove main player status from existing players
-      for (const existingPlayer of existingPlayers.documents) {
-        await databases.updateDocument(
-          env.APPWRITE_DATABASE_ID,
-          env.APPWRITE_PLAYERS_COLLECTION_ID,
-          existingPlayer.$id,
-          { isMainPlayer: false }
-        )
       }
     }
 
@@ -175,7 +169,7 @@ export async function getPlayersByUserPaginated(options: {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return { players: [], total: 0, hasMore: false }
+      throw new Error("Unauthorized")
     }
 
     const { databases } = await createAdminClient()
@@ -245,7 +239,7 @@ export async function getPlayersByUserPaginated(options: {
     return { players, total, hasMore }
   } catch (error) {
     console.error("Error fetching paginated players:", error)
-    return { players: [], total: 0, hasMore: false }
+    throw error
   }
 }
 

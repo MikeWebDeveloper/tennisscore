@@ -16,10 +16,10 @@
 @layer base {
   :root {
     /* Light theme - warm off-white surface, white cards, soft borders */
-    --background: 250 250 249;
-    --foreground: 24 24 27;
+    --background: 245 246 239;
+    --foreground: 23 32 20;
     --card: 255 255 255;
-    --card-foreground: 24 24 27;
+    --card-foreground: 23 32 20;
     --popover: 255 255 255;
     --popover-foreground: 24 24 27;
     --primary: 24 24 27;
@@ -27,7 +27,7 @@
     --secondary: 244 244 242;
     --secondary-foreground: 24 24 27;
     --muted: 244 244 242;
-    --muted-foreground: 113 113 122;
+    --muted-foreground: 83 97 77;
     --accent: 240 240 237;
     --accent-foreground: 24 24 27;
     --destructive: 220 38 38;
@@ -41,7 +41,7 @@
     --chart-3: 128 128 128;
     --chart-4: 160 160 160;
     --chart-5: 192 192 192;
-    --brand: 77 124 15;
+    --brand: 54 88 0;
     --brand-foreground: 255 255 255;
     --win: 21 128 61;
     --loss: 220 38 38;
@@ -49,33 +49,33 @@
 
   .dark {
     /* Dark theme - near-black surface, slightly raised cards */
-    --background: 10 10 11;
-    --foreground: 244 244 245;
-    --card: 20 20 22;
-    --card-foreground: 244 244 245;
-    --popover: 20 20 22;
-    --popover-foreground: 244 244 245;
-    --primary: 244 244 245;
-    --primary-foreground: 10 10 11;
-    --secondary: 28 28 31;
-    --secondary-foreground: 244 244 245;
-    --muted: 28 28 31;
-    --muted-foreground: 161 161 170;
-    --accent: 34 34 38;
-    --accent-foreground: 244 244 245;
+    --background: 16 20 17;
+    --foreground: 244 247 237;
+    --card: 25 30 25;
+    --card-foreground: 244 247 237;
+    --popover: 25 30 25;
+    --popover-foreground: 244 247 237;
+    --primary: 244 247 237;
+    --primary-foreground: 16 20 17;
+    --secondary: 34 42 33;
+    --secondary-foreground: 244 247 237;
+    --muted: 34 42 33;
+    --muted-foreground: 173 184 167;
+    --accent: 38 46 36;
+    --accent-foreground: 244 247 237;
     --destructive: 248 113 113;
     --destructive-foreground: 10 10 11;
-    --border: 39 39 42;
-    --input: 39 39 42;
-    --ring: 244 244 245;
+    --border: 54 64 48;
+    --input: 54 64 48;
+    --ring: 244 247 237;
     --radius: 0.75rem;
     --chart-1: 255 255 255;
     --chart-2: 192 192 192;
     --chart-3: 128 128 128;
     --chart-4: 96 96 96;
     --chart-5: 64 64 64;
-    --brand: 190 242 70;
-    --brand-foreground: 10 10 11;
+    --brand: 203 245 100;
+    --brand-foreground: 24 33 11;
     --win: 74 222 128;
     --loss: 248 113 113;
   }
@@ -107,7 +107,7 @@
     --chart-3: 140 147 165;
     --chart-4: 104 111 130;
     --chart-5: 78 84 102;
-    --brand: 190 242 70;
+    --brand: 203 245 100;
     --brand-foreground: 20 24 18;
     --win: 74 222 128;
     --loss: 248 113 113;
@@ -570,7 +570,7 @@ h1, h2, h3, h4, h5, h6 {
     pointer-events: none;
     background:
       radial-gradient(60rem 36rem at 85% -10%, rgb(var(--brand) / 0.10), transparent 60%),
-      radial-gradient(48rem 32rem at -10% 20%, rgb(99 102 241 / 0.08), transparent 60%);
+      radial-gradient(48rem 32rem at -10% 20%, rgb(var(--brand) / 0.03), transparent 60%);
   }
 
   /* Fixed bars only (header, tab bar, drawer): the one place backdrop blur is worth its cost */
@@ -613,13 +613,7 @@ h1, h2, h3, h4, h5, h6 {
     to { transform: none; }
   }
 
-  .live-dot {
-    animation: livePulse 1.6s ease-out infinite;
-  }
-  @keyframes livePulse {
-    0% { box-shadow: 0 0 0 0 rgb(var(--brand) / 0.55); }
-    100% { box-shadow: 0 0 0 8px rgb(var(--brand) / 0); }
-  }
+  /* A steady indicator avoids continuous repainting while retaining status. */
 
   /* Win-rate ring: --p is 0-100 */
   .ring {

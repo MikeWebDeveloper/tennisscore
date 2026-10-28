@@ -14,13 +14,14 @@ export default async function PlayersPage() {
     limit: 20, 
     offset: 0, 
     sortBy: 'mainFirst'
-  }).catch(() => ({ players: [], total: 0, hasMore: false }))
+  }).then(result => ({ ...result, error: false })).catch(() => ({ players: [], total: 0, hasMore: false, error: true }))
 
   return (
     <PaginatedPlayersClient 
       initialPlayers={result.players}
       initialTotal={result.total}
       initialHasMore={result.hasMore}
+      initialError={result.error}
     />
   )
 } 

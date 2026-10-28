@@ -2,7 +2,7 @@
 
 import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
-import { useRef, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 import type { SetFormat } from "@/lib/utils/match-format"
 
 interface CompactFormatStepProps {
@@ -29,24 +29,7 @@ export function CompactFormatStep({
   onComplete
 }: CompactFormatStepProps) {
   const t = useTranslations('common')
-  const advanceScheduledRef = useRef(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Check if all selections are made and schedule advance
-  useEffect(() => {
-    const allSelected = sets !== null && scoring !== "" && finalSet !== ""
-    
-    if (allSelected && !advanceScheduledRef.current) {
-      advanceScheduledRef.current = true
-      timeoutRef.current = setTimeout(() => {
-        onComplete()
-      }, 300)
-    }
-    
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [sets, scoring, finalSet, onComplete])
+  const allSelected = sets !== null && scoring !== "" && finalSet !== ""
 
   const setOptions = [
     { value: 1, label: t("bestOf1") },
@@ -66,7 +49,7 @@ export function CompactFormatStep({
       </div>
 
       <div className="space-y-3">
-        {/* Set length (default Standard so the three required choices below still auto-advance) */}
+        {/* Set length defaults to Standard. */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">{t("setLength")}</label>
           <div className="grid grid-cols-2 gap-1.5">
@@ -191,6 +174,9 @@ export function CompactFormatStep({
           </div>
         </div>
       </div>
+      <Button type="button" className="mt-4 w-full" disabled={!allSelected} onClick={onComplete}>
+        {t('continue')}
+      </Button>
     </motion.div>
   )
 }

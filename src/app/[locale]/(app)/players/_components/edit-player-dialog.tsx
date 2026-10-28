@@ -28,12 +28,14 @@ interface EditPlayerDialogProps {
   player: Player | null
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onSaved?: () => void
 }
 
 export function EditPlayerDialog({
   player,
   isOpen,
   onOpenChange,
+  onSaved,
 }: EditPlayerDialogProps) {
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
@@ -106,6 +108,7 @@ export function EditPlayerDialog({
         description: t('playerUpdated'),
       })
       onOpenChange(false)
+      onSaved?.()
       router.refresh()
     })
   }

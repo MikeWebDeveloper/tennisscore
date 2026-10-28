@@ -10,7 +10,7 @@ import { Activity } from "lucide-react"
 import { Trophy } from "lucide-react"
 import { Target } from "lucide-react"
 import { Brain } from "lucide-react"
-import { Download } from "lucide-react"
+import { Zap } from "lucide-react"
 import { Filter } from "lucide-react"
 import { X } from "lucide-react"
 import { Match, Player } from "@/lib/types"
@@ -26,7 +26,8 @@ import {
   LazyServeReturnAnalysis as ServeReturnAnalysis,
   LazyClutchPerformance as ClutchPerformance,
   LazyHeadToHeadAnalysis as HeadToHeadAnalysis,
-  LazyMatchPatterns as MatchPatterns
+  LazyMatchPatterns as MatchPatterns,
+  LazyIntensityChart as IntensityChart
 } from "./_components/lazy-charts"
 import { Button } from "@/components/ui/button"
 
@@ -318,6 +319,7 @@ function analyzeMatchPatterns(matches: Match[], playerId: string) {
 // Main component
 export default function EnhancedStatisticsClient({ mainPlayer, matches }: EnhancedStatisticsClientProps) {
   const t = useTranslations('statistics')
+  const commonT = useTranslations('common')
   const [filters, setFilters] = useState<StatisticsFilters>({
     dateRange: {},
     opponent: undefined,
@@ -364,10 +366,13 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             <Filter className="h-4 w-4" />
             {hasFilters && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden="true" />}
           </Button>
-          <Button variant="outline" size="icon" className="h-10 w-10" title={t("exportData")} aria-label={t("exportData")}>
-            <Download className="h-4 w-4" />
-          </Button>
         </div>
+      </div>
+
+      <div className="px-1 text-sm text-muted-foreground" role="status">
+        <p>{t("loadedSample", { selected: filteredMatches.length, completed: filteredMatches.filter(match => match.status === 'completed').length })}</p>
+        <p>{t(hasFilters ? "selectedFiltersPeriod" : "allLoadedHistory")}</p>
+        <p>{t("pointDataNote")}</p>
       </div>
 
       {/* Key Performance Indicators - Mobile First */}
@@ -376,9 +381,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("dominanceScore")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("dominanceScore")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.dominance.dominanceScore}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("outOf")} 100</p>
+                <p className="text-xs text-muted-foreground">{t("outOf")} 100</p>
               </div>
               <Trophy className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-yellow-500 flex-shrink-0" />
             </div>
@@ -390,9 +395,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("pressureIndex")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("pressureIndex")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.pressureStats.pressurePerformanceIndex}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("clutchRating")}</p>
+                <p className="text-xs text-muted-foreground">{t("clutchRating")}</p>
               </div>
               <Target className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-500 flex-shrink-0" />
             </div>
@@ -404,9 +409,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("mentalToughness")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("mentalToughness")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.mentalToughness.mentalToughnessScore}</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("comebacks", { count: stats.mentalToughness.comebacks })}</p>
+                <p className="text-xs text-muted-foreground">{t("comebacks", { count: stats.mentalToughness.comebacks })}</p>
               </div>
               <Brain className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-purple-500 flex-shrink-0" />
             </div>
@@ -418,9 +423,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
           <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
-                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{t("winRate")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("winRate")}</p>
                 <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.basicStats.winRate}%</p>
-                <p className="text-[10px] xs:text-xs text-muted-foreground">{t("ofMatches", { won: stats.basicStats.matchesWon, total: stats.basicStats.totalMatches })}</p>
+                <p className="text-xs text-muted-foreground">{t("ofMatches", { won: stats.basicStats.matchesWon, total: stats.basicStats.totalMatches })}</p>
               </div>
               <Activity className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-green-500 flex-shrink-0" />
             </div>
@@ -514,6 +519,33 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             </div>
 
             <TabsContent value="overview" className="space-y-4 xs:space-y-5 sm:space-y-6 -mt-2 xs:mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('matchIntensity')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('averageGamesAndSetsPerMatch')}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground">{t('gamesPerMatch')}</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stats.patterns.averageGamesPerMatch}</p>
+                      </div>
+                      <div className="space-y-1 text-right">
+                        <p className="text-xs sm:text-sm text-muted-foreground">{t('setsPerMatch')}</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stats.patterns.averageSetsPerMatch}</p>
+                      </div>
+                    </div>
+                    <div className="h-[120px] xs:h-[135px] sm:h-[150px]">
+                      <IntensityChart data={[{ name: commonT('matchPatterns.matchIntensity'), value: Math.min(stats.patterns.averageGamesPerMatch / 20 * 100, 100), fill: '#8b5cf6' }]} height={150} innerRadius={30} outerRadius={90} cornerRadius={10} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
+                      <div><Zap className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-yellow-500" /><p className="text-xs sm:text-sm font-medium">{stats.patterns.straightSetWins}</p><p className="text-xs text-muted-foreground">{t('straightSetWins')}</p></div>
+                      <div><Trophy className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-purple-500" /><p className="text-xs sm:text-sm font-medium">{stats.patterns.fiveSetterWins}</p><p className="text-xs text-muted-foreground">{t('fiveSetWins')}</p></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               <MatchPatterns patterns={stats.patterns} />
               
               {/* Quick Stats Grid - Mobile Optimized */}

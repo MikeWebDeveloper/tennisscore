@@ -36,11 +36,11 @@ export function MobileTabBar({ navigation }: MobileTabBarProps) {
         prefetch={true}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors",
+          "group/tab flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
           isActive ? "text-foreground" : "text-muted-foreground"
         )}
       >
-        <span className={cn("flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200", isActive && "bg-brand/15 text-brand")}>
+        <span className={cn("flex h-7 w-12 items-center justify-center rounded-full transition-[background-color,color,transform] duration-150 motion-reduce:transition-none motion-safe:group-active/tab:scale-95", isActive && "bg-brand/15 text-brand")}>
           <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} aria-hidden="true" />
         </span>
         <span className="max-w-full truncate px-1">{item.label}</span>
@@ -58,9 +58,9 @@ export function MobileTabBar({ navigation }: MobileTabBarProps) {
         <Link
           href="/matches/new"
           aria-label={t('createNewMatch')}
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-foreground"
+          className="group/new flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         >
-          <span className="flex h-8 w-11 items-center justify-center rounded-full bg-foreground text-background">
+          <span className="flex h-8 w-11 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-100 motion-reduce:transition-none motion-safe:group-active/new:scale-95">
             <Plus className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="max-w-full truncate px-1">{t('new')}</span>

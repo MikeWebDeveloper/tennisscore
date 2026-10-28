@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { User } from "lucide-react"
@@ -56,23 +57,6 @@ export function CompactPlayersStep({
     ? (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo)
     : (playerOneAnonymous || playerOne) && (playerTwoAnonymous || playerTwo) &&
       (playerThreeAnonymous || playerThree) && (playerFourAnonymous || playerFour)
-
-  // Effect for auto-advancing to the next step
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    if (isComplete) {
-      timeoutId = setTimeout(() => {
-        onComplete()
-      }, 300)
-    }
-
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [
-    isComplete,
-    onComplete,
-  ])
 
   const createPlayerOptions = (excludeIds: string[] = []): ComboboxOption[] => {
     const options: ComboboxOption[] = []
@@ -268,6 +252,10 @@ export function CompactPlayersStep({
           </>
         )}
       </div>
+
+      <Button className="mt-4 w-full" disabled={!isComplete} onClick={onComplete}>
+        {t('continue')}
+      </Button>
 
       <CreatePlayerDialog 
         isOpen={showCreatePlayerDialog}

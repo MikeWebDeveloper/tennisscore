@@ -374,6 +374,8 @@
   "left": "Levá",
   "setAsMainPlayer": "Nastavit jako hlavního hráče",
   "createPlayer": "Vytvořit hráče",
+  "createPlayerError": "Hráče se nepodařilo vytvořit. Zkuste to prosím znovu.",
+  "mainPlayerAlreadyExists": "Hlavní hráč již existuje. Vytvořte tohoto hráče bez volby hlavního hráče a hlavního hráče spravujte samostatně.",
   "deleteMatch": "Smazat zápas",
   "deleteMatchConfirm": "Opravdu chcete smazat tento zápas? Tuto akci nelze vrátit zpět.",
   "deleting": "Mazání...",

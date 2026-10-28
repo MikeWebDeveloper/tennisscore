@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,18 +17,47 @@ import { useTranslations } from "@/i18n"
 interface CreatePlayerDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onCreated?: () => void
 }
 
-export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogProps) {
+export function CreatePlayerDialog({ isOpen, onOpenChange, onCreated }: CreatePlayerDialogProps) {
   const t = useTranslations('common')
+  const router = useRouter()
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<"general" | "mainExists" | null>(null)
+  const savingRef = useRef(false)
 
-  const handleCreatePlayer = async (formData: FormData) => {
-    const result = await createPlayer(formData)
-    if (result.success) {
-      onOpenChange(false)
+  const handleOpenChange = (open: boolean) => {
+    if (savingRef.current) return
+    if (!open) {
+      setSaveError(null)
       setPreviewImage(null)
-      window.location.reload()
+    }
+    onOpenChange(open)
+  }
+
+  const handleCreatePlayer = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (savingRef.current) return
+    savingRef.current = true
+    setIsSaving(true)
+    setSaveError(null)
+    try {
+      const result = await createPlayer(new FormData(event.currentTarget))
+      if (!result.success) {
+        setSaveError(result.error === "MAIN_PLAYER_EXISTS" ? "mainExists" : "general")
+        return
+      }
+      setPreviewImage(null)
+      onOpenChange(false)
+      onCreated?.()
+      router.refresh()
+    } catch {
+      setSaveError("general")
+    } finally {
+      savingRef.current = false
+      setIsSaving(false)
     }
   }
 
@@ -44,7 +74,7 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl">
         <DialogHeader className="space-y-2">
           <DialogTitle className="text-lg">{t("createNewPlayer")}</DialogTitle>
@@ -52,7 +82,7 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
             {t("addNewPlayerDescription")}
           </DialogDescription>
         </DialogHeader>
-        <form action={handleCreatePlayer} className="space-y-3">
+        <form onSubmit={handleCreatePlayer} className="space-y-3">
           {/* Profile Picture Upload */}
           <div className="flex flex-col items-center space-y-3">
             <div className="relative">
@@ -156,25 +186,27 @@ export function CreatePlayerDialog({ isOpen, onOpenChange }: CreatePlayerDialogP
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox id="isMainPlayer" name="isMainPlayer" />
+            <Checkbox id="isMainPlayer" name="isMainPlayer" value="true" />
             <Label htmlFor="isMainPlayer" className="text-xs">
               {t("setAsMainPlayer")}
             </Label>
           </div>
 
+          {saveError && <p role="alert" className="text-sm text-destructive">{t(saveError === "mainExists" ? "mainPlayerAlreadyExists" : "createPlayerError")}</p>}
           <div className="space-y-2 pt-2">
             <div className="flex gap-2">
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
+                disabled={isSaving}
                 className="flex-1 h-8 text-xs"
                 size="sm"
               >
                 {t("cancel")}
               </Button>
-              <Button type="submit" className="flex-1 h-8 text-xs" size="sm">
-                {t("createPlayer")}
+              <Button type="submit" disabled={isSaving} className="flex-1 h-8 text-xs" size="sm">
+                {t(isSaving ? "saving" : "createPlayer")}
               </Button>
             </div>
           </div>

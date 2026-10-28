@@ -53,3 +53,10 @@ test('a one-player page never sends a zero limit to Appwrite', async () => {
     expect(queries(call).find(q => q.method === 'limit')?.values[0]).toBeGreaterThan(0)
   }
 })
+
+test('propagates a backend failure instead of presenting an empty account', async () => {
+  const silence = jest.spyOn(console, 'error').mockImplementation(() => {})
+  mockListDocuments.mockRejectedValue(new Error('offline'))
+  await expect(getPlayersByUserPaginated()).rejects.toThrow('offline')
+  silence.mockRestore()
+})

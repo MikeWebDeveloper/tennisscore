@@ -14,7 +14,6 @@ import { MessageCircle } from "lucide-react"
 import { MessageSquare } from "lucide-react"
 import { Copy } from "lucide-react"
 import { Mail } from "lucide-react"
-import { Activity } from "lucide-react"
 import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
@@ -31,7 +30,6 @@ import { UltraSimplePointLogger } from "./ultra-simple-point-logger"
 import { DynamicPointLogger } from "./dynamic-point-logger"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
-import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTranslations } from "@/i18n"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
@@ -282,34 +280,14 @@ function PointEntry({
 
   return (
     <div className="space-y-4">
-      {/* Critical point context header */}
-      {pointSituation && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className={cn(
-            "inline-flex items-center gap-2 px-4 py-2 rounded-lg border",
-            pointSituation.bgColor,
-            pointSituation.borderColor
-          )}>
-            <Badge variant="destructive" className={cn("text-white hover:opacity-90", pointSituation.color)}>
-              {pointSituation.badge}
-            </Badge>
-            <span className={cn("text-sm font-medium", pointSituation.textColor)}>
-              {getSituationText()}
-            </span>
-          </div>
-        </motion.div>
-      )}
-
       {/* Player buttons */}
       <div className="grid grid-cols-2 gap-3">
-        <motion.div
+        <motion.button
+          type="button"
+          data-testid="score-point"
           onClick={() => onPointWin("p1")}
           className={cn(
-            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
+            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
             pointSituation && pointSituation.player === 'p1' && pointSituation.borderColor,
             pointSituation && pointSituation.player === 'p1' && pointSituation.bgColor
           )}
@@ -344,12 +322,14 @@ function PointEntry({
           )}>
             {getPointDisplay(0)}
           </span>
-        </motion.div>
+        </motion.button>
 
-        <motion.div
+        <motion.button
+          type="button"
+          data-testid="score-point"
           onClick={() => onPointWin("p2")}
           className={cn(
-            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden",
+            "h-32 sm:h-40 bg-card border rounded-lg flex flex-col items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
             pointSituation && pointSituation.player === 'p2' && pointSituation.borderColor,
             pointSituation && pointSituation.player === 'p2' && pointSituation.bgColor
           )}
@@ -384,7 +364,30 @@ function PointEntry({
           )}>
             {getPointDisplay(1)}
           </span>
+        </motion.button>
+      </div>
+      {/* Reserve space so point and undo controls do not jump on a critical point. */}
+      <div className="flex min-h-12 items-center justify-center">
+      {pointSituation && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className={cn(
+            "inline-flex items-center gap-2 px-4 py-2 rounded-lg border",
+            pointSituation.bgColor,
+            pointSituation.borderColor
+          )}>
+            <Badge variant="destructive" className={cn("text-white hover:opacity-90", pointSituation.color)}>
+              {pointSituation.badge}
+            </Badge>
+            <span className={cn("text-sm font-medium", pointSituation.textColor)}>
+              {getSituationText()}
+            </span>
+          </div>
         </motion.div>
+      )}
       </div>
     </div>
   )
@@ -1040,9 +1043,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-dvh bg-background text-foreground">
       {/* Enhanced Header with More Space */}
-      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md border-b">
+      <header className="relative z-30 w-full border-b border-border bg-background/95 md:sticky md:top-0">
         {/* z-40: Always below sidebar (z-50), always at top of page */}
         <div className="container mx-auto px-4">
           {/* Top row: Back button, title, and action buttons */}
@@ -1052,6 +1055,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               size="icon"
               onClick={() => router.back()}
               className="md:hidden"
+              aria-label={tCommon('back')}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -1059,7 +1063,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             {/* Responsive Title: 'Live' on mobile, 'Live Match' on sm+ */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {match.tournamentName && (
-                <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2 truncate max-w-[5rem] sm:max-w-xs min-w-0">
+                <span className="text-xs font-semibold text-muted-foreground mr-2 truncate max-w-[5rem] sm:max-w-xs min-w-0">
                   {match.tournamentName}
                 </span>
               )}
@@ -1195,24 +1199,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           p2Streak={p2Streak}
         />
 
-        {/* Match Momentum Bar */}
-        {pointLog.length > 0 && (
-          <MomentumBar
-            pointLog={pointLog}
-            playerNames={playerNames}
-            className="mx-auto max-w-md"
-            compact={true}
-            maxPoints={10}
-          />
-        )}
-
         {/* Controls */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
             variant="outline"
             onClick={handleUndo}
             disabled={pointLog.length === 0}
-            className="flex items-center gap-2"
+            className="min-h-11 flex items-center gap-2"
           >
             <Undo className="h-4 w-4" />
             {tCommon('undo')}
@@ -1226,30 +1219,36 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             isMatchComplete={match.status === "Completed"}
           />
 
-          {/* Compact Serve Type Switcher */}
-          <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${serveType === 'first'
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'text-muted-foreground'
-              }`}>
-              <Activity className="h-3 w-3" />
-              {t('firstServe')}
-            </span>
-            <Switch
-              id="serve-type"
-              checked={serveType === 'second'}
-              onCheckedChange={(checked) => setServeType(checked ? 'second' : 'first')}
-              className="data-[state=checked]:bg-orange-500 scale-75"
-            />
-            <span className={`text-xs font-medium px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${serveType === 'second'
-              ? 'bg-orange-500 text-white shadow-sm'
-              : 'text-muted-foreground'
-              }`}>
-              <Activity className="h-3 w-3" />
-              {t('secondServe')}
-            </span>
+          {/* Serve selection: large touch targets and a named pressed state. */}
+          <div role="group" aria-label={tCommon('serveType')} className="flex items-center rounded-lg bg-muted/50 p-1">
+            {(['first', 'second'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                aria-label={tCommon(type === 'first' ? 'firstServe' : 'secondServe')}
+                aria-pressed={serveType === type}
+                onClick={() => setServeType(type)}
+                className={cn(
+                  "min-h-11 min-w-11 rounded-md px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                  serveType === type ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t(type === 'first' ? 'firstServe' : 'secondServe')}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* Match Momentum Bar */}
+        {pointLog.length > 0 && (
+          <MomentumBar
+            pointLog={pointLog}
+            playerNames={playerNames}
+            className="mx-auto max-w-md"
+            compact={true}
+            maxPoints={10}
+          />
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="stats" className="w-full">
@@ -1515,4 +1514,4 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       />
     </div>
   )
-} 
+}

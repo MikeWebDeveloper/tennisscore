@@ -12,6 +12,11 @@ const ChartSkeleton = () => (
   </div>
 )
 
+export const LazyIntensityChart = dynamic(
+  () => import('@/components/ui/charts/uplot-radial-bar-chart').then(mod => ({ default: mod.UPlotRadialBarChart })),
+  { loading: () => <Skeleton className="h-full w-full" />, ssr: false }
+)
+
 // Lazy load chart components with loading skeletons
 export const LazyPerformanceTrends = dynamic(
   () => import('./performance-trends').then(mod => ({ default: mod.PerformanceTrends })),

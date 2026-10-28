@@ -42,15 +42,22 @@ describe('CompactFormatStep set length', () => {
     expect(onSetFormatChange).toHaveBeenCalledWith('pro')
   })
 
-  it('still auto-advances once sets, scoring and final set are chosen (set length is optional)', () => {
-    const { onComplete } = render({ sets: 3, scoring: 'no-ad', finalSet: 'full' })
+  it('keeps completed choices open until Continue, even after editing', () => {
+    const { c, onComplete, onSetFormatChange } = render({ setFormat: 'fast4', sets: 3, scoring: 'no-ad', finalSet: 'full' })
+    act(() => { jest.advanceTimersByTime(1000) })
     expect(onComplete).not.toHaveBeenCalled()
-    act(() => { jest.advanceTimersByTime(350) })
+    expect(buttonByText(c, 'common.setFormatFast4').getAttribute('aria-pressed')).toBe('true')
+    act(() => { buttonByText(c, 'common.setFormatPro').click() })
+    expect(onSetFormatChange).toHaveBeenCalledWith('pro')
+    act(() => { jest.advanceTimersByTime(1000) })
+    expect(onComplete).not.toHaveBeenCalled()
+    act(() => { buttonByText(c, 'common.continue').click() })
     expect(onComplete).toHaveBeenCalledTimes(1)
   })
 
   it('does not advance while a required choice is missing', () => {
-    const { onComplete } = render({ sets: 3, scoring: '', finalSet: 'full' })
+    const { c, onComplete } = render({ sets: 3, scoring: '', finalSet: 'full' })
+    expect(buttonByText(c, 'common.continue').disabled).toBe(true)
     act(() => { jest.advanceTimersByTime(1000) })
     expect(onComplete).not.toHaveBeenCalled()
   })

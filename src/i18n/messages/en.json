@@ -412,6 +412,8 @@
     "left": "Left",
     "setAsMainPlayer": "Set as Main Player",
     "createPlayer": "Create Player",
+    "createPlayerError": "Could not create the player. Please try again.",
+    "mainPlayerAlreadyExists": "A main player already exists. Create this player without selecting Main Player, then manage your main player separately.",
     "deleteMatch": "Delete Match",
     "deleteMatchConfirm": "Are you sure you want to delete this match? This action cannot be undone.",
     "deleting": "Deleting...",
@@ -791,6 +793,8 @@
   "dashboard": {
     "resumeMatch": "Resume Match",
     "continueYourMatch": "Continue scoring your match.",
+    "yourGamesScore": "Your games {yours}, opponent games {opponent}",
+    "yourGamesLabel": "Your games",
     "singlesMatches": "Singles Matches",
     "viewDetailedStatistics": "View detailed statistics",
     "welcomeBack": "Welcome back",
@@ -1326,6 +1330,10 @@
     "soundEffectsInfo": "💡 Sound effects will initialize automatically when you start scoring points. Volume and settings are saved automatically."
   },
   "statistics": {
+    "loadedSample": "Selected: {selected} matches, including {completed} completed",
+    "allLoadedHistory": "Period: all loaded match history",
+    "selectedFiltersPeriod": "Period and sample: current filters",
+    "pointDataNote": "Some metrics require point-by-point data.",
     "loadingOlderMatches": "Loading older matches; statistics will update as your full history loads.",
     "historyLoadFailed": "Some older matches could not be loaded. Statistics are incomplete; refresh to try again.",
     "statistics": "Statistics",

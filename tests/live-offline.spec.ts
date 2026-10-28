@@ -5,7 +5,7 @@ import { test, expect, type Page } from '@playwright/test'
 test.skip(!process.env.FAKE_APPWRITE, 'set FAKE_APPWRITE=1 with the fake backend running')
 
 const FAKE = 'http://localhost:4100'
-const pointButtons = (page: Page) => page.locator('div.cursor-pointer.h-32')
+const pointButtons = (page: Page) => page.getByTestId('score-point')
 const badge = (page: Page) => page.locator('[data-sync-state]')
 const savedPoints = async (request: any) => {
   const doc = await (await request.get(`${FAKE}/__doc/m/match4`)).json()
@@ -37,6 +37,43 @@ test('keeps the screen awake while a match is in progress', async ({ page }) => 
   await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
   await expect(pointButtons(page).first()).toBeVisible()
   await expect.poll(() => page.evaluate(() => (window as any).__wakeLocks)).toBeGreaterThanOrEqual(1)
+})
+
+for (const [locale, first, second] of [
+  ['en', 'First Serve', 'Second Serve'],
+  ['cs', 'První servis', 'Druhý servis'],
+] as const) {
+  test(`${locale}: serve buttons are labelled, selectable and at least 44px tall`, async ({ page }) => {
+    await page.goto(`/${locale}/matches/live/match4`, { waitUntil: 'networkidle' })
+    const firstButton = page.getByRole('button', { name: first, exact: true })
+    const secondButton = page.getByRole('button', { name: second, exact: true })
+    await expect(firstButton).toHaveAttribute('aria-pressed', 'true')
+    expect((await firstButton.boundingBox())?.height).toBeGreaterThanOrEqual(44)
+    expect((await secondButton.boundingBox())?.height).toBeGreaterThanOrEqual(44)
+    await secondButton.click()
+    await expect(secondButton).toHaveAttribute('aria-pressed', 'true')
+    await expect(firstButton).toHaveAttribute('aria-pressed', 'false')
+    await firstButton.click()
+    await expect(firstButton).toHaveAttribute('aria-pressed', 'true')
+  })
+}
+
+test('point controls work from the keyboard and stay in place as points are scored', async ({ page }) => {
+  await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
+  const point = pointButtons(page).first()
+  await expect(point).toBeVisible()
+  const initial = await point.boundingBox()
+  await point.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => savedPoints(page.request)).toBe(1)
+  const updated = await point.boundingBox()
+  expect(initial).not.toBeNull()
+  expect(updated).not.toBeNull()
+  // Browser subpixel rounding and the press animation can vary by a fraction
+  // of a pixel; meaningful movement of the scoring target must stay under 1px.
+  expect(Math.abs(updated!.y - initial!.y)).toBeLessThan(1)
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect.poll(() => savedPoints(page.request)).toBe(0)
 })
 
 test('network drops mid-match: badge shows "unsent", then everything syncs when back online', async ({ page, context, request }) => {

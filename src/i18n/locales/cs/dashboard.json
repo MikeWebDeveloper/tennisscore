@@ -12,6 +12,8 @@
   "startNewMatch": "Začít nový zápas",
   "resumeMatch": "Pokračovat v zápase",
   "continueYourMatch": "Pokračujte ve skórování zápasu.",
+  "yourGamesScore": "Vaše gemy {yours}, gemy soupeře {opponent}",
+  "yourGamesLabel": "Vaše gemy",
   "singlesMatches": "Zápasy ve dvouhře",
   "viewDetailedStatistics": "Zobrazit podrobné statistiky",
   "beginScoringLiveMatch": "Začněte skórovat nový zápas živě.",

@@ -12,6 +12,8 @@
   "startNewMatch": "Start New Match",
   "resumeMatch": "Resume Match",
   "continueYourMatch": "Continue scoring your match.",
+  "yourGamesScore": "Your games {yours}, opponent games {opponent}",
+  "yourGamesLabel": "Your games",
   "singlesMatches": "Singles Matches",
   "viewDetailedStatistics": "View detailed statistics",
   "beginScoringLiveMatch": "Begin scoring a new match live.",

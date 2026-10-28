@@ -25,9 +25,9 @@ const samples = () => ({
   'm/match4': { ...base, $id: 'match4', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress', detailLevel: 'points',
     score: emptyScore, matchFormat: fmt(), pointLog: [] },
   'p/pl1': { $id: 'pl1', userId: 'test-user', firstName: 'Michal', lastName: 'Latal', isMainPlayer: true, $createdAt: '2026-10-01T10:00:00.000Z' },
-  'p/pl2': { $id: 'pl2', userId: 'test-user', firstName: 'Petr', lastName: 'Dvořák' },
-  'p/pl3': { $id: 'pl3', userId: 'test-user', firstName: 'Karel', lastName: 'Novotný' },
-  'p/pl4': { $id: 'pl4', userId: 'test-user', firstName: 'Jan', lastName: 'Procházka' },
+  'p/pl2': { $id: 'pl2', userId: 'test-user', isMainPlayer: false, firstName: 'Petr', lastName: 'Dvořák' },
+  'p/pl3': { $id: 'pl3', userId: 'test-user', isMainPlayer: false, firstName: 'Karel', lastName: 'Novotný' },
+  'p/pl4': { $id: 'pl4', userId: 'test-user', isMainPlayer: false, firstName: 'Jan', lastName: 'Procházka' },
 })
 
 // A season of finished matches so list, dashboard and statistics screens have data to show
@@ -49,6 +49,7 @@ const history = () => {
 Object.assign(samples, {})
 let docs = { ...samples(), ...history() }
 let failSaves = false
+let failPlayerCreate = false
 // Match attributes mirror the preview collection, including optional attributes absent
 // from sample documents. Validate ordinary attributes as well as system attributes.
 const matchAttributes = new Set(['playerOneId', 'playerTwoId', 'matchDate', 'matchFormat', 'status', 'winnerId', 'score', 'userId', 'pointLog', 'events', 'playerThreeId', 'playerFourId', 'isDoubles', 'detailLevel', 'endTime', 'retirementReason', 'startTime', 'setDurations', 'tournamentName', 'isDeleted', 'deletedAt', 'deletedBy'])
@@ -56,33 +57,68 @@ const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'a
 
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost')
-  if (url.pathname === '/__reset') { docs = { ...samples(), ...history() }; failSaves = false; return json(res, 200, { ok: true }) }
+  if (url.pathname === '/__reset') {
+    docs = { ...samples(), ...history() }; failSaves = false; failPlayerCreate = false
+    const marker = url.searchParams.get('marker')
+    if (marker && /^[A-Za-z0-9]{1,40}$/.test(marker)) docs['p/pl1'].lastName = marker
+    return json(res, 200, { ok: true })
+  }
+  if (url.pathname === '/__fail-player-create') { failPlayerCreate = url.searchParams.get('on') === '1'; return json(res, 200, { failPlayerCreate }) }
   if (url.pathname === '/__fail') { failSaves = url.searchParams.get('on') === '1'; return json(res, 200, { failSaves }) }
   const dbg = url.pathname.match(/^\/__doc\/([^/]+)\/([^/]+)$/)
   if (dbg) return docs[`${dbg[1]}/${dbg[2]}`] ? json(res, 200, docs[`${dbg[1]}/${dbg[2]}`]) : json(res, 404, {})
 
   const list = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/?$/)
+  if (list && list[1] === 'p' && req.method === 'POST') {
+    let body = ''
+    req.on('data', (chunk) => { body += chunk })
+    req.on('end', () => {
+      if (failPlayerCreate) return json(res, 500, { message: 'simulated outage', code: 500, type: 'general_server_error' })
+      try {
+        const { documentId, data } = JSON.parse(body)
+        if (!documentId || !data || !data.userId) return json(res, 400, { message: 'invalid document', code: 400 })
+        const key = `p/${documentId}`
+        if (docs[key]) return json(res, 409, { message: 'document exists', code: 409 })
+        const now = new Date().toISOString()
+        docs[key] = { ...data, $id: documentId, $createdAt: now, $updatedAt: now, $permissions: [], $databaseId: 'd', $collectionId: 'p' }
+        return json(res, 201, docs[key])
+      } catch { return json(res, 400, { message: 'invalid JSON', code: 400 }) }
+    })
+    return
+  }
   if (list && req.method === 'GET') {
-    let limit = 25, offset = 0
+    let limit = 25, offset = 0, cursorAfter = null, orderBy = null, ascending = false
     const filters = []
-    for (const q of url.searchParams.getAll('queries[]')) {
+    // node-appwrite's Client.flatten emits queries[0], queries[1], ...;
+    // support repeated queries[] as well for direct REST calls.
+    const encodedQueries = [...url.searchParams.entries()]
+      .filter(([key]) => /^queries\[(?:\d+)?\]$/.test(key)).map(([, value]) => value)
+    for (const q of encodedQueries) {
       try {
         const { method, attribute, values } = JSON.parse(q)
         if (method === 'limit') limit = values[0]
         if (method === 'offset') offset = values[0]
+        if (method === 'cursorAfter') cursorAfter = values[0]
+        if (method === 'orderAsc' || method === 'orderDesc') { orderBy = attribute; ascending = method === 'orderAsc' }
         if (method === 'select') {
           const bad = values.find((v) => v.startsWith('$') ? !['$id', '$createdAt', '$updatedAt', '$permissions'].includes(v) : list[1] === 'm' && !matchAttributes.has(v))
           if (bad) return json(res, 400, { message: `Invalid query: Attribute not found in schema: ${bad}`, code: 400, type: 'general_query_invalid' })
         }
-        if (method === 'equal' && attribute && !attribute.startsWith('$')) filters.push((d) => values.includes(d[attribute]))
+        if (method === 'equal' && attribute) filters.push((d) => values.includes(d[attribute]))
+        if (method === 'greaterThan' && attribute) filters.push((d) => d[attribute] > values[0])
+        if (method === 'isNull' && attribute) filters.push((d) => d[attribute] == null)
         if (method === 'greaterThanEqual' && attribute) filters.push((d) => d[attribute] >= values[0])
         if (method === 'or') filters.push((d) => values.some((q) => q.method === 'isNull' ? d[q.attribute] == null : q.method === 'equal' && q.values.includes(d[q.attribute])))
         if (method === 'notEqual' && attribute) filters.push((d) => !values.includes(d[attribute]))
       } catch { /* ignore */ }
     }
     const all = Object.entries(docs).filter(([k]) => k.startsWith(list[1] + '/')).map(([, v]) => v).filter((d) => filters.every((f) => f(d)))
-      .sort((a, b) => String(b.matchDate || b.$createdAt).localeCompare(String(a.matchDate || a.$createdAt)))
-    return json(res, 200, { total: all.length, documents: all.slice(offset, offset + limit) })
+    if (orderBy) all.sort((a, b) => {
+      const compare = String(a[orderBy] ?? '').localeCompare(String(b[orderBy] ?? ''))
+      return ascending ? compare : -compare
+    })
+    const start = cursorAfter ? Math.max(0, all.findIndex((doc) => doc.$id === cursorAfter) + 1) + offset : offset
+    return json(res, 200, { total: all.length, documents: all.slice(start, start + limit) })
   }
 
   const m = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/([^/?]+)/)

@@ -1,5 +1,9 @@
 {
   "statistics": "Statistiky",
+  "loadedSample": "Vybráno: {selected} zápasů, z toho {completed} dokončených",
+  "allLoadedHistory": "Období: celá načtená historie zápasů",
+  "selectedFiltersPeriod": "Období a výběr: aktuální filtry",
+  "pointDataNote": "Některé ukazatele vyžadují údaje o jednotlivých bodech.",
   "loadingOlderMatches": "Načítají se starší zápasy. Statistiky se postupně aktualizují.",
   "historyLoadFailed": "Některé starší zápasy se nepodařilo načíst. Statistiky nejsou úplné; obnovte stránku a zkuste to znovu.",
   "dateRange": "Časové období",

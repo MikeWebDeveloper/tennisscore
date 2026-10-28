@@ -1,5 +1,9 @@
 {
   "statistics": "Statistics",
+  "loadedSample": "Selected: {selected} matches, including {completed} completed",
+  "allLoadedHistory": "Period: all loaded match history",
+  "selectedFiltersPeriod": "Period and sample: current filters",
+  "pointDataNote": "Some metrics require point-by-point data.",
   "loadingOlderMatches": "Loading older matches; statistics will update as your full history loads.",
   "historyLoadFailed": "Some older matches could not be loaded. Statistics are incomplete; refresh to try again.",
   "dateRange": "Date Range",
