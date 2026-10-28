@@ -9,6 +9,7 @@
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx,.ts,.tsx",
     "type-check": "tsc --noEmit",
     "check:bundle": "node tools/check-bundle-budget.mjs",
+    "check:private-prerender": "node tools/check-private-prerender.mjs",
     "check:appwrite-schema": "node tools/check-appwrite-schema.mjs",
     "analyze": "ANALYZE=true npm run build",
     "test": "jest",

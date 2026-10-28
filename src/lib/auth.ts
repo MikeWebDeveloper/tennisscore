@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirect, unstable_rethrow } from "next/navigation"
 import { cache } from "react"
 import { getSession } from "./session"
 
@@ -30,7 +30,10 @@ export const getCurrentUser = cache(async function getCurrentUser() {
       $createdAt: new Date().toISOString(), // Placeholder since we don't have this from session
       $updatedAt: new Date().toISOString(), // Placeholder since we don't have this from session
     }
-  } catch {
+  } catch (error) {
+    // Next uses thrown control signals to opt routes into request-time rendering.
+    // Swallowing those signals can prerender an authenticated page without a session.
+    unstable_rethrow(error)
     return null
   }
 })
