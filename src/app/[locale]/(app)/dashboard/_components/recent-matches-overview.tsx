@@ -66,7 +66,7 @@ export function RecentMatchesOverview({ matches, mainPlayer, playersMap }: Recen
           </Link>
         </div>
       ) : (
-        <ul>
+        <ul className="divide-y divide-foreground/[0.06]">
           {recent.map(match => {
             const live = match.status === 'in-progress'
             const isWin = matchPerspective(match, mainPlayer.$id).isWin

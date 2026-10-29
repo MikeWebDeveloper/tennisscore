@@ -28,7 +28,7 @@ import { PointByPointView } from "./point-by-point-view"
 import { useLocale, useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
-import { formatPlayerRating } from "@/components/shared/player-rating-display"
+import { PlayerMeta } from "@/components/shared/player-meta"
 import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -69,29 +69,6 @@ interface MatchDetailsProps {
     $permissions: string[]
     tournamentName?: string
   }
-}
-
-// PlayerDetailsLine: shows year, rating, and club in scoreboard style
-function PlayerDetailsLine({ yearOfBirth, rating, club }: { yearOfBirth?: number; rating?: string; club?: string }) {
-  return (
-    <div className="space-y-0.5">
-      {(yearOfBirth || rating) && (
-        <div className="player-details-line flex gap-1">
-          {yearOfBirth && (
-            <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-medium">{yearOfBirth}</span>
-          )}
-          {rating && (
-            <span className="text-[9px] sm:text-[10px] text-purple-600 dark:text-purple-400 font-medium">({rating})</span>
-          )}
-        </div>
-      )}
-      {club && (
-        <div className="player-details-line">
-          <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-medium">{club}</span>
-        </div>
-      )}
-    </div>
-  )
 }
 
 export function MatchDetails({ match }: MatchDetailsProps) {
@@ -669,71 +646,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         {isDoubles ? t('teams') : t('players')}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                          {match.playerOne && (
-                            <PlayerAvatar
-                              player={match.playerOne}
-                              className="h-10 w-10"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <div className="font-semibold">
-                              <span className="name-gradient">{getTeamName("team1")}</span>
-                            </div>
-                            {match.playerOne && (
-                              <PlayerDetailsLine
-                                yearOfBirth={match.playerOne.yearOfBirth}
-                                rating={formatPlayerRating(match.playerOne)}
-                                club={match.playerOne.club}
-                              />
-                            )}
-                            {/* For doubles, show partner details */}
-                            {isDoubles && match.playerThree && (
-                              <div className="mt-1">
-                                <span className="text-xs text-muted-foreground">/</span>
-                                <PlayerDetailsLine
-                                  yearOfBirth={match.playerThree.yearOfBirth}
-                                  rating={formatPlayerRating(match.playerThree)}
-                                  club={match.playerThree.club}
-                                />
+                    <CardContent data-players-card>
+                      {/* Same look as the live scoreboard: one row per side, split by a hairline */}
+                      <div className="divide-y divide-foreground/[0.06]">
+                        {([
+                          ["team1", match.playerOne, match.playerThree],
+                          ["team2", match.playerTwo, match.playerFour],
+                        ] as const).map(([team, main, partner]) => (
+                          <div key={team} data-side={team} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                            {main && <PlayerAvatar player={main} className="h-10 w-10 shrink-0" />}
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-semibold">
+                                <span className="name-gradient">{getTeamName(team)}</span>
                               </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                          {match.playerTwo && (
-                            <PlayerAvatar
-                              player={match.playerTwo}
-                              className="h-10 w-10"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <div className="font-semibold">
-                              <span className="name-gradient">{getTeamName("team2")}</span>
+                              <PlayerMeta players={[main, isDoubles ? partner : undefined]} className="mt-0.5 text-xs" />
                             </div>
-                            {match.playerTwo && (
-                              <PlayerDetailsLine
-                                yearOfBirth={match.playerTwo.yearOfBirth}
-                                rating={formatPlayerRating(match.playerTwo)}
-                                club={match.playerTwo.club}
-                              />
-                            )}
-                            {/* For doubles, show partner details */}
-                            {isDoubles && match.playerFour && (
-                              <div className="mt-1">
-                                <span className="text-xs text-muted-foreground">/</span>
-                                <PlayerDetailsLine
-                                  yearOfBirth={match.playerFour.yearOfBirth}
-                                  rating={formatPlayerRating(match.playerFour)}
-                                  club={match.playerFour.club}
-                                />
-                              </div>
-                            )}
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>

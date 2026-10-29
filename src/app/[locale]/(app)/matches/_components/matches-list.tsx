@@ -12,6 +12,7 @@ import { Search } from "lucide-react"
 import { Filter } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
+import { PlayerMeta } from "@/components/shared/player-meta"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -202,7 +203,7 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
               >
                 <Card className="surface-hover rise overflow-hidden p-0" style={{ "--i": index } as React.CSSProperties}>
                   <Link href={`/matches/${match.$id}`} className="block px-4 pb-3 pt-4">
-                    <div className="mb-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-2">
                         {match.status === "Completed" ? (
                           <span className="rounded-full bg-foreground/10 px-2 py-0.5 font-medium text-foreground">{t("completed")}</span>
@@ -218,23 +219,31 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                       </span>
                       <span>{new Date(match.matchDate).toLocaleDateString()}</span>
                     </div>
+                    {/* Two sides split by a hairline, each with year/rating/club under the name as on the live scoreboard */}
+                    <div className="divide-y divide-foreground/[0.06]">
                     {([1, 2] as const).map(side => {
                       const doubles = !!(match.playerThreeId && match.playerFourId)
                       const name = side === 1
                         ? (doubles ? `${match.playerOneName} / ${match.playerThreeName}` : match.playerOneName)
                         : (doubles ? `${match.playerTwoName} / ${match.playerFourName}` : match.playerTwoName)
+                      const sidePlayers = side === 1
+                        ? [match.playerOne, doubles ? match.playerThree : undefined]
+                        : [match.playerTwo, doubles ? match.playerFour : undefined]
                       const winnerId = side === 1 ? match.playerOneId : match.playerTwoId
                       const isWinner = match.status === "Completed" && match.winnerId === winnerId
                       const isLoser = match.status === "Completed" && !!match.winnerId && !isWinner
                       const sets = match.scoreParsed?.sets ?? []
                       const live = match.status !== "Completed" ? match.scoreParsed?.games : undefined
                       return (
-                        <div key={side} className="flex items-center justify-between gap-3 py-1">
-                          <span className={`flex min-w-0 items-center gap-1.5 text-sm ${isWinner ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                            {isWinner && <Trophy className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden="true" />}
-                            {/* Gradient names; the loser is dimmed so the winner still stands out */}
-                            <span className={`truncate ${isLoser ? "opacity-60" : ""}`}><span className="name-gradient">{name}</span></span>
-                          </span>
+                        <div key={side} data-side={side} className="flex items-center justify-between gap-3 py-2">
+                          {/* The loser is dimmed so the winner still stands out */}
+                          <div className={`min-w-0 ${isLoser ? "opacity-60" : ""}`}>
+                            <span className={`flex min-w-0 items-center gap-1.5 text-sm ${isWinner ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                              {isWinner && <Trophy className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden="true" />}
+                              <span className="truncate"><span className="name-gradient">{name}</span></span>
+                            </span>
+                            <PlayerMeta players={sidePlayers} className="mt-0.5" />
+                          </div>
                           <span className="flex shrink-0 items-center gap-1.5 font-mono text-sm tabular-nums">
                             {sets.map((set, i) => {
                               const mine = side === 1 ? set.p1 : set.p2
@@ -248,6 +257,7 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                         </div>
                       )
                     })}
+                    </div>
                   </Link>
                   <div className="flex items-center justify-end gap-1 border-t border-foreground/[0.06] px-2 py-1.5">
                     <Button

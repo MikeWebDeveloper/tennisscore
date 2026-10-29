@@ -95,6 +95,18 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('lists the players with coloured details and a divider, like the live scoreboard', async () => {
+    const { container, cleanup } = await renderDetails({
+      playerOne: { ...player('p1', 'God', 'Mike'), yearOfBirth: 1980, bhRating: '20', club: 'FK Tennis Litoměřice' } as never,
+    })
+    const rows = container.querySelectorAll('[data-players-card] [data-side]')
+    expect(rows).toHaveLength(2)
+    expect(rows[0].parentElement?.className).toContain('divide-y')
+    expect(rows[0].querySelector('[data-player-meta]')?.textContent).toBe('1980 (20 BH)FK Tennis Litoměřice')
+    expect(rows[1].querySelector('[data-player-meta]')).toBeNull()
+    cleanup()
+  })
+
   it('translates the point log heading', async () => {
     const { container, cleanup } = await renderDetails()
     await openTab(container, 1)

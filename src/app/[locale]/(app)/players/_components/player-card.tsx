@@ -9,7 +9,7 @@ import { Star } from "lucide-react"
 import { ExternalLink } from "lucide-react"
 import { Player } from "@/lib/types"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
-import { PlayerRatingDisplay } from "@/components/shared/player-rating-display"
+import { PlayerMeta } from "@/components/shared/player-meta"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { useTranslations } from "@/i18n"
 
@@ -71,18 +71,13 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                 )}
               </div>
               
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                {player.yearOfBirth && (
-                  <span>{t("born")}: {player.yearOfBirth}</span>
-                )}
-                <PlayerRatingDisplay player={player} size="sm" />
-                {player.club && (
-                  <span>{t("club").replace(/ \(volitelné\)/, "")}: <span className="font-medium text-foreground">{player.club}</span></span>
-                )}
-                {player.playingHand && (
-                  <span>{t("plays")}: <span className="font-medium text-foreground">{player.playingHand === 'left' ? t("leftHanded") : t("rightHanded")}</span></span>
-                )}
-              </div>
+              {/* Year, rating and club coloured as on the live scoreboard */}
+              <PlayerMeta players={[player]} />
+              {player.playingHand && (
+                <div className="text-xs text-muted-foreground">
+                  {player.playingHand === 'left' ? t("leftHanded") : t("rightHanded")}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
