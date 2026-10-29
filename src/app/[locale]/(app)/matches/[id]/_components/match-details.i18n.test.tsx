@@ -60,6 +60,16 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('writes the match duration in Czech units, with seconds for very short matches', async () => {
+    const { container, cleanup } = await renderDetails()
+    expect(container.textContent).toContain('30 s')
+    expect(container.textContent).not.toContain('< 1m')
+    cleanup()
+    const long = await renderDetails({ endTime: '2025-07-02T17:24:00.000Z' })
+    expect(long.container.textContent).toContain('1 h 5 min')
+    long.cleanup()
+  })
+
   it('shows a single translated status badge', async () => {
     const { container, cleanup } = await renderDetails()
     const badges = Array.from(container.querySelectorAll('[data-match-status]'))

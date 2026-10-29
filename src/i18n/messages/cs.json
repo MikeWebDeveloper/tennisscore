@@ -1451,7 +1451,15 @@
     "soundEffectsInfo": "💡 Zvukové efekty se automaticky inicializují, když začnete bodovat. Hlasitost a nastavení se ukládají automaticky."
   },
   "statistics": {
-    "loadedSample": "Vybráno: {selected} zápasů, z toho {completed} dokončených",
+    "loadedSample": "Vybráno: {selected, plural, one {# zápas} few {# zápasy} other {# zápasů}}, z toho {completed} dokončených",
+    "noMatchesYet": "Zatím žádné dokončené zápasy",
+    "needMoreMatches": "Odehrajte ještě {count, plural, one {# zápas} few {# zápasy} other {# zápasů}}",
+    "insightsNeedMoreMatches": "Poznatky se zobrazí po {count, plural, one {# dalším dokončeném zápasu} other {# dalších dokončených zápasech}}.",
+    "pointsWonCount": "{won} z {total, plural, one {# bodu} other {# bodů}}",
+    "gamesWonCount": "{won} z {total, plural, one {# hry} other {# her}}",
+    "setsWonCount": "{won} z {total, plural, one {# setu} other {# setů}}",
+    "needsPointData": "Vyžaduje záznam bod po bodu",
+    "matchesCount": "{count, plural, one {# zápas} few {# zápasy} other {# zápasů}}",
     "allLoadedHistory": "Období: celá načtená historie zápasů",
     "selectedFiltersPeriod": "Období a výběr: aktuální filtry",
     "pointDataNote": "Některé ukazatele vyžadují údaje o jednotlivých bodech.",

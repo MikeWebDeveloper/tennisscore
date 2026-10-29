@@ -2,22 +2,18 @@
 
 import { Link } from "@/i18n/navigation"
 import { Match, Player } from "@/lib/types"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
+import { formatMatchDuration } from "@/lib/utils/statistics-summary"
 
 interface StreamlinedStatsCardsProps {
   matches: Match[]
   mainPlayer: Player
 }
 
-const formatDuration = (minutes: number) => {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
-}
-
 export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsCardsProps) {
   const t = useTranslations('dashboard')
+  const locale = useLocale()
 
   const singles = matches.filter(m => !m.isDoubles)
   const completed = singles
@@ -31,8 +27,9 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
   const form = lastFive.length > 0 ? Math.round((lastFiveWins / lastFive.length) * 100) : 0
 
   const timed = completed.filter(m => m.startTime && m.endTime)
+  // Unrounded, so a 22-second average reads "22 s" rather than vanishing as 0 minutes
   const avgDuration = timed.length > 0
-    ? Math.round(timed.reduce((sum, m) => sum + (new Date(m.endTime!).getTime() - new Date(m.startTime!).getTime()) / 60000, 0) / timed.length)
+    ? timed.reduce((sum, m) => sum + (new Date(m.endTime!).getTime() - new Date(m.startTime!).getTime()) / 60000, 0) / timed.length
     : 0
   const inProgress = singles.filter(m => m.status === 'in-progress').length
 
@@ -50,7 +47,8 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
           </span>
         </div>
         <div>
-          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{winRate}%</div>
+          {/* Like the duration tile: no number until there is something to measure */}
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{completed.length > 0 ? `${winRate}%` : '--'}</div>
           <div className={sub}>{won.length}/{completed.length} {t('matchesWon')}</div>
         </div>
       </Link>
@@ -75,7 +73,7 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
               )
             })}
           </div>
-          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{form}%</div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{lastFive.length > 0 ? `${form}%` : '--'}</div>
           <div className={sub}>{t('last5Matches')}</div>
         </div>
       </Link>
@@ -91,7 +89,7 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
       <Link href="/statistics" className={tile} style={{ "--i": 5 } as React.CSSProperties}>
         <span className={label}>{t('avgDuration')}</span>
         <div>
-          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{avgDuration > 0 ? formatDuration(avgDuration) : '--'}</div>
+          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{formatMatchDuration(avgDuration, locale) || '--'}</div>
           <div className={sub}>{t('perMatch')}</div>
         </div>
       </Link>

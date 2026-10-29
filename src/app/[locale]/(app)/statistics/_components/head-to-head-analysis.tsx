@@ -9,7 +9,8 @@ import { TrendingUp } from "lucide-react"
 import { TrendingDown } from "lucide-react"
 import { Users } from "lucide-react"
 import { aggregatePlayerStatsAcrossMatches } from "@/lib/utils/match-stats"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
+import { formatMatchDuration } from "@/lib/utils/statistics-summary"
 
 interface HeadToHeadAnalysisProps {
   matches: Match[]
@@ -20,6 +21,7 @@ const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6']
 
 export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysisProps) {
   const t = useTranslations('statistics')
+  const locale = useLocale()
 
   // Group matches by opponent
   const opponentData = useMemo(() => {
@@ -76,7 +78,8 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
           matchesWithDuration++
         }
       })
-      const avgDuration = matchesWithDuration > 0 ? Math.round(totalDuration / matchesWithDuration) : 0
+      // Unrounded minutes; the formatter decides between seconds, minutes and hours
+      const avgDuration = matchesWithDuration > 0 ? totalDuration / matchesWithDuration : 0
 
       // Calculate recent form (last 3 matches)
       const recentMatches = matches
@@ -310,7 +313,7 @@ export function HeadToHeadAnalysis({ matches, mainPlayerId }: HeadToHeadAnalysis
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm text-muted-foreground">{t('avgMatchDuration')}</p>
-                      <p className="text-xl font-semibold">{selectedOpponentStats.avgDuration} min</p>
+                      <p className="text-xl font-semibold">{formatMatchDuration(selectedOpponentStats.avgDuration, locale) || '–'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">{t('acesPerMatch')}</p>

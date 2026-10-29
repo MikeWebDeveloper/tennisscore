@@ -1422,7 +1422,15 @@
     "soundEffectsInfo": "💡 Sound effects will initialize automatically when you start scoring points. Volume and settings are saved automatically."
   },
   "statistics": {
-    "loadedSample": "Selected: {selected} matches, including {completed} completed",
+    "loadedSample": "Selected: {selected, plural, one {# match} other {# matches}}, including {completed} completed",
+    "noMatchesYet": "No finished matches yet",
+    "needMoreMatches": "Play {count, plural, one {# more match} other {# more matches}} to unlock",
+    "insightsNeedMoreMatches": "Insights appear after {count, plural, one {# more finished match} other {# more finished matches}}.",
+    "pointsWonCount": "{won} of {total, plural, one {# point} other {# points}}",
+    "gamesWonCount": "{won} of {total, plural, one {# game} other {# games}}",
+    "setsWonCount": "{won} of {total, plural, one {# set} other {# sets}}",
+    "needsPointData": "Needs point-by-point data",
+    "matchesCount": "{count, plural, one {# match} other {# matches}}",
     "allLoadedHistory": "Period: all loaded match history",
     "selectedFiltersPeriod": "Period and sample: current filters",
     "pointDataNote": "Some metrics require point-by-point data.",

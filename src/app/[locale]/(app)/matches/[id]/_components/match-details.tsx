@@ -29,6 +29,7 @@ import { useLocale, useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { PlayerMeta } from "@/components/shared/player-meta"
+import { formatMatchDuration } from "@/lib/utils/statistics-summary"
 import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -90,22 +91,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
-  const formatDuration = (durationMinutes?: number) => {
-    if (durationMinutes === undefined || durationMinutes === null) return t('unknown')
-    
-    const hours = Math.floor(durationMinutes / 60)
-    const minutes = durationMinutes % 60
-    
-    // Handle very short durations (less than 1 minute)
-    if (durationMinutes < 1) {
-      return "< 1m"
-    }
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    }
-    return `${minutes}m`
-  }
+  // "30 s", "45 min", "1 h 5 min" in the page language, as on the statistics page
+  const formatDuration = (durationMinutes: number) => formatMatchDuration(durationMinutes, locale) || t('unknown')
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString(locale, {
@@ -444,12 +431,10 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             const getMatchDuration = () => {
               if (match.startTime && match.endTime) {
                 const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
-                const totalMinutes = Math.floor(durationMs / (1000 * 60))
-                return formatDuration(totalMinutes)
+                return formatDuration(durationMs / (1000 * 60))
               } else if (match.startTime && match.status === "In Progress") {
                 const durationMs = Date.now() - Date.parse(match.startTime)
-                const totalMinutes = Math.floor(durationMs / (1000 * 60))
-                return formatDuration(totalMinutes) + ` (${t('ongoing')})`
+                return formatDuration(durationMs / (1000 * 60)) + ` (${t('ongoing')})`
               }
               
               return pointDetails.length > 0 ? t('pointsCount', { count: pointDetails.length }) : t('noData')

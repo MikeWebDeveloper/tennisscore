@@ -10,7 +10,8 @@ import { Sun } from "lucide-react"
 import { Sunset } from "lucide-react"
 import { Activity } from "lucide-react"
 import { Timer } from "lucide-react"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
+import { formatMatchDuration, remainingForScores } from "@/lib/utils/statistics-summary"
 
 interface MatchPatternsProps {
   patterns: {
@@ -25,12 +26,17 @@ interface MatchPatternsProps {
     afternoonPerformance: { played: number, won: number }
     eveningPerformance: { played: number, won: number }
   }
+  /** Finished matches in the current selection; pattern insights wait for enough of them */
+  completedMatches: number
 }
 
 
-export function MatchPatterns({ patterns }: MatchPatternsProps) {
+export function MatchPatterns({ patterns, completedMatches }: MatchPatternsProps) {
   const t = useTranslations('common')
   const tStats = useTranslations('statistics')
+  const locale = useLocale()
+  const duration = (minutes: number) => formatMatchDuration(minutes, locale) || "–"
+  const remainingMatches = remainingForScores(completedMatches)
 
   // Time of day performance data
   const timeOfDayData = [
@@ -64,18 +70,15 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
   const durationData = [
     {
       category: t("matchPatterns.quick"),
-      value: patterns.shortestMatch,
-      description: `< ${Math.round(patterns.averageMatchDuration * 0.75)} min`
+      value: patterns.shortestMatch
     },
     {
       category: t("matchPatterns.average"),
-      value: patterns.averageMatchDuration,
-      description: `${Math.round(patterns.averageMatchDuration * 0.75)}-${Math.round(patterns.averageMatchDuration * 1.25)} min`
+      value: patterns.averageMatchDuration
     },
     {
       category: t("matchPatterns.marathon"),
-      value: patterns.longestMatch,
-      description: `> ${Math.round(patterns.averageMatchDuration * 1.25)} min`
+      value: patterns.longestMatch
     }
   ]
 
@@ -88,10 +91,10 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           <CardContent className="p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />
-              <Badge variant="outline">Average</Badge>
+              <Badge variant="outline">{t("matchPatterns.average")}</Badge>
             </div>
             <div className="space-y-2">
-              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{patterns.averageMatchDuration} min</p>
+              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{duration(patterns.averageMatchDuration)}</p>
               <p className="text-xs sm:text-sm text-muted-foreground">{tStats('avgMatchDuration')}</p>
               <Progress 
                 value={Math.min((patterns.averageMatchDuration / 180) * 100, 100) || 0} 
@@ -105,10 +108,10 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           <CardContent className="p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Timer className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
-              <Badge variant="outline" className="text-green-600">Quickest</Badge>
+              <Badge variant="outline" className="text-green-600">{t("matchPatterns.quick")}</Badge>
             </div>
             <div className="space-y-2">
-              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{patterns.shortestMatch} min</p>
+              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{duration(patterns.shortestMatch)}</p>
               <p className="text-xs sm:text-sm text-muted-foreground">{tStats('shortestMatch')}</p>
               <Progress 
                 value={patterns.averageMatchDuration > 0 ? (patterns.shortestMatch / patterns.averageMatchDuration) * 100 : 0} 
@@ -122,10 +125,10 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           <CardContent className="p-4 sm:p-5 lg:p-6">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
-              <Badge variant="outline" className="text-orange-600">Marathon</Badge>
+              <Badge variant="outline" className="text-orange-600">{t("matchPatterns.marathon")}</Badge>
             </div>
             <div className="space-y-2">
-              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{patterns.longestMatch} min</p>
+              <p className="text-xl xs:text-2xl sm:text-3xl font-bold">{duration(patterns.longestMatch)}</p>
               <p className="text-xs sm:text-sm text-muted-foreground">{tStats('longestMatch')}</p>
               <Progress 
                 value={Math.min((patterns.longestMatch / 300) * 100, 100)} 
@@ -154,7 +157,7 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
                   <p className="text-xs sm:text-sm font-medium">{data.time}</p>
                   <p className="text-lg xs:text-xl sm:text-2xl font-bold">{data.winRate}%</p>
                   <p className="text-[10px] xs:text-xs text-muted-foreground">
-                    {data.matches} matches
+                    {tStats('matchesCount', { count: data.matches })}
                   </p>
                   <Progress value={data.winRate || 0} className="h-1.5 sm:h-2" />
                 </div>
@@ -207,6 +210,10 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* One or two matches say nothing about a "best time of day" or endurance */}
+          {remainingMatches > 0 ? (
+            <p className="text-sm text-muted-foreground">{tStats('insightsNeedMoreMatches', { count: remainingMatches })}</p>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="space-y-1 sm:space-y-2">
               <div className="flex items-center gap-2">
@@ -238,6 +245,7 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
               </p>
             </div>
           </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -245,7 +253,7 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
 }
 
 // Helper functions
-function getBestTimeOfDay(timeData: { time: string; winRate: number; matches: number }[], t: (key: string) => string, tStats: (key: string, params?: any) => string): string {
+function getBestTimeOfDay(timeData: { time: string; winRate: number; matches: number }[], t: (key: string) => string, tStats: (key: string, params?: Record<string, string | number>) => string): string {
   if (!timeData || timeData.length === 0) {
     return t("matchPatterns.noMatchData")
   }

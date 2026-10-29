@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useMatchStore } from "@/stores/matchStore"
 import { useShallow } from "zustand/react/shallow"
 import { Clock } from "lucide-react"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
+import { formatMatchDuration } from "@/lib/utils/statistics-summary"
 
 const MAX_PLAUSIBLE_MATCH_MS = 12 * 60 * 60 * 1000
 
@@ -30,6 +31,7 @@ export function MatchTimerDisplay({
   pausedAt = null
 }: MatchTimerDisplayProps) {
   const t = useTranslations('common')
+  const locale = useLocale()
   // Only the timing fields are needed here — selecting them keeps this
   // (always-mounted, 1s-interval) component from re-rendering on every point.
   const storeData = useMatchStore(
@@ -61,22 +63,15 @@ export function MatchTimerDisplay({
     }
   }, [isRunning, startTime])
 
-  // Helper function to format duration
-  const formatDuration = (durationMs: number): string => {
-    const totalSeconds = Math.floor(durationMs / 1000)
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    } else {
-      return `${minutes}m`
-    }
-  }
+  // "42 s", "30 min", "1 h 5 min" in the page language, as on the match and statistics pages
+  // The shared formatter has nothing to say about zero; a clock that just started reads "0 s"
+  const formatDuration = (durationMs: number): string =>
+    formatMatchDuration(durationMs / 60000, locale) ||
+    new Intl.NumberFormat(locale, { style: "unit", unit: "second", unitDisplay: "short" }).format(0)
 
   // Calculate live duration
   const getLiveDuration = (): string => {
-    if (!startTime) return "0m"
+    if (!startTime) return formatDuration(0)
     
     const endTimeToUse = endTime || (isPaused ? pausedAt : null) || currentTime
     const durationMs = Date.parse(endTimeToUse) - Date.parse(startTime)

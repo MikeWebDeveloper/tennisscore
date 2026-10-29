@@ -17,10 +17,11 @@ import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { StatisticsFiltersComponent, StatisticsFilters } from "./_components/statistics-filters"
 import { applyFiltersToMatches, hasActiveFilters } from "./_components/filter-utils"
-import { 
+import {
   aggregatePlayerStatsAcrossMatches,
   calculateDetailedMatchStats
 } from "@/lib/utils/match-stats"
+import { remainingForScores, sharePct, summarizeWonShares, type Share } from "@/lib/utils/statistics-summary"
 import { 
   LazyPerformanceTrends as PerformanceTrends,
   LazyServeReturnAnalysis as ServeReturnAnalysis,
@@ -214,16 +215,15 @@ function calculateDominanceScore(matches: Match[], playerId: string) {
   const serviceWinPct = servicePointsTotal > 0 ? (servicePointsWon / servicePointsTotal) * 100 : 0
   
   // Calculate dominance score using available metrics
-  const dominance = (winRate * 2.0) + (serviceWinPct * 0.8) + 
+  const dominance = (winRate * 2.0) + (serviceWinPct * 0.8) +
     (stats.breakPointSaveRate * 0.6) + (stats.breakPointConversionRate * 0.6) +
     (stats.firstServePercentage * 0.3) + (stats.returnPointsPct * 0.4)
-  
+
   return {
     // Weights sum to 4.7 and every input is a 0-100 percentage, so this is a weighted average
     dominanceScore: Math.max(0, Math.min(100, Math.round(dominance / 4.7))),
-    pointsWonPct: Math.round(serviceWinPct), // Use service win % as proxy
-    gamesWonPct: Math.round(winRate), // Use match win rate as proxy
-    setsWonPct: Math.round(winRate) // Use match win rate as proxy
+    // Real shares from point logs and set scores (these used to repeat the match win rate)
+    shares: summarizeWonShares(matches, playerId)
   }
 }
 
@@ -304,8 +304,8 @@ function analyzeMatchPatterns(matches: Match[], playerId: string) {
     }
   })
   
-  patterns.averageMatchDuration = matchesWithDuration > 0 ? 
-    Math.round(totalDuration / matchesWithDuration) : 0
+  // Unrounded minutes: the display formats seconds for very short matches
+  patterns.averageMatchDuration = matchesWithDuration > 0 ? totalDuration / matchesWithDuration : 0
   patterns.averageGamesPerMatch = matches.length > 0 ?
     Math.round(totalGames / matches.length) : 0
   patterns.averageSetsPerMatch = matches.length > 0 ?
@@ -343,6 +343,17 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
   )
 
   const hasFilters = hasActiveFilters(filters)
+  const completedCount = filteredMatches.filter(match => match.status === 'completed').length
+  // Composite scores from one or two matches read as verdicts; hold them back until the sample means something
+  const remainingMatches = remainingForScores(completedCount)
+  const scoresLocked = remainingMatches > 0
+  const lockedValue = <span data-score-locked aria-hidden="true">–</span>
+  const shareTile = (share: Share, countKey: 'pointsWonCount' | 'gamesWonCount' | 'setsWonCount', emptyKey: 'needsPointData' | 'noMatchesYet') => share.total > 0
+    ? { value: `${sharePct(share)}%`, caption: t(countKey, { won: share.won, total: share.total }) }
+    : { value: '–', caption: t(emptyKey) }
+  const pointsTile = shareTile(stats.dominance.shares.points, 'pointsWonCount', 'needsPointData')
+  const gamesTile = shareTile(stats.dominance.shares.games, 'gamesWonCount', 'noMatchesYet')
+  const setsTile = shareTile(stats.dominance.shares.sets, 'setsWonCount', 'noMatchesYet')
 
   return (
     <div className="space-y-6">
@@ -370,7 +381,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
       </div>
 
       <div className="px-1 text-sm text-muted-foreground" role="status">
-        <p>{t("loadedSample", { selected: filteredMatches.length, completed: filteredMatches.filter(match => match.status === 'completed').length })}</p>
+        <p>{t("loadedSample", { selected: filteredMatches.length, completed: completedCount })}</p>
         <p>{t(hasFilters ? "selectedFiltersPeriod" : "allLoadedHistory")}</p>
         <p>{t("pointDataNote")}</p>
       </div>
@@ -382,12 +393,12 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t("dominanceScore")}</p>
-                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.dominance.dominanceScore}</p>
-                <p className="text-xs text-muted-foreground">{t("outOf")} 100</p>
+                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{scoresLocked ? lockedValue : stats.dominance.dominanceScore}</p>
+                <p className="text-xs text-muted-foreground">{scoresLocked ? t("needMoreMatches", { count: remainingMatches }) : `${t("outOf")} 100`}</p>
               </div>
               <Trophy className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-yellow-500 flex-shrink-0" />
             </div>
-            <Progress value={stats.dominance.dominanceScore || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />
+            {!scoresLocked && <Progress value={stats.dominance.dominanceScore || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />}
           </CardContent>
         </Card>
 
@@ -396,12 +407,12 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t("pressureIndex")}</p>
-                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.pressureStats.pressurePerformanceIndex}</p>
-                <p className="text-xs text-muted-foreground">{t("clutchRating")}</p>
+                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{scoresLocked ? lockedValue : stats.pressureStats.pressurePerformanceIndex}</p>
+                <p className="text-xs text-muted-foreground">{scoresLocked ? t("needMoreMatches", { count: remainingMatches }) : t("clutchRating")}</p>
               </div>
               <Target className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-500 flex-shrink-0" />
             </div>
-            <Progress value={stats.pressureStats.pressurePerformanceIndex || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />
+            {!scoresLocked && <Progress value={stats.pressureStats.pressurePerformanceIndex || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />}
           </CardContent>
         </Card>
 
@@ -410,12 +421,12 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t("mentalToughness")}</p>
-                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.mentalToughness.mentalToughnessScore}</p>
-                <p className="text-xs text-muted-foreground">{t("comebacks", { count: stats.mentalToughness.comebacks })}</p>
+                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{scoresLocked ? lockedValue : stats.mentalToughness.mentalToughnessScore}</p>
+                <p className="text-xs text-muted-foreground">{scoresLocked ? t("needMoreMatches", { count: remainingMatches }) : t("comebacks", { count: stats.mentalToughness.comebacks })}</p>
               </div>
               <Brain className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-purple-500 flex-shrink-0" />
             </div>
-            <Progress value={stats.mentalToughness.mentalToughnessScore || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />
+            {!scoresLocked && <Progress value={stats.mentalToughness.mentalToughnessScore || 0} className="mt-2 xs:mt-3 h-1.5 xs:h-2" />}
           </CardContent>
         </Card>
 
@@ -424,8 +435,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 xs:space-y-1 min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t("winRate")}</p>
-                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{stats.basicStats.winRate}%</p>
-                <p className="text-xs text-muted-foreground">{t("ofMatches", { won: stats.basicStats.matchesWon, total: stats.basicStats.totalMatches })}</p>
+                {/* A 0% win rate from zero finished matches would read as a verdict */}
+                <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{completedCount > 0 ? `${stats.basicStats.winRate}%` : '–'}</p>
+                <p className="text-xs text-muted-foreground">{completedCount > 0 ? t("ofMatches", { won: stats.basicStats.matchesWon, total: stats.basicStats.totalMatches }) : t("noMatchesYet")}</p>
               </div>
               <Activity className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-green-500 flex-shrink-0" />
             </div>
@@ -546,7 +558,7 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                   </div>
                 </CardContent>
               </Card>
-              <MatchPatterns patterns={stats.patterns} />
+              <MatchPatterns patterns={stats.patterns} completedMatches={completedCount} />
               
               {/* Quick Stats Grid - Mobile Optimized */}
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4">
@@ -555,9 +567,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                     <CardTitle className="text-sm xs:text-base sm:text-lg">{t("pointsWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
-                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.pointsWonPct}%</div>
+                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{pointsTile.value}</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {t("serviceDominance")}
+                      {pointsTile.caption}
                     </p>
                   </CardContent>
                 </Card>
@@ -567,9 +579,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                     <CardTitle className="text-sm xs:text-base sm:text-lg">{t("gamesWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
-                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.gamesWonPct}%</div>
+                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{gamesTile.value}</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {t("matchWinRate")}
+                      {gamesTile.caption}
                     </p>
                   </CardContent>
                 </Card>
@@ -579,9 +591,9 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
                     <CardTitle className="text-sm xs:text-base sm:text-lg">{t("setsWon")}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-3 xs:pb-4 px-3 xs:px-4">
-                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{stats.dominance.setsWonPct}%</div>
+                    <div className="text-lg xs:text-xl sm:text-2xl font-bold">{setsTile.value}</div>
                     <p className="text-[10px] xs:text-xs text-muted-foreground mt-0.5 xs:mt-1">
-                      {t("matchWinRate")}
+                      {setsTile.caption}
                     </p>
                   </CardContent>
                 </Card>
