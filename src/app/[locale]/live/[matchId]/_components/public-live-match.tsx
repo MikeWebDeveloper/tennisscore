@@ -405,7 +405,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         {/* Match Details Tabs - Stats and Points */}
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="stats" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10 max-w-xs sm:max-w-lg mx-auto">
+            <TabsList className="grid w-full grid-cols-2 min-h-9 sm:min-h-10 max-w-xs sm:max-w-lg mx-auto">
               <TabsTrigger value="stats" className="text-xs sm:text-sm">{t('statistics')}</TabsTrigger>
               <TabsTrigger value="points" className="text-xs sm:text-sm">
                 {t('points')}

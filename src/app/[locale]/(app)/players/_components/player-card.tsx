@@ -26,17 +26,8 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
     <Card className={`surface-hover relative group w-full ${player.isMainPlayer ? 'border-brand/50 bg-brand/[0.07]' : ''}`}>
       <CardContent className="p-3">
         <div className="flex items-center space-x-3 w-full">
-          {/* Avatar with Czech Tennis ID */}
-          <div className="flex-shrink-0 relative">
+          <div className="flex-shrink-0">
             <PlayerAvatar player={player} className="h-12 w-12" />
-            {player.czechTennisId && (
-              <Badge 
-                variant="secondary" 
-                className="absolute -bottom-1 -right-1 text-xs font-mono px-1 py-0 h-5"
-              >
-                #{player.czechTennisId}
-              </Badge>
-            )}
           </div>
           
           {/* Player Info */}
@@ -57,8 +48,12 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
                 )}
                 {player.isImportedFromCzech && (
                   <Badge variant="outline" className="text-xs h-4 px-1">
-                    Czech Import
+                    {t("czechImport")}
                   </Badge>
+                )}
+                {/* On the detail line rather than overlaid on the avatar, where a 7-digit ID ran past the card edge */}
+                {player.czechTennisId && (
+                  <span className="font-mono text-xs text-muted-foreground">#{player.czechTennisId}</span>
                 )}
                 {player.cztennisUrl && (
                   <Button

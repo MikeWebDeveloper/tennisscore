@@ -400,7 +400,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       <div className="container mx-auto px-4 md:px-4 max-w-6xl">
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 h-12 md:h-10">
+        <TabsList className="grid w-full grid-cols-4 min-h-12 md:min-h-10">
           <TabsTrigger value="overview" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
             <Trophy className="h-4 w-4" />
             <span className="hidden sm:inline">{t('overview')}</span>

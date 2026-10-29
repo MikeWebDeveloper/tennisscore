@@ -162,7 +162,8 @@ export function MatchPatterns({ patterns }: MatchPatternsProps) {
             })}
           </div>
           
-          <div className="h-[150px] xs:h-[175px] sm:h-[200px]">
+          {/* Same height as the chart itself, which otherwise spilled 50px past the card on phones */}
+          <div className="h-[200px]">
             <UPlotBarChart 
               data={timeOfDayData} 
               dataKeys={['winRate']} 

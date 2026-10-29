@@ -12,7 +12,9 @@ import { CreateNewMatchButton } from "./create-new-match-button"
 import { findResumeMatch } from "@/lib/utils/resume-match"
 import { getDashboardHighlights } from "@/lib/utils/dashboard-highlights"
 import { Link } from "@/i18n/navigation"
-import { Plus, UserPlus } from "lucide-react"
+import { Plus, UserPlus, Users } from "lucide-react"
+
+const actionTile = "surface surface-hover press flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-center text-xs font-medium leading-tight text-muted-foreground hover:text-foreground"
 
 const CreatePlayerDialog = dynamic(() => import("../../players/_components/create-player-dialog").then(mod => mod.CreatePlayerDialog))
 
@@ -40,10 +42,11 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
       </header>
 
       <CreateNewMatchButton resume={resume ? { match: resume, mainPlayerId: mainPlayer.$id, playersMap } : undefined} />
-      <div className="flex flex-wrap gap-2 px-1">
-        {resume && <Link href="/matches/new" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><Plus className="h-4 w-4" />{t('startNewMatch')}</Link>}
-        <button type="button" onClick={() => setCreatePlayerOpen(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><UserPlus className="h-4 w-4" aria-hidden="true" />{t('addPlayer')}</button>
-        <Link href="/players" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground"><UserPlus className="h-4 w-4" />{t('yourPlayers')}</Link>
+      {/* Equal boxed tiles: a wrapping row of loose links looked ragged on phones */}
+      <div className={`grid gap-2 ${resume ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        {resume && <Link href="/matches/new" className={actionTile}><Plus className="h-5 w-5" aria-hidden="true" />{t('startNewMatch')}</Link>}
+        <button type="button" onClick={() => setCreatePlayerOpen(true)} className={actionTile}><UserPlus className="h-5 w-5" aria-hidden="true" />{t('addPlayer')}</button>
+        <Link href="/players" className={actionTile}><Users className="h-5 w-5" aria-hidden="true" />{t('yourPlayers')}</Link>
       </div>
       <StreamlinedStatsCards matches={matches} mainPlayer={mainPlayer} />
 

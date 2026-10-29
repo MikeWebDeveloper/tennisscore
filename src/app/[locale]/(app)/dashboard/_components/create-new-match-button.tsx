@@ -39,7 +39,7 @@ export function CreateNewMatchButton({ resume }: { resume?: ResumeContext }) {
   return (
     <Link
       href={resume ? `/matches/live/${resume.match.$id}` : "/matches/new"}
-      className="surface surface-hover press rise group relative flex items-center gap-4 overflow-hidden rounded-2xl p-4"
+      className="surface surface-hover press rise group relative flex items-center gap-3 overflow-hidden rounded-2xl p-4 sm:gap-4"
       style={{ "--i": 1 } as React.CSSProperties}
     >
       <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-brand/20 blur-2xl" aria-hidden="true" />
@@ -47,11 +47,12 @@ export function CreateNewMatchButton({ resume }: { resume?: ResumeContext }) {
         <Play className="h-5 w-5 fill-current" aria-hidden="true" />
       </span>
       <span className="relative min-w-0 flex-1">
-        <span className="block text-base font-semibold tracking-tight text-foreground">{t(resume ? 'resumeMatch' : 'startNewMatch')}</span>
+        <span className="block text-base font-semibold leading-tight tracking-tight text-foreground">{t(resume ? 'resumeMatch' : 'startNewMatch')}</span>
         <span className="block break-words text-sm leading-snug text-muted-foreground">{opponents ? t('matchVsOpponent', { opponentName: opponents }) : t(resume ? 'continueYourMatch' : 'beginScoringLiveMatch')}</span>
       </span>
       {games && <span className="relative shrink-0 text-right">
-        <span className="block text-xs text-muted-foreground">{t('yourGamesLabel')}</span>
+        {/* The label costs the title its single line on narrow phones; the score alone reads clearly */}
+        <span className="hidden text-xs text-muted-foreground min-[400px]:block">{t('yourGamesLabel')}</span>
         <span className="block font-mono text-lg font-semibold tabular-nums text-foreground" aria-label={t('yourGamesScore', { yours: games[0], opponent: games[1] })}>{games[0]}–{games[1]}</span>
       </span>}
       <ArrowRight className="relative h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" aria-hidden="true" />
