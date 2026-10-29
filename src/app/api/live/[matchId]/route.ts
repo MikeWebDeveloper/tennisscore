@@ -20,6 +20,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ mat
       winnerId: match.winnerId,
       isPaused: match.isPaused,
       pauseReason: match.pauseReason,
+      retirementReason: match.retirementReason,
     }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     const status = (error as { code?: number }).code === 404 ? 404 : 503

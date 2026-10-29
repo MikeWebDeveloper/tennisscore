@@ -18,6 +18,7 @@ import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
+import type { EndReason } from "@/lib/utils/end-reasons"
 import { setMatchPaused } from "@/lib/actions/match-pause"
 import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -453,7 +454,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [showPointDetail, setShowPointDetail] = useState(false)
   const [showSimpleStats, setShowSimpleStats] = useState(false)
   const [showRetireDialog, setShowRetireDialog] = useState(false)
-  const [retireReason, setRetireReason] = useState<'completed' | 'retired' | 'weather' | 'injury' | ''>('')
+  const [retireReason, setRetireReason] = useState<'completed' | EndReason | ''>('')
   const [selectedWinner, setSelectedWinner] = useState<'p1' | 'p2' | ''>('')
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
   const [serveType, setServeType] = useState<'first' | 'second'>('first')
@@ -982,7 +983,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const handleRetireMatch = async (reason: 'retired' | 'weather' | 'injury') => {
+  const handleRetireMatch = async (reason: EndReason) => {
     try {
       if (!selectedWinner) {
         toast.error(t('pleaseSelectWinner'))
@@ -992,14 +993,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Determine winner ID based on selection
       const winnerId = selectedWinner === 'p1' ? match.playerOne.$id : match.playerTwo.$id
 
-      // Create a new score showing 1-0 sets for the winner
-      const retiredScore: Score = {
-        sets: selectedWinner === 'p1' ? [[1, 0]] : [[0, 1]],
-        games: [0, 0],
-        points: [0, 0],
-        isTiebreak: false,
-        tiebreakPoints: [0, 0],
-      }
+      // Keep the score reached on court (finished sets plus the game score of the set in play);
+      // the saved reason says why it ended, e.g. "6:3 2:1 retired"
+      const retiredScore: Score = score
 
       const updateData: {
         status: "Completed"
@@ -1025,8 +1021,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         ...updateData
       }))
 
-      const reasonText = reason === 'retired' ? t('retirement') :
-        reason === 'weather' ? t('weatherConditionsReason') : t('injury')
+      const reasonText = reason === 'retired' ? t('retirement') : t('injury')
       const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
 
       // Trigger celebratory confetti for match completion
@@ -1436,7 +1431,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     name="retireReason"
                     value="completed"
                     checked={retireReason === 'completed'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
                     className="text-primary"
                   />
                   <span>{t('matchCompletedNormally')}</span>
@@ -1448,23 +1443,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     name="retireReason"
                     value="retired"
                     checked={retireReason === 'retired'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
                     className="text-primary"
                   />
                   <span>{t('playerRetired')}</span>
                 </label>
 
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="retireReason"
-                    value="weather"
-                    checked={retireReason === 'weather'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
-                    className="text-primary"
-                  />
-                  <span>{t('weatherConditions')}</span>
-                </label>
 
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -1472,7 +1456,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                     name="retireReason"
                     value="injury"
                     checked={retireReason === 'injury'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | 'retired' | 'weather' | 'injury')}
+                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
                     className="text-primary"
                   />
                   <span>{t('injury')}</span>
@@ -1516,7 +1500,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-2">
-                  {t('finalScoreWillBe')}
+                  {t('finalScoreKeptOnCourt')}
                 </p>
               </div>
             )}
@@ -1535,7 +1519,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 if (retireReason === 'completed') {
                   router.push(`/matches/${match.$id}`)
                 } else if (retireReason && selectedWinner) {
-                  handleRetireMatch(retireReason as 'retired' | 'weather' | 'injury')
+                  handleRetireMatch(retireReason)
                 } else if (retireReason && !selectedWinner) {
                   toast.error(t('pleaseSelectWinner'))
                 }

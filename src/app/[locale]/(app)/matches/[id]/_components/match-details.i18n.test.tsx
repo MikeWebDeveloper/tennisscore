@@ -125,6 +125,13 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('shows a retirement in Czech on the status badge and in the details, not the raw value', async () => {
+    const { container, cleanup } = await renderDetails({ retirementReason: 'retired' } as never)
+    expect(Array.from(container.querySelectorAll('[data-match-status]'), badge => badge.textContent?.trim())).toEqual(['Dokončeno — Hráč odstoupil'])
+    expect(container.textContent).not.toMatch(/\bretired\b/)
+    cleanup()
+  })
+
   it('translates the point log heading', async () => {
     const { container, cleanup } = await renderDetails()
     await openTab(container, 1)

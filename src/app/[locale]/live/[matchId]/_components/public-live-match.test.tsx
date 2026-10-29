@@ -44,3 +44,13 @@ it('translates the connection error', async () => {
   expect(container.textContent).not.toContain('Connection error:')
   cleanup()
 })
+
+it('shows why a match ended next to "Completed", like an interruption reason', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => root.render(<PublicLiveMatch match={{ ...match, status: 'Completed', retirementReason: 'retired', winnerId: 'a' } as never} />))
+  expect(container.textContent).toContain('match.completed — match.playerRetired')
+  act(() => root.unmount())
+  container.remove()
+})

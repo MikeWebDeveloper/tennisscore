@@ -13,6 +13,7 @@ import { Filter } from "lucide-react"
 import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 import { PlayerMeta } from "@/components/shared/player-meta"
+import { endReasonMessageKey } from "@/lib/utils/end-reasons"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -33,6 +34,7 @@ interface MatchesListProps {
     status: string
     winnerId?: string
     winnerName?: string
+    retirementReason?: string
     score: string // Original JSON string
     scoreParsed?: { 
       sets: { p1: number; p2: number }[]
@@ -206,7 +208,9 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                     <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-2">
                         {match.status === "Completed" ? (
-                          <span className="rounded-full bg-foreground/10 px-2 py-0.5 font-medium text-foreground">{t("completed")}</span>
+                          <span className="rounded-full bg-foreground/10 px-2 py-0.5 font-medium text-foreground">
+                            {t("completed")}{endReasonMessageKey(match.retirementReason) && ` — ${t(endReasonMessageKey(match.retirementReason)!)}`}
+                          </span>
                         ) : (
                           <span className="flex items-center gap-1.5 rounded-full bg-brand/15 px-2 py-0.5 font-medium text-brand">
                             <span className="live-dot h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />

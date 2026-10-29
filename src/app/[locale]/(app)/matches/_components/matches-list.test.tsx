@@ -31,3 +31,13 @@ it('shows each side with coloured details and a divider between the two sides', 
   act(() => root.unmount())
   container.remove()
 })
+
+it('names an early ending on the card status chip', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => root.render(<MatchesList matches={[{ ...doublesMatch, retirementReason: 'injury' }]} />))
+  expect(container.textContent).toContain('match.completed — match.injury')
+  act(() => root.unmount())
+  container.remove()
+})

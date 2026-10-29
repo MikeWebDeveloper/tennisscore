@@ -1171,7 +1171,7 @@
     "playerRetired": "Player retired",
     "weatherConditions": "Weather conditions",
     "whichPlayerWon": "Which player should be declared the winner?",
-    "finalScoreWillBe": "The final score will be recorded as 1-0 sets for the selected winner.",
+    "finalScoreKeptOnCourt": "The score stays as played on court, with the reason (e.g. 6:3 2:1 ret.).",
     "pleaseSelectWinner": "Please select which player won",
     "matchEndedDueToReason": "Match ended due to {reason}. {winner} wins 1-0.",
     "retirement": "retirement",

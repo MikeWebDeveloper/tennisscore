@@ -32,6 +32,7 @@ import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { parseDbScore } from "@/lib/utils/db-score"
 import { useTranslations, useLocale } from "@/i18n"
 import { isPauseReason } from '@/lib/utils/pause-reasons'
+import { endReasonMessageKey } from '@/lib/utils/end-reasons'
 
 type Score = import("@/stores/matchStore").Score
 
@@ -48,6 +49,7 @@ interface PublicLiveMatchProps {
     status: "In Progress" | "Completed"
     isPaused?: boolean
     pauseReason?: string
+    retirementReason?: string
     pointLog?: string[]
     winnerId?: string
     matchDate: string
@@ -119,6 +121,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         status: lastUpdate.status || prev.status,
         isPaused: lastUpdate.isPaused ?? prev.isPaused,
         pauseReason: lastUpdate.pauseReason ?? prev.pauseReason,
+        retirementReason: lastUpdate.retirementReason ?? prev.retirementReason,
         pointLog: lastUpdate.pointLog || prev.pointLog,
         winnerId: lastUpdate.winnerId || prev.winnerId,
       }))
@@ -300,6 +303,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className={`${match.isPaused ? 'bg-amber-600' : 'bg-green-500'} text-white text-xs sm:text-sm`}>
             {match.status === "In Progress" ? t(match.isPaused ? 'matchPaused' : 'live') : t('completed')}
+            {/* An early ending shows its reason, the same way an interruption does */}
+            {match.status === 'Completed' && endReasonMessageKey(match.retirementReason) && ` — ${t(endReasonMessageKey(match.retirementReason)!)}`}
             {match.status === 'In Progress' && match.isPaused && isPauseReason(match.pauseReason) && ` — ${t(`pauseReason_${match.pauseReason}`)}`}
           </Badge>
           <a

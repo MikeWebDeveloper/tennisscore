@@ -1200,7 +1200,7 @@
     "playerRetired": "Hráč odstoupil",
     "weatherConditions": "Povětrnostní podmínky",
     "whichPlayerWon": "Který hráč má být prohlášen vítězem?",
-    "finalScoreWillBe": "Konečné skóre bude zaznamenáno jako 1-0 v setech pro vybraného vítěze.",
+    "finalScoreKeptOnCourt": "Skóre zůstane tak, jak bylo dosaženo na kurtu, s důvodem (např. 6:3 2:1 skreč).",
     "pleaseSelectWinner": "Vyberte prosím, který hráč vyhrál",
     "matchEndedDueToReason": "Zápas skončil kvůli {reason}. {winner} vyhrává 1-0.",
     "retirement": "odstoupení",

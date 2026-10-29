@@ -11,6 +11,7 @@ interface RealtimeMatchData {
   winnerId?: string
   isPaused?: boolean
   pauseReason?: string
+  retirementReason?: string
 }
 
 const isDev = process.env.NODE_ENV !== "production"
@@ -131,6 +132,7 @@ export function useRealtimeMatch(matchId: string) {
               winnerId: payload.winnerId as string | undefined,
               isPaused: payload.isPaused as boolean | undefined,
               pauseReason: payload.pauseReason as string | undefined,
+              retirementReason: payload.retirementReason as string | undefined,
             })
             retryAttemptsRef.current = 0
             if (mountedRef.current) {

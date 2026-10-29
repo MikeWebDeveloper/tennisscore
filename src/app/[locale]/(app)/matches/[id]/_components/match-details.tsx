@@ -30,6 +30,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { PlayerMeta } from "@/components/shared/player-meta"
 import { formatMatchDuration } from "@/lib/utils/statistics-summary"
+import { endReasonMessageKey } from "@/lib/utils/end-reasons"
 import { LazyFullMatchExportButton as FullMatchExportButton } from "@/components/features/lazy-match-export"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -76,6 +77,10 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations('common')
+  const tMatch = useTranslations('match')
+  // Early endings (retirement, injury) are named on the badge and in the details
+  const endReasonKey = endReasonMessageKey(match.retirementReason)
+  const endReason = endReasonKey ? tMatch(endReasonKey) : null
   const locale = useLocale()
   const formatDecimal = (value: number) => value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -454,7 +459,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         {match.status === "Completed" ? (
                           <Badge data-match-status className="bg-green-500 text-white">
                             <Trophy className="w-3 h-3 mr-1" />
-                            {t('completed')}
+                            {t('completed')}{endReason && ` — ${endReason}`}
                           </Badge>
                         ) : (
                           <Badge data-match-status variant="secondary" className="text-white bg-white/20">
@@ -596,10 +601,10 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                             <span className="text-sm font-medium">{formatTime(match.endTime)}</span>
                           </div>
                         )}
-                        {match.retirementReason && (
+                        {endReason && (
                           <div className="flex justify-between">
                             <span className="text-sm text-muted-foreground">{t('reason')}</span>
-                            <span className="text-sm font-medium text-orange-600 capitalize">{match.retirementReason}</span>
+                            <span className="text-sm font-medium text-orange-600">{endReason}</span>
                           </div>
                         )}
                         <Separator />
