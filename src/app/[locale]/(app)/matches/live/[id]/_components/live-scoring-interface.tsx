@@ -19,6 +19,7 @@ import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
 import { setMatchPaused } from "@/lib/actions/match-pause"
+import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { useStoreHydrated } from "@/hooks/use-store-hydrated"
 import { useSyncStatus } from "@/hooks/use-sync-status"
@@ -114,6 +115,7 @@ interface LiveScoringInterfaceProps {
     pointLog?: string[]
     status: string
     isPaused?: boolean
+    pauseReason?: string
     startTime?: string
     endTime?: string
     setDurations?: number[]
@@ -401,6 +403,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const tCommon = useTranslations('common')
   const [isPaused, setIsPaused] = useState(Boolean(match.isPaused))
   const [pausePending, setPausePending] = useState(false)
+  const [pauseReason, setPauseReason] = useState<PauseReason | undefined>(isPauseReason(match.pauseReason) ? match.pauseReason : undefined)
+  const [showPauseDialog, setShowPauseDialog] = useState(false)
   
   // Use match store with a shallow selector so this component only re-renders
   // when the fields it actually uses change (not on every unrelated store write).
@@ -685,6 +689,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
     try {
       initializeMatch(matchData)
+      if (detailLevel === 'custom') {
+        try {
+          const config = JSON.parse(match.matchFormat).customModeConfig
+          if (config && Array.isArray(config.categories)) useMatchStore.getState().setCustomMode({ enabled: true, level: Number(config.level) === 3 ? 3 : Number(config.level) === 2 ? 2 : 1, selectedCategories: config.categories })
+        } catch { /* Older matches may not have custom settings. */ }
+      }
 
       // Offline recovery: if the persisted store kept local points that never
       // reached the server (reload/disconnect mid-match), push them once now.
@@ -706,7 +716,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     } catch (error) {
       console.error("Failed to initialize match:", error)
     }
-  }, [match, parsedMatchFormat, initializeMatch, setServer, storeHydrated])
+  }, [match, parsedMatchFormat, initializeMatch, setServer, storeHydrated, detailLevel, runSync])
 
   // Show loading state until match is initialized
   if (!isMatchInitialized || !currentServer) {
@@ -956,14 +966,15 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const togglePause = async () => {
+  const togglePause = async (reason: PauseReason = pauseReason ?? 'other') => {
     if (pausePending || syncState !== 'synced' || !storeHydrated || !isMatchInitialized) return
     setPausePending(true)
     try {
       const next = !isPaused
-      const result = await setMatchPaused(match.$id, next)
+      const result = await setMatchPaused(match.$id, next, reason)
       if (!result.success) throw new Error(result.error)
       setIsPaused(next)
+      setShowPauseDialog(false)
     } catch {
       toast.error(t('pauseUpdateFailed'))
     } finally {
@@ -1108,7 +1119,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 </motion.div>
               )}
               {/* Advanced Stats button: icon + text (truncate text if needed) */}
-              <Button
+              {detailLevel !== 'custom' && <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowCustomModeDialog(true)}
@@ -1117,7 +1128,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               >
                 <BarChart3 className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate min-w-0 hidden xs:block">{t('advancedStats')}</span>
-              </Button>
+              </Button>}
               {/* Export Button - Show after first set is completed (icon + text) */}
               {score.sets.length > 0 && (
                 <LiveSetExportButton
@@ -1176,7 +1187,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <SyncStatusBadge state={syncState} />
         </div>
 
-        {isPaused && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm font-semibold">{t('matchPaused')}</p>}
+        {isPaused && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm font-semibold">{t('matchPaused')}{isPauseReason(pauseReason) && ` — ${t(`pauseReason_${pauseReason}`)}`}</p>}
 
         {/* Live Scoreboard */}
         <LiveScoreboard
@@ -1314,7 +1325,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* End Match Button */}
         <div className="mt-8 pb-20">
-          <Button variant="outline" className="mb-3 h-12 w-full" onClick={togglePause} disabled={pausePending || syncState !== 'synced' || !storeHydrated || !isMatchInitialized || match.status === 'Completed'}>
+          <Button variant="outline" className="mb-3 h-12 w-full" onClick={() => isPaused ? void togglePause() : setShowPauseDialog(true)} disabled={pausePending || syncState !== 'synced' || !storeHydrated || !isMatchInitialized || match.status === 'Completed'}>
             {t(isPaused ? 'resumeInterruptedMatch' : 'pauseMatch')}
           </Button>
           <Button
@@ -1329,6 +1340,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       </div>
 
       {/* Dialogs */}
+      <Dialog open={showPauseDialog} onOpenChange={setShowPauseDialog}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t('pauseReasonTitle')}</DialogTitle></DialogHeader>
+          <div role="radiogroup" aria-label={t('pauseReasonTitle')} className="grid gap-2">
+            {PAUSE_REASONS.map(reason => <label key={reason} className="flex min-h-11 items-center gap-3 rounded-lg border p-3">
+              <input type="radio" name="pauseReason" value={reason} checked={pauseReason === reason} onChange={() => setPauseReason(reason)} />
+              {t(`pauseReason_${reason}`)}
+            </label>)}
+          </div>
+          <Button disabled={pausePending || !pauseReason} onClick={() => void togglePause(pauseReason)}>{t('pauseMatch')}</Button>
+        </DialogContent>
+      </Dialog>
       <ShareDialog
         open={showShareDialog}
         onOpenChange={setShowShareDialog}

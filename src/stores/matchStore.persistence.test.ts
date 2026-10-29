@@ -53,4 +53,11 @@ describe('match store persisted in IndexedDB', () => {
     expect(third.getState().pointLog.length).toBe(0)
     expect(third.getState().needsResync).toBe(false)
   })
+
+  it('preserves selected point statistics after a match reload', async () => {
+    const store = freshStore()
+    await store.persist.rehydrate()
+    store.getState().initializeMatch({ ...match, $id: 'custom-stats', pointLog: [{ winner: 'p1', server: 'p1', servePlacement: 'wide', customFields: { serveSpeed: 'fast', returnQuality: 'neutral', rallyLength: 5 } }] })
+    expect(store.getState().pointLog[0]).toMatchObject({ servePlacement: 'wide', customFields: { serveSpeed: 'fast', returnQuality: 'neutral', rallyLength: 5 } })
+  })
 })

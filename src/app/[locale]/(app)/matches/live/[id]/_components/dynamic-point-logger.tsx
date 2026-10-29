@@ -70,6 +70,7 @@ export function DynamicPointLogger({
   // Helper to determine next step based on configuration
   const getNextStep = (currentStep: Step, context?: any): Step | 'done' => {
     const categories = customMode.selectedCategories || []
+    const afterServe = (): Step | 'done' => categories.includes('shot-tracking') ? 'winner-type' : categories.includes('rally-type') ? 'rally-length' : 'done'
 
     if (currentStep === 'outcome') {
       const isAceOrDF = context?.outcome === 'ace' || context?.outcome === 'double_fault'
@@ -86,8 +87,7 @@ export function DynamicPointLogger({
       if (categories.includes('serve-speed')) return 'serve-speed'
       if (categories.includes('return-quality')) return 'return-quality'
 
-      // Then basics
-      return 'winner-type'
+      return afterServe()
     }
 
     if (currentStep === 'serve-direction') {
@@ -96,7 +96,7 @@ export function DynamicPointLogger({
       if (outcome === 'ace' || outcome === 'double_fault') return 'done'
 
       if (categories.includes('return-quality')) return 'return-quality'
-      return 'winner-type'
+      return afterServe()
     }
 
     if (currentStep === 'serve-speed') {
@@ -104,11 +104,11 @@ export function DynamicPointLogger({
       if (outcome === 'ace' || outcome === 'double_fault') return 'done'
 
       if (categories.includes('return-quality')) return 'return-quality'
-      return 'winner-type'
+      return afterServe()
     }
 
     if (currentStep === 'return-quality') {
-      return 'winner-type'
+      return afterServe()
     }
 
     if (currentStep === 'winner-type') {
@@ -156,7 +156,7 @@ export function DynamicPointLogger({
     setServeDirection(direction)
     const next = getNextStep('serve-direction')
     if (next === 'done') {
-      savePoint(outcome!, { servePlacement: direction })
+      savePoint(outcome!, { serveDirection: direction })
     } else {
       setStep(next)
     }
@@ -237,11 +237,11 @@ export function DynamicPointLogger({
       shotDirection: currentData.shotDirection ?? undefined,
 
       // Custom fields bucket
-      ...((currentData.serveSpeed || currentData.returnQuality) ? {
+      ...((currentData.serveSpeed || currentData.returnQuality || typeof updates.rallyLength === 'number') ? {
         customFields: {
-          serveSpeed: currentData.serveSpeed,
-          returnQuality: currentData.returnQuality,
-          courtPosition: courtPosition
+          ...(currentData.serveSpeed ? { serveSpeed: currentData.serveSpeed } : {}),
+          ...(currentData.returnQuality ? { returnQuality: currentData.returnQuality } : {}),
+          ...(typeof updates.rallyLength === 'number' ? { rallyLength: updates.rallyLength } : {})
         }
       } : {})
     }
@@ -516,7 +516,7 @@ export function DynamicPointLogger({
                   )}
                   onClick={() => handleServeSpeedClick(speed as 'slow' | 'medium' | 'fast')}
                 >
-                  <div className="font-medium capitalize">{speed}</div>
+                  <div className="font-medium">{t(`customValue_${speed}`)}</div>
                 </Button>
               ))}
             </div>
@@ -537,7 +537,7 @@ export function DynamicPointLogger({
                   size="lg"
                   onClick={() => handleReturnQualityClick(quality as 'defensive' | 'neutral' | 'offensive')}
                 >
-                  <div className="font-medium capitalize">{quality}</div>
+                  <div className="font-medium">{t(`customValue_${quality}`)}</div>
                 </Button>
               ))}
             </div>
@@ -595,7 +595,7 @@ export function DynamicPointLogger({
                   )}
                   onClick={() => handleServeSpeedClick(speed as 'slow' | 'medium' | 'fast')}
                 >
-                  <div className="font-medium capitalize">{speed}</div>
+                  <div className="font-medium">{t(`customValue_${speed}`)}</div>
                 </Button>
               ))}
             </div>
@@ -616,7 +616,7 @@ export function DynamicPointLogger({
                   size="lg"
                   onClick={() => handleReturnQualityClick(quality as 'defensive' | 'neutral' | 'offensive')}
                 >
-                  <div className="font-medium capitalize">{quality}</div>
+                  <div className="font-medium">{t(`customValue_${quality}`)}</div>
                 </Button>
               ))}
             </div>

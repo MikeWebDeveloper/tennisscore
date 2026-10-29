@@ -55,6 +55,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
   const [scoring, setScoring] = useState<"ad" | "no-ad" | "">("")
   const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">("")
   const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "detailed" | "complex" | "custom" | "">("")
+  const [customCategories, setCustomCategories] = useState<string[]>([])
 
   const totalSteps = 5
 
@@ -138,6 +139,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
           ...(matchType === "doubles" ? { doublesServeOrder: serveOrder } : {}),
           finalSetTiebreak: finalSet === "super-tb" ? "super" : "standard",
           detailLevel: finalDetailLevel,
+          ...(finalDetailLevel === 'custom' ? { customModeConfig: { enabled: true, categories: customCategories as ('serve-placement' | 'serve-speed' | 'return-quality' | 'rally-type')[], level: '2' as const } } : {}),
         },
       }
 
@@ -223,6 +225,8 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
         return (
           <CompactDetailStep
             value={detailLevel}
+            customCategories={customCategories}
+            onCategoriesChange={setCustomCategories}
             onChange={setDetailLevel}
             onStartMatch={handleCreateMatch}
             loading={loading}

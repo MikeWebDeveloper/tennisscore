@@ -13,6 +13,8 @@ interface CompactDetailStepProps {
   onChange: (value: "points" | "simple" | "detailed" | "custom") => void
   onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
   loading: boolean
+  customCategories?: string[]
+  onCategoriesChange?: (categories: string[]) => void
   /** Doubles only: choose which partner of each pair serves first */
   doubles?: {
     names: { p1: string; p2: string; p3: string; p4: string }
@@ -21,7 +23,7 @@ interface CompactDetailStepProps {
   }
 }
 
-export function CompactDetailStep({ value, onChange, onStartMatch, loading, doubles }: CompactDetailStepProps) {
+export function CompactDetailStep({ value, onChange, onStartMatch, loading, doubles, customCategories = [], onCategoriesChange }: CompactDetailStepProps) {
   const t = useTranslations('common')
 
   const options = [
@@ -105,19 +107,20 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading, doub
           const isDisabled = option.disabled
 
           return (
-            <motion.div
+            <motion.button
               key={option.value}
+              type="button"
               whileHover={!isDisabled ? { scale: 1.01 } : undefined}
               whileTap={!isDisabled ? { scale: 0.99 } : undefined}
               onClick={() => {
                 if (!isDisabled && !loading) {
                   const selectedValue = option.value as "points" | "simple" | "detailed" | "custom"
                   onChange(selectedValue)
-                  onStartMatch(selectedValue)
+                  if (selectedValue !== 'custom') onStartMatch(selectedValue)
                 }
               }}
               className={`
-                p-3 rounded-lg border cursor-pointer transition-all duration-200 relative
+                w-full text-left p-3 rounded-lg border cursor-pointer transition-all duration-200 relative
                 ${isDisabled
                   ? 'opacity-50 cursor-not-allowed bg-muted/30'
                   : isSelected
@@ -170,17 +173,26 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading, doub
                   )
                 )}
               </div>
-            </motion.div>
+            </motion.button>
           )
         })}
       </div>
+
+      {value === 'custom' && <div className="mt-3 space-y-2 rounded-lg border p-3">
+        <p className="text-sm font-semibold">{t('chooseCustomStatistics')}</p>
+        {(['serve-placement', 'serve-speed', 'return-quality', 'rally-type'] as const).map(category => <label key={category} className="flex min-h-11 items-center gap-3 rounded-md px-2 hover:bg-muted/40">
+          <input type="checkbox" checked={customCategories.includes(category)} onChange={event => onCategoriesChange?.(event.target.checked ? [...customCategories, category] : customCategories.filter(item => item !== category))} />
+          {t(`customCategory_${category}`)}
+        </label>)}
+        <button type="button" disabled={loading || customCategories.length === 0} onClick={() => onStartMatch('custom')} className="min-h-11 w-full rounded-lg bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-50">{t('startMatch')}</button>
+      </div>}
 
       <div className="bg-muted/30 rounded-lg p-2.5 border mt-3">
         <div className="flex items-start gap-2">
           <BarChart3 className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-xs text-muted-foreground">
-              {t('detailLevelCanBeChanged')}
+              {t(value === 'custom' ? 'customSettingsSavedHint' : 'detailLevelCanBeChanged')}
             </p>
           </div>
         </div>

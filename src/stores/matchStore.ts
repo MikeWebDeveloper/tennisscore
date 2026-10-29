@@ -149,6 +149,9 @@ export interface PointDetail {
   pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
   serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
   rallyLength: number
+  servePlacement?: 'wide' | 'body' | 't'
+  shotDirection?: 'cross' | 'line' | 'body' | 'long' | 'wide' | 'net'
+  customFields?: { serveSpeed?: 'slow' | 'medium' | 'fast'; returnQuality?: 'defensive' | 'neutral' | 'offensive'; rallyLength?: number }
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
   lastShotPlayer?: 'p1' | 'p2'
   notes?: string
@@ -599,6 +602,9 @@ export const normalizePointDetail = (point: Partial<PointDetail> & { winner: 'p1
     serveType: point.serveType || 'first',
     pointOutcome: point.pointOutcome || 'winner',
     rallyLength: point.rallyLength || 1,
+    servePlacement: point.servePlacement,
+    shotDirection: point.shotDirection,
+    customFields: point.customFields,
     lastShotType: point.lastShotType,
     lastShotPlayer: point.lastShotPlayer,
     notes: point.notes,
@@ -1264,4 +1270,4 @@ function testBreakPointLogic() {
 // Call test function
 if (typeof window !== 'undefined') {
   (window as unknown as Record<string, unknown>).testBreakPointLogic = testBreakPointLogic
-} 
+}

@@ -44,3 +44,19 @@ describe('CompactDetailStep first server picker', () => {
     expect(onOrderChange).toHaveBeenLastCalledWith({ p1: 'p3', p2: 'p2' })
   })
 })
+
+it('lets players choose custom point statistics before starting', () => {
+  const c = document.createElement('div')
+  const onStartMatch = jest.fn(async () => {})
+  const onChange = jest.fn()
+  const onCategoriesChange = jest.fn()
+  act(() => { createRoot(c).render(createElement(LazyMotion, { features }, createElement(CompactDetailStep, {
+    value: 'custom', onChange, onStartMatch, loading: false,
+    customCategories: [], onCategoriesChange,
+  }))) })
+  const checkbox = c.querySelector('input[type="checkbox"]') as HTMLInputElement
+  expect(checkbox).not.toBeNull()
+  expect(onStartMatch).not.toHaveBeenCalled()
+  act(() => checkbox.click())
+  expect(onCategoriesChange).toHaveBeenCalled()
+})

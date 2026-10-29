@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getServerTranslator } from "@/i18n/server-translator"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { CompactLiveScoreboard } from "./compact-live-scoreboard"
+import { PAUSE_REASONS } from '@/lib/utils/pause-reasons'
 import { formatPlayerFromObject } from "@/lib/utils"
 import type { Player } from "@/lib/types"
 
@@ -78,10 +79,12 @@ export default async function WatchMatchPage({ params }: PageProps) {
         initialScore={match.score}
         initialStatus={match.status}
         initialIsPaused={Boolean(match.isPaused)}
+        initialPauseReason={match.pauseReason}
         initialWinnerId={match.winnerId}
         initialPointLog={match.pointLog || []}
         format={match.matchFormat}
         labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused") }}
+        reasonLabels={Object.fromEntries(PAUSE_REASONS.map(reason => [reason, t(`pauseReason_${reason}`)]))}
       />
 
       <footer className="space-y-2 text-center text-xs text-muted-foreground">

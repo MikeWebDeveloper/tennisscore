@@ -82,18 +82,18 @@ http.createServer((req, res) => {
   if (dbg) return docs[`${dbg[1]}/${dbg[2]}`] ? json(res, 200, docs[`${dbg[1]}/${dbg[2]}`]) : json(res, 404, {})
 
   const list = url.pathname.match(/\/databases\/[^/]+\/collections\/([^/]+)\/documents\/?$/)
-  if (list && list[1] === 'p' && req.method === 'POST') {
+  if (list && (list[1] === 'p' || list[1] === 'm') && req.method === 'POST') {
     let body = ''
     req.on('data', (chunk) => { body += chunk })
     req.on('end', () => {
-      if (failPlayerCreate) return json(res, 500, { message: 'simulated outage', code: 500, type: 'general_server_error' })
+      if (list[1] === 'p' && failPlayerCreate) return json(res, 500, { message: 'simulated outage', code: 500, type: 'general_server_error' })
       try {
         const { documentId, data } = JSON.parse(body)
         if (!documentId || !data || !data.userId) return json(res, 400, { message: 'invalid document', code: 400 })
-        const key = `p/${documentId}`
+        const key = `${list[1]}/${documentId}`
         if (docs[key]) return json(res, 409, { message: 'document exists', code: 409 })
         const now = new Date().toISOString()
-        docs[key] = { ...data, $id: documentId, $createdAt: now, $updatedAt: now, $permissions: [], $databaseId: 'd', $collectionId: 'p' }
+        docs[key] = { ...data, $id: documentId, $createdAt: now, $updatedAt: now, $permissions: [], $databaseId: 'd', $collectionId: list[1] }
         return json(res, 201, docs[key])
       } catch { return json(res, 400, { message: 'invalid JSON', code: 400 }) }
     })

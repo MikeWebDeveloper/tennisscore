@@ -95,6 +95,7 @@ export default async function PublicLiveMatchPage({ params }: PageProps) {
       detailLevel: match.detailLevel || "simple", // Include detailLevel from database
       status: match.status as "In Progress" | "Completed",
       isPaused: Boolean(match.isPaused),
+      pauseReason: match.pauseReason,
       pointLog: match.pointLog || [],
       winnerId: match.winnerId,
       matchDate: match.matchDate,

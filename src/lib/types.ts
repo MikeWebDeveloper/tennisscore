@@ -127,6 +127,7 @@ export interface Match extends Models.Document {
   matchFormat: string
   status: 'pending' | 'in-progress' | 'completed' | 'retired'
   isPaused?: boolean
+  pauseReason?: string
   winnerId?: string
   score: string
   pointLog?: string[]
@@ -137,7 +138,7 @@ export interface Match extends Models.Document {
   playerThree?: Player
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
-  detailLevel?: "points" | "simple" | "complex" | "detailed"
+  detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
   tournamentName?: string // Tournament/League name
 
   // Timing fields
@@ -213,6 +214,7 @@ export interface PointDetail {
   serveOutcome: PointOutcome // What happened with the serve
   servePlacement?: "wide" | "body" | "t" // Serve placement
   serveSpeed?: number // Optional serve speed
+  customFields?: { serveSpeed?: 'slow' | 'medium' | 'fast'; returnQuality?: 'defensive' | 'neutral' | 'offensive'; rallyLength?: number }
 
   // Rally Details
   rallyLength: number // Number of shots in the rally (including serve)

@@ -23,6 +23,7 @@ import { Player, PointDetail } from "@/lib/types"
 import { toast } from "sonner"
 import { MatchStatsComponentSimpleFixed } from "./match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
+import { CustomPointStats } from './custom-point-stats'
 import { PointByPointView } from "./point-by-point-view"
 import { useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
@@ -54,6 +55,7 @@ interface MatchDetailsProps {
     }
     pointLog: string[]
     matchFormat: string
+    detailLevel?: 'points' | 'simple' | 'detailed' | 'complex' | 'custom'
     winnerId?: string
     startTime?: string
     endTime?: string
@@ -877,19 +879,22 @@ export function MatchDetails({ match }: MatchDetailsProps) {
               }
             })()
             
-            const detailLevel = parsedMatchFormat.detailLevel || 'simple'
+            const detailLevel = match.detailLevel || parsedMatchFormat.detailLevel || 'simple'
             const stats = calculateMatchStats(pointDetails)
             
             return (
-              <MatchStatsComponentSimpleFixed 
+              <><CustomPointStats points={pointDetails} players={[
+                match.playerOne ? formatPlayerFromObject(match.playerOne) : t('player1'),
+                match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('player2'),
+              ]} /><MatchStatsComponentSimpleFixed
                 stats={stats}
                 playerNames={{
-                  p1: match.playerOne ? formatPlayerFromObject(match.playerOne) : t('player.player1'),
-                  p2: match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('player.player2')
+                  p1: match.playerOne ? formatPlayerFromObject(match.playerOne) : t('player1'),
+                  p2: match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('player2')
                 }}
                 detailLevel={detailLevel}
                 pointLog={pointDetails}
-              />
+              /></>
             )
           })()}
         </TabsContent>
@@ -1134,4 +1139,4 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       </div>
     </div>
   )
-} 
+}

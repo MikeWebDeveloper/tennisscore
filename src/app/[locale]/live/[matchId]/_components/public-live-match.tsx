@@ -29,6 +29,7 @@ import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-se
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { parseDbScore } from "@/lib/utils/db-score"
 import { useTranslations, useLocale } from "@/i18n"
+import { isPauseReason } from '@/lib/utils/pause-reasons'
 
 type Score = import("@/stores/matchStore").Score
 
@@ -44,6 +45,7 @@ interface PublicLiveMatchProps {
     detailLevel?: "points" | "simple" | "complex"
     status: "In Progress" | "Completed"
     isPaused?: boolean
+    pauseReason?: string
     pointLog?: string[]
     winnerId?: string
     matchDate: string
@@ -114,6 +116,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         ...prev,
         status: lastUpdate.status || prev.status,
         isPaused: lastUpdate.isPaused ?? prev.isPaused,
+        pauseReason: lastUpdate.pauseReason ?? prev.pauseReason,
         pointLog: lastUpdate.pointLog || prev.pointLog,
         winnerId: lastUpdate.winnerId || prev.winnerId,
       }))
@@ -295,6 +298,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className={`${match.isPaused ? 'bg-amber-600' : 'bg-green-500'} text-white text-xs sm:text-sm`}>
             {match.status === "In Progress" ? t(match.isPaused ? 'matchPaused' : 'live') : t('completed')}
+            {match.status === 'In Progress' && match.isPaused && isPauseReason(match.pauseReason) && ` — ${t(`pauseReason_${match.pauseReason}`)}`}
           </Badge>
           {/* Connection Status - only show if match is in progress */}
           {match.status === "In Progress" && (

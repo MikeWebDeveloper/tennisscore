@@ -7,6 +7,7 @@ import { parseDbScore } from '@/lib/utils/db-score'
 import { deriveCurrentServer } from '@/lib/utils/current-server'
 import { getNextDoublesServer, startsNewServeTurn, type ServeLogPoint } from '@/lib/utils/doubles-serving'
 import { normalizeMatchFormat } from '@/lib/utils/match-format'
+import { isPauseReason } from '@/lib/utils/pause-reasons'
 
 type Team = { names: readonly string[]; ids: readonly LitePlayerId[] }
 interface Props {
@@ -19,14 +20,16 @@ interface Props {
   initialScore: string
   initialStatus: string
   initialIsPaused?: boolean
+  initialPauseReason?: string
   initialWinnerId?: string
   initialPointLog: string[]
   format: string
   labels: { live: string; finished: string; paused?: string }
+  reasonLabels?: Record<string, string>
 }
 
 export function CompactLiveScoreboard(props: Props) {
-  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, pointLog: props.initialPointLog, isPaused: props.initialIsPaused ?? false })
+  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, pointLog: props.initialPointLog, isPaused: props.initialIsPaused ?? false, pauseReason: props.initialPauseReason })
   const lastUpdate = usePublicMatchPolling(data.status === 'Completed' ? '' : props.matchId)
   useEffect(() => {
     if (!lastUpdate) return
@@ -36,6 +39,7 @@ export function CompactLiveScoreboard(props: Props) {
       winnerId: lastUpdate.winnerId ?? previous.winnerId,
       pointLog: lastUpdate.pointLog ?? previous.pointLog,
       isPaused: lastUpdate.isPaused ?? previous.isPaused,
+      pauseReason: lastUpdate.pauseReason ?? previous.pauseReason,
     }))
   }, [lastUpdate])
 
@@ -53,5 +57,7 @@ export function CompactLiveScoreboard(props: Props) {
     { names: [...props.teams[1].names], ids: [...props.teams[1].ids] },
   ]
 
-  return <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={props.labels} />
+  const paused = data.isPaused && isPauseReason(data.pauseReason) && props.reasonLabels?.[data.pauseReason]
+    ? `${props.labels.paused} — ${props.reasonLabels[data.pauseReason]}` : props.labels.paused
+  return <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={{ ...props.labels, paused }} />
 }

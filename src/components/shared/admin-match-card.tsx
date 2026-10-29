@@ -47,11 +47,11 @@ export function AdminMatchCard({ match }: AdminMatchCardProps) {
   const getStatusBadge = () => {
     switch (match.status) {
       case "completed":
-        return <Badge variant="secondary" className="text-xs">{t('matchStatus.completedStatus')}</Badge>
+        return <Badge variant="secondary" className="text-xs">{t('completed')}</Badge>
       case "in-progress":
-        return <Badge variant="default" className="text-xs bg-green-600">{t('matchStatus.liveStatus')}</Badge>
+        return <Badge variant="default" className="text-xs bg-green-600">{t('live')}</Badge>
       case "retired":
-        return <Badge variant="destructive" className="text-xs">{t('matchStatus.retiredStatus')}</Badge>
+        return <Badge variant="destructive" className="text-xs">{t('retiredStatus')}</Badge>
       default:
         return <Badge variant="outline" className="text-xs">{match.status}</Badge>
     }

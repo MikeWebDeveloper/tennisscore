@@ -102,6 +102,7 @@ export default async function MatchPage({
     score: match.score,
     pointLog: match.pointLog || [],
     matchFormat: match.matchFormat,
+    detailLevel: match.detailLevel,
     winnerId: match.winnerId,
     startTime: match.startTime,
     endTime: match.endTime,
@@ -123,4 +124,4 @@ export default async function MatchPage({
   }
 
   return <MatchDetails match={enhancedMatch} />
-} 
+}

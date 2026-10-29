@@ -51,16 +51,16 @@ interface PaginatedMatchesClientProps {
 // Helper function to get anonymous player display name
 function getAnonymousPlayerName(playerId: string, t: (key: string) => string): { firstName: string; lastName: string } {
   if (playerId.includes('player-1') || playerId.includes('player1')) {
-    return { firstName: t("player.player"), lastName: "1" }
+    return { firstName: t("player"), lastName: "1" }
   } else if (playerId.includes('player-2') || playerId.includes('player2')) {
-    return { firstName: t("player.player"), lastName: "2" }
+    return { firstName: t("player"), lastName: "2" }
   } else if (playerId.includes('player-3') || playerId.includes('player3')) {
-    return { firstName: t("player.player"), lastName: "3" }
+    return { firstName: t("player"), lastName: "3" }
   } else if (playerId.includes('player-4') || playerId.includes('player4')) {
-    return { firstName: t("player.player"), lastName: "4" }
+    return { firstName: t("player"), lastName: "4" }
   } else {
     // Fallback for other anonymous formats
-    return { firstName: t("player.anonymous"), lastName: t("player.player") }
+    return { firstName: t("unknownPlayer"), lastName: "" }
   }
 }
 
