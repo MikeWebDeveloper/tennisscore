@@ -442,13 +442,16 @@ export function FullMatchExportButton({
   playerNames, 
   variant = 'default',
   size = 'default',
-  className = '' 
+  className = '',
+  iconOnly = false
 }: { 
   match: Match
   playerNames: [string, string]
   variant?: 'default' | 'outline' | 'secondary'
   size?: 'default' | 'sm' | 'lg'
   className?: string
+  /** Icon button that keeps the label as its accessible name, for tight headers */
+  iconOnly?: boolean
 }) {
   const t = useTranslations('common')
   const canExport = (match.pointLog && match.pointLog.length > 0) || (match.score && match.score.sets && match.score.sets.length > 0)
@@ -462,12 +465,14 @@ export function FullMatchExportButton({
       trigger={
         <Button
           variant={variant}
-          size={size}
+          size={iconOnly ? 'icon' : size}
           disabled={!canExport}
+          aria-label={iconOnly ? t('exportMatchReport') : undefined}
+          title={iconOnly ? t('exportMatchReport') : undefined}
           className={className}
         >
-          <FileText className="h-4 w-4 mr-2" />
-          {t('exportMatchReport')}
+          <FileText className={iconOnly ? "h-4 w-4" : "h-4 w-4 mr-2"} aria-hidden="true" />
+          {!iconOnly && t('exportMatchReport')}
         </Button>
       }
     />

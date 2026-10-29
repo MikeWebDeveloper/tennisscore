@@ -202,15 +202,14 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       {/* Mobile Header */}
       <div className="block md:hidden">
         <div className="w-full bg-background border-b">
-          {/* Top row: Back button and actions; actions wrap so none sit off-screen */}
-          <div className="flex flex-wrap items-center justify-between gap-2 p-2">
-            <Button variant="outline" size="sm" asChild className="flex items-center gap-1 text-xs px-2 py-1 h-8">
-              <Link href="/matches">
-                <ArrowLeft className="h-3 w-3" />
-                <span>{t('backToMatches')}</span>
+          {/* One compact row of labelled icon buttons; text labels wrapped into three rows on phones */}
+          <div className="flex items-center justify-between gap-2 px-4 py-2">
+            <Button variant="outline" size="icon" asChild className="h-11 w-11">
+              <Link href="/matches" aria-label={t('backToMatches')} title={t('backToMatches')}>
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
-            <div className="flex flex-wrap items-center justify-end gap-1">
+            <div className="flex items-center gap-2">
               {match.status === "Completed" && (
                 <FullMatchExportButton
                   match={{
@@ -239,11 +238,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     isDoubles ? getTeamName("team2") : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'))
                   ]}
                   variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1 text-xs px-2 py-1 h-8"
+                  iconOnly
+                  className="h-11 w-11"
                 />
               )}
               <ShareScoreCardButton
+                compact
                 fileName={`score-${match.$id}.png`}
                 input={{
                   teamOne: isDoubles
@@ -259,14 +259,15 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   subtitle: new Date(match.matchDate).toLocaleDateString(locale),
                 }}
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={handleShareMatch}
-                className={`flex items-center gap-1 text-xs px-2 py-1 h-8 ${copiedLink ? "bg-green-50 border-green-200" : ""}`}
+                aria-label={copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}
+                title={match.status === "Completed" ? t('shareResults') : t('shareLive')}
+                className={`h-11 w-11 ${copiedLink ? "border-green-500/40 text-green-500" : ""}`}
               >
-                <Share2 className="h-3 w-3" />
-                <span>{copiedLink ? t('copied') : match.status === "Completed" ? t('shareResults') : t('shareLive')}</span>
+                <Share2 className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           </div>

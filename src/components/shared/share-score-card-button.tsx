@@ -8,7 +8,8 @@ import { useTranslations } from "@/i18n"
 import { buildScoreCardModel, renderScoreCardBlob, type ScoreCardInput } from "@/lib/utils/score-card"
 
 /** Shares the score card via the native share sheet, or downloads it where that isn't available. */
-export function ShareScoreCardButton({ input, fileName = "score.png" }: { input: ScoreCardInput; fileName?: string }) {
+/** `compact` renders an icon button that keeps the label as its accessible name, for tight headers. */
+export function ShareScoreCardButton({ input, fileName = "score.png", compact = false }: { input: ScoreCardInput; fileName?: string; compact?: boolean }) {
   const t = useTranslations("match")
   const [busy, setBusy] = useState(false)
 
@@ -47,13 +48,15 @@ export function ShareScoreCardButton({ input, fileName = "score.png" }: { input:
   return (
     <Button
       variant="outline"
-      size="sm"
+      size={compact ? "icon" : "sm"}
       onClick={handleClick}
       disabled={busy}
-      className="flex items-center gap-1 text-xs px-2 py-1 h-8"
+      aria-label={compact ? t("shareScoreCard") : undefined}
+      title={compact ? t("shareScoreCard") : undefined}
+      className={compact ? "h-11 w-11" : "flex items-center gap-1 text-xs px-2 py-1 h-8"}
     >
-      <ImageDown className="h-3 w-3" aria-hidden="true" />
-      <span>{t("shareScoreCard")}</span>
+      <ImageDown className={compact ? "h-4 w-4" : "h-3 w-3"} aria-hidden="true" />
+      {!compact && <span>{t("shareScoreCard")}</span>}
     </Button>
   )
 }

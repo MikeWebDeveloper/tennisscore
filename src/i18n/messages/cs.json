@@ -497,6 +497,8 @@
     "returnQuality": "Kvalita returnu",
     "savePoint": "Uložit bod",
     "lastTenPoints": "Posledních 10 bodů",
+    "returnForehand": "Return forhend",
+    "returnBackhand": "Return bekhend",
     "selectShotThatEndedPoint": "Vyberte úder, kterým bod skončil",
     "selectWhereServeLanded": "Vyberte, kam podání dopadlo",
     "selectWhereShotWent": "Vyberte, kam úder směřoval",

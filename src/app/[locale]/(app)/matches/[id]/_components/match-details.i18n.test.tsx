@@ -16,7 +16,7 @@ jest.mock('@/i18n', () => {
     },
   }
 })
-jest.mock('@/i18n/navigation', () => ({ Link: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a> }))
+jest.mock('@/i18n/navigation', () => ({ Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => <a href={href} {...rest}>{children}</a> }))
 jest.mock('@/components/features/lazy-match-export', () => ({ LazyFullMatchExportButton: () => null }))
 jest.mock('@/components/shared/share-score-card-button', () => ({ ShareScoreCardButton: () => null }))
 jest.mock('./point-by-point-view', () => ({ PointByPointView: () => null }))
@@ -82,6 +82,16 @@ describe('MatchDetails in Czech', () => {
     const { container, cleanup } = await renderDetails({ playerOne: undefined, playerTwo: undefined })
     // The desktop header renders the whole pairing in one heading
     expect(Array.from(container.querySelectorAll('h1'), heading => heading.textContent)).toContain('Neznámý hráč vs Neznámý hráč')
+    cleanup()
+  })
+
+  it('fits the phone header on one row with labelled icon buttons', async () => {
+    const { container, cleanup } = await renderDetails()
+    const back = container.querySelector('a[aria-label="Zpět na zápasy"]')
+    const share = container.querySelector('button[aria-label="Sdílet výsledky"]')
+    expect(back?.textContent).toBe('')
+    expect(share?.textContent).toBe('')
+    expect(back?.parentElement?.className).not.toContain('flex-wrap')
     cleanup()
   })
 

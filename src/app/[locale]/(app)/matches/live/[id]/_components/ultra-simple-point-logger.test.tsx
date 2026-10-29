@@ -74,3 +74,37 @@ describe('shot-type level', () => {
     expect(onSave.mock.calls[0][0].servePlacement).toBeUndefined()
   })
 })
+
+describe('return shots in the shot step (no separate "was it a return?" step)', () => {
+  it('shows the return row to the receiver and saves the return without an extra step', () => {
+    const onSave = open({ winner: 'p2', server: 'p1' })
+    click('common.winner')
+    expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.returnForehand', 'common.returnBackhand', 'common.volley', 'common.overhead'])
+    click('common.returnForehand')
+    click('common.crossCourt')
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ pointOutcome: 'winner', lastShotType: 'forehand', winnerType: 'return', shotDirection: 'cross' })
+  })
+
+  it('records an ordinary receiver winner as regular, still without the extra step', () => {
+    const onSave = open({ winner: 'p2', server: 'p1' })
+    click('common.winner')
+    click('common.volley')
+    click('common.downTheLine')
+    expect(onSave.mock.calls[0][0]).toMatchObject({ lastShotType: 'volley', winnerType: 'regular' })
+  })
+
+  it('hides the return row from the server', () => {
+    open({ winner: 'p1', server: 'p1' })
+    click('common.winner')
+    expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.volley', 'common.overhead'])
+  })
+
+  it('records a return backhand straight away at the shot-type level', () => {
+    const onSave = open({ winner: 'p2', server: 'p1' }, { mode: 'shot-type' })
+    click('common.winner')
+    click('common.returnBackhand')
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ lastShotType: 'backhand', winnerType: 'return' })
+  })
+})

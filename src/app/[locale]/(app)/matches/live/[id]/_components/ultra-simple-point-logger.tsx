@@ -9,7 +9,7 @@ import { useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
 import { ACE_PLACEMENTS, SERVE_PLACEMENTS, type ServePlacement } from "@/lib/utils/serve-placement"
 
-type Step = 'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'return-type'
+type Step = 'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction'
 
 // Each step says exactly what it asks for
 const STEP_SUBTITLE_KEYS: Record<Step, string> = {
@@ -17,7 +17,6 @@ const STEP_SUBTITLE_KEYS: Record<Step, string> = {
   'serve-direction': 'selectWhereServeLanded',
   'winner-type': 'selectShotThatEndedPoint',
   'shot-direction': 'selectWhereShotWent',
-  'return-type': 'selectIfReturn',
 }
 
 interface UltraSimplePointLoggerProps {
@@ -50,16 +49,13 @@ export function UltraSimplePointLogger({
 }: UltraSimplePointLoggerProps) {
   const t = useTranslations('common')
 
-  // Flow state: 'outcome' -> 'serve-direction' (for ace/double fault) -> 'winner-type' -> 'shot-direction' -> 'return-type' (for receiving winners) -> done
+  // Flow state: 'outcome' -> 'serve-direction' (for ace/double fault) -> 'winner-type' (return shots offered to the receiver) -> 'shot-direction' -> done
   const [step, setStep] = useState<Step>('outcome')
   const [outcome, setOutcome] = useState<PointOutcome | null>(null)
   const [winnerType, setWinnerType] = useState<ShotType | null>(null)
   const [serveDirection, setServeDirection] = useState<ServePlacement | null>(null)
   const [shotDirection, setShotDirection] = useState<'cross' | 'line' | 'body' | 'long' | 'wide' | 'net' | null>(null)
   const [returnType, setReturnType] = useState<'regular' | 'return' | null>(null)
-  
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _returnType = returnType // Used in handleReturnTypeClick via setReturnType
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _ = serveDirection // Used in handleServeDirectionClick via setServeDirection
@@ -122,16 +118,22 @@ export function UltraSimplePointLogger({
     setStep('winner-type')
   }
 
-  const handleWinnerTypeClick = (shotType: ShotType) => {
-    setWinnerType(shotType)
+  // Only a receiver's winner can be a return; the old separate "was it a return?" step is now part of the shot choice
+  const isReceiverWinner = outcome === 'winner' && pointContext.winner !== pointContext.server
+
+  const handleWinnerTypeClick = (option: { shot: ShotType; isReturn: boolean }) => {
+    const chosenReturnType = option.isReturn ? 'return' : 'regular'
+    setWinnerType(option.shot)
+    setReturnType(chosenReturnType)
     if (mode === 'shot-type' && outcome) {
-      // Shot type is the last detail at this level: no direction, return type or rally length
+      // Shot type is the last detail at this level: no direction or rally length
       finish({
         serveType: pointContext.serveType,
         serveOutcome: 'winner',
         pointOutcome: outcome,
-        lastShotType: shotType,
+        lastShotType: option.shot,
         lastShotPlayer: outcome === 'winner' ? pointContext.winner : (pointContext.winner === 'p1' ? 'p2' : 'p1'),
+        ...(isReceiverWinner && { winnerType: chosenReturnType }),
       })
       return
     }
@@ -140,15 +142,8 @@ export function UltraSimplePointLogger({
 
   const handleShotDirectionClick = (direction: 'cross' | 'line' | 'body' | 'long' | 'wide' | 'net') => {
     setShotDirection(direction)
-    
-    // If it's a winner by the receiving player, go to return type step
-    if (outcome === 'winner' && pointContext.winner !== pointContext.server) {
-      setStep('return-type')
-      return
-    }
-    
-    // Otherwise, save the point immediately
-    savePoint(direction, 'regular')
+    // Direction is the last step; whether it was a return was chosen with the shot
+    savePoint(direction, returnType ?? 'regular')
   }
 
   const savePoint = (direction: 'cross' | 'line' | 'body' | 'long' | 'wide' | 'net', winnerTypeValue: 'regular' | 'return' = 'regular') => {
@@ -174,11 +169,6 @@ export function UltraSimplePointLogger({
     resetState()
   }
 
-
-  const handleReturnTypeClick = (type: 'regular' | 'return') => {
-    setReturnType(type)
-    savePoint(shotDirection!, type)
-  }
 
   const resetState = () => {
     setStep('outcome')
@@ -232,27 +222,16 @@ export function UltraSimplePointLogger({
   ]
 
   // Shot types excluding serve (since serve winners should be classified as Ace)
+  // Rows: forehand/backhand, return forehand/backhand (receiver's winner only), volley/smash
   const winnerTypes = [
-    {
-      id: 'forehand' as const,
-      label: t('forehand'),
-      color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'
-    },
-    {
-      id: 'backhand' as const,
-      label: t('backhand'),
-      color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
-    },
-    {
-      id: 'volley' as const,
-      label: t('volley'),
-      color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
-    },
-    {
-      id: 'overhead' as const,
-      label: t('overhead'),
-      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
-    }
+    { key: 'forehand', shot: 'forehand' as const, isReturn: false, label: t('forehand'), color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' },
+    { key: 'backhand', shot: 'backhand' as const, isReturn: false, label: t('backhand'), color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20' },
+    ...(isReceiverWinner ? [
+      { key: 'return-forehand', shot: 'forehand' as const, isReturn: true, label: t('returnForehand'), color: 'bg-blue-500/10 text-blue-500 border-blue-500/30 hover:bg-blue-500/20' },
+      { key: 'return-backhand', shot: 'backhand' as const, isReturn: true, label: t('returnBackhand'), color: 'bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20' },
+    ] : []),
+    { key: 'volley', shot: 'volley' as const, isReturn: false, label: t('volley'), color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20' },
+    { key: 'overhead', shot: 'overhead' as const, isReturn: false, label: t('overhead'), color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20' },
   ]
 
 
@@ -414,16 +393,16 @@ export function UltraSimplePointLogger({
             <div className="grid grid-cols-2 gap-2">
               {winnerTypes.map((type) => (
                 <Button
-                  key={type.id}
+                  key={type.key}
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-4 flex items-center justify-center text-center whitespace-normal transition-all",
                     type.color
                   )}
-                  onClick={() => handleWinnerTypeClick(type.id)}
+                  onClick={() => handleWinnerTypeClick(type)}
                 >
-                  <div className="font-medium">{type.label}</div>
+                  <div data-option className="font-medium">{type.label}</div>
                 </Button>
               ))}
             </div>
@@ -462,50 +441,6 @@ export function UltraSimplePointLogger({
                   <div className="font-medium">{direction.label}</div>
                 </Button>
               ))}
-            </div>
-          </div>
-        )
-
-      case 'return-type':
-        return (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{t('wasItReturn')}</h3>
-              <div className="text-sm text-muted-foreground">
-                <Badge variant="outline" className="mr-2">
-                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
-                </Badge>
-                <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
-                </Badge>
-              </div>
-            </div>
-            
-            {subtitle}
-            
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="lg"
-                className={cn(
-                  "h-auto p-4 flex items-center justify-center text-center transition-all",
-                  "bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
-                )}
-                onClick={() => handleReturnTypeClick('regular')}
-              >
-                <div className="font-medium">{t('regular')}</div>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className={cn(
-                  "h-auto p-4 flex items-center justify-center text-center transition-all",
-                  "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20"
-                )}
-                onClick={() => handleReturnTypeClick('return')}
-              >
-                <div className="font-medium">{t('return')}</div>
-              </Button>
             </div>
           </div>
         )

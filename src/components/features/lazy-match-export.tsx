@@ -14,7 +14,12 @@ const ExportButtonLoading = ({ variant = "outline", children = "Export" }: { var
 export const LazyFullMatchExportButton = dynamic(
   () => import('./match-export-dialog').then(mod => mod.FullMatchExportButton),
   {
-    loading: () => <ExportButtonLoading variant="outline">Export Match</ExportButtonLoading>,
+    // Icon-sized so the compact phone header keeps its single row while the dialog code loads
+    loading: () => (
+      <Button variant="outline" size="icon" disabled className="h-11 w-11" aria-hidden="true">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </Button>
+    ),
     ssr: false
   }
 )

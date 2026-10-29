@@ -497,6 +497,8 @@
     "returnQuality": "Return quality",
     "savePoint": "Save point",
     "lastTenPoints": "Last 10 points",
+    "returnForehand": "Return forehand",
+    "returnBackhand": "Return backhand",
     "selectShotThatEndedPoint": "Select the shot that ended the point",
     "selectWhereServeLanded": "Select where the serve landed",
     "selectWhereShotWent": "Select where the shot went",
