@@ -237,6 +237,7 @@
     "allMatchesLoaded": "Všechny zápasy načteny",
     "showingMatchesSummary": "Zobrazeno {shown} z {total} zápasů",
     "unableToLoadMatches": "Nelze načíst zápasy",
+    "searchingMatchHistory": "Prohledáváme starší zápasy…",
     "matchesConnectivityIssue": "Zdá se, že je problém s připojením. Zkontrolujte prosím připojení k internetu a zkuste to znovu.",
     "actions": "Akce",
     "install": "Instalovat",

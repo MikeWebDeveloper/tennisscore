@@ -237,6 +237,7 @@
     "allMatchesLoaded": "All matches loaded",
     "showingMatchesSummary": "Showing {shown} of {total} matches",
     "unableToLoadMatches": "Unable to load matches",
+    "searchingMatchHistory": "Searching older matches…",
     "matchesConnectivityIssue": "There seems to be a connectivity issue. Please check your internet connection and try again.",
     "actions": "Actions",
     "install": "Install",

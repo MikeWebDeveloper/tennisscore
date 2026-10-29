@@ -119,27 +119,29 @@ export async function createPlayer(formData: FormData): Promise<{ success?: bool
   }
 }
 
-export async function getPlayersByUser(): Promise<Player[]> {
+export async function getPlayersByUser(options: { all?: boolean } = {}): Promise<Player[]> {
   const user = await getCurrentUser()
   if (!user) throw new Error("Unauthorized")
 
   const { databases } = await createAdminClient()
 
   try {
-    const response = await withRetry(() =>
-      databases.listDocuments<Player>(
-        env.APPWRITE_DATABASE_ID,
-        env.APPWRITE_PLAYERS_COLLECTION_ID,
-        [
-          Query.equal("userId", user.$id),
-          Query.orderDesc("$createdAt"),
-          Query.limit(100) // Reduce limit for faster queries
-        ]
-      ),
-      'NAVIGATION' // Fast-fail for navigation
-    )
+    const documents: Player[] = []
+    let cursor: string | undefined
+    do {
+      const queries = [Query.equal("userId", user.$id), Query.orderDesc("$createdAt"), Query.limit(100)]
+      if (cursor) queries.push(Query.cursorAfter(cursor))
+      const response = await withRetry(() => databases.listDocuments<Player>(
+        env.APPWRITE_DATABASE_ID, env.APPWRITE_PLAYERS_COLLECTION_ID, queries
+      ), 'NAVIGATION')
+      documents.push(...response.documents)
+      if (!options.all || response.documents.length < 100 || documents.length >= response.total) break
+      const nextCursor = response.documents[response.documents.length - 1].$id
+      if (nextCursor === cursor) throw new Error('Player cursor did not advance')
+      cursor = nextCursor
+    } while (true)
 
-    const playersWithPictures = response.documents.map(player => {
+    const playersWithPictures = documents.map(player => {
       if (player.profilePictureId) {
         const url = `${env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${env.APPWRITE_PROFILE_PICTURES_BUCKET_ID}/files/${player.profilePictureId}/view?project=${env.NEXT_PUBLIC_APPWRITE_PROJECT}`
         return { ...player, profilePictureUrl: url }

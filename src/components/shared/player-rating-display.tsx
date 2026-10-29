@@ -8,8 +8,14 @@ interface PlayerRatingDisplayProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
+function getBhRating(player: Player): string | undefined {
+  // Older profiles stored both ratings in the legacy text field.
+  return player.bhRating || player.rating?.match(/\b\d+\s*BH\b/i)?.[0]
+}
+
 export function PlayerRatingDisplay({ player, className = "", size = 'md' }: PlayerRatingDisplayProps) {
-  const { bhRating, czRanking } = player
+  const bhRating = getBhRating(player)
+  const { czRanking } = player
   
   // If neither rating is available, return null
   if (!bhRating && !czRanking) {
@@ -43,7 +49,8 @@ export function PlayerRatingDisplay({ player, className = "", size = 'md' }: Pla
 
 // Utility function for legacy components that expect a single rating string
 export function formatPlayerRating(player: Player): string {
-  const { bhRating, czRanking } = player
+  const bhRating = getBhRating(player)
+  const { czRanking } = player
   
   if (bhRating && czRanking) {
     return `${bhRating} CŽ ${czRanking}`

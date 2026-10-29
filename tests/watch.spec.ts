@@ -16,8 +16,8 @@ test.describe('lightweight spectator page', () => {
     // Ann-equivalent row: set 6, game 2, 30; opponent: set 4, game 1, 40
     await expect(page.locator('[data-side="p1"] [data-points]')).toHaveText('30')
     await expect(page.locator('[data-side="p2"] [data-points]')).toHaveText('40')
-    // plain HTML polling, no live connection
-    await expect(page.locator('meta[http-equiv="refresh"]')).toHaveAttribute('content', '5')
+    // Scores update in place; there is no periodic full-document refresh.
+    await expect(page.locator('meta[http-equiv="refresh"]')).toHaveCount(0)
     await expect(main.getByRole('link', { name: 'Full view with statistics' })).toHaveAttribute('href', /\/live\/match1$/)
   })
 

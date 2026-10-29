@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react"
-import { client, databases } from "@/lib/appwrite-client"
+import { client } from "@/lib/appwrite-client"
 
 interface RealtimeMatchData {
   score?: string
@@ -27,8 +27,8 @@ const log = (...args: unknown[]) => {
  *   so nothing fires on an unmounted hook and subscriptions never stack.
  * - Appwrite's web SDK keeps a single socket per client and reconnects on its
  *   own, so we don't force-reconnect on every lifecycle event — we just do a
- *   single catch-up read when the page becomes visible again, plus a gentle
- *   safety poll. This removes the old 3–15s polling that drained battery.
+ *   single catch-up read when the page becomes visible again, plus a
+ *   five-second public-endpoint safety poll while visible.
  * - A monotonic sequence guards against a slow REST catch-up overwriting a
  *   newer realtime push (no more score flicker/rollback).
  */
@@ -58,25 +58,21 @@ export function useRealtimeMatch(matchId: string) {
   // was in flight, so it can never roll the score back.
   const fetchMatchData = useCallback(async () => {
     if (!matchId) return
-    const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID?.trim()
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_MATCHES_COLLECTION_ID?.trim()
-    if (!dbId || !collectionId) return
-
     const seqAtStart = updateSeqRef.current
     try {
-      const response = await databases.getDocument(dbId, collectionId, matchId)
+      const response = await fetch(`/api/live/${encodeURIComponent(matchId)}`, { cache: 'no-store' })
+      if (!response.ok) throw new Error(`Live update failed (${response.status})`)
+      const data: RealtimeMatchData = await response.json()
       if (!mountedRef.current) return
       if (updateSeqRef.current !== seqAtStart) return // a realtime push won
 
-      setLastUpdate({
-        score: response.score as string,
-        pointLog: response.pointLog as string[],
-        events: response.events as string[],
-        status: response.status as "In Progress" | "Completed",
-        winnerId: response.winnerId as string | undefined,
-      })
+      updateSeqRef.current += 1
+      setLastUpdate(data)
+      setConnected(true)
+      setError(null)
     } catch (err) {
       log("❌ Failed to fetch match data:", err)
+      if (mountedRef.current) setConnected(false)
     }
   }, [matchId])
 
@@ -84,6 +80,7 @@ export function useRealtimeMatch(matchId: string) {
   useEffect(() => {
     if (!matchId) return
     mountedRef.current = true
+    updateSeqRef.current += 1
     retryAttemptsRef.current = 0
 
     const clearRetry = () => {
@@ -140,11 +137,6 @@ export function useRealtimeMatch(matchId: string) {
           }
         })
 
-        if (mountedRef.current) {
-          setConnected(true)
-          setError(null)
-        }
-
         // Initial catch-up read.
         fetchMatchData()
       } catch (err) {
@@ -170,6 +162,7 @@ export function useRealtimeMatch(matchId: string) {
 
     return () => {
       mountedRef.current = false
+      updateSeqRef.current += 1
       clearRetry()
       dropSubscription()
     }
@@ -200,10 +193,11 @@ export function useRealtimeMatch(matchId: string) {
     window.addEventListener("focus", scheduleRefresh)
     window.addEventListener("online", scheduleRefresh)
 
-    // Gentle safety poll (every 45s, only while visible) as a WebSocket backstop.
+    // Public viewers may not have Appwrite read permission. Poll the same
+    // public match data as the page, even if the WebSocket cannot deliver.
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") fetchMatchData()
-    }, 45000)
+    }, 5000)
 
     return () => {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current)

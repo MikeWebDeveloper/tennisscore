@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { getPlayersByUserPaginated } from './players'
+import { getPlayersByUserPaginated, getPlayersByUser } from './players'
 
 const mockListDocuments = jest.fn()
 jest.mock('@/lib/auth', () => ({ getCurrentUser: async () => ({ $id: 'owner' }) }))
@@ -17,6 +17,14 @@ const others = Array.from({ length: 3 }, (_, i) => ({ $id: `other-${i}`, isMainP
 const queries = (call: unknown[]) => (call[2] as string[]).map(q => JSON.parse(q))
 
 beforeEach(() => mockListDocuments.mockReset())
+
+test('can resolve names for match history beyond the first 100 players', async () => {
+  const first = Array.from({ length: 100 }, (_, i) => ({ $id: `player-${i}`, firstName: 'Player' }))
+  mockListDocuments.mockResolvedValueOnce({ total: 101, documents: first }).mockResolvedValueOnce({ total: 101, documents: [{ $id: 'older-player' }] })
+  const players = await getPlayersByUser({ all: true })
+  expect(players).toHaveLength(101)
+  expect(queries(mockListDocuments.mock.calls[1])).toEqual(expect.arrayContaining([expect.objectContaining({ method: 'cursorAfter', values: ['player-99'] })]))
+})
 
 test('starts the main and other-player reads together and reuses their totals', async () => {
   let resolveMain!: (value: unknown) => void

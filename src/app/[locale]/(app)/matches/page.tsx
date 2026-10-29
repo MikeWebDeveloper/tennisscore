@@ -31,7 +31,7 @@ export default async function MatchesPage() {
     // Try to fetch data with error handling
     const [matchesResult, playersResult] = await Promise.allSettled([
       getMatchesByUserPaginated({ limit: 15, offset: 0 }),
-      getPlayersByUser()
+      getPlayersByUser({ all: true })
     ])
 
     if (matchesResult.status === 'fulfilled') {
@@ -153,4 +153,4 @@ export default async function MatchesPage() {
       hasError={hasError} 
     />
   )
-} 
+}

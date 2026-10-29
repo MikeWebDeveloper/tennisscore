@@ -65,6 +65,17 @@ http.createServer((req, res) => {
     if (marker && /^[A-Za-z0-9]{1,40}$/.test(marker)) docs['p/pl1'].lastName = marker
     return json(res, 200, { ok: true })
   }
+  if (url.pathname === '/__seed-search') {
+    docs = { ...samples(), ...history() }
+    docs['p/old-player'] = { $id: 'old-player', userId: 'test-user', firstName: 'Old', lastName: 'Opponent', isMainPlayer: false }
+    for (let i = 0; i < 35; i++) {
+      const id = `search-new-${i}`
+      const date = new Date(Date.UTC(2027, 0, 1 + i)).toISOString()
+      docs[`m/${id}`] = { ...base, $id: id, matchDate: date, playerOneId: 'pl1', playerTwoId: 'pl2', status: 'Completed', score: emptyScore, matchFormat: fmt() }
+    }
+    docs['m/search-old'] = { ...base, $id: 'search-old', matchDate: '2020-01-01T00:00:00.000Z', playerOneId: 'pl1', playerTwoId: 'old-player', status: 'Completed', score: emptyScore, matchFormat: fmt() }
+    return json(res, 200, { ok: true })
+  }
   if (url.pathname === '/__fail-player-create') { failPlayerCreate = url.searchParams.get('on') === '1'; return json(res, 200, { failPlayerCreate }) }
   if (url.pathname === '/__fail') { failSaves = url.searchParams.get('on') === '1'; return json(res, 200, { failSaves }) }
   const dbg = url.pathname.match(/^\/__doc\/([^/]+)\/([^/]+)$/)

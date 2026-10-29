@@ -44,9 +44,11 @@ interface MatchesListProps {
     playerFour?: Player
   }>
   onMatchDeleted?: (matchId: string) => void
+  onSearchChange?: (value: string) => void
+  searchingHistory?: boolean
 }
 
-export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
+export function MatchesList({ matches, onMatchDeleted, onSearchChange, searchingHistory }: MatchesListProps) {
   const t = useTranslations('match')
   const commonT = useTranslations('common')
   const [searchQuery, setSearchQuery] = useState("")
@@ -94,6 +96,7 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
+    onSearchChange?.(value)
   }
 
   const handleFilterChange = (value: string) => {
@@ -175,7 +178,7 @@ export function MatchesList({ matches, onMatchDeleted }: MatchesListProps) {
       ) : null}
 
       {/* Matches Grid */}
-      {filteredMatches.length === 0 ? (
+      {filteredMatches.length === 0 && searchingHistory ? null : filteredMatches.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">
           {searchQuery || statusFilter !== "all" ? t("noMatchesFoundCriteria") : t("noMatchesFound")}
         </p>

@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils"
 import type { Score } from "@/stores/matchStore"
 
 export type LitePlayerId = "p1" | "p2" | "p3" | "p4"
@@ -49,7 +48,7 @@ export function LiteScoreboard({
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-2 text-xs font-medium">
-        <span className={cn("inline-flex items-center gap-1.5", inProgress ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}>
+        <span className={`inline-flex items-center gap-1.5 ${inProgress ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
           {inProgress && <span aria-hidden="true" className="h-2 w-2 rounded-full bg-current" />}
           {inProgress ? labels.live : labels.finished}
         </span>
@@ -65,22 +64,22 @@ export function LiteScoreboard({
           <div
             key={side}
             data-side={side}
-            className={cn("flex items-center gap-3 px-4 py-3", i === 0 && "border-b border-border")}
+            className={`flex items-center gap-3 px-4 py-3 ${i === 0 ? "border-b border-border" : ""}`}
           >
             <span
               aria-hidden="true"
-              className={cn("h-2.5 w-2.5 shrink-0 rounded-full", inProgress && servingTeam === side ? "bg-green-500" : "bg-transparent")}
+              className={`h-2.5 w-2.5 shrink-0 rounded-full ${inProgress && servingTeam === side ? "bg-green-500" : "bg-transparent"}`}
             />
-            <div className={cn("min-w-0 flex-1 text-base", won ? "font-bold text-foreground" : "font-medium text-muted-foreground")}>
+            <div className={`min-w-0 flex-1 text-base ${won ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
               {team.names.map((name, n) => (
-                <div key={n} className={cn("truncate", servingPlayer === team.ids[n] && "underline decoration-2 underline-offset-2")}>
+                <div key={n} className={servingPlayer === team.ids[n] ? "truncate underline decoration-2 underline-offset-2" : "truncate"}>
                   {name}
                 </div>
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xl tabular-nums" data-sets>
               {score.sets.map((set, s) => (
-                <span key={s} className={cn(set[i] > set[1 - i] ? "font-bold text-foreground" : "text-muted-foreground")}>
+                <span key={s} className={set[i] > set[1 - i] ? "font-bold text-foreground" : "text-muted-foreground"}>
                   {set[i]}
                 </span>
               ))}

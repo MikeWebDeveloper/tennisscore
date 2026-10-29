@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { Link } from "@/i18n/navigation"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -171,6 +171,9 @@ export function PaginatedMatchesClient({
   const [isLoading, setIsLoading] = useState(false)
   const [sortOrder, setSortOrder] = useState<SortOrder>('none')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
+  const [searchActive, setSearchActive] = useState(false)
+  const [historyError, setHistoryError] = useState(false)
+  const requestVersion = useRef(0)
 
   const handleMatchDeleted = (matchId: string) => {
     console.log('🔄 Parent state update for match:', matchId)
@@ -221,6 +224,8 @@ export function PaginatedMatchesClient({
   }
 
   const handleDateFilterChange = async (newFilter: DateFilter) => {
+    const version = ++requestVersion.current
+    setHistoryError(false)
     setDateFilter(newFilter)
     setIsLoading(true)
     
@@ -230,41 +235,54 @@ export function PaginatedMatchesClient({
         offset: 0, 
         dateFilter: newFilter 
       })
+      if (version !== requestVersion.current) return
       
       const enhancedMatches = enhanceMatches(result.matches, players, t)
       setMatches(enhancedMatches)
       setTotal(result.total)
       setHasMore(result.hasMore)
     } catch (error) {
+      if (version !== requestVersion.current) return
       console.error("Failed to filter matches:", error)
       setDateFilter(dateFilter)
       toast.error(t("unableToLoadMatches"))
     } finally {
-      setIsLoading(false)
+      if (version === requestVersion.current) setIsLoading(false)
     }
   }
 
-  const loadMoreMatches = async () => {
+  const loadMoreMatches = useCallback(async (pageSize = 15) => {
     if (isLoading || !hasMore) return
-    
+    const version = ++requestVersion.current
     setIsLoading(true)
     try {
       const result = await getMatchesByUserPaginated({ 
-        limit: 15, 
+        limit: pageSize,
         offset: matches.length,
         dateFilter 
       })
+      if (version !== requestVersion.current) return
+      if (result.hasMore && result.matches.length === 0) throw new Error('Match history page did not advance')
       
       const enhancedNewMatches = enhanceMatches(result.matches, players, t)
       setMatches(prev => [...prev, ...enhancedNewMatches])
       setHasMore(result.hasMore)
+      setTotal(result.total)
     } catch (error) {
+      if (version !== requestVersion.current) return
       console.error("Failed to load more matches:", error)
+      setHistoryError(true)
       toast.error(t("unableToLoadMatches"))
     } finally {
-      setIsLoading(false)
+      if (version === requestVersion.current) setIsLoading(false)
     }
-  }
+  }, [isLoading, hasMore, matches.length, dateFilter, players, t])
+
+  // Search must include older pages, not just the visible 15. Keep existing
+  // results on screen while bounded pages load; stop on error rather than loop.
+  useEffect(() => {
+    if (searchActive && hasMore && !isLoading && !historyError) void loadMoreMatches(100)
+  }, [searchActive, hasMore, isLoading, historyError, loadMoreMatches])
 
   const getDateFilterLabel = (filter: DateFilter) => {
     switch (filter) {
@@ -334,14 +352,19 @@ export function PaginatedMatchesClient({
         />
       ) : (
         <>
-          <MatchesList matches={sortedMatches} onMatchDeleted={handleMatchDeleted} />
+          <MatchesList matches={sortedMatches} onMatchDeleted={handleMatchDeleted} onSearchChange={value => {
+            const active = Boolean(value.trim())
+            if (active && !searchActive) setHistoryError(false)
+            setSearchActive(active)
+          }} searchingHistory={searchActive && hasMore} />
+          {searchActive && hasMore && <p role="status" className="mt-3 text-sm text-muted-foreground">{t(historyError ? 'unableToLoadMatches' : 'searchingMatchHistory')}</p>}
           
           {/* Load More Button */}
           {hasMore && (
             <div className="flex justify-center mt-6">
               <Button 
                 variant="outline" 
-                onClick={loadMoreMatches}
+                onClick={() => { setHistoryError(false); void loadMoreMatches() }}
                 disabled={isLoading}
                 className="min-w-[120px]"
               >

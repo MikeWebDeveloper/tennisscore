@@ -89,6 +89,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
   // Parse point log
   useEffect(() => {
+    if (!match.pointLog || match.pointLog.length === 0) {
+      setPointLog([])
+      return
+    }
     if (match.pointLog && match.pointLog.length > 0) {
       try {
         const parsedPointLog: PointDetail[] = match.pointLog.map(pointStr => JSON.parse(pointStr))
@@ -103,8 +107,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   useEffect(() => {
     if (lastUpdate && mounted) {
       console.log("🔄 Real-time update received:", lastUpdate)
-      const newScore = parseDbScore(lastUpdate.score)
-      setScore(newScore)
+      if (typeof lastUpdate.score === 'string') setScore(parseDbScore(lastUpdate.score))
 
       setMatch(prev => ({
         ...prev,
@@ -455,4 +458,4 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       </motion.div>
     </div>
   )
-} 
+}
