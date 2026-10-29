@@ -35,6 +35,7 @@ type TacticalContext = {
   matchContext?: 'early' | 'middle' | 'late' | 'decisive'
 }
 import { calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
+import { ACE_PLACEMENTS, SERVE_PLACEMENTS, servePlacementLabelKey } from "@/lib/utils/serve-placement"
 import { formatPlayerFromObject } from "@/lib/utils"
 // import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
 
@@ -565,7 +566,11 @@ export function MatchStatsComponentSimpleFixed({
         }
         return errorPlayer === playerId;
       }
-      // For winners, aces, double faults, attribute to the player who won
+      // Aces and double faults belong to the server (a double fault is lost by the server), like the totals above
+      if (statType === 'aces' || statType === 'doubleFaults') {
+        return point.server === playerId;
+      }
+      // Winners belong to the player who won the point
       return point.winner === playerId;
     });
   }
@@ -628,12 +633,6 @@ export function MatchStatsComponentSimpleFixed({
       net: t('net')
     }
 
-    const servePlacementTranslations: Record<string, string> = {
-      wide: t('wide'),
-      body: t('bodyShot'),
-      t: t('tDownTheMiddle'),
-      'net-cord': t('serveNetCord')
-    }
 
     // Return vs regular for the point-ending shot: winners and errors both carry winnerType when the receiver hit it
     const getReturnBreakdown = (points: PointDetail[]) => {
@@ -673,19 +672,17 @@ export function MatchStatsComponentSimpleFixed({
 
     // Special handling for Aces and Double Faults
     if (statType === 'aces' || statType === 'doubleFaults') {
-      // Get serve placement breakdown
-      const getServePlacementBreakdown = (points: PointDetail[]) => {
-        const breakdown: Record<string, number> = {}
-        points.forEach(point => {
-          if (point.servePlacement) {
-            breakdown[point.servePlacement] = (breakdown[point.servePlacement] || 0) + 1
-          }
-        })
-        return breakdown
+      const isAce = statType === 'aces'
+      const placementCount = (points: PointDetail[], placement: string | null) =>
+        points.filter(point => placement === null ? !point.servePlacement : point.servePlacement === placement).length
+      // Every option the point window offers, so an unused one still shows 0; aces logged before the
+      // new options may still say "body", so any other saved value is listed too
+      const placements: string[] = (isAce ? ACE_PLACEMENTS : SERVE_PLACEMENTS).map(option => option.id)
+      for (const point of [...player1Points, ...player2Points]) {
+        if (point.servePlacement && !placements.includes(point.servePlacement)) placements.push(point.servePlacement)
       }
-
-      const player1ServePlacement = getServePlacementBreakdown(player1Points)
-      const player2ServePlacement = getServePlacementBreakdown(player2Points)
+      // The shot-type level records aces without a placement
+      const hasUnrecorded = placementCount(player1Points, null) + placementCount(player2Points, null) > 0
 
       return (
         <div className="space-y-4">
@@ -693,23 +690,20 @@ export function MatchStatsComponentSimpleFixed({
           <div>
             <h4 className="text-sm font-medium mb-2">{t('servePlacement')}</h4>
             <div className="space-y-1">
-              {Object.entries(player1ServePlacement).map(([placement, count]) => (
+              {placements.map(placement => (
                 <div key={placement} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">{count}</span>
-                  <span className="text-xs text-muted-foreground">{servePlacementTranslations[placement] || placement}</span>
-                  <span className="text-red-600">{player2ServePlacement[placement] || 0}</span>
+                  <span className="text-blue-600">{placementCount(player1Points, placement)}</span>
+                  <span className="text-xs text-muted-foreground">{t(servePlacementLabelKey(placement, isAce))}</span>
+                  <span className="text-red-600">{placementCount(player2Points, placement)}</span>
                 </div>
               ))}
-              {Object.entries(player2ServePlacement).map(([placement, count]) => {
-                if (player1ServePlacement[placement]) return null
-                return (
-                  <div key={placement} className="flex items-center justify-between text-sm">
-                    <span className="text-blue-600">0</span>
-                    <span className="text-xs text-muted-foreground">{servePlacementTranslations[placement] || placement}</span>
-                    <span className="text-red-600">{count}</span>
-                  </div>
-                )
-              })}
+              {hasUnrecorded && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-blue-600">{placementCount(player1Points, null)}</span>
+                  <span className="text-xs text-muted-foreground">{t('placementNotRecorded')}</span>
+                  <span className="text-red-600">{placementCount(player2Points, null)}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1105,114 +1099,66 @@ export function MatchStatsComponentSimpleFixed({
       {/* Detailed Mode Enhanced Statistics */}
       {detailLevel === 'detailed' && detailedStats && detailedStats.hasDetailedData && (
         <>
-          {/* Serve Direction Analysis */}
-          {(detailedStats.serveDirectionStats.playerOne.totalAttempts > 0 || detailedStats.serveDirectionStats.playerTwo.totalAttempts > 0) && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Serve Direction Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-sm font-medium mb-2">Wide Serves</div>
-                <StatRow 
-                  label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.wide.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.wide.successful / detailedStats.serveDirectionStats.playerOne.wide.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.wide.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.wide.successful / detailedStats.serveDirectionStats.playerTwo.wide.attempts) * 100) : 0}
-                  format="percentage"
-                />
-                <StatRow 
-                  label="Aces Wide"
-                  value1={detailedStats.serveDirectionStats.playerOne.wide.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.wide.aces}
-                />
-                
-                <div className="text-sm font-medium mb-2 mt-4">Body Serves</div>
-                <StatRow 
-                  label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.body.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.body.successful / detailedStats.serveDirectionStats.playerOne.body.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.body.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.body.successful / detailedStats.serveDirectionStats.playerTwo.body.attempts) * 100) : 0}
-                  format="percentage"
-                />
-                <StatRow 
-                  label="Aces Body"
-                  value1={detailedStats.serveDirectionStats.playerOne.body.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.body.aces}
-                />
+          {/* Serve placement: where aces landed (PDF item 3) and where double faults went */}
+          {(detailedStats.serveDirectionStats.playerOne.totalAttempts > 0 || detailedStats.serveDirectionStats.playerTwo.totalAttempts > 0) && (() => {
+            const serveOne = detailedStats.serveDirectionStats.playerOne
+            const serveTwo = detailedStats.serveDirectionStats.playerTwo
+            return (
+              <Card data-serve-placement-card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    {t('servePlacement')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-sm font-medium mb-2">{t('aces')}</div>
+                  {ACE_PLACEMENTS.map(({ id }) => (
+                    <StatRow key={id} label={t(servePlacementLabelKey(id, true))} value1={serveOne[id].aces} value2={serveTwo[id].aces} />
+                  ))}
+                  {/* Aces logged before the new options could still be "body" */}
+                  {serveOne.body.aces + serveTwo.body.aces > 0 && (
+                    <StatRow label={t('body')} value1={serveOne.body.aces} value2={serveTwo.body.aces} />
+                  )}
 
-                <div className="text-sm font-medium mb-2 mt-4">T Serves (Center)</div>
-                <StatRow 
-                  label="Success Rate"
-                  value1={detailedStats.serveDirectionStats.playerOne.t.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerOne.t.successful / detailedStats.serveDirectionStats.playerOne.t.attempts) * 100) : 0}
-                  value2={detailedStats.serveDirectionStats.playerTwo.t.attempts > 0 ? 
-                    Math.round((detailedStats.serveDirectionStats.playerTwo.t.successful / detailedStats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}
-                  format="percentage"
-                />
-                <StatRow
-                  label="Aces T"
-                  value1={detailedStats.serveDirectionStats.playerOne.t.aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo.t.aces}
-                />
+                  <div className="text-sm font-medium mb-2 mt-4">{t('doubleFaults')}</div>
+                  {SERVE_PLACEMENTS.map(({ id }) => (
+                    <StatRow key={id} label={t(servePlacementLabelKey(id, false))} value1={serveOne[id].doubleFaults} value2={serveTwo[id].doubleFaults} />
+                  ))}
+                </CardContent>
+              </Card>
+            )
+          })()}
 
-                {/* Net-cord aces (no-let junior tennis) */}
-                <div className="text-sm font-medium mb-2 mt-4">{t('serveNetCord')}</div>
-                <StatRow
-                  label={t('aces')}
-                  value1={detailedStats.serveDirectionStats.playerOne['net-cord'].aces}
-                  value2={detailedStats.serveDirectionStats.playerTwo['net-cord'].aces}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Shot Direction Analysis */}
+          {/* Shot directions of winners and errors */}
           {(detailedStats.shotDirectionStats.playerOne.totalShots > 0 || detailedStats.shotDirectionStats.playerTwo.totalShots > 0) && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Zap className="h-4 w-4" />
-                  Shot Direction Analysis
+                  {t('shotDirections')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <StatRow 
-                  label="Long Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.long.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.long.winners}
-                />
-                <StatRow 
-                  label="Wide Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.wide.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.wide.winners}
-                />
-                <StatRow 
-                  label="Net Winners"
-                  value1={detailedStats.shotDirectionStats.playerOne.net.winners}
-                  value2={detailedStats.shotDirectionStats.playerTwo.net.winners}
-                />
-                
-                <div className="text-sm font-medium mb-2 mt-4">Error Distribution</div>
-                <StatRow 
-                  label="Long Errors"
-                  value1={detailedStats.shotDirectionStats.playerOne.long.errors}
-                  value2={detailedStats.shotDirectionStats.playerTwo.long.errors}
-                />
-                <StatRow 
-                  label="Wide Errors"
-                  value1={detailedStats.shotDirectionStats.playerOne.wide.errors}
-                  value2={detailedStats.shotDirectionStats.playerTwo.wide.errors}
-                />
-                <StatRow 
-                  label="Net Errors"
-                  value1={detailedStats.shotDirectionStats.playerOne.net.errors}
-                  value2={detailedStats.shotDirectionStats.playerTwo.net.errors}
-                />
+                <div className="text-sm font-medium mb-2">{t('winners')}</div>
+                {(['long', 'wide', 'net'] as const).map(direction => (
+                  <StatRow
+                    key={direction}
+                    label={t(direction)}
+                    value1={detailedStats.shotDirectionStats.playerOne[direction].winners}
+                    value2={detailedStats.shotDirectionStats.playerTwo[direction].winners}
+                  />
+                ))}
+
+                <div className="text-sm font-medium mb-2 mt-4">{t('errors')}</div>
+                {(['long', 'wide', 'net'] as const).map(direction => (
+                  <StatRow
+                    key={direction}
+                    label={t(direction)}
+                    value1={detailedStats.shotDirectionStats.playerOne[direction].errors}
+                    value2={detailedStats.shotDirectionStats.playerTwo[direction].errors}
+                  />
+                ))}
               </CardContent>
             </Card>
           )}
@@ -1223,19 +1169,19 @@ export function MatchStatsComponentSimpleFixed({
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Shield className="h-4 w-4" />
-                  Pressure Point Performance
+                  {t('pressurePerformance')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <StatRow 
-                  label="Break Point Success"
+                  label={t('breakPoint')}
                   value1={detailedStats.contextualStats.pressurePointPerformance.breakPoints.percentage}
                   value2={100 - detailedStats.contextualStats.pressurePointPerformance.breakPoints.percentage}
                   format="percentage"
                 />
                 {detailedStats.contextualStats.pressurePointPerformance.setPoints.total > 0 && (
                   <StatRow 
-                    label="Set Point Success"
+                    label={t('setPoint')}
                     value1={detailedStats.contextualStats.pressurePointPerformance.setPoints.percentage}
                     value2={100 - detailedStats.contextualStats.pressurePointPerformance.setPoints.percentage}
                     format="percentage"
@@ -1243,7 +1189,7 @@ export function MatchStatsComponentSimpleFixed({
                 )}
                 {detailedStats.contextualStats.pressurePointPerformance.matchPoints.total > 0 && (
                   <StatRow 
-                    label="Match Point Success"
+                    label={t('matchPoint')}
                     value1={detailedStats.contextualStats.pressurePointPerformance.matchPoints.percentage}
                     value2={100 - detailedStats.contextualStats.pressurePointPerformance.matchPoints.percentage}
                     format="percentage"
