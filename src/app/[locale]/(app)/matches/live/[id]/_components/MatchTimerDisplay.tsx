@@ -6,6 +6,8 @@ import { useShallow } from "zustand/react/shallow"
 import { Clock } from "lucide-react"
 import { useTranslations } from "@/i18n"
 
+const MAX_PLAUSIBLE_MATCH_MS = 12 * 60 * 60 * 1000
+
 interface MatchTimerDisplayProps {
   className?: string
   // Optional props to override store data (for public pages)
@@ -83,6 +85,13 @@ export function MatchTimerDisplay({
 
   // Don't show timer if match hasn't started, or if an interruption has no point to stop the clock at
   if (!startTime || (isPaused && !endTime && !pausedAt)) {
+    return null
+  }
+
+  // The longest professional match lasted about 11 hours; a longer span means the match was
+  // resumed days later, and its wall-clock length says nothing useful
+  const spanEnd = endTime || (isPaused ? pausedAt : null) || currentTime
+  if (Date.parse(spanEnd) - Date.parse(startTime) > MAX_PLAUSIBLE_MATCH_MS) {
     return null
   }
 
