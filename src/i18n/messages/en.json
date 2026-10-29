@@ -646,6 +646,7 @@
     "tDownTheMiddle": "Down the Middle",
     "body": "Body",
     "winnerType": "Winner Type",
+    "returnOrRegular": "Return or regular shot",
     "regular": "Regular",
     "return": "Return",
     "shotTypes": "Shot Types",

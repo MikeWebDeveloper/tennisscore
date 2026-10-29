@@ -118,8 +118,12 @@ export function UltraSimplePointLogger({
     setStep('winner-type')
   }
 
-  // Only a receiver's winner can be a return; the old separate "was it a return?" step is now part of the shot choice
-  const isReceiverWinner = outcome === 'winner' && pointContext.winner !== pointContext.server
+  // A return can end the point as the receiver's winner or as the receiver's error (forced or unforced),
+  // which hands the point to the server; the old separate "was it a return?" step is part of the shot choice
+  const isError = outcome === 'forced_error' || outcome === 'unforced_error'
+  const receiverEndedPoint =
+    (outcome === 'winner' && pointContext.winner !== pointContext.server) ||
+    (isError && pointContext.winner === pointContext.server)
 
   const handleWinnerTypeClick = (option: { shot: ShotType; isReturn: boolean }) => {
     const chosenReturnType = option.isReturn ? 'return' : 'regular'
@@ -133,7 +137,7 @@ export function UltraSimplePointLogger({
         pointOutcome: outcome,
         lastShotType: option.shot,
         lastShotPlayer: outcome === 'winner' ? pointContext.winner : (pointContext.winner === 'p1' ? 'p2' : 'p1'),
-        ...(isReceiverWinner && { winnerType: chosenReturnType }),
+        ...(receiverEndedPoint && { winnerType: chosenReturnType }),
       })
       return
     }
@@ -159,7 +163,7 @@ export function UltraSimplePointLogger({
       lastShotType: winnerType,
       lastShotPlayer: pointContext.winner,
       shotDirection: direction,
-      ...(outcome === 'winner' && pointContext.winner !== pointContext.server && {
+      ...(receiverEndedPoint && {
         winnerType: winnerTypeValue
       })
     }
@@ -222,11 +226,11 @@ export function UltraSimplePointLogger({
   ]
 
   // Shot types excluding serve (since serve winners should be classified as Ace)
-  // Rows: forehand/backhand, return forehand/backhand (receiver's winner only), volley/smash
+  // Rows: forehand/backhand, return forehand/backhand (only when the receiver's shot ended the point), volley/smash
   const winnerTypes = [
     { key: 'forehand', shot: 'forehand' as const, isReturn: false, label: t('forehand'), color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' },
     { key: 'backhand', shot: 'backhand' as const, isReturn: false, label: t('backhand'), color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20' },
-    ...(isReceiverWinner ? [
+    ...(receiverEndedPoint ? [
       { key: 'return-forehand', shot: 'forehand' as const, isReturn: true, label: t('returnForehand'), color: 'bg-blue-500/10 text-blue-500 border-blue-500/30 hover:bg-blue-500/20' },
       { key: 'return-backhand', shot: 'backhand' as const, isReturn: true, label: t('returnBackhand'), color: 'bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20' },
     ] : []),

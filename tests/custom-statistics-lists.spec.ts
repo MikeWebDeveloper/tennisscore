@@ -110,3 +110,27 @@ test('every return winner stays a return after the page reloads the match', asyn
     await request.get('http://localhost:4100/__reset')
   }
 })
+
+// A return can also end the point as the receiver's error
+test('a missed return is recorded as a return error and counted in the statistics', async ({ page, request }) => {
+  await request.get('http://localhost:4100/__reset')
+  try {
+    await request.patch('http://localhost:4100/v1/databases/d/collections/m/documents/match4', { data: { data: { detailLevel: 'detailed' } } })
+    await page.goto('/en/matches/live/match4')
+    const dialog = page.getByRole('dialog')
+    // Player one serves and wins the point because player two missed the return
+    await page.getByTestId('score-point').first().click()
+    await dialog.getByRole('button', { name: /^Unforced Error/ }).click()
+    await dialog.getByRole('button', { name: 'Return backhand', exact: true }).click()
+    await dialog.getByRole('button', { name: 'Net', exact: true }).click()
+    await expect.poll(async () => (await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog.length).toBe(1)
+    const saved = JSON.parse((await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog[0])
+    expect(saved).toMatchObject({ pointOutcome: 'unforced_error', lastShotType: 'backhand', winnerType: 'return', shotDirection: 'net' })
+    await page.goto('/en/matches/match4')
+    await page.getByRole('tab', { name: /Statistics/ }).click()
+    await page.getByText('Unforced Errors', { exact: true }).first().click()
+    await expect(page.getByText('Return or regular shot')).toBeVisible()
+  } finally {
+    await request.get('http://localhost:4100/__reset')
+  }
+})

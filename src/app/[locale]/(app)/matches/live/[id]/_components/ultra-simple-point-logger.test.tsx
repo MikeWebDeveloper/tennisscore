@@ -108,3 +108,39 @@ describe('return shots in the shot step (no separate "was it a return?" step)', 
     expect(onSave.mock.calls[0][0]).toMatchObject({ lastShotType: 'backhand', winnerType: 'return' })
   })
 })
+
+describe('return errors (the receiver can also miss the return)', () => {
+  it('offers the return row for the receiver\'s unforced error and saves it as a return', () => {
+    // Server p1 wins the point because receiver p2 missed
+    const onSave = open({ winner: 'p1', server: 'p1' })
+    click('common.unforcedError')
+    expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.returnForehand', 'common.returnBackhand', 'common.volley', 'common.overhead'])
+    click('common.returnBackhand')
+    // Errors ask where the ball went: long, wide or into the net
+    click('common.net')
+    expect(onSave.mock.calls[0][0]).toMatchObject({ pointOutcome: 'unforced_error', lastShotType: 'backhand', winnerType: 'return', shotDirection: 'net' })
+  })
+
+  it('offers the return row for the receiver\'s forced error at the shot-type level', () => {
+    const onSave = open({ winner: 'p1', server: 'p1' }, { mode: 'shot-type' })
+    click('common.forcedError')
+    click('common.returnForehand')
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ pointOutcome: 'forced_error', lastShotType: 'forehand', lastShotPlayer: 'p2', winnerType: 'return' })
+  })
+
+  it('records an ordinary receiver error as regular', () => {
+    const onSave = open({ winner: 'p1', server: 'p1' })
+    click('common.forcedError')
+    click('common.volley')
+    click('common.long')
+    expect(onSave.mock.calls[0][0]).toMatchObject({ pointOutcome: 'forced_error', lastShotType: 'volley', winnerType: 'regular' })
+  })
+
+  it('hides the return row when the server made the error', () => {
+    // Receiver p2 wins the point because server p1 missed
+    open({ winner: 'p2', server: 'p1' })
+    click('common.unforcedError')
+    expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.volley', 'common.overhead'])
+  })
+})

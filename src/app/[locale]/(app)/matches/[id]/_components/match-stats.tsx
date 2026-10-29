@@ -635,6 +635,42 @@ export function MatchStatsComponentSimpleFixed({
       'net-cord': t('serveNetCord')
     }
 
+    // Return vs regular for the point-ending shot: winners and errors both carry winnerType when the receiver hit it
+    const getReturnBreakdown = (points: PointDetail[]) => {
+      const breakdown: Record<string, number> = { regular: 0, return: 0 }
+      points.forEach(point => {
+        if (point.winnerType) {
+          breakdown[point.winnerType] = (breakdown[point.winnerType] || 0) + 1
+        } else {
+          // If no winnerType is specified, assume regular
+          breakdown.regular += 1
+        }
+      })
+      return breakdown
+    }
+
+    const renderReturnBreakdown = (heading: string) => {
+      const player1Returns = getReturnBreakdown(player1Points)
+      const player2Returns = getReturnBreakdown(player2Points)
+      return (
+        <div>
+          <h4 className="text-sm font-medium mb-2">{heading}</h4>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-blue-600">{player1Returns.regular}</span>
+              <span className="text-xs text-muted-foreground">{t('regular')}</span>
+              <span className="text-red-600">{player2Returns.regular}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-blue-600">{player1Returns.return}</span>
+              <span className="text-xs text-muted-foreground">{t('return')}</span>
+              <span className="text-red-600">{player2Returns.return}</span>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     // Special handling for Aces and Double Faults
     if (statType === 'aces' || statType === 'doubleFaults') {
       // Get serve placement breakdown
@@ -688,41 +724,10 @@ export function MatchStatsComponentSimpleFixed({
       const player1ShotDirections = getShotDirectionBreakdown(player1Points)
       const player2ShotDirections = getShotDirectionBreakdown(player2Points)
 
-      // Get return winner breakdown
-      const getReturnWinnerBreakdown = (points: PointDetail[]) => {
-        const breakdown: Record<string, number> = { regular: 0, return: 0 }
-        points.forEach(point => {
-          if (point.winnerType) {
-            breakdown[point.winnerType] = (breakdown[point.winnerType] || 0) + 1
-          } else {
-            // If no winnerType is specified, assume regular
-            breakdown.regular += 1
-          }
-        })
-        return breakdown
-      }
-
-      const player1ReturnWinners = getReturnWinnerBreakdown(player1Points)
-      const player2ReturnWinners = getReturnWinnerBreakdown(player2Points)
-
       return (
         <div className="space-y-4">
           {/* Return Winners */}
-          <div>
-            <h4 className="text-sm font-medium mb-2">{t('winnerType')}</h4>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-blue-600">{player1ReturnWinners.regular}</span>
-                <span className="text-xs text-muted-foreground">{t('regular')}</span>
-                <span className="text-red-600">{player2ReturnWinners.regular}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-blue-600">{player1ReturnWinners.return}</span>
-                <span className="text-xs text-muted-foreground">{t('return')}</span>
-                <span className="text-red-600">{player2ReturnWinners.return}</span>
-              </div>
-            </div>
-          </div>
+          {renderReturnBreakdown(t('winnerType'))}
 
           {/* Shot Types */}
           <div>
@@ -784,6 +789,9 @@ export function MatchStatsComponentSimpleFixed({
 
     return (
       <div className="space-y-4">
+        {/* A missed return counts as an error too */}
+        {renderReturnBreakdown(t('returnOrRegular'))}
+
         {/* Shot Types */}
         <div>
           <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
