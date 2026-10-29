@@ -16,6 +16,8 @@
 @layer base {
   :root {
     /* Light theme - warm off-white surface, white cards, soft borders */
+    --name-from: 37 99 235;
+    --name-to: 147 51 234;
     --background: 245 246 239;
     --foreground: 23 32 20;
     --card: 255 255 255;
@@ -49,6 +51,8 @@
 
   .dark {
     /* Dark theme - near-black surface, slightly raised cards */
+    --name-from: 96 165 250;
+    --name-to: 192 132 252;
     --background: 16 20 17;
     --foreground: 244 247 237;
     --card: 25 30 25;
@@ -82,6 +86,8 @@
 
   .dim {
     /* Dim theme - slate twilight, between dark and light */
+    --name-from: 96 165 250;
+    --name-to: 192 132 252;
     --background: 36 39 48;
     --foreground: 233 236 243;
     --card: 45 49 60;
@@ -579,6 +585,24 @@ h1, h2, h3, h4, h5, h6 {
     -webkit-backdrop-filter: blur(18px) saturate(1.6);
     backdrop-filter: blur(18px) saturate(1.6);
     border-color: rgb(var(--foreground) / 0.08);
+  }
+
+  /* Player names in cards, lists and headings: blue-to-purple, as main used for tournament names.
+     Use on an inline element; a truncating parent keeps its own colour for the ellipsis.
+     Scoreboards and scores stay plain so they read at a glance on court. */
+  .name-gradient {
+    background-image: linear-gradient(90deg, rgb(var(--name-from)), rgb(var(--name-to)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  @media print, (forced-colors: active) {
+    .name-gradient {
+      background-image: none;
+      color: inherit;
+      -webkit-text-fill-color: currentColor;
+    }
   }
 
   /* Cards: translucent gradient + hairline + inner highlight, no blur so scrolling stays smooth */

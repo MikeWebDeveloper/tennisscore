@@ -34,7 +34,7 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-1.5 mb-1">
               <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
-                {formatPlayerFromObject(player)}
+                <span className="name-gradient">{formatPlayerFromObject(player)}</span>
               </h3>
               {player.isMainPlayer && (
                 <Star className="h-3 w-3 text-amber-500 flex-shrink-0" fill="currentColor" />

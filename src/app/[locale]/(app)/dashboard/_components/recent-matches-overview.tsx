@@ -87,7 +87,7 @@ export function RecentMatchesOverview({ matches, mainPlayer, playersMap }: Recen
                     {live ? <span className="live-dot h-2.5 w-2.5 rounded-full bg-brand" aria-hidden="true" /> : finished ? (isWin ? commonT('won')[0] : commonT('lost')[0]) : '·'}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground">{opponentName(match)}</span>
+                    <span className="block truncate text-sm font-medium text-foreground"><span className="name-gradient">{opponentName(match)}</span></span>
                     <span className="block text-xs text-muted-foreground">
                       {live ? matchT('inProgress') : relativeDate(match.matchDate || match.$createdAt)}
                     </span>

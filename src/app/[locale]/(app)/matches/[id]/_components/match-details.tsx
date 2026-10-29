@@ -166,11 +166,11 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             <span className="text-lg text-muted-foreground">{t('doublesMatch')}</span>
           </div>
           <div className="text-2xl font-bold">
-            {getTeamName("team1")}
+            <span className="name-gradient">{getTeamName("team1")}</span>
           </div>
           <div className="text-lg text-muted-foreground">{t('vs')}</div>
           <div className="text-2xl font-bold">
-            {getTeamName("team2")}
+            <span className="name-gradient">{getTeamName("team2")}</span>
           </div>
         </div>
       )
@@ -178,7 +178,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
     return (
       <h1 className="text-2xl font-bold">
-        {getTeamName("team1")} {t('vs')} {getTeamName("team2")}
+        <span className="name-gradient">{getTeamName("team1")}</span> {t('vs')} <span className="name-gradient">{getTeamName("team2")}</span>
       </h1>
     )
   }
@@ -278,21 +278,21 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 {isDoubles ? (
                   <>
                     <h1 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')} / {match.playerThree ? formatPlayerFromObject(match.playerThree) : t('unknownPlayer')}
+                      <span className="name-gradient">{getTeamName("team1")}</span>
                     </h1>
                     <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
                     <h2 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')} / {match.playerFour ? formatPlayerFromObject(match.playerFour) : t('unknownPlayer')}
+                      <span className="name-gradient">{getTeamName("team2")}</span>
                     </h2>
                   </>
                 ) : (
                   <>
                     <h1 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer')}
+                      <span className="name-gradient">{getTeamName("team1")}</span>
                     </h1>
                     <div className="text-lg font-medium text-muted-foreground">{t('vs')}</div>
                     <h2 className="text-xl font-bold text-foreground leading-tight">
-                      {match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')}
+                      <span className="name-gradient">{getTeamName("team2")}</span>
                     </h2>
                   </>
                 )}
@@ -679,7 +679,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           )}
                           <div className="flex-1">
                             <div className="font-semibold">
-                              {getTeamName("team1")}
+                              <span className="name-gradient">{getTeamName("team1")}</span>
                             </div>
                             {match.playerOne && (
                               <PlayerDetailsLine
@@ -711,7 +711,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           )}
                           <div className="flex-1">
                             <div className="font-semibold">
-                              {getTeamName("team2")}
+                              <span className="name-gradient">{getTeamName("team2")}</span>
                             </div>
                             {match.playerTwo && (
                               <PlayerDetailsLine

@@ -12,7 +12,7 @@ export default function DashboardPending({ mainPlayer, user }: { mainPlayer: Pla
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 md:space-y-5">
       <header className="px-1 pt-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t('welcomeBack')}, {firstName}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t('welcomeBack')}, <span className="name-gradient">{firstName}</span></h1>
         <p className="text-sm text-muted-foreground">{t('dashboardSubtitle')}</p>
       </header>
       <CreateNewMatchButton />

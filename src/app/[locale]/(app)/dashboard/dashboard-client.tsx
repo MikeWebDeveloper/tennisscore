@@ -69,7 +69,7 @@ export default function DashboardClient({
   if (matchesError) {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('welcomeBack')}, {mainPlayer.firstName}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('welcomeBack')}, <span className="name-gradient">{mainPlayer.firstName}</span></h1>
         <CreateNewMatchButton />
         <ConnectionError title={common('unableToLoadMatches')} description={common('matchesConnectivityIssue')} onRetry={() => window.location.reload()} retryLabel={common('tryAgain')} />
       </div>

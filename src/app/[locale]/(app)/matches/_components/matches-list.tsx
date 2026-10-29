@@ -225,13 +225,15 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                         : (doubles ? `${match.playerTwoName} / ${match.playerFourName}` : match.playerTwoName)
                       const winnerId = side === 1 ? match.playerOneId : match.playerTwoId
                       const isWinner = match.status === "Completed" && match.winnerId === winnerId
+                      const isLoser = match.status === "Completed" && !!match.winnerId && !isWinner
                       const sets = match.scoreParsed?.sets ?? []
                       const live = match.status !== "Completed" ? match.scoreParsed?.games : undefined
                       return (
                         <div key={side} className="flex items-center justify-between gap-3 py-1">
                           <span className={`flex min-w-0 items-center gap-1.5 text-sm ${isWinner ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                             {isWinner && <Trophy className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden="true" />}
-                            <span className="truncate">{name}</span>
+                            {/* Gradient names; the loser is dimmed so the winner still stands out */}
+                            <span className={`truncate ${isLoser ? "opacity-60" : ""}`}><span className="name-gradient">{name}</span></span>
                           </span>
                           <span className="flex shrink-0 items-center gap-1.5 font-mono text-sm tabular-nums">
                             {sets.map((set, i) => {

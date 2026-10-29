@@ -36,7 +36,7 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
     <div className="mx-auto w-full max-w-5xl space-y-4 md:space-y-5">
       <header className="rise px-1 pt-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-          {t('welcomeBack')}, {firstName}
+          {t('welcomeBack')}, <span className="name-gradient">{firstName}</span>
         </h1>
         <p className="text-sm text-muted-foreground">{t('dashboardSubtitle')}</p>
       </header>
