@@ -27,4 +27,15 @@ describe('dependency guards', () => {
     expect(floor(pkg.dependencies['node-appwrite'])).toBeGreaterThanOrEqual(17)
     expect(floor(pkg.dependencies['appwrite'])).toBeGreaterThanOrEqual(18)
   })
+
+  // An open range (">=18") makes Vercel ignore the project's Node setting and build on the newest
+  // major. On Node 26 every node-appwrite request failed ("invalid onError method",
+  // UND_ERR_INVALID_ARG) and production lost all server data. Pin the major CI tests on.
+  it('engines pins the Node major that CI tests on, so Vercel cannot upgrade it silently', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'))
+    const ci = fs.readFileSync(path.join(process.cwd(), '.github', 'workflows', 'ci.yml'), 'utf8')
+    const ciMajors = [...new Set([...ci.matchAll(/node-version:\s*['"]?(\d+)/g)].map((m) => m[1]))]
+    expect(ciMajors).toHaveLength(1)
+    expect(pkg.engines.node).toBe(`${ciMajors[0]}.x`)
+  })
 })
