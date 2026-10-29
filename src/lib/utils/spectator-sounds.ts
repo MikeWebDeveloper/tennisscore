@@ -1,7 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { playSound, soundManager, type SoundEvent } from "@/lib/sounds"
+import type { SoundEvent } from "@/lib/sounds"
+
+// The sound library loads after the page is interactive: the lightweight spectator page has a tight
+// first-load budget, and most viewers never turn sounds on
+type SoundsModule = typeof import("@/lib/sounds")
+let soundsModule: Promise<SoundsModule> | null = null
+const loadSounds = () => (soundsModule ??= import("@/lib/sounds"))
 
 /** What a spectator page knows about the match after each update. */
 export interface ScoreSnapshot {
@@ -39,20 +45,26 @@ export function useSpectatorSounds(snapshot: ScoreSnapshot) {
   const [enabled, setEnabled] = useState(false)
   const previous = useRef(snapshot)
 
-  useEffect(() => { setEnabled(soundManager.getSettings().enabled) }, [])
+  useEffect(() => {
+    let cancelled = false
+    void loadSounds().then(sounds => { if (!cancelled) setEnabled(sounds.soundManager.getSettings().enabled) })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     const event = spectatorSoundFor(previous.current, snapshot)
     previous.current = snapshot
-    if (event && enabled) void playSound(event)
+    if (event && enabled) void loadSounds().then(sounds => sounds.playSound(event))
   }, [snapshot, enabled])
 
   const toggle = () => {
     const next = !enabled
-    soundManager.updateSettings({ enabled: next })
     setEnabled(next)
-    // Play a short confirmation inside the tap, which also unlocks audio on iPhone
-    if (next) void playSound("point-won")
+    // Already loaded by now, so the confirmation still plays within the tap and unlocks audio on iPhone
+    void loadSounds().then(sounds => {
+      sounds.soundManager.updateSettings({ enabled: next })
+      if (next) void sounds.playSound("point-won")
+    })
   }
 
   return { enabled, toggle }
