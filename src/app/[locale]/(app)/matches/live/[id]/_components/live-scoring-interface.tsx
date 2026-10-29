@@ -19,6 +19,7 @@ import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
 import type { EndReason } from "@/lib/utils/end-reasons"
+import { parseDbScore } from "@/lib/utils/db-score"
 import { setMatchPaused } from "@/lib/actions/match-pause"
 import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -91,16 +92,6 @@ const triggerMatchWinConfetti = async () => {
       colors: ['#FFD700', '#FFA500', '#FF6347', '#39FF14']
     })
   }, 500)
-}
-
-// This is the format of the score object as stored in the Appwrite database
-interface DbScore {
-  sets: Array<{ player1: number; player2: number }>
-  games: Array<{ player1: number; player2: number }>
-  points: { player1: string; player2: string }
-  isTiebreak: boolean
-  tiebreakPoints?: { player1: number; player2: number }
-  server: 'p1' | 'p2'
 }
 
 interface LiveScoringInterfaceProps {
@@ -651,28 +642,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }).filter(Boolean)
       : []
 
-    let dbScore: DbScore
-    try {
-      dbScore = JSON.parse(match.score)
-    } catch (error) {
-      console.error("Failed to parse match score:", error)
-      dbScore = {
-        sets: [],
-        games: [{ player1: 0, player2: 0 }],
-        points: { player1: '0', player2: '0' },
-        isTiebreak: false,
-        server: 'p1'
-      }
-    }
-
-    // Convert the database score object to the format used by the store
-    const storeScore: Score = {
-      sets: (dbScore.sets || []).map(s => [s.player1, s.player2]),
-      games: dbScore.games && dbScore.games.length > 0 ? [dbScore.games[dbScore.games.length - 1].player1, dbScore.games[dbScore.games.length - 1].player2] : [0, 0],
-      points: [parseInt(dbScore.points?.player1, 10) || 0, parseInt(dbScore.points?.player2, 10) || 0],
-      isTiebreak: dbScore.isTiebreak || false,
-      tiebreakPoints: dbScore.tiebreakPoints ? [dbScore.tiebreakPoints.player1, dbScore.tiebreakPoints.player2] : [0, 0]
-    }
+    // Saved scores come in the current array format and an older {player1, player2} one; reading only
+    // the old one turned array scores into NaN games ("Hra NaN") when no point had been logged
+    const storeScore: Score = parseDbScore(match.score)
+    // Older scores also stored who serves first
+    const savedServer: 'p1' | 'p2' = (() => {
+      try { return JSON.parse(match.score)?.server === 'p2' ? 'p2' : 'p1' } catch { return 'p1' }
+    })()
 
     const matchData = {
       $id: match.$id,
@@ -709,7 +685,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       }
 
       if (existingPointLog.length === 0) {
-        setServer(dbScore.server || 'p1')
+        setServer(savedServer)
       }
       setIsInGame(existingPointLog.length > 0)
       setIsMatchInitialized(true)

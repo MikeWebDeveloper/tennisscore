@@ -295,15 +295,15 @@ export function UltraSimplePointLogger({
     switch (step) {
       case 'outcome':
         return (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{t('howDidTheyWin')}</h3>
-              <div className="text-sm text-muted-foreground">
-                <Badge variant="outline" className="mr-2">
+              <h3 className="text-base font-semibold mb-1.5">{t('howDidTheyWin')}</h3>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                <Badge variant="outline" className="text-xs">
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
-                <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                <Badge variant="secondary" className="text-xs">
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -318,19 +318,22 @@ export function UltraSimplePointLogger({
                   size="lg"
                   disabled={outcome.disabled}
                   className={cn(
-                    "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
+                    "h-auto gap-0 px-3 py-2.5 flex flex-col items-start text-left whitespace-normal transition-all",
                     !outcome.disabled && outcome.color,
                     outcome.disabled && "opacity-50 cursor-not-allowed"
                   )}
                   onClick={() => !outcome.disabled && handleOutcomeClick(outcome.id)}
                 >
                   <div className="font-medium">{outcome.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {outcome.description}
-                  </div>
+                  {/* An unavailable option shows why instead of what it means: one line, so all five fit a phone */}
+                  {!outcome.disabled && (
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {outcome.description}
+                    </div>
+                  )}
                   {/* Own line so the reason wraps inside the card on narrow phones */}
                   {outcome.disabled && (
-                    <div data-unavailable-reason className="text-xs text-red-500">
+                    <div data-unavailable-reason className="text-xs text-red-500 mt-0.5">
                       {outcome.id === 'ace' && t('serverMustWinForAce')}
                       {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
                     </div>
@@ -351,7 +354,7 @@ export function UltraSimplePointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -365,7 +368,7 @@ export function UltraSimplePointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     direction.color
                   )}
                   onClick={() => handleServeDirectionClick(direction.id)}
@@ -387,7 +390,7 @@ export function UltraSimplePointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -401,7 +404,7 @@ export function UltraSimplePointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center whitespace-normal transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center whitespace-normal transition-all",
                     type.color
                   )}
                   onClick={() => handleWinnerTypeClick(type)}
@@ -423,7 +426,7 @@ export function UltraSimplePointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -437,7 +440,7 @@ export function UltraSimplePointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     direction.color
                   )}
                   onClick={() => handleShotDirectionClick(direction.id)}
@@ -459,12 +462,12 @@ export function UltraSimplePointLogger({
       onOpenChange(open)
       if (!open) resetState()
     }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">
+      <DialogContent className="gap-3 sm:max-w-md">
+        <DialogHeader className="gap-0.5">
+          <DialogTitle className="text-center text-base">
             {t('point')} #{pointContext.pointNumber} {t('details')}
           </DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground space-y-1">
+          <DialogDescription className="text-center text-xs text-muted-foreground">
             <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
           </DialogDescription>
         </DialogHeader>

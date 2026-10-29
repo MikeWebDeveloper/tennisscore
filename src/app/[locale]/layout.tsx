@@ -43,18 +43,19 @@ export default async function LocaleLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`} suppressHydrationWarning>
         <QueryProvider>
           <ThemeProvider>
-            <ServiceWorkerProvider>
-              <MotionProvider>
-                <NextIntlClientProvider messages={messages} locale={locale}>
+            {/* Outside the service worker provider: its update and offline toasts are translated */}
+            <NextIntlClientProvider messages={messages} locale={locale}>
+              <ServiceWorkerProvider>
+                <MotionProvider>
                   {children}
-                </NextIntlClientProvider>
-                <Toaster 
-                  position="top-center"
-                  richColors
-                  closeButton
-                />
-              </MotionProvider>
-            </ServiceWorkerProvider>
+                  <Toaster
+                    position="top-center"
+                    richColors
+                    closeButton
+                  />
+                </MotionProvider>
+              </ServiceWorkerProvider>
+            </NextIntlClientProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

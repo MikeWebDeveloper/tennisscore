@@ -144,3 +144,35 @@ describe('return errors (the receiver can also miss the return)', () => {
     expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.volley', 'common.overhead'])
   })
 })
+
+describe('fits a phone screen', () => {
+  // A dialog taller than the screen used to push its title and close cross above the top edge
+  it('caps the dialog at the screen height and scrolls inside it, keeping the close cross reachable', () => {
+    open({})
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement
+    expect(dialog.className).toContain('max-h-[calc(100dvh-2rem)]')
+    expect(dialog.className).toContain('overflow-y-auto')
+    expect(dialog.querySelector('[data-slot="dialog-close"]')).not.toBeNull()
+  })
+
+  it('shows only the reason on an unavailable option, not its general description too', () => {
+    open({ winner: 'p2', server: 'p1', serveType: 'first' })
+    const ace = button('common.aces')
+    expect(ace.textContent).toContain('common.serverMustWinForAce')
+    expect(ace.textContent).not.toContain('common.unreturnableServe')
+  })
+
+  it('names the serve in the page language instead of "first"/"second"', () => {
+    open({ serveType: 'second' })
+    // Lower-cased to read naturally inside the badge ("podává (druhý servis)")
+    expect(document.body.textContent).toMatch(/common\.secondserve/i)
+    expect(document.body.textContent).not.toMatch(/\((first|second)\)/)
+  })
+
+  it('uses compact outcome cards so all five fit without scrolling', () => {
+    open({})
+    const card = button('common.winner')
+    expect(card.className).toContain('py-2.5')
+    expect(card.className).not.toMatch(/(^|\s)p-4(\s|$)/)
+  })
+})

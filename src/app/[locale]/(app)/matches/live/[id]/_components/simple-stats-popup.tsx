@@ -120,7 +120,7 @@ export function SimpleStatsPopup({
                 size="lg"
                 disabled={outcome.disabled}
                 className={cn(
-                  "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
+                  "h-auto gap-0 px-3 py-2.5 flex flex-col items-start text-left whitespace-normal transition-all",
                   !outcome.disabled && outcome.color,
                   outcome.disabled && "opacity-50 cursor-not-allowed"
                 )}

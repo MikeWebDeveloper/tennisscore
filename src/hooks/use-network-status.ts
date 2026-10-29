@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
+import { useTranslations } from "@/i18n"
 
 /**
  * useNetworkStatus – listens to browser online/offline events and
@@ -9,6 +10,10 @@ import { toast } from "sonner"
  * components can reactively use it if desired.
  */
 export function useNetworkStatus() {
+  const t = useTranslations('common')
+  // Listen once, but word the toasts in the current page language
+  const tRef = useRef(t)
+  tRef.current = t
   const [online, setOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true
   )
@@ -17,7 +22,7 @@ export function useNetworkStatus() {
     const handler = () => {
       const isOnline = navigator.onLine
       setOnline(isOnline)
-      toast[isOnline ? "success" : "error"](isOnline ? "Back online" : "You're offline")
+      toast[isOnline ? "success" : "error"](tRef.current(isOnline ? 'backOnline' : 'youAreOffline'))
     }
 
     window.addEventListener("online", handler)

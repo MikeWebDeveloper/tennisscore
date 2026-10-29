@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { toast } from "sonner"
 import { createControllerChangeHandler } from "./service-worker-controller"
+import { useTranslations } from "@/i18n"
 
 /**
  * useServiceWorker – registers /sw.js and surfaces lifecycle events
@@ -12,6 +13,11 @@ import { createControllerChangeHandler } from "./service-worker-controller"
  * 3. Controller change ➜ auto-reload (so the new SW takes control)
  */
 export function useServiceWorker() {
+  const t = useTranslations('common')
+  // Register once, but word the toasts in the current page language
+  const tRef = useRef(t)
+  tRef.current = t
+
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return
 
@@ -28,7 +34,7 @@ export function useServiceWorker() {
 
         // ➜ Fresh install
         if (!navigator.serviceWorker.controller) {
-          toast.success("Offline support enabled")
+          toast.success(tRef.current('offlineReady'))
         }
 
         // ➜ Update detection
@@ -41,9 +47,9 @@ export function useServiceWorker() {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller // existing page controlled – so this is an update
             ) {
-              toast.info("New version available", {
+              toast.info(tRef.current('newVersionAvailable'), {
                 action: {
-                  label: "Refresh",
+                  label: tRef.current('refresh'),
                   onClick: () => {
                     newWorker.postMessage({ type: "SKIP_WAITING" })
                   }

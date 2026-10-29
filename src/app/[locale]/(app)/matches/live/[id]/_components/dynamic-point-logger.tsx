@@ -422,7 +422,7 @@ export function DynamicPointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -437,7 +437,7 @@ export function DynamicPointLogger({
                   size="lg"
                   disabled={outcome.disabled}
                   className={cn(
-                    "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
+                    "h-auto gap-0 px-3 py-2.5 flex flex-col items-start text-left whitespace-normal transition-all",
                     !outcome.disabled && outcome.color,
                     outcome.disabled && "opacity-50 cursor-not-allowed"
                   )}
@@ -470,7 +470,7 @@ export function DynamicPointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function DynamicPointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     direction.color
                   )}
                   onClick={() => handleServeDirectionClick(direction.id)}
@@ -509,7 +509,7 @@ export function DynamicPointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     speed === 'fast' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
                     speed === 'medium' && "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
                     speed === 'slow' && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
@@ -588,7 +588,7 @@ export function DynamicPointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     speed === 'fast' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
                     speed === 'medium' && "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
                     speed === 'slow' && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
@@ -664,7 +664,7 @@ export function DynamicPointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -678,7 +678,7 @@ export function DynamicPointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     type.color
                   )}
                   onClick={() => handleWinnerTypeClick(type.id)}
@@ -700,7 +700,7 @@ export function DynamicPointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -714,7 +714,7 @@ export function DynamicPointLogger({
                   variant="outline"
                   size="lg"
                   className={cn(
-                    "h-auto p-4 flex items-center justify-center text-center transition-all",
+                    "h-auto p-3 flex items-center justify-center text-center transition-all",
                     direction.color
                   )}
                   onClick={() => handleShotDirectionClick(direction.id)}
@@ -736,7 +736,7 @@ export function DynamicPointLogger({
                   {pointContext.playerNames[pointContext.winner]} {t('wins')}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({pointContext.serveType})
+                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
                 </Badge>
               </div>
             </div>
@@ -748,7 +748,7 @@ export function DynamicPointLogger({
                 variant="outline"
                 size="lg"
                 className={cn(
-                  "h-auto p-4 flex items-center justify-center text-center transition-all",
+                  "h-auto p-3 flex items-center justify-center text-center transition-all",
                   "bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
                 )}
                 onClick={() => handleReturnTypeClick('regular')}
@@ -759,7 +759,7 @@ export function DynamicPointLogger({
                 variant="outline"
                 size="lg"
                 className={cn(
-                  "h-auto p-4 flex items-center justify-center text-center transition-all",
+                  "h-auto p-3 flex items-center justify-center text-center transition-all",
                   "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20"
                 )}
                 onClick={() => handleReturnTypeClick('return')}
