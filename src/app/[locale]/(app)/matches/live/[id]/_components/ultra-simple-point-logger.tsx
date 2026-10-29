@@ -190,14 +190,14 @@ export function UltraSimplePointLogger({
   const outcomes = [
     {
       id: 'winner' as const,
-      label: t('winner'),
+      label: t('pointWinner'),
       description: t('cleanWinner'),
       color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20',
       disabled: false
     },
     {
       id: 'ace' as const,
-      label: t('aces'),
+      label: t('ace'),
       description: t('unreturnableServe'),
       color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20',
       disabled: isAceDisabled
@@ -218,7 +218,7 @@ export function UltraSimplePointLogger({
     },
     {
       id: 'double_fault' as const,
-      label: t('doubleFaults'),
+      label: t('doubleFault'),
       description: t('twoConsecutiveFaults'),
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20',
       disabled: isDoubleFaultDisabled
@@ -283,7 +283,7 @@ export function UltraSimplePointLogger({
         },
         {
           id: 'net' as const,
-          label: t('net'),
+          label: t('intoNet'),
           color: 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20'
         }
       ]
@@ -300,10 +300,10 @@ export function UltraSimplePointLogger({
               <h3 className="text-base font-semibold mb-1.5">{t('howDidTheyWin')}</h3>
               <div className="flex flex-wrap justify-center gap-1.5">
                 <Badge variant="outline" className="text-xs">
-                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                  {t('pointWonBy', { name: pointContext.playerNames[pointContext.winner] })}
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
+                  {t('servingWith', { name: pointContext.playerNames[pointContext.server], serve: t(pointContext.serveType === 'first' ? 'firstServeShort' : 'secondServeShort') })}
                 </Badge>
               </div>
             </div>
@@ -351,10 +351,10 @@ export function UltraSimplePointLogger({
               <h3 className="text-lg font-semibold mb-2">{t('servePlacement')}</h3>
               <div className="text-sm text-muted-foreground">
                 <Badge variant="outline" className="mr-2">
-                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                  {t('pointWonBy', { name: pointContext.playerNames[pointContext.winner] })}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
+                  {t('servingWith', { name: pointContext.playerNames[pointContext.server], serve: t(pointContext.serveType === 'first' ? 'firstServeShort' : 'secondServeShort') })}
                 </Badge>
               </div>
             </div>
@@ -387,10 +387,10 @@ export function UltraSimplePointLogger({
               <h3 className="text-lg font-semibold mb-2">{t('lastShotType')}</h3>
               <div className="text-sm text-muted-foreground">
                 <Badge variant="outline" className="mr-2">
-                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                  {t('pointWonBy', { name: pointContext.playerNames[pointContext.winner] })}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
+                  {t('servingWith', { name: pointContext.playerNames[pointContext.server], serve: t(pointContext.serveType === 'first' ? 'firstServeShort' : 'secondServeShort') })}
                 </Badge>
               </div>
             </div>
@@ -423,10 +423,10 @@ export function UltraSimplePointLogger({
               <h3 className="text-lg font-semibold mb-2">{t('shotDirection')}</h3>
               <div className="text-sm text-muted-foreground">
                 <Badge variant="outline" className="mr-2">
-                  {pointContext.playerNames[pointContext.winner]} {t('wins')}
+                  {t('pointWonBy', { name: pointContext.playerNames[pointContext.winner] })}
                 </Badge>
                 <Badge variant="secondary">
-                  {pointContext.playerNames[pointContext.server]} {t('serving')} ({t(pointContext.serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
+                  {t('servingWith', { name: pointContext.playerNames[pointContext.server], serve: t(pointContext.serveType === 'first' ? 'firstServeShort' : 'secondServeShort') })}
                 </Badge>
               </div>
             </div>
@@ -465,10 +465,10 @@ export function UltraSimplePointLogger({
       <DialogContent className="gap-3 sm:max-w-md">
         <DialogHeader className="gap-0.5">
           <DialogTitle className="text-center text-base">
-            {t('point')} #{pointContext.pointNumber} {t('details')}
+            {t('pointTitle', { number: pointContext.pointNumber })}
           </DialogTitle>
           <DialogDescription className="text-center text-xs text-muted-foreground">
-            <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
+            <p>{t('pointContextLine', { set: pointContext.setNumber, game: pointContext.gameNumber, score: pointContext.gameScore.replace(/\s*-\s*/g, ':') })}</p>
           </DialogDescription>
         </DialogHeader>
         

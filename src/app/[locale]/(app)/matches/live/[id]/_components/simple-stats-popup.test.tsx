@@ -21,7 +21,7 @@ afterEach(() => { act(() => root?.unmount()); root = null; document.body.innerHT
 
 it('asks where an ace landed at the simple level and saves the placement', () => {
   const { onSave } = open({ winner: 'p1', server: 'p1', serveType: 'first' })
-  click('common.aces')
+  click('common.ace')
   expect(onSave).not.toHaveBeenCalled()
   expect(button('common.serveNetCord')).toBeDefined()
   expect(button('common.serveOutOfCourt')).toBeDefined()
@@ -31,7 +31,7 @@ it('asks where an ace landed at the simple level and saves the placement', () =>
 
 it('still saves other outcomes with one tap', () => {
   const { onSave } = open({ winner: 'p1', server: 'p1', serveType: 'first' })
-  click('common.winner')
+  click('common.pointWinner')
   expect(onSave).toHaveBeenCalledWith('winner', undefined)
 })
 

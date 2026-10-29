@@ -53,3 +53,16 @@ test.describe('desktop mouse wheel', () => {
     })
   }
 })
+
+// A tappable statistics row used to get the phone touch-target layout, which collapsed its bar to 2px
+test.describe('statistics on a phone', () => {
+  test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true })
+  test('tappable rows keep a full-width comparison bar', async ({ page }) => {
+    await page.goto('/en/matches/match1')
+    await page.getByRole('tab', { name: /Statistics/ }).click()
+    const row = page.locator('[data-stat-toggle]').first()
+    await expect(row).toBeVisible()
+    const barWidth = await row.locator('[data-comparison-bar]').evaluate(el => el.getBoundingClientRect().width)
+    expect(barWidth).toBeGreaterThan(150)
+  })
+})

@@ -31,19 +31,19 @@ it('puts the reason an option is unavailable on its own wrapping line', () => {
   const reason = document.body.querySelector('[data-unavailable-reason]')
   expect(reason?.textContent).toBe('common.serverMustWinForAce')
   expect(reason?.tagName).toBe('DIV')
-  expect(button('common.aces').className).toContain('whitespace-normal')
+  expect(button('common.ace').className).toContain('whitespace-normal')
 })
 
 it('asks for the shot with a matching subtitle after a winner', () => {
   open({})
   expect(subtitle()).toBe('common.selectHowPointEnded')
-  click('common.winner')
+  click('common.pointWinner')
   expect(subtitle()).toBe('common.selectShotThatEndedPoint')
 })
 
 it('offers net cord, out of the court and on the T for an ace, and saves the choice', () => {
   const onSave = open({ winner: 'p1', server: 'p1' })
-  click('common.aces')
+  click('common.ace')
   expect(subtitle()).toBe('common.selectWhereServeLanded')
   expect(labels()).toEqual(['common.serveNetCord', 'common.serveOutOfCourt', 'common.serveOnTheT'])
   click('common.serveNetCord')
@@ -52,14 +52,14 @@ it('offers net cord, out of the court and on the T for an ace, and saves the cho
 
 it('keeps the existing placement choices for a double fault', () => {
   open({ winner: 'p2', server: 'p1', serveType: 'second' })
-  click('common.doubleFaults')
+  click('common.doubleFault')
   expect(labels()).toEqual(['common.wide', 'common.body', 'common.tDownTheMiddle'])
 })
 
 describe('shot-type level', () => {
   it('records the shot type for a winner without asking for direction', () => {
     const onSave = open({}, { mode: 'shot-type' })
-    click('common.winner')
+    click('common.pointWinner')
     click('common.forehand')
     expect(onSave).toHaveBeenCalledTimes(1)
     const saved = onSave.mock.calls[0][0]
@@ -70,7 +70,7 @@ describe('shot-type level', () => {
   // Ace placement is asked at this level too; double faults stay one tap
   it('asks where an ace landed and saves it', () => {
     const onSave = open({ winner: 'p1', server: 'p1' }, { mode: 'shot-type' })
-    click('common.aces')
+    click('common.ace')
     expect(labels()).toEqual(['common.serveNetCord', 'common.serveOutOfCourt', 'common.serveOnTheT'])
     click('common.serveOnTheT')
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ pointOutcome: 'ace', lastShotType: 'serve', servePlacement: 't' }))
@@ -78,7 +78,7 @@ describe('shot-type level', () => {
 
   it('saves a double fault straight away without serve placement', () => {
     const onSave = open({ winner: 'p2', server: 'p1', serveType: 'second' }, { mode: 'shot-type' })
-    click('common.doubleFaults')
+    click('common.doubleFault')
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ pointOutcome: 'double_fault', lastShotType: 'serve' }))
     expect(onSave.mock.calls[0][0].servePlacement).toBeUndefined()
   })
@@ -87,7 +87,7 @@ describe('shot-type level', () => {
 describe('return shots in the shot step (no separate "was it a return?" step)', () => {
   it('shows the return row to the receiver and saves the return without an extra step', () => {
     const onSave = open({ winner: 'p2', server: 'p1' })
-    click('common.winner')
+    click('common.pointWinner')
     expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.returnForehand', 'common.returnBackhand', 'common.volley', 'common.overhead'])
     click('common.returnForehand')
     click('common.crossCourt')
@@ -97,7 +97,7 @@ describe('return shots in the shot step (no separate "was it a return?" step)', 
 
   it('records an ordinary receiver winner as regular, still without the extra step', () => {
     const onSave = open({ winner: 'p2', server: 'p1' })
-    click('common.winner')
+    click('common.pointWinner')
     click('common.volley')
     click('common.downTheLine')
     expect(onSave.mock.calls[0][0]).toMatchObject({ lastShotType: 'volley', winnerType: 'regular' })
@@ -105,13 +105,13 @@ describe('return shots in the shot step (no separate "was it a return?" step)', 
 
   it('hides the return row from the server', () => {
     open({ winner: 'p1', server: 'p1' })
-    click('common.winner')
+    click('common.pointWinner')
     expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.volley', 'common.overhead'])
   })
 
   it('records a return backhand straight away at the shot-type level', () => {
     const onSave = open({ winner: 'p2', server: 'p1' }, { mode: 'shot-type' })
-    click('common.winner')
+    click('common.pointWinner')
     click('common.returnBackhand')
     expect(onSave).toHaveBeenCalledTimes(1)
     expect(onSave.mock.calls[0][0]).toMatchObject({ lastShotType: 'backhand', winnerType: 'return' })
@@ -126,7 +126,7 @@ describe('return errors (the receiver can also miss the return)', () => {
     expect(labels()).toEqual(['common.forehand', 'common.backhand', 'common.returnForehand', 'common.returnBackhand', 'common.volley', 'common.overhead'])
     click('common.returnBackhand')
     // Errors ask where the ball went: long, wide or into the net
-    click('common.net')
+    click('common.intoNet')
     expect(onSave.mock.calls[0][0]).toMatchObject({ pointOutcome: 'unforced_error', lastShotType: 'backhand', winnerType: 'return', shotDirection: 'net' })
   })
 
@@ -166,21 +166,21 @@ describe('fits a phone screen', () => {
 
   it('shows only the reason on an unavailable option, not its general description too', () => {
     open({ winner: 'p2', server: 'p1', serveType: 'first' })
-    const ace = button('common.aces')
+    const ace = button('common.ace')
     expect(ace.textContent).toContain('common.serverMustWinForAce')
     expect(ace.textContent).not.toContain('common.unreturnableServe')
   })
 
   it('names the serve in the page language instead of "first"/"second"', () => {
     open({ serveType: 'second' })
-    // Lower-cased to read naturally inside the badge ("podává (druhý servis)")
-    expect(document.body.textContent).toMatch(/common\.secondserve/i)
+    // One message for the badge ("Podává Ann (2. podání)"); the real Czech wording is checked in point-windows.cs.test
+    expect(document.body.textContent).toContain('common.servingWith')
     expect(document.body.textContent).not.toMatch(/\((first|second)\)/)
   })
 
   it('uses compact outcome cards so all five fit without scrolling', () => {
     open({})
-    const card = button('common.winner')
+    const card = button('common.pointWinner')
     expect(card.className).toContain('py-2.5')
     expect(card.className).not.toMatch(/(^|\s)p-4(\s|$)/)
   })

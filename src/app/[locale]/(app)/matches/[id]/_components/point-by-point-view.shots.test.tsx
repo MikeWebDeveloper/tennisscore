@@ -31,7 +31,8 @@ describe('point log shows what ended each point', () => {
     it(`lists the shot under the outcome at the ${level} level`, () => {
       const { container, cleanup } = render(level)
       const shots = Array.from(container.querySelectorAll('[data-point-shot]'), el => el.textContent)
-      expect(shots).toEqual(expect.arrayContaining(['common.returnForehand · common.crossCourt', 'common.serveNetCord', 'common.backhand · common.net']))
+      // A phrase: shot then direction in lower case ("Return forhend křížem", "Bekhend do sítě")
+      expect(shots).toEqual(expect.arrayContaining(['common.returnForehand common.crosscourt', 'common.serveNetCord', 'common.backhand common.intonet']))
       cleanup()
     })
   }

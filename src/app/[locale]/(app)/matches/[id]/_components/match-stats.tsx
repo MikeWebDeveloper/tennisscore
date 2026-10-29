@@ -10,7 +10,6 @@ import { Shield } from "lucide-react"
 import { Brain } from "lucide-react"
 import { TrendingUp } from "lucide-react"
 import { Crosshair } from "lucide-react"
-import { ChevronDown } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/i18n"
 import { PointDetail } from "@/lib/types"
@@ -36,6 +35,7 @@ type TacticalContext = {
   matchContext?: 'early' | 'middle' | 'late' | 'decisive'
 }
 import { calculateDetailedMatchStats, calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
+import { BreakdownRow, StatRow } from "./stat-bars"
 import { ACE_PLACEMENTS, SERVE_PLACEMENTS, servePlacementLabelKey } from "@/lib/utils/serve-placement"
 import { formatPlayerFromObject } from "@/lib/utils"
 // import { EnhancedStatsDisplay } from "@/components/features/enhanced-stats-display"
@@ -57,126 +57,6 @@ const containerVariants = {
   }
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-}
-
-// Expandable stat row component
-function StatRow({ 
-  label, 
-  value1, 
-  value2, 
-  format = "number",
-  showProgress = true,
-  onClick,
-  isExpanded = false,
-  expandedContent
-}: { 
-  label: string
-  value1: number
-  value2: number
-  format?: "number" | "percentage"
-  showProgress?: boolean
-  onClick?: () => void
-  isExpanded?: boolean
-  expandedContent?: React.ReactNode
-}) {
-  const total = value1 + value2
-  const percentage1 = total > 0 ? (value1 / total) * 100 : 50
-  const percentage2 = total > 0 ? (value2 / total) * 100 : 50
-
-  const formatValue = (value: number) => {
-    if (format === "percentage") {
-      return `${value.toFixed(0)}%`
-    }
-    return value.toString()
-  }
-
-  return (
-    <motion.div 
-      variants={itemVariants}
-      className="space-y-2"
-      layout
-    >
-      {/* A row with a breakdown behaves like a button and shows an arrow, so it is clear it can be tapped */}
-      <motion.div 
-        className={`space-y-2 ${onClick ? 'cursor-pointer hover:bg-muted/50 rounded p-2 -m-2 transition-colors' : ''}`}
-        onClick={onClick}
-        {...(onClick && {
-          role: 'button',
-          tabIndex: 0,
-          'aria-expanded': isExpanded,
-          onKeyDown: (event: React.KeyboardEvent) => {
-            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick() }
-          },
-        })}
-        layout
-      >
-        <div className="flex items-center justify-between text-sm">
-          <motion.span 
-            className="font-mono font-semibold"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 0.3 }}
-          >
-            {formatValue(value1)}
-          </motion.span>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground uppercase tracking-wider">
-            {label}
-            {onClick && (
-              <ChevronDown data-expand-icon aria-hidden="true" className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-            )}
-          </span>
-          <motion.span 
-            className="font-mono font-semibold"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 0.3 }}
-          >
-            {formatValue(value2)}
-          </motion.span>
-        </div>
-        {showProgress && (
-          <div className="flex gap-1 h-2">
-            <motion.div
-              className="bg-blue-500 rounded-l"
-              initial={{ width: 0 }}
-              animate={{ width: `${percentage1}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-            <motion.div
-              className="bg-red-500 rounded-r"
-              initial={{ width: 0 }}
-              animate={{ width: `${percentage2}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </div>
-        )}
-      </motion.div>
-      
-      {/* Expandable content */}
-      <motion.div
-        initial={false}
-        animate={{ 
-          height: isExpanded ? "auto" : 0,
-          opacity: isExpanded ? 1 : 0
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="overflow-hidden"
-      >
-        {isExpanded && expandedContent && (
-          <motion.div
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.2, delay: 0.1 }}
-            className="mt-3 pl-4 border-l-2 border-muted space-y-2"
-          >
-            {expandedContent}
-          </motion.div>
-        )}
-      </motion.div>
-    </motion.div>
-  )
-}
 
 export function MatchStatsComponent({ stats, playerOne, playerTwo }: MatchStatsComponentProps) {
   const t = useTranslations('common')
@@ -588,276 +468,77 @@ export function MatchStatsComponentSimpleFixed({
     });
   }
 
-  // Helper function to get shot type breakdown
-  const getShotTypeBreakdown = (points: PointDetail[]) => {
-    const breakdown: Record<string, number> = {}
-    points.forEach(point => {
-      if (point.lastShotType) {
-        breakdown[point.lastShotType] = (breakdown[point.lastShotType] || 0) + 1
-      }
-    })
-    return breakdown
-  }
-
-  // Type predicate for PointDetail with shotDirection
-  function hasShotDirection(point: unknown): point is { shotDirection: string } {
-    return (
-      typeof point === 'object' &&
-      point !== null &&
-      'shotDirection' in point &&
-      typeof (point as { shotDirection: unknown }).shotDirection === 'string' &&
-      Boolean((point as { shotDirection: string }).shotDirection)
-    )
-  }
-
-  // Helper function to get shot direction breakdown
-  const getShotDirectionBreakdown = (points: unknown[]) => {
-    const breakdown: Record<string, number> = {}
-    points.forEach(point => {
-      if (hasShotDirection(point)) {
-        const dir = point.shotDirection
-        breakdown[dir] = (breakdown[dir] || 0) + 1
-      }
-    })
-    return breakdown
-  }
-
-  // Generate expandable content for a stat type
+  // Generate expandable content for a stat type: one leaning bar per value either player has
   const generateExpandableContent = (statType: 'winners' | 'unforcedErrors' | 'forcedErrors' | 'aces' | 'doubleFaults') => {
     const player1Points = getPlayerPoints(statType, 'p1')
     const player2Points = getPlayerPoints(statType, 'p2')
-    
-    const shotTypeTranslations: Record<string, string> = {
-      forehand: t('forehand'),
-      backhand: t('backhand'),
-      volley: t('volley'),
-      overhead: t('overhead'),
-      serve: t('serve'),
-      dropShot: t('dropShot'),
-      lob: t('lob')
+    const allPoints = [...player1Points, ...player2Points]
+    const isError = statType === 'unforcedErrors' || statType === 'forcedErrors'
+
+    const shotLabels: Record<string, string> = {
+      forehand: t('forehand'), backhand: t('backhand'), volley: t('volley'), overhead: t('overhead'), dropShot: t('dropShot'), lob: t('lob'),
+    }
+    const directionLabels: Record<string, string> = {
+      cross: t('crossCourt'), line: t('downTheLine'), body: t('bodyShot'), long: t('long'), wide: t('wide'),
+      // An error went into the net; anything else at the net is just "net"
+      net: isError ? t('intoNet') : t('net'),
     }
 
-    const shotDirectionTranslations: Record<string, string> = {
-      cross: t('crossCourt'),
-      line: t('downTheLine'),
-      body: t('bodyShot'),
-      long: t('long'),
-      wide: t('wide'),
-      net: t('net')
+    const valuesOf = (pick: (point: PointDetail) => string | undefined) => {
+      const values: string[] = []
+      for (const point of allPoints) {
+        const value = pick(point)
+        if (value && !values.includes(value)) values.push(value)
+      }
+      return values
     }
-
-
-    // Return vs regular for the point-ending shot: winners and errors both carry winnerType when the receiver hit it
-    const getReturnBreakdown = (points: PointDetail[]) => {
-      const breakdown: Record<string, number> = { regular: 0, return: 0 }
-      points.forEach(point => {
-        if (point.winnerType) {
-          breakdown[point.winnerType] = (breakdown[point.winnerType] || 0) + 1
-        } else {
-          // If no winnerType is specified, assume regular
-          breakdown.regular += 1
-        }
-      })
-      return breakdown
-    }
-
-    const renderReturnBreakdown = (heading: string) => {
-      const player1Returns = getReturnBreakdown(player1Points)
-      const player2Returns = getReturnBreakdown(player2Points)
-      return (
-        <div>
-          <h4 className="text-sm font-medium mb-2">{heading}</h4>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-600">{player1Returns.regular}</span>
-              <span className="text-xs text-muted-foreground">{t('regular')}</span>
-              <span className="text-red-600">{player2Returns.regular}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-600">{player1Returns.return}</span>
-              <span className="text-xs text-muted-foreground">{t('return')}</span>
-              <span className="text-red-600">{player2Returns.return}</span>
-            </div>
-          </div>
+    const section = (heading: string, pick: (point: PointDetail) => string | undefined, values: string[], label: (value: string) => string) => (
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium">{heading}</h4>
+        <div className="space-y-2.5">
+          {values.map(value => (
+            <BreakdownRow
+              key={value}
+              label={label(value)}
+              value1={player1Points.filter(point => pick(point) === value).length}
+              value2={player2Points.filter(point => pick(point) === value).length}
+            />
+          ))}
         </div>
-      )
-    }
+      </div>
+    )
 
-    // Special handling for Aces and Double Faults
     if (statType === 'aces' || statType === 'doubleFaults') {
       const isAce = statType === 'aces'
-      const placementCount = (points: PointDetail[], placement: string | null) =>
-        points.filter(point => placement === null ? !point.servePlacement : point.servePlacement === placement).length
       // Every option the point window offers, so an unused one still shows 0; aces logged before the
       // new options may still say "body", so any other saved value is listed too
       const placements: string[] = (isAce ? ACE_PLACEMENTS : SERVE_PLACEMENTS).map(option => option.id)
-      for (const point of [...player1Points, ...player2Points]) {
-        if (point.servePlacement && !placements.includes(point.servePlacement)) placements.push(point.servePlacement)
-      }
-      // The shot-type level records aces without a placement
-      const hasUnrecorded = placementCount(player1Points, null) + placementCount(player2Points, null) > 0
-
-      return (
-        <div className="space-y-4">
-          {/* Serve Placement */}
-          <div>
-            <h4 className="text-sm font-medium mb-2">{t('servePlacement')}</h4>
-            <div className="space-y-1">
-              {placements.map(placement => (
-                <div key={placement} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">{placementCount(player1Points, placement)}</span>
-                  <span className="text-xs text-muted-foreground">{t(servePlacementLabelKey(placement, isAce))}</span>
-                  <span className="text-red-600">{placementCount(player2Points, placement)}</span>
-                </div>
-              ))}
-              {hasUnrecorded && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">{placementCount(player1Points, null)}</span>
-                  <span className="text-xs text-muted-foreground">{t('placementNotRecorded')}</span>
-                  <span className="text-red-600">{placementCount(player2Points, null)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )
+      for (const value of valuesOf(point => point.servePlacement)) if (!placements.includes(value)) placements.push(value)
+      // Aces logged before placements were asked at every level
+      if (allPoints.some(point => !point.servePlacement)) placements.push('unrecorded')
+      return section(t('servePlacement'), point => point.servePlacement ?? 'unrecorded', placements,
+        value => value === 'unrecorded' ? t('placementNotRecorded') : t(servePlacementLabelKey(value, isAce)))
     }
 
-    // Special handling for Winners - include return winners
-    if (statType === 'winners') {
-      const player1ShotTypes = getShotTypeBreakdown(player1Points)
-      const player2ShotTypes = getShotTypeBreakdown(player2Points)
-      
-      const player1ShotDirections = getShotDirectionBreakdown(player1Points)
-      const player2ShotDirections = getShotDirectionBreakdown(player2Points)
+    // The shot that ended the point; the serve itself is counted under aces and double faults
+    const shotOf = (point: PointDetail) => point.lastShotType && point.lastShotType !== 'serve' ? point.lastShotType : undefined
+    const shots = valuesOf(shotOf)
+    const directions = valuesOf(point => point.shotDirection)
+    // Return vs regular only where the level records returns
+    const recordsReturns = (pointLog ?? []).some(point => point.winnerType)
 
-      return (
-        <div className="space-y-4">
-          {/* Return Winners */}
-          {renderReturnBreakdown(t('winnerType'))}
-
-          {/* Shot Types (only when recorded) */}
-          {Object.keys(player1ShotTypes).length + Object.keys(player2ShotTypes).length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
-              <div className="space-y-1">
-                {Object.entries(player1ShotTypes).map(([shotType, count]) => (
-                  <div key={shotType} className="flex items-center justify-between text-sm">
-                    <span className="text-blue-600">{count}</span>
-                    <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                    <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
-                  </div>
-                ))}
-                {Object.entries(player2ShotTypes).map(([shotType, count]) => {
-                  if (player1ShotTypes[shotType]) return null
-                  return (
-                    <div key={shotType} className="flex items-center justify-between text-sm">
-                      <span className="text-blue-600">0</span>
-                      <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                      <span className="text-red-600">{count}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Shot Directions (only when recorded) */}
-          {Object.keys(player1ShotDirections).length + Object.keys(player2ShotDirections).length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
-              <div className="space-y-1">
-                {Object.entries(player1ShotDirections).map(([direction, count]) => (
-                  <div key={direction} className="flex items-center justify-between text-sm">
-                    <span className="text-blue-600">{count}</span>
-                    <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                    <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
-                  </div>
-                ))}
-                {Object.entries(player2ShotDirections).map(([direction, count]) => {
-                  if (player1ShotDirections[direction]) return null
-                  return (
-                    <div key={direction} className="flex items-center justify-between text-sm">
-                      <span className="text-blue-600">0</span>
-                      <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                      <span className="text-red-600">{count}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )
+    if (!recordsReturns && shots.length === 0 && directions.length === 0) {
+      return <p className="text-xs text-muted-foreground">{t('noDetailsRecorded')}</p>
     }
-
-    // Default handling for other stats (unforcedErrors, forcedErrors)
-    const player1ShotTypes = getShotTypeBreakdown(player1Points)
-    const player2ShotTypes = getShotTypeBreakdown(player2Points)
-    
-    const player1ShotDirections = getShotDirectionBreakdown(player1Points)
-    const player2ShotDirections = getShotDirectionBreakdown(player2Points)
-
     return (
       <div className="space-y-4">
-        {/* A missed return counts as an error too */}
-        {renderReturnBreakdown(t('returnOrRegular'))}
-
-        {/* Shot Types (only when recorded) */}
-        {Object.keys(player1ShotTypes).length + Object.keys(player2ShotTypes).length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
-            <div className="space-y-1">
-              {Object.entries(player1ShotTypes).map(([shotType, count]) => (
-                <div key={shotType} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">{count}</span>
-                  <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                  <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
-                </div>
-              ))}
-              {Object.entries(player2ShotTypes).map(([shotType, count]) => {
-                if (player1ShotTypes[shotType]) return null
-                return (
-                  <div key={shotType} className="flex items-center justify-between text-sm">
-                    <span className="text-blue-600">0</span>
-                    <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                    <span className="text-red-600">{count}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Shot Directions (only when recorded) */}
-        {Object.keys(player1ShotDirections).length + Object.keys(player2ShotDirections).length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
-            <div className="space-y-1">
-              {Object.entries(player1ShotDirections).map(([direction, count]) => (
-                <div key={direction} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">{count}</span>
-                  <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                  <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
-                </div>
-              ))}
-              {Object.entries(player2ShotDirections).map(([direction, count]) => {
-                if (player1ShotDirections[direction]) return null
-                return (
-                  <div key={direction} className="flex items-center justify-between text-sm">
-                    <span className="text-blue-600">0</span>
-                    <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                    <span className="text-red-600">{count}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+        {recordsReturns && section(t(isError ? 'returnOrRegular' : 'winnerType'), point => point.winnerType ?? 'regular', ['regular', 'return'], value => t(value))}
+        {shots.length > 0 && section(t('shotTypes'), shotOf, shots, value => shotLabels[value] ?? value)}
+        {directions.length > 0 && section(t('shotDirections'), point => point.shotDirection, directions, value => directionLabels[value] ?? value)}
       </div>
     )
   }
-  
+
   // Calculate enhanced analytics if we have point log
   // const advancedStats = pointLog && pointLog.length > 0 
   //   ? calculateAdvancedMatchStats(pointLog) 
@@ -1001,24 +682,7 @@ export function MatchStatsComponentSimpleFixed({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {detailLevel === 'simple' || detailLevel === 'shot-type' ? (
-              // Simple: Just basic serve percentages
-              <>
-                <StatRow 
-                  label={t('firstServePercentage')} 
-                  value1={stats.firstServePercentageByPlayer[0]} 
-                  value2={stats.firstServePercentageByPlayer[1]}
-                  format="percentage"
-                />
-                <StatRow 
-                  label={t('servicePoints')} 
-                  value1={stats.servicePointsWonPercentageByPlayer[0]} 
-                  value2={stats.servicePointsWonPercentageByPlayer[1]}
-                  format="percentage"
-                />
-              </>
-            ) : (
-              // Detailed/Complex/Custom: Full service breakdown
+            {/* Every level that records the serve gets the full breakdown */}
               <>
                 <StatRow 
                   label={t('firstServePercentage')} 
@@ -1052,13 +716,12 @@ export function MatchStatsComponentSimpleFixed({
                   value2={stats.servicePointsPlayedByPlayer[1]} 
                 />
               </>
-            )}
           </CardContent>
         </Card>
       )}
 
       {/* Return Statistics - Only for Complex and Detailed */}
-      {(detailLevel === 'complex' || detailLevel === 'detailed') && (
+      {(detailLevel === 'simple' || detailLevel === 'shot-type' || detailLevel === 'detailed' || detailLevel === 'complex' || detailLevel === 'custom') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">

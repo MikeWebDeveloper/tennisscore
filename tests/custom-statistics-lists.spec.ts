@@ -37,7 +37,7 @@ test('custom serve statistics survive reload and appear in the match table', asy
     await page.goto('/en/matches/live/match4')
     await page.getByTestId('score-point').first().click()
     const dialog = page.getByRole('dialog')
-    await dialog.getByRole('button', { name: /Aces/ }).click()
+    await dialog.getByRole('button', { name: /^Ace\b/ }).click()
     // Aces offer net cord, out of the court and on the T; "out of the court" is stored as wide
     await expect(dialog.getByRole('button', { name: 'Net cord', exact: true })).toBeVisible()
     await dialog.getByRole('button', { name: 'Out of the court', exact: true }).click()
@@ -122,7 +122,7 @@ test('a missed return is recorded as a return error and counted in the statistic
     await page.getByTestId('score-point').first().click()
     await dialog.getByRole('button', { name: /^Unforced Error/ }).click()
     await dialog.getByRole('button', { name: 'Return backhand', exact: true }).click()
-    await dialog.getByRole('button', { name: 'Net', exact: true }).click()
+    await dialog.getByRole('button', { name: 'Into the net', exact: true }).click()
     await expect.poll(async () => (await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog.length).toBe(1)
     const saved = JSON.parse((await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog[0])
     expect(saved).toMatchObject({ pointOutcome: 'unforced_error', lastShotType: 'backhand', winnerType: 'return', shotDirection: 'net' })

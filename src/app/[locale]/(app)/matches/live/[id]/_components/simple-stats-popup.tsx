@@ -69,14 +69,14 @@ export function SimpleStatsPopup({
   const outcomes = [
     {
       id: 'winner' as const,
-      label: t('winner'),
+      label: t('pointWinner'),
       description: t('cleanWinner'),
       disabled: false,
       color: 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
     },
     {
       id: 'ace' as const,
-      label: t('aces'),
+      label: t('ace'),
       description: t('unreturnableServe'),
       disabled: isAceDisabled,
       color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20'
@@ -97,7 +97,7 @@ export function SimpleStatsPopup({
     },
     {
       id: 'double_fault' as const,
-      label: t('doubleFaults'),
+      label: t('doubleFault'),
       description: t('twoConsecutiveFaults'),
       disabled: isDoubleFaultDisabled,
       color: 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
@@ -112,16 +112,16 @@ export function SimpleStatsPopup({
       <DialogContent className="gap-3 sm:max-w-md">
         <DialogHeader className="gap-0.5">
           <DialogTitle className="text-center text-base">
-            {t('point')} #{pointContext.pointNumber} {t('details')}
+            {t('pointTitle', { number: pointContext.pointNumber })}
           </DialogTitle>
           <div className="text-center text-xs text-muted-foreground space-y-1.5">
-            <p>{t('set')} {pointContext.setNumber}, {t('game')} {pointContext.gameNumber} • {pointContext.gameScore}</p>
+            <p>{t('pointContextLine', { set: pointContext.setNumber, game: pointContext.gameNumber, score: pointContext.gameScore.replace(/\s*-\s*/g, ':') })}</p>
             <div className="flex flex-wrap justify-center gap-1.5">
               <Badge variant="outline" className="text-xs">
-                {winnerName} {t('winsPoint')}
+                {t('pointWonBy', { name: winnerName })}
               </Badge>
               <Badge variant="secondary" className="text-xs">
-                {serverName} {t('serving')} ({t(serveType === 'first' ? 'firstServe' : 'secondServe').toLowerCase()})
+                {t('servingWith', { name: serverName, serve: t(serveType === 'first' ? 'firstServeShort' : 'secondServeShort') })}
               </Badge>
             </div>
           </div>
