@@ -37,3 +37,13 @@ it('shows translated Czech captions on the won tiles before any match is finishe
   expect(text).not.toMatch(/\bstatistics\.\w+/)
   act(() => root.unmount())
 })
+
+it('uses the Czech plural for the number of finished matches', () => {
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  const matches = [{ $id: '1', status: 'completed', playerOneId: 'p1', playerTwoId: 'p2', matchDate: '2025-01-02', score: '{"sets":[[6,4]]}' }]
+  act(() => root.render(createElement(LazyMotion, { features }, createElement(EnhancedStatisticsClient, { mainPlayer: { $id: 'p1' } as never, matches: matches as never }))))
+  // "dokončených" starts with "dokončený", so match the whole word
+  expect(container.textContent).toMatch(/Vybráno: 1 zápas, z toho 1 dokončený(?!ch)/)
+  act(() => root.unmount())
+})

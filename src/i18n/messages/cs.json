@@ -1473,7 +1473,7 @@
     "soundEffectsInfo": "💡 Zvukové efekty se automaticky inicializují, když začnete bodovat. Hlasitost a nastavení se ukládají automaticky."
   },
   "statistics": {
-    "loadedSample": "Vybráno: {selected, plural, one {# zápas} few {# zápasy} other {# zápasů}}, z toho {completed} dokončených",
+    "loadedSample": "Vybráno: {selected, plural, one {# zápas} few {# zápasy} other {# zápasů}}, z toho {completed, plural, one {# dokončený} few {# dokončené} other {# dokončených}}",
     "noMatchesYet": "Zatím žádné dokončené zápasy",
     "needMoreMatches": "Odehrajte ještě {count, plural, one {# zápas} few {# zápasy} other {# zápasů}}",
     "insightsNeedMoreMatches": "Poznatky se zobrazí po {count, plural, one {# dalším dokončeném zápasu} other {# dalších dokončených zápasech}}.",
