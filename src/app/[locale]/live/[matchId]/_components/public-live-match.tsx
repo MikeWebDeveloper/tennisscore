@@ -200,8 +200,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       }
     }
     
-    if (error) return { status: "error", message: `Connection Error: ${error}` }
-    if (!connected && retryCount > 0) return { status: "reconnecting", message: `Reconnecting... (${retryCount}/3)` }
+    if (error) return { status: "error", message: `${tCommon('connectionError')}: ${error}` }
+    if (!connected && retryCount > 0) return { status: "reconnecting", message: tCommon('reconnectingAttempt', { attempt: retryCount, max: 3 }) }
     if (!connected) return { status: "disconnected", message: isSafariMobile ? t('tapRefreshIfScoresNoUpdate') : tCommon('connecting') }
     return { status: "connected", message: t('liveUpdatesActive') }
   }
@@ -268,29 +268,22 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         animate="show"
         className="relative z-10 p-3 sm:p-4 max-w-6xl mx-auto w-full space-y-3 sm:space-y-4"
       >
-        {/* Header: Match internal live match style */}
+        {/* Header on one row: tournament (gradient) above the title, icon buttons on the right */}
         <motion.div
           variants={itemVariants}
-          className="flex items-center justify-between pt-2 sm:pt-4 w-full gap-2 flex-wrap"
+          data-live-header
+          className="flex items-center justify-between pt-2 sm:pt-4 w-full gap-3"
         >
-          {/* Left: Tournament badge (if any) + Live Tennis */}
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="min-w-0">
             {match.tournamentName && (
-              <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mr-2 truncate max-w-xs" title={match.tournamentName}>
+              <p data-tournament className="truncate text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" title={match.tournamentName}>
                 {match.tournamentName}
-              </span>
+              </p>
             )}
             <h1 className="text-lg font-semibold tracking-tight text-foreground whitespace-nowrap">{t('liveTennis')}</h1>
           </div>
-          {/* Right: Language Toggle, Share & Reload Buttons */}
-          <div className="flex gap-2 ml-auto items-center">
+          <div className="flex shrink-0 items-center gap-1.5">
             <LanguageToggle />
-            <a
-              href={`/${locale}/watch/${match.$id}`}
-              className="shrink-0 text-xs font-medium text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
-            >
-              {t('watchLiteView')}
-            </a>
             <Button variant="outline" size="icon" onClick={shareMatch} className="shrink-0" title={t('share')} aria-label={t('share')}>
               <Share2 className="w-4 h-4" />
             </Button>
@@ -309,6 +302,12 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             {match.status === "In Progress" ? t(match.isPaused ? 'matchPaused' : 'live') : t('completed')}
             {match.status === 'In Progress' && match.isPaused && isPauseReason(match.pauseReason) && ` — ${t(`pauseReason_${match.pauseReason}`)}`}
           </Badge>
+          <a
+            href={`/${locale}/watch/${match.$id}`}
+            className="inline-flex min-h-11 items-center px-1 text-xs font-medium text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+          >
+            {t('watchLiteView')}
+          </a>
           {/* Connection Status - only show if match is in progress */}
           {match.status === "In Progress" && (
             <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>
@@ -329,7 +328,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
         
         {error && match.status === "In Progress" && (
           <div className="text-xs sm:text-sm text-red-500 mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 dark:bg-red-950/20 rounded border mx-auto">
-            Connection error: {error}
+            {tCommon('connectionError')}: {error}
           </div>
         )}
 

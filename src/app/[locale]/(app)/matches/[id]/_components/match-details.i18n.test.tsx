@@ -117,6 +117,14 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('labels every tab on phones instead of showing bare icons', async () => {
+    const { container, cleanup } = await renderDetails()
+    const tabs = Array.from(container.querySelectorAll('[role="tab"]'))
+    expect(tabs.map(tab => tab.textContent)).toEqual(['Přehled', 'Záznam bodů', 'Statistiky', 'Analýza'])
+    for (const tab of tabs) expect(tab.querySelector('.hidden')).toBeNull()
+    cleanup()
+  })
+
   it('translates the point log heading', async () => {
     const { container, cleanup } = await renderDetails()
     await openTab(container, 1)

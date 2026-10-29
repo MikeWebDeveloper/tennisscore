@@ -500,34 +500,28 @@ export default function EnhancedStatisticsClient({ mainPlayer, matches }: Enhanc
         {/* Statistics Tabs */}
         <div className="flex-1 min-w-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            {/* Mobile-Optimized Tab Navigation with Scroll Indicators */}
-            <div className="relative">
-              <div className="overflow-x-auto scrollbar-hide">
-                <TabsList className="flex w-max xs:w-full xs:grid xs:grid-cols-5 gap-1">
-                  <TabsTrigger value="overview" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[80px] xs:min-w-0 whitespace-nowrap">
-                    <span className="xs:hidden">{t("overview")}</span>
+            {/* Every tab visible: 3 + 2 on phones, one row from 475px; a sideways strip hid tabs past the card edge */}
+            <div>
+                <TabsList className="grid w-full grid-cols-3 xs:grid-cols-5 gap-1">
+                  <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4 whitespace-normal leading-tight">
                     <span className="hidden xs:inline sm:hidden">{t("overviewShort")}</span>
-                    <span className="hidden sm:inline">{t("overview")}</span>
+                    <span className="xs:hidden sm:inline">{t("overview")}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="trends" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[70px] xs:min-w-0 whitespace-nowrap">
+                  <TabsTrigger value="trends" className="text-xs sm:text-sm px-2 sm:px-4 whitespace-normal leading-tight">
                     {t("trends")}
                   </TabsTrigger>
-                  <TabsTrigger value="serve-return" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[60px] xs:min-w-0 whitespace-nowrap">
+                  <TabsTrigger value="serve-return" className="text-xs sm:text-sm px-2 sm:px-4 whitespace-normal leading-tight">
                     <span className="sm:hidden">{t("serveReturnShort")}</span>
                     <span className="hidden sm:inline">{t("serveReturn")}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="clutch" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[70px] xs:min-w-0 whitespace-nowrap">
+                  <TabsTrigger value="clutch" className="text-xs sm:text-sm px-2 sm:px-4 whitespace-normal leading-tight">
                     {t("clutch")}
                   </TabsTrigger>
-                  <TabsTrigger value="head-to-head" className="text-[11px] xs:text-xs sm:text-sm px-2 xs:px-3 sm:px-4 min-w-[60px] xs:min-w-0 whitespace-nowrap">
+                  <TabsTrigger value="head-to-head" className="text-xs sm:text-sm px-2 sm:px-4 whitespace-normal leading-tight">
                     <span className="sm:hidden">{t("headToHeadShort")}</span>
                     <span className="hidden sm:inline">{t("headToHead")}</span>
                   </TabsTrigger>
                 </TabsList>
-              </div>
-              {/* Scroll Indicators for Mobile */}
-              <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-background to-transparent pointer-events-none xs:hidden" />
-              <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-background to-transparent pointer-events-none xs:hidden" />
             </div>
 
             <TabsContent value="overview" className="space-y-4 xs:space-y-5 sm:space-y-6 -mt-2 xs:mt-0">

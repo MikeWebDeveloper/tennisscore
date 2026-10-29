@@ -32,3 +32,14 @@ it('shows a dash instead of a 0% win rate before any match is finished', async (
   expect(text).not.toContain('0%')
   cleanup()
 })
+
+it('sets duration units in smaller type so "1 hr 5 min" stays on one line in the tile', async () => {
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  await act(async () => root.render(<StreamlinedStatsCards matches={[finished('1', '2026-10-01T10:00:00.000Z', '2026-10-01T11:05:00.000Z')]} mainPlayer={me} />))
+  const value = container.querySelector('[data-duration-value]') as HTMLElement
+  expect(value.textContent).toBe('1 hr 5 min')
+  expect(value.className).toContain('whitespace-nowrap')
+  expect(Array.from(value.querySelectorAll('[data-unit]'), unit => unit.textContent?.trim())).toEqual(['hr', 'min'])
+  act(() => root.unmount())
+})

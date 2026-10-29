@@ -16,11 +16,11 @@ export function SettingsClient() {
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <Settings className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
             {t('settings')}
           </h1>
         </div>
-        <p className="text-lg text-slate-400">
+        <p className="text-lg text-muted-foreground">
           {t('managePreferences')}
         </p>
       </div>
@@ -29,7 +29,7 @@ export function SettingsClient() {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Database className="h-6 w-6 text-primary" />
-          <h2 className="text-xl font-semibold text-slate-200">
+          <h2 className="text-xl font-semibold text-foreground">
             {t('cacheAndUpdates')}
           </h2>
         </div>
@@ -43,7 +43,7 @@ export function SettingsClient() {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Volume2 className="h-6 w-6 text-primary" />
-          <h2 className="text-xl font-semibold text-slate-200">
+          <h2 className="text-xl font-semibold text-foreground">
             {t('soundSettings')}
           </h2>
         </div>

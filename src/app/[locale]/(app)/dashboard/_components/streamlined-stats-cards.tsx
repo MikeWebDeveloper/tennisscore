@@ -89,7 +89,14 @@ export function StreamlinedStatsCards({ matches, mainPlayer }: StreamlinedStatsC
       <Link href="/statistics" className={tile} style={{ "--i": 5 } as React.CSSProperties}>
         <span className={label}>{t('avgDuration')}</span>
         <div>
-          <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{formatMatchDuration(avgDuration, locale) || '--'}</div>
+          <div data-duration-value className="whitespace-nowrap text-3xl font-semibold tracking-tight tabular-nums text-foreground">
+            {/* Numbers large, units small, so "1 h 30 min" fits the tile on one line */}
+            {(formatMatchDuration(avgDuration, locale) || '--').split(/(\d+)/).filter(Boolean).map((part, i) =>
+              /^\d+$/.test(part) || part === '--'
+                ? <span key={i}>{part}</span>
+                : <span key={i} data-unit className="text-base font-medium text-muted-foreground">{part}</span>
+            )}
+          </div>
           <div className={sub}>{t('perMatch')}</div>
         </div>
       </Link>

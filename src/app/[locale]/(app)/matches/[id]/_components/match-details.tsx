@@ -365,22 +365,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       <div className="container mx-auto px-4 md:px-4 max-w-6xl">
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 min-h-12 md:min-h-10">
-          <TabsTrigger value="overview" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
+        {/* Icon over a short label on phones, side by side from sm; bare icons were hard to tell apart */}
+        <TabsList className="grid w-full grid-cols-4 min-h-14 sm:min-h-10">
+          <TabsTrigger value="overview" className="flex flex-col items-center gap-0.5 px-1 py-1.5 whitespace-normal leading-tight sm:flex-row sm:gap-2 sm:px-3">
             <Trophy className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('overview')}</span>
+            <span className="text-[11px] sm:text-sm">{t('overview')}</span>
           </TabsTrigger>
-          <TabsTrigger value="points" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
+          <TabsTrigger value="points" className="flex flex-col items-center gap-0.5 px-1 py-1.5 whitespace-normal leading-tight sm:flex-row sm:gap-2 sm:px-3">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('pointLog')}</span>
+            <span className="text-[11px] sm:text-sm">{t('pointLog')}</span>
           </TabsTrigger>
-          <TabsTrigger value="statistics" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
+          <TabsTrigger value="statistics" className="flex flex-col items-center gap-0.5 px-1 py-1.5 whitespace-normal leading-tight sm:flex-row sm:gap-2 sm:px-3">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('statistics')}</span>
+            <span className="text-[11px] sm:text-sm">{t('statistics')}</span>
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-1 px-2 md:gap-2 md:px-3">
+          <TabsTrigger value="analysis" className="flex flex-col items-center gap-0.5 px-1 py-1.5 whitespace-normal leading-tight sm:flex-row sm:gap-2 sm:px-3">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('analysis')}</span>
+            <span className="text-[11px] sm:text-sm">{t('analysis')}</span>
           </TabsTrigger>
         </TabsList>
 

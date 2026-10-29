@@ -73,3 +73,12 @@ it('says points won needs point-by-point data instead of showing service points'
   expect(container.textContent).not.toContain('statistics.serviceDominance')
   unmount()
 })
+
+it('fits every statistics tab on a phone instead of a sideways-scrolling strip', () => {
+  const { container, unmount } = renderStats([completed('1', '{"sets":[[6,4],[6,3]]}')])
+  const list = container.querySelector('[role="tablist"]') as HTMLElement
+  expect(list.querySelectorAll('[role="tab"]')).toHaveLength(5)
+  expect(list.className).toContain('grid-cols-3')
+  expect(list.closest('.overflow-x-auto')).toBeNull()
+  unmount()
+})
