@@ -55,7 +55,7 @@ interface MatchDetailsProps {
     }
     pointLog: string[]
     matchFormat: string
-    detailLevel?: 'points' | 'simple' | 'detailed' | 'complex' | 'custom'
+    detailLevel?: 'points' | 'simple' | 'shot-type' | 'detailed' | 'complex' | 'custom'
     winnerId?: string
     startTime?: string
     endTime?: string
@@ -810,8 +810,9 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PointByPointView 
+                  <PointByPointView
                     pointLog={pointDetails}
+                    detailLevel={match.detailLevel === 'custom' ? 'complex' : match.detailLevel}
                     playerObjects={match.playerOne && match.playerTwo ? {
                       p1: match.playerOne,
                       p2: match.playerTwo,

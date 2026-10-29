@@ -149,7 +149,7 @@ export interface PointDetail {
   pointOutcome: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
   serveOutcome?: 'winner' | 'ace' | 'unforced_error' | 'forced_error' | 'double_fault' | 'net'
   rallyLength: number
-  servePlacement?: 'wide' | 'body' | 't'
+  servePlacement?: 'wide' | 'body' | 't' | 'net-cord' // net cord only for aces
   shotDirection?: 'cross' | 'line' | 'body' | 'long' | 'wide' | 'net'
   customFields?: { serveSpeed?: 'slow' | 'medium' | 'fast'; returnQuality?: 'defensive' | 'neutral' | 'offensive'; rallyLength?: number }
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'

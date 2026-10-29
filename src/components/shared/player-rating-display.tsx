@@ -8,14 +8,19 @@ interface PlayerRatingDisplayProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
+/** Always "12 BH": the profile field may hold "12" or an older "12BH", and older profiles kept it in the combined rating text. */
 function getBhRating(player: Player): string | undefined {
-  // Older profiles stored both ratings in the legacy text field.
-  return player.bhRating || player.rating?.match(/\b\d+\s*BH\b/i)?.[0]
+  const raw = player.bhRating || player.rating?.match(/\b\d+\s*BH\b/i)?.[0]
+  const value = raw?.replace(/\s*BH\s*$/i, '').trim()
+  return value ? `${value} BH` : undefined
 }
+
+/** Always "260 CŽ", matching how BH is written. */
+const getCzRanking = (player: Player) => player.czRanking ? `${player.czRanking} CŽ` : undefined
 
 export function PlayerRatingDisplay({ player, className = "", size = 'md' }: PlayerRatingDisplayProps) {
   const bhRating = getBhRating(player)
-  const { czRanking } = player
+  const czRanking = getCzRanking(player)
   
   // If neither rating is available, return null
   if (!bhRating && !czRanking) {
@@ -40,7 +45,7 @@ export function PlayerRatingDisplay({ player, className = "", size = 'md' }: Pla
       )}
       {czRanking && (
         <span className="font-medium text-purple-600 dark:text-purple-400">
-          CŽ {czRanking}
+          {czRanking}
         </span>
       )}
     </div>
@@ -49,16 +54,5 @@ export function PlayerRatingDisplay({ player, className = "", size = 'md' }: Pla
 
 // Utility function for legacy components that expect a single rating string
 export function formatPlayerRating(player: Player): string {
-  const bhRating = getBhRating(player)
-  const { czRanking } = player
-  
-  if (bhRating && czRanking) {
-    return `${bhRating} CŽ ${czRanking}`
-  } else if (bhRating) {
-    return bhRating
-  } else if (czRanking) {
-    return `CŽ ${czRanking}`
-  }
-  
-  return ''
+  return [getBhRating(player), getCzRanking(player)].filter(Boolean).join(' • ')
 }

@@ -18,7 +18,7 @@ interface CreateMatchData {
   playerThreeId?: string
   playerFourId?: string
   tournamentName?: string
-  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" | "detailed" }
+  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "shot-type" | "complex" | "detailed" }
 }
 
 /**

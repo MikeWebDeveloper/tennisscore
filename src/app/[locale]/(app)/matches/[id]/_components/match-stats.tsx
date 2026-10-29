@@ -312,7 +312,7 @@ export function MatchStatsComponentSimple({
 }: { 
   stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
-  detailLevel: "points" | "simple" | "complex" | "detailed"
+  detailLevel: "points" | "simple" | "shot-type" | "complex" | "detailed"
 }) {
   const t = useTranslations('common')
 
@@ -456,7 +456,7 @@ export function MatchStatsComponentSimple({
       )}
 
       {/* Service Section (Simple, Detailed and Complex Stats) - ALWAYS SHOW FOR SIMPLE/DETAILED/COMPLEX */}
-      {(detailLevel === 'simple' || detailLevel === 'detailed' || detailLevel === 'complex') && (
+      {(detailLevel === 'simple' || detailLevel === 'shot-type' || detailLevel === 'detailed' || detailLevel === 'complex') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -519,7 +519,7 @@ export function MatchStatsComponentSimpleFixed({
 }: { 
   stats: import("@/lib/utils/match-stats").EnhancedMatchStats
   playerNames: { p1: string; p2: string }
-  detailLevel: "points" | "simple" | "detailed" | "custom" | "complex"
+  detailLevel: "points" | "simple" | "shot-type" | "detailed" | "custom" | "complex"
   pointLog?: PointDetail[]
 }) {
   const t = useTranslations('common')
@@ -631,7 +631,8 @@ export function MatchStatsComponentSimpleFixed({
     const servePlacementTranslations: Record<string, string> = {
       wide: t('wide'),
       body: t('bodyShot'),
-      t: t('tDownTheMiddle')
+      t: t('tDownTheMiddle'),
+      'net-cord': t('serveNetCord')
     }
 
     // Special handling for Aces and Double Faults
@@ -968,7 +969,7 @@ export function MatchStatsComponentSimpleFixed({
       </Card>
       
       {/* Service Section - Progressive detail levels */}
-      {(detailLevel === 'simple' || detailLevel === 'detailed' || detailLevel === 'complex' || detailLevel === 'custom') && (
+      {(detailLevel === 'simple' || detailLevel === 'shot-type' || detailLevel === 'detailed' || detailLevel === 'complex' || detailLevel === 'custom') && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -977,7 +978,7 @@ export function MatchStatsComponentSimpleFixed({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {detailLevel === 'simple' ? (
+            {detailLevel === 'simple' || detailLevel === 'shot-type' ? (
               // Simple: Just basic serve percentages
               <>
                 <StatRow 
@@ -1145,10 +1146,18 @@ export function MatchStatsComponentSimpleFixed({
                     Math.round((detailedStats.serveDirectionStats.playerTwo.t.successful / detailedStats.serveDirectionStats.playerTwo.t.attempts) * 100) : 0}
                   format="percentage"
                 />
-                <StatRow 
+                <StatRow
                   label="Aces T"
                   value1={detailedStats.serveDirectionStats.playerOne.t.aces}
                   value2={detailedStats.serveDirectionStats.playerTwo.t.aces}
+                />
+
+                {/* Net-cord aces (no-let junior tennis) */}
+                <div className="text-sm font-medium mb-2 mt-4">{t('serveNetCord')}</div>
+                <StatRow
+                  label={t('aces')}
+                  value1={detailedStats.serveDirectionStats.playerOne['net-cord'].aces}
+                  value2={detailedStats.serveDirectionStats.playerTwo['net-cord'].aces}
                 />
               </CardContent>
             </Card>

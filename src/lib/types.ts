@@ -138,7 +138,7 @@ export interface Match extends Models.Document {
   playerThree?: Player
   playerFour?: Player
   retirementReason?: string // Reason if match was retired
-  detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
+  detailLevel?: "points" | "simple" | "shot-type" | "complex" | "detailed" | "custom"
   tournamentName?: string // Tournament/League name
 
   // Timing fields
@@ -160,7 +160,7 @@ export interface MatchFormat {
   tiebreakAt: number
   finalSetTiebreak?: 'standard' | 'super' | 'none'
   noAd: boolean
-  detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
+  detailLevel?: "points" | "simple" | "shot-type" | "complex" | "detailed" | "custom"
 }
 
 export interface Score {
@@ -212,7 +212,7 @@ export interface PointDetail {
   // Serve Details
   serveType: ServeType
   serveOutcome: PointOutcome // What happened with the serve
-  servePlacement?: "wide" | "body" | "t" // Serve placement
+  servePlacement?: "wide" | "body" | "t" | "net-cord" // Serve placement; net cord only for aces
   serveSpeed?: number // Optional serve speed
   customFields?: { serveSpeed?: 'slow' | 'medium' | 'fast'; returnQuality?: 'defensive' | 'neutral' | 'offensive'; rallyLength?: number }
 

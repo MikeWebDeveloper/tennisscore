@@ -120,7 +120,7 @@ export function SimpleStatsPopup({
                 size="lg"
                 disabled={outcome.disabled}
                 className={cn(
-                  "h-auto p-4 flex flex-col items-start text-left transition-all",
+                  "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
                   !outcome.disabled && outcome.color,
                   outcome.disabled && "opacity-50 cursor-not-allowed"
                 )}
@@ -129,13 +129,14 @@ export function SimpleStatsPopup({
                 <div className="font-medium">{outcome.label}</div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {outcome.description}
-                  {outcome.disabled && (
-                    <span className="text-red-500 ml-2">
-                      {outcome.id === 'ace' && t('serverMustWinForAce')}
-                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
-                    </span>
-                  )}
                 </div>
+                {/* Own line so the reason wraps inside the card on narrow phones */}
+                {outcome.disabled && (
+                  <div data-unavailable-reason className="text-xs text-red-500">
+                    {outcome.id === 'ace' && t('serverMustWinForAce')}
+                    {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
+                  </div>
+                )}
               </Button>
             ))}
           </div>

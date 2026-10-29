@@ -99,6 +99,8 @@ export interface ServeDirectionAnalysis {
   wide: { attempts: number; successful: number; aces: number; doubleFaults: number }
   body: { attempts: number; successful: number; aces: number; doubleFaults: number }
   t: { attempts: number; successful: number; aces: number; doubleFaults: number }
+  // Aces only: a let that clips the net and lands in (junior no-let tennis)
+  'net-cord': { attempts: number; successful: number; aces: number; doubleFaults: number }
   totalAttempts: number
   bestDirection: string
   worstDirection: string
@@ -501,7 +503,7 @@ export function calculateDetailedMatchStats(pointLog: PointDetail[]): DetailedMa
     // Analyze serve direction (for aces and double faults)
     if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
       hasAnyDetailedData = true
-      const direction = point.servePlacement as 'wide' | 'body' | 't'
+      const direction = point.servePlacement
       
       playerServeStats[direction].attempts++
       playerServeStats.totalAttempts++
@@ -578,6 +580,7 @@ function initializeServeDirectionAnalysis(): ServeDirectionAnalysis {
     wide: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     body: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     t: { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
+    'net-cord': { attempts: 0, successful: 0, aces: 0, doubleFaults: 0 },
     totalAttempts: 0,
     bestDirection: '',
     worstDirection: ''
@@ -625,7 +628,7 @@ function inferShotDirection(point: PointDetail): 'long' | 'wide' | 'net' | null 
 function calculateServeDirectionSummary(stats: ServeDirectionAnalysis) {
   if (stats.totalAttempts === 0) return
   
-  const directions = ['wide', 'body', 't'] as const
+  const directions = ['wide', 'body', 't', 'net-cord'] as const
   let bestDirection = ''
   let worstDirection = ''
   let bestSuccessRate = -1
@@ -1482,6 +1485,7 @@ export function calculateMatchStatsByLevel(pointLog: PointDetail[], detailLevel:
     case 'points':
       return calculatePointsOnlyStats(pointLog as unknown as PointsOnlyDetail[])
     case 'simple':
+    case 'shot-type':
       return calculateSimpleStats(pointLog as unknown as SimplePointDetail[])
     case 'detailed':
       return calculateDetailedStats(pointLog as unknown as DetailedPointDetail[])

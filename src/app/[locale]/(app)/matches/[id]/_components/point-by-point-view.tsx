@@ -13,6 +13,7 @@ import { List } from "lucide-react"
 import { Grid } from "lucide-react"
 import { formatPlayerFromObject, formatDoublesTeam, formatPlayerName } from "@/lib/utils"
 import { Player } from "@/lib/types"
+import { servePlacementLabelKey } from "@/lib/utils/serve-placement"
 
 interface PointByPointViewProps {
   pointLog: PointDetail[]
@@ -28,7 +29,7 @@ interface PointByPointViewProps {
     p3?: Player
     p4?: Player
   }
-  detailLevel?: "points" | "simple" | "detailed" | "complex"
+  detailLevel?: "points" | "simple" | "shot-type" | "detailed" | "complex"
 }
 
 const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail[]) => {
@@ -71,8 +72,8 @@ const getDetailedPointInfo = (point: PointDetail, t: (key: string) => string, de
     default: outcome = point.pointOutcome
   }
 
-  // For detailed mode, add shot type and direction information
-  if (detailLevel === 'detailed') {
+  // Detailed and shot-type modes show the shot type (direction only exists for detailed)
+  if (detailLevel === 'detailed' || detailLevel === 'shot-type') {
     const details = []
     
     // Add shot type if available
@@ -105,14 +106,8 @@ const getDetailedPointInfo = (point: PointDetail, t: (key: string) => string, de
     
     // Add serve placement for aces and double faults
     if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
-      let placement = ''
-      switch (point.servePlacement) {
-        case 'wide': placement = t('wide'); break
-        case 'body': placement = t('bodyShot'); break
-        case 't': placement = t('tDownTheMiddle'); break
-        default: placement = point.servePlacement
-      }
-      details.push(placement)
+      // Aces use their own wording (net cord, out of the court, on the T)
+      details.push(t(servePlacementLabelKey(point.servePlacement, point.pointOutcome === 'ace')))
     }
     
     // Combine outcome with details

@@ -17,7 +17,7 @@ export async function createMatch(matchData: {
   playerThreeId?: string
   playerFourId?: string
   tournamentName?: string
-  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "complex" | "detailed" | "custom" }
+  matchFormat: MatchFormat & { detailLevel: "points" | "simple" | "shot-type" | "complex" | "detailed" | "custom" }
 }) {
   const user = await getCurrentUser()
   if (!user) {

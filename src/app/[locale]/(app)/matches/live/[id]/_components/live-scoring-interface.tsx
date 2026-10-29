@@ -110,7 +110,7 @@ interface LiveScoringInterfaceProps {
     playerThree?: Player
     playerFour?: Player
     matchFormat: string
-    detailLevel?: "points" | "simple" | "complex" | "detailed" | "custom"
+    detailLevel?: "points" | "simple" | "shot-type" | "complex" | "detailed" | "custom"
     score: string
     pointLog?: string[]
     status: string
@@ -788,8 +788,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       return
     }
 
-    // For 'detailed' mode, use the ultra simple point logger with detailed flow
-    if (detailLevel === 'detailed') {
+    // 'detailed' and 'shot-type' both use the step-by-step logger; shot-type stops after the shot
+    if (detailLevel === 'detailed' || detailLevel === 'shot-type') {
       setPendingPointWinner(winner)
       setShowPointDetail(true)
       return
@@ -1317,7 +1317,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 ...(match.playerFour ? { p4: match.playerFour } : {})
               }}
               detailLevel={
-                detailLevel === "points" || detailLevel === "simple" || detailLevel === "complex" || detailLevel === "detailed"
+                detailLevel === "points" || detailLevel === "simple" || detailLevel === "shot-type" || detailLevel === "complex" || detailLevel === "detailed"
                   ? detailLevel
                   : "simple"
               }
@@ -1401,6 +1401,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           open={showPointDetail}
           onOpenChange={setShowPointDetail}
           onSave={handlePointDetailSave}
+          mode={detailLevel === 'shot-type' ? 'shot-type' : 'detailed'}
           pointContext={{
             pointNumber: pointLog.length + 1,
             setNumber: score.sets.length + 1,

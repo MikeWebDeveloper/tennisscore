@@ -7,11 +7,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { PointDetail, PointOutcome, ShotType } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
+import { ACE_PLACEMENTS, SERVE_PLACEMENTS, type ServePlacement } from "@/lib/utils/serve-placement"
+
+type Step = 'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'return-type'
+
+// Each step says exactly what it asks for
+const STEP_SUBTITLE_KEYS: Record<Step, string> = {
+  'outcome': 'selectHowPointEnded',
+  'serve-direction': 'selectWhereServeLanded',
+  'winner-type': 'selectShotThatEndedPoint',
+  'shot-direction': 'selectWhereShotWent',
+  'return-type': 'selectIfReturn',
+}
 
 interface UltraSimplePointLoggerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (pointDetail: Partial<PointDetail>) => void
+  /** 'shot-type' records the outcome and, for rallies, the shot type only: no placement, direction or rally length. */
+  mode?: 'detailed' | 'shot-type'
   pointContext: {
     pointNumber: number
     setNumber: number
@@ -30,16 +44,17 @@ interface UltraSimplePointLoggerProps {
 export function UltraSimplePointLogger({ 
   open, 
   onOpenChange, 
-  onSave, 
-  pointContext
+  onSave,
+  pointContext,
+  mode = 'detailed'
 }: UltraSimplePointLoggerProps) {
   const t = useTranslations('common')
-  
+
   // Flow state: 'outcome' -> 'serve-direction' (for ace/double fault) -> 'winner-type' -> 'shot-direction' -> 'return-type' (for receiving winners) -> done
-  const [step, setStep] = useState<'outcome' | 'serve-direction' | 'winner-type' | 'shot-direction' | 'return-type'>('outcome')
+  const [step, setStep] = useState<Step>('outcome')
   const [outcome, setOutcome] = useState<PointOutcome | null>(null)
   const [winnerType, setWinnerType] = useState<ShotType | null>(null)
-  const [serveDirection, setServeDirection] = useState<'wide' | 'body' | 't' | null>(null)
+  const [serveDirection, setServeDirection] = useState<ServePlacement | null>(null)
   const [shotDirection, setShotDirection] = useState<'cross' | 'line' | 'body' | 'long' | 'wide' | 'net' | null>(null)
   const [returnType, setReturnType] = useState<'regular' | 'return' | null>(null)
   
@@ -51,11 +66,31 @@ export function UltraSimplePointLogger({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const __ = shotDirection // Used in handleShotDirectionClick via setShotDirection
 
+  const finish = (pointDetail: Partial<PointDetail>) => {
+    onSave(pointDetail)
+    onOpenChange(false)
+    resetState()
+  }
+
   const handleOutcomeClick = (selectedOutcome: PointOutcome) => {
     setOutcome(selectedOutcome)
-    
+    const isServePoint = selectedOutcome === 'ace' || selectedOutcome === 'double_fault'
+
+    // The shot-type level records serve points without placement
+    if (mode === 'shot-type' && isServePoint) {
+      finish({
+        serveType: pointContext.serveType,
+        serveOutcome: selectedOutcome,
+        rallyLength: 1,
+        pointOutcome: selectedOutcome,
+        lastShotType: 'serve',
+        lastShotPlayer: pointContext.server,
+      })
+      return
+    }
+
     // For ace/double fault, collect serve placement first
-    if (selectedOutcome === 'ace' || selectedOutcome === 'double_fault') {
+    if (isServePoint) {
       setStep('serve-direction')
     } else {
       // For winners and errors, skip serve placement and go to shot type
@@ -63,7 +98,7 @@ export function UltraSimplePointLogger({
     }
   }
 
-  const handleServeDirectionClick = (direction: 'wide' | 'body' | 't') => {
+  const handleServeDirectionClick = (direction: ServePlacement) => {
     setServeDirection(direction)
     
     // For ace/double fault, save immediately after serve direction
@@ -89,6 +124,17 @@ export function UltraSimplePointLogger({
 
   const handleWinnerTypeClick = (shotType: ShotType) => {
     setWinnerType(shotType)
+    if (mode === 'shot-type' && outcome) {
+      // Shot type is the last detail at this level: no direction, return type or rally length
+      finish({
+        serveType: pointContext.serveType,
+        serveOutcome: 'winner',
+        pointOutcome: outcome,
+        lastShotType: shotType,
+        lastShotPlayer: outcome === 'winner' ? pointContext.winner : (pointContext.winner === 'p1' ? 'p2' : 'p1'),
+      })
+      return
+    }
     setStep('shot-direction')
   }
 
@@ -210,23 +256,16 @@ export function UltraSimplePointLogger({
   ]
 
 
-  const serveDirections = [
-    {
-      id: 'wide' as const,
-      label: t('wide'),
-      color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
-    },
-    {
-      id: 'body' as const,
-      label: t('body'),
-      color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20'
-    },
-    {
-      id: 't' as const,
-      label: t('tDownTheMiddle'),
-      color: 'bg-violet-500/10 text-violet-500 border-violet-500/20 hover:bg-violet-500/20'
-    }
-  ]
+  // Aces have their own placements (net cord, out of the court, on the T); double faults keep the general ones
+  const serveDirections = (outcome === 'ace' ? ACE_PLACEMENTS : SERVE_PLACEMENTS).map(option => ({
+    id: option.id,
+    label: t(option.labelKey),
+    color: option.color
+  }))
+
+  const subtitle = (
+    <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step])}</div>
+  )
 
   const getShotDirections = () => {
     if (outcome === 'winner') {
@@ -286,7 +325,7 @@ export function UltraSimplePointLogger({
               </div>
             </div>
             
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            {subtitle}
             
             <div className="grid grid-cols-1 gap-2">
               {outcomes.map((outcome) => (
@@ -296,7 +335,7 @@ export function UltraSimplePointLogger({
                   size="lg"
                   disabled={outcome.disabled}
                   className={cn(
-                    "h-auto p-4 flex flex-col items-start text-left transition-all",
+                    "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
                     !outcome.disabled && outcome.color,
                     outcome.disabled && "opacity-50 cursor-not-allowed"
                   )}
@@ -305,13 +344,14 @@ export function UltraSimplePointLogger({
                   <div className="font-medium">{outcome.label}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {outcome.description}
-                    {outcome.disabled && (
-                      <span className="text-red-500 ml-2">
-                        {outcome.id === 'ace' && t('serverMustWinForAce')}
-                        {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
-                      </span>
-                    )}
                   </div>
+                  {/* Own line so the reason wraps inside the card on narrow phones */}
+                  {outcome.disabled && (
+                    <div data-unavailable-reason className="text-xs text-red-500">
+                      {outcome.id === 'ace' && t('serverMustWinForAce')}
+                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
+                    </div>
+                  )}
                 </Button>
               ))}
             </div>
@@ -333,7 +373,7 @@ export function UltraSimplePointLogger({
               </div>
             </div>
             
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            {subtitle}
             
             <div className="grid grid-cols-1 gap-2">
               {serveDirections.map((direction) => (
@@ -347,7 +387,7 @@ export function UltraSimplePointLogger({
                   )}
                   onClick={() => handleServeDirectionClick(direction.id)}
                 >
-                  <div className="font-medium">{direction.label}</div>
+                  <div data-option className="font-medium">{direction.label}</div>
                 </Button>
               ))}
             </div>
@@ -369,7 +409,7 @@ export function UltraSimplePointLogger({
               </div>
             </div>
             
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            {subtitle}
             
             <div className="grid grid-cols-2 gap-2">
               {winnerTypes.map((type) => (
@@ -405,7 +445,7 @@ export function UltraSimplePointLogger({
               </div>
             </div>
             
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            {subtitle}
             
             <div className="grid grid-cols-1 gap-2">
               {getShotDirections().map((direction) => (
@@ -441,7 +481,7 @@ export function UltraSimplePointLogger({
               </div>
             </div>
             
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            {subtitle}
             
             <div className="grid grid-cols-2 gap-2">
               <Button

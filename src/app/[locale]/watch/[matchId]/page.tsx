@@ -35,7 +35,7 @@ async function loadName(
 
 export default async function WatchMatchPage({ params }: PageProps) {
   const { matchId } = await params
-  const t = await getServerTranslator("match")
+  const [t, tCommon] = await Promise.all([getServerTranslator("match"), getServerTranslator("common")])
   const { databases } = await createAdminClient()
 
   let match
@@ -85,6 +85,7 @@ export default async function WatchMatchPage({ params }: PageProps) {
         format={match.matchFormat}
         labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused") }}
         reasonLabels={Object.fromEntries(PAUSE_REASONS.map(reason => [reason, t(`pauseReason_${reason}`)]))}
+        soundLabels={{ on: tCommon("soundOn"), off: tCommon("soundOff") }}
       />
 
       <footer className="space-y-2 text-center text-xs text-muted-foreground">

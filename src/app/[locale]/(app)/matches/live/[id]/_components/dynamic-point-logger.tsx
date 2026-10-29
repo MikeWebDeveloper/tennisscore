@@ -10,6 +10,16 @@ import { Label } from "@/components/ui/label"
 import { PointDetail, PointOutcome, ShotType } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
+import { ACE_PLACEMENTS, SERVE_PLACEMENTS, type ServePlacement } from "@/lib/utils/serve-placement"
+
+// Each step says exactly what it asks for
+const STEP_SUBTITLE_KEYS: Partial<Record<string, string>> = {
+  'outcome': 'selectHowPointEnded',
+  'serve-direction': 'selectWhereServeLanded',
+  'winner-type': 'selectShotThatEndedPoint',
+  'shot-direction': 'selectWhereShotWent',
+  'return-type': 'selectIfReturn',
+}
 import { useMatchStore } from "@/stores/matchStore"
 import { Clock, Zap, Target, Activity, Ruler } from "lucide-react"
 
@@ -49,7 +59,7 @@ export function DynamicPointLogger({
   // Standard state
   const [outcome, setOutcome] = useState<PointOutcome | null>(null)
   const [winnerType, setWinnerType] = useState<ShotType | null>(null)
-  const [serveDirection, setServeDirection] = useState<'wide' | 'body' | 't' | null>(null)
+  const [serveDirection, setServeDirection] = useState<ServePlacement | null>(null)
   const [shotDirection, setShotDirection] = useState<'cross' | 'line' | 'body' | 'long' | 'wide' | 'net' | null>(null)
   const [returnType, setReturnType] = useState<'regular' | 'return' | null>(null)
 
@@ -152,7 +162,7 @@ export function DynamicPointLogger({
     }
   }
 
-  const handleServeDirectionClick = (direction: 'wide' | 'body' | 't') => {
+  const handleServeDirectionClick = (direction: ServePlacement) => {
     setServeDirection(direction)
     const next = getNextStep('serve-direction')
     if (next === 'done') {
@@ -352,23 +362,12 @@ export function DynamicPointLogger({
   ]
 
 
-  const serveDirections = [
-    {
-      id: 'wide' as const,
-      label: t('wide'),
-      color: 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20'
-    },
-    {
-      id: 'body' as const,
-      label: t('body'),
-      color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20'
-    },
-    {
-      id: 't' as const,
-      label: t('tDownTheMiddle'),
-      color: 'bg-violet-500/10 text-violet-500 border-violet-500/20 hover:bg-violet-500/20'
-    }
-  ]
+  // Aces have their own placements (net cord, out of the court, on the T); other serves keep the general ones
+  const serveDirections = (outcome === 'ace' ? ACE_PLACEMENTS : SERVE_PLACEMENTS).map(option => ({
+    id: option.id,
+    label: t(option.labelKey),
+    color: option.color
+  }))
 
   const getShotDirections = () => {
     if (outcome === 'winner') {
@@ -428,7 +427,7 @@ export function DynamicPointLogger({
               </div>
             </div>
 
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step] ?? 'selectHowPointEnded')}</div>
 
             <div className="grid grid-cols-1 gap-2">
               {outcomes.map((outcome) => (
@@ -438,7 +437,7 @@ export function DynamicPointLogger({
                   size="lg"
                   disabled={outcome.disabled}
                   className={cn(
-                    "h-auto p-4 flex flex-col items-start text-left transition-all",
+                    "h-auto p-4 flex flex-col items-start text-left whitespace-normal transition-all",
                     !outcome.disabled && outcome.color,
                     outcome.disabled && "opacity-50 cursor-not-allowed"
                   )}
@@ -447,13 +446,14 @@ export function DynamicPointLogger({
                   <div className="font-medium">{outcome.label}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {outcome.description}
-                    {outcome.disabled && (
-                      <span className="text-red-500 ml-2">
-                        {outcome.id === 'ace' && t('serverMustWinForAce')}
-                        {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
-                      </span>
-                    )}
                   </div>
+                  {/* Own line so the reason wraps inside the card on narrow phones */}
+                  {outcome.disabled && (
+                    <div data-unavailable-reason className="text-xs text-red-500">
+                      {outcome.id === 'ace' && t('serverMustWinForAce')}
+                      {outcome.id === 'double_fault' && t('onlyOnSecondServeLoss')}
+                    </div>
+                  )}
                 </Button>
               ))}
             </div>
@@ -475,7 +475,7 @@ export function DynamicPointLogger({
               </div>
             </div>
 
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step] ?? 'selectHowPointEnded')}</div>
 
             <div className="grid grid-cols-1 gap-2">
               {serveDirections.map((direction) => (
@@ -669,7 +669,7 @@ export function DynamicPointLogger({
               </div>
             </div>
 
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step] ?? 'selectHowPointEnded')}</div>
 
             <div className="grid grid-cols-2 gap-2">
               {winnerTypes.map((type) => (
@@ -705,7 +705,7 @@ export function DynamicPointLogger({
               </div>
             </div>
 
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step] ?? 'selectHowPointEnded')}</div>
 
             <div className="grid grid-cols-1 gap-2">
               {getShotDirections().map((direction) => (
@@ -741,7 +741,7 @@ export function DynamicPointLogger({
               </div>
             </div>
 
-            <div className="text-sm font-medium text-muted-foreground">{t('selectHowPointEnded')}</div>
+            <div data-step-subtitle className="text-sm font-medium text-muted-foreground">{t(STEP_SUBTITLE_KEYS[step] ?? 'selectHowPointEnded')}</div>
 
             <div className="grid grid-cols-2 gap-2">
               <Button

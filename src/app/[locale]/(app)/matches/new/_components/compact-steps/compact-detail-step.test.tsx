@@ -60,3 +60,17 @@ it('lets players choose custom point statistics before starting', () => {
   act(() => checkbox.click())
   expect(onCategoriesChange).toHaveBeenCalled()
 })
+
+it('offers stats with shot type between simple and detailed, and starts the match with it', () => {
+  const c = document.createElement('div')
+  const onStartMatch = jest.fn(async () => {})
+  act(() => { createRoot(c).render(createElement(LazyMotion, { features }, createElement(CompactDetailStep, {
+    value: '', onChange: jest.fn(), onStartMatch, loading: false,
+  } satisfies Parameters<typeof CompactDetailStep>[0]))) })
+  const titles = Array.from(c.querySelectorAll('button')).map(b => b.textContent ?? '')
+  const index = (key: string) => titles.findIndex(text => text.includes(key))
+  expect(index('common.shotTypeStats')).toBe(index('common.simpleStats') + 1)
+  expect(index('common.detailedStats')).toBe(index('common.shotTypeStats') + 1)
+  act(() => { (c.querySelectorAll('button')[index('common.shotTypeStats')] as HTMLButtonElement).click() })
+  expect(onStartMatch).toHaveBeenCalledWith('shot-type')
+})

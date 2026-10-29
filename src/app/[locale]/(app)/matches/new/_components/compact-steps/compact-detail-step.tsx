@@ -1,6 +1,7 @@
 "use client"
 
 import { BarChart3 } from "lucide-react"
+import { BarChart2 } from "lucide-react"
 import { Zap } from "lucide-react"
 import { Target } from "lucide-react"
 import { Lock } from "lucide-react"
@@ -9,9 +10,9 @@ import { useTranslations } from "@/i18n"
 import { motion } from '@/lib/framer-motion-config'
 
 interface CompactDetailStepProps {
-  value: "points" | "simple" | "detailed" | "complex" | "custom" | ""
-  onChange: (value: "points" | "simple" | "detailed" | "custom") => void
-  onStartMatch: (detailLevel: "points" | "simple" | "detailed" | "custom") => Promise<void>
+  value: "points" | "simple" | "shot-type" | "detailed" | "complex" | "custom" | ""
+  onChange: (value: "points" | "simple" | "shot-type" | "detailed" | "custom") => void
+  onStartMatch: (detailLevel: "points" | "simple" | "shot-type" | "detailed" | "custom") => Promise<void>
   loading: boolean
   customCategories?: string[]
   onCategoriesChange?: (categories: string[]) => void
@@ -39,6 +40,14 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading, doub
       icon: BarChart3,
       title: t("simpleStats"),
       description: t("acesDoubleFaultsWinnersErrors"),
+      disabled: false
+    },
+    {
+      // Simple stats plus the shot that ended the point; no placement or rally length
+      value: "shot-type",
+      icon: BarChart2,
+      title: t("shotTypeStats"),
+      description: t("shotTypeStatsDescription"),
       disabled: false
     },
     {
@@ -114,7 +123,7 @@ export function CompactDetailStep({ value, onChange, onStartMatch, loading, doub
               whileTap={!isDisabled ? { scale: 0.99 } : undefined}
               onClick={() => {
                 if (!isDisabled && !loading) {
-                  const selectedValue = option.value as "points" | "simple" | "detailed" | "custom"
+                  const selectedValue = option.value as "points" | "simple" | "shot-type" | "detailed" | "custom"
                   onChange(selectedValue)
                   if (selectedValue !== 'custom') onStartMatch(selectedValue)
                 }

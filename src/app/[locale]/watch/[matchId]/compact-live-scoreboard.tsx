@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { LiteScoreboard, type LitePlayerId } from '@/components/shared/lite-scoreboard'
 import { usePublicMatchPolling } from '@/hooks/use-public-match-polling'
 import { parseDbScore } from '@/lib/utils/db-score'
+import { snapshotFrom, useSpectatorSounds } from '@/lib/utils/spectator-sounds'
+import { SpectatorSoundToggle } from '@/components/shared/spectator-sound-toggle'
 import { deriveCurrentServer } from '@/lib/utils/current-server'
 import { getNextDoublesServer, startsNewServeTurn, type ServeLogPoint } from '@/lib/utils/doubles-serving'
 import { normalizeMatchFormat } from '@/lib/utils/match-format'
@@ -26,6 +28,8 @@ interface Props {
   format: string
   labels: { live: string; finished: string; paused?: string }
   reasonLabels?: Record<string, string>
+  /** Mute/unmute labels; the toggle only appears while the match is in progress */
+  soundLabels?: { on: string; off: string }
 }
 
 export function CompactLiveScoreboard(props: Props) {
@@ -44,7 +48,8 @@ export function CompactLiveScoreboard(props: Props) {
   }, [lastUpdate])
 
   const inProgress = data.status !== 'Completed'
-  const score = parseDbScore(data.score)
+  const score = useMemo(() => parseDbScore(data.score), [data.score])
+  const sounds = useSpectatorSounds(useMemo(() => snapshotFrom(data.pointLog, score, data.status), [data.pointLog, score, data.status]))
   const format = normalizeMatchFormat(props.format)
   const pointLog: ServeLogPoint[] = data.pointLog.map(point => { try { return JSON.parse(point) } catch { return null } }).filter(Boolean)
   const servingTeam = inProgress ? deriveCurrentServer(pointLog as { server: 'p1' | 'p2' }[], score) : undefined
@@ -59,5 +64,14 @@ export function CompactLiveScoreboard(props: Props) {
 
   const paused = data.isPaused && isPauseReason(data.pauseReason) && props.reasonLabels?.[data.pauseReason]
     ? `${props.labels.paused} — ${props.reasonLabels[data.pauseReason]}` : props.labels.paused
-  return <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={{ ...props.labels, paused }} />
+  const board = <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={{ ...props.labels, paused }} />
+  if (!inProgress || !props.soundLabels) return board
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <SpectatorSoundToggle enabled={sounds.enabled} onToggle={sounds.toggle} labels={props.soundLabels} />
+      </div>
+      {board}
+    </div>
+  )
 }

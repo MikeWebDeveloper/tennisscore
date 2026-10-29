@@ -11,6 +11,7 @@ import { Target } from "lucide-react"
 import { Shield } from "lucide-react"
 import { TrendingUp } from "lucide-react"
 import { useTranslations } from "@/i18n"
+import { servePlacementLabelKey } from "@/lib/utils/serve-placement"
 
 interface ServeReturnAnalysisProps {
   stats: {
@@ -40,6 +41,7 @@ const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6']
 
 export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeReturnAnalysisProps) {
   const t = useTranslations('statistics')
+  const tCommon = useTranslations('common')
 
   // Calculate detailed serve statistics
   const serveAnalysis = useMemo(() => {
@@ -50,6 +52,7 @@ export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeRetur
         wide: 0,
         body: 0,
         t: 0,
+        'net-cord': 0,
         unknown: 0
       },
       doubleFaultsBySet: [] as number[],
@@ -135,7 +138,7 @@ export function ServeReturnAnalysis({ stats, matches, mainPlayerId }: ServeRetur
   const servePlacementData = Object.entries(serveAnalysis.acesByPlacement)
     .filter(([, value]) => value > 0)
     .map(([placement, count]) => ({
-      name: placement.charAt(0).toUpperCase() + placement.slice(1),
+      name: placement === 'unknown' ? placement : tCommon(servePlacementLabelKey(placement, true)),
       value: count
     }))
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { motion } from '@/lib/framer-motion-config'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +25,8 @@ import { formatPlayerFromObject, formatDate } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { deriveCurrentServer } from "@/lib/utils/current-server"
+import { snapshotFrom, useSpectatorSounds } from "@/lib/utils/spectator-sounds"
+import { SpectatorSoundToggle } from "@/components/shared/spectator-sound-toggle"
 import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-serving"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { parseDbScore } from "@/lib/utils/db-score"
@@ -164,6 +166,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   // Calculate match stats
   const matchStats = calculateMatchStats(pointLog)
 
+  // Opt-in sounds for viewers, driven by new points arriving
+  const soundSnapshot = useMemo(() => snapshotFrom(match.pointLog, score, match.status), [match.pointLog, score, match.status])
+  const sounds = useSpectatorSounds(soundSnapshot)
+
   // Manual refresh function for Safari mobile users
   const refreshMatch = useCallback(() => {
     console.log("🔄 Manual refresh triggered")
@@ -288,6 +294,9 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             <Button variant="outline" size="icon" onClick={shareMatch} className="shrink-0" title={t('share')} aria-label={t('share')}>
               <Share2 className="w-4 h-4" />
             </Button>
+            {match.status === 'In Progress' && (
+              <SpectatorSoundToggle enabled={sounds.enabled} onToggle={sounds.toggle} labels={{ on: tCommon('soundOn'), off: tCommon('soundOff') }} />
+            )}
             <Button variant="outline" size="icon" onClick={refreshMatch} className="shrink-0" title={tCommon('refresh')} aria-label={tCommon('refresh')}>
               <RefreshCw className="w-4 h-4" />
             </Button>

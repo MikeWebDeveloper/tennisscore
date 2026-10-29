@@ -38,7 +38,9 @@ test('custom serve statistics survive reload and appear in the match table', asy
     await page.getByTestId('score-point').first().click()
     const dialog = page.getByRole('dialog')
     await dialog.getByRole('button', { name: /Aces/ }).click()
-    await dialog.getByRole('button', { name: 'Wide', exact: true }).click()
+    // Aces offer net cord, out of the court and on the T; "out of the court" is stored as wide
+    await expect(dialog.getByRole('button', { name: 'Net cord', exact: true })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Out of the court', exact: true }).click()
     await expect.poll(async () => (await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog.length).toBe(1)
     const document = await (await request.get('http://localhost:4100/__doc/m/match4')).json()
     expect(JSON.parse(document.pointLog[0]).servePlacement).toBe('wide')
