@@ -6,6 +6,7 @@ import cs from './messages/cs.json'
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
+import { IntlMessageFormat } from 'intl-messageformat'
 
 const get = (obj: any, ns: string, key: string) => obj?.[ns]?.[key]
 
@@ -58,6 +59,22 @@ describe('translation files', () => {
 
   it('cs translations differ from en for the new sync strings (not left in English)', () => {
     for (const key of REQUIRED.match) expect(get(cs, 'match', key)).not.toBe(get(en, 'match', key))
+  })
+
+  it('every message parses as ICU syntax (next-intl throws on {{name}} placeholders)', () => {
+    const errors: string[] = []
+    const walk = (locale: string, node: unknown, prefix: string) => {
+      for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+        const id = prefix ? `${prefix}.${key}` : key
+        if (value && typeof value === 'object') walk(locale, value, id)
+        else if (typeof value === 'string') {
+          try { new IntlMessageFormat(value, locale) } catch (error) { errors.push(`${locale}.${id}: ${(error as Error).message}`) }
+        }
+      }
+    }
+    walk('en', en, '')
+    walk('cs', cs, '')
+    expect(errors).toEqual([])
   })
 
   it('navigation namespace has the same keys in en and cs', () => {

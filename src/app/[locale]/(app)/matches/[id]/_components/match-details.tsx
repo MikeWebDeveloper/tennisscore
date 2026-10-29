@@ -25,7 +25,7 @@ import { MatchStatsComponentSimpleFixed } from "./match-stats"
 import { calculateMatchStats } from "@/lib/utils/match-stats"
 import { CustomPointStats } from './custom-point-stats'
 import { PointByPointView } from "./point-by-point-view"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
 import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { formatPlayerRating } from "@/components/shared/player-rating-display"
@@ -98,34 +98,23 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   const [copiedLink, setCopiedLink] = useState(false)
   const isDoubles = match.playerThreeId && match.playerFourId
   const t = useTranslations('common')
-  
+  const locale = useLocale()
+  const formatDecimal = (value: number) => value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
   // Parse match format
   const parsedFormat = normalizeMatchFormat(match.matchFormat)
-
-  // Debug timing data
-  console.log('Match timing data received:', {
-    startTime: match.startTime,
-    endTime: match.endTime,
-    setDurations: match.setDurations,
-    status: match.status
-  })
 
   const handleShareMatch = () => {
     const shareUrl = `${window.location.origin}/live/${match.$id}`
     navigator.clipboard.writeText(shareUrl)
     setCopiedLink(true)
-    
-    const shareText = match.status === "Completed" 
-      ? "Match results link copied to clipboard!"
-      : "Live match link copied to clipboard!"
-    toast.success(shareText)
+
+    toast.success(match.status === "Completed" ? t('linkCopiedResults') : t('linkCopiedLive'))
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
   const formatDuration = (durationMinutes?: number) => {
-    console.log('formatDuration called with:', durationMinutes)
-    
-    if (durationMinutes === undefined || durationMinutes === null) return "Unknown"
+    if (durationMinutes === undefined || durationMinutes === null) return t('unknown')
     
     const hours = Math.floor(durationMinutes / 60)
     const minutes = durationMinutes % 60
@@ -142,7 +131,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
+    return new Date(dateString).toLocaleString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -152,7 +141,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   const formatFullDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
+    return new Date(dateString).toLocaleDateString(locale, {
       weekday: "short",
       day: "numeric",
       month: "long",
@@ -161,7 +150,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-GB", {
+    return new Date(dateString).toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -177,34 +166,33 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             <span className="text-lg text-muted-foreground">{t('doublesMatch')}</span>
           </div>
           <div className="text-2xl font-bold">
-            {match.playerOne && formatPlayerFromObject(match.playerOne)} / {match.playerThree && formatPlayerFromObject(match.playerThree)}
+            {getTeamName("team1")}
           </div>
           <div className="text-lg text-muted-foreground">{t('vs')}</div>
           <div className="text-2xl font-bold">
-            {match.playerTwo && formatPlayerFromObject(match.playerTwo)} / {match.playerFour && formatPlayerFromObject(match.playerFour)}
+            {getTeamName("team2")}
           </div>
         </div>
       )
     }
-    
+
     return (
       <h1 className="text-2xl font-bold">
-        {match.playerOne && formatPlayerFromObject(match.playerOne)} {t('vs')}{" "}
-        {match.playerTwo && formatPlayerFromObject(match.playerTwo)}
+        {getTeamName("team1")} {t('vs')} {getTeamName("team2")}
       </h1>
     )
   }
 
+  const playerName = (player?: Player) => player ? formatPlayerFromObject(player) : t('unknownPlayer')
+
   const getTeamName = (team: "team1" | "team2") => {
     if (!isDoubles) {
-      return team === "team1" 
-        ? (match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer'))
-        : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'))
+      return team === "team1" ? playerName(match.playerOne) : playerName(match.playerTwo)
     }
-    
+
     return team === "team1"
-      ? `${match.playerOne && formatPlayerFromObject(match.playerOne)} / ${match.playerThree && formatPlayerFromObject(match.playerThree)}`
-      : `${match.playerTwo && formatPlayerFromObject(match.playerTwo)} / ${match.playerFour && formatPlayerFromObject(match.playerFour)}`
+      ? `${playerName(match.playerOne)} / ${playerName(match.playerThree)}`
+      : `${playerName(match.playerTwo)} / ${playerName(match.playerFour)}`
   }
 
   return (
@@ -214,15 +202,15 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       {/* Mobile Header */}
       <div className="block md:hidden">
         <div className="w-full bg-background border-b">
-          {/* Top row: Back button and Share button */}
-          <div className="flex items-center justify-between p-2">
+          {/* Top row: Back button and actions; actions wrap so none sit off-screen */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2">
             <Button variant="outline" size="sm" asChild className="flex items-center gap-1 text-xs px-2 py-1 h-8">
               <Link href="/matches">
                 <ArrowLeft className="h-3 w-3" />
                 <span>{t('backToMatches')}</span>
               </Link>
             </Button>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-end gap-1">
               {match.status === "Completed" && (
                 <FullMatchExportButton
                   match={{
@@ -268,7 +256,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   winner: match.status === "Completed"
                     ? (match.winnerId && match.winnerId === match.playerOne?.$id ? 'p1' : match.winnerId && match.winnerId === match.playerTwo?.$id ? 'p2' : null)
                     : null,
-                  subtitle: new Date(match.matchDate).toLocaleDateString(),
+                  subtitle: new Date(match.matchDate).toLocaleDateString(locale),
                 }}
               />
               <Button 
@@ -340,22 +328,15 @@ export function MatchDetails({ match }: MatchDetailsProps) {
       {/* Desktop Header */}
       <div className="hidden md:block">
         <div className="container mx-auto p-4 max-w-6xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/matches">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  {t('backToMatches')}
-                </Link>
-              </Button>
-              <div>
-                {getMatchTitle()}
-                <p className="text-muted-foreground">
-                  {t('matchDetails')} • {formatDateTime(match.matchDate)}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+          {/* Actions row first, title on its own row so it never squeezes between buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/matches">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('backToMatches')}
+              </Link>
+            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {match.status === "Completed" && (
                 <FullMatchExportButton
                   match={{
@@ -405,6 +386,12 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 </Button>
               )}
             </div>
+          </div>
+          <div className="mb-6 min-w-0">
+            {getMatchTitle()}
+            <p className="text-muted-foreground">
+              {t('matchDetails')} • {formatDateTime(match.matchDate)}
+            </p>
           </div>
         </div>
       </div>
@@ -477,16 +464,9 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             const totalPoints = stats.totalPoints
             // Calculate match duration from start/end time
             const getMatchDuration = () => {
-              console.log('getMatchDuration called with:', {
-                startTime: match.startTime,
-                endTime: match.endTime,
-                status: match.status
-              })
-              
               if (match.startTime && match.endTime) {
                 const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
                 const totalMinutes = Math.floor(durationMs / (1000 * 60))
-                console.log('Duration calculation:', { durationMs, totalMinutes })
                 return formatDuration(totalMinutes)
               } else if (match.startTime && match.status === "In Progress") {
                 const durationMs = Date.now() - Date.parse(match.startTime)
@@ -494,7 +474,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 return formatDuration(totalMinutes) + ` (${t('ongoing')})`
               }
               
-              return pointDetails.length > 0 ? `${pointDetails.length} points` : "No data"
+              return pointDetails.length > 0 ? t('pointsCount', { count: pointDetails.length }) : t('noData')
             }
 
             const matchDurationText = getMatchDuration()
@@ -507,23 +487,24 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   <div className="relative z-10">
                     <div className="text-center space-y-6">
                       <div className="flex items-center justify-center gap-3">
-                        <Badge variant="secondary" className="text-white bg-white/20">
-                          {match.status}
-                        </Badge>
-                        {match.status === "Completed" && (
-                          <Badge className="bg-green-500 text-white">
+                        {match.status === "Completed" ? (
+                          <Badge data-match-status className="bg-green-500 text-white">
                             <Trophy className="w-3 h-3 mr-1" />
-{t('completed')}
+                            {t('completed')}
+                          </Badge>
+                        ) : (
+                          <Badge data-match-status variant="secondary" className="text-white bg-white/20">
+                            {t('inProgress')}
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="text-6xl font-mono font-bold tracking-tight">
                           {setsWon.p1} - {setsWon.p2}
                         </div>
                         <div className="text-lg text-slate-300">
-                          Sets: {formatSetsScore()}
+                          {t('setsScoreLine', { score: formatSetsScore() })}
                         </div>
                       </div>
 
@@ -536,14 +517,14 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                                 // For doubles, determine which team won and display both players
                                 if (match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId) {
                                   // Team 1 won
-                                  return `${getTeamName("team1")} Wins!`
+                                  return t('winsAnnouncement', { name: getTeamName("team1") })
                                 } else if (match.winnerId === match.playerTwoId || match.winnerId === match.playerFourId) {
                                   // Team 2 won
-                                  return `${getTeamName("team2")} Wins!`
+                                  return t('winsAnnouncement', { name: getTeamName("team2") })
                                 }
                               }
                               // For singles or fallback
-                              return `${formatPlayerFromObject(match.winner)} Wins!`
+                              return t('winsAnnouncement', { name: formatPlayerFromObject(match.winner) })
                             })()}
                           </span>
                         </div>
@@ -554,58 +535,58 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
                 {/* Key Match Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                  <Card className="border-blue-500/20">
                     <CardContent className="p-6 text-center">
                       <div className="space-y-3">
-                        <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-                          <Activity className="h-6 w-6 text-blue-600" />
+                        <div className="w-12 h-12 mx-auto bg-blue-500/10 rounded-full flex items-center justify-center">
+                          <Activity className="h-6 w-6 text-blue-500" />
                         </div>
                         <div>
-                                                  <div className="text-3xl font-bold text-blue-900">{totalPoints}</div>
-                        <div className="text-sm text-blue-600">{t('totalPoints')}</div>
+                          <div className="text-3xl font-bold text-foreground">{totalPoints}</div>
+                          <div className="text-sm text-muted-foreground">{t('totalPoints')}</div>
                         </div>
-                        <div className="text-xs text-blue-500">
+                        <div className="text-xs text-muted-foreground">
                           {stats.totalPointsWonByPlayer[0]} - {stats.totalPointsWonByPlayer[1]}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+                  <Card className="border-green-500/20">
                     <CardContent className="p-6 text-center">
                       <div className="space-y-3">
-                        <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                          <Clock className="h-6 w-6 text-green-600" />
+                        <div className="w-12 h-12 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
+                          <Clock className="h-6 w-6 text-green-500" />
                         </div>
                         <div>
-                                                  <div className="text-xl font-bold text-green-900">{matchDurationText}</div>
-                        <div className="text-sm text-green-600">{t('duration')}</div>
+                          <div className="text-xl font-bold text-foreground">{matchDurationText}</div>
+                          <div className="text-sm text-muted-foreground">{t('duration')}</div>
                         </div>
                         {match.startTime && (
-                          <div className="text-xs text-green-500">
+                          <div className="text-xs text-muted-foreground">
                             {t('started')}: {formatTime(match.startTime)}
                           </div>
                         )}
                         {match.endTime && match.status === "Completed" && (
-                          <div className="text-xs text-green-500">
-{t('ended')}: {formatTime(match.endTime)}
+                          <div className="text-xs text-muted-foreground">
+                            {t('ended')}: {formatTime(match.endTime)}
                           </div>
                         )}
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+                  <Card className="border-purple-500/20">
                     <CardContent className="p-6 text-center">
                       <div className="space-y-3">
-                        <div className="w-12 h-12 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
-                          <Target className="h-6 w-6 text-purple-600" />
+                        <div className="w-12 h-12 mx-auto bg-purple-500/10 rounded-full flex items-center justify-center">
+                          <Target className="h-6 w-6 text-purple-500" />
                         </div>
                         <div>
-                          <div className="text-3xl font-bold text-purple-900">{stats.acesByPlayer[0] + stats.acesByPlayer[1]}</div>
-                          <div className="text-sm text-purple-600">{t('totalAces')}</div>
+                          <div className="text-3xl font-bold text-foreground">{stats.acesByPlayer[0] + stats.acesByPlayer[1]}</div>
+                          <div className="text-sm text-muted-foreground">{t('totalAces')}</div>
                         </div>
-                        <div className="text-xs text-purple-500">
+                        <div className="text-xs text-muted-foreground">
                           {stats.acesByPlayer[0]} - {stats.acesByPlayer[1]}
                         </div>
                       </div>
@@ -653,13 +634,13 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                         )}
                         {match.retirementReason && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Reason</span>
+                            <span className="text-sm text-muted-foreground">{t('reason')}</span>
                             <span className="text-sm font-medium text-orange-600 capitalize">{match.retirementReason}</span>
                           </div>
                         )}
                         <Separator />
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Format</span>
+                          <span className="text-sm text-muted-foreground">{t('format')}</span>
                           <span className="text-sm font-medium">
                             {(() => {
                               try {
@@ -672,7 +653,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Type</span>
+                          <span className="text-sm text-muted-foreground">{t('type')}</span>
                           <span className="text-sm font-medium">{isDoubles ? t('doubles') : t('singles')}</span>
                         </div>
                       </div>
@@ -763,7 +744,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BarChart3 className="h-5 w-5" />
-                        Set by Set Breakdown
+                        {t('setBySetBreakdown')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -776,7 +757,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           return (
                             <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                               <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium">Set {index + 1}</span>
+                                <span className="text-sm font-medium">{t('setLabel', { number: index + 1 })}</span>
                                 {setWinner && (
                                   <div className={`w-2 h-2 rounded-full ${setWinner === 'p1' ? 'bg-blue-500' : 'bg-red-500'}`}></div>
                                 )}
@@ -813,8 +794,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-2">No detailed point log available for this match.</p>
-                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see point-by-point analysis.</p>
+                    <p className="text-muted-foreground mb-2">{t('noPointLogTitle')}</p>
+                    <p className="text-sm text-muted-foreground">{t('noPointLogHint')}</p>
                   </CardContent>
                 </Card>
               )
@@ -825,7 +806,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5" />
-                    Point-by-Point Analysis ({pointDetails.length} points)
+                    {t('pointByPointTitle', { count: pointDetails.length })}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -864,8 +845,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-2">No statistics available for this match.</p>
-                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see comprehensive match statistics.</p>
+                    <p className="text-muted-foreground mb-2">{t('noStatsTitle')}</p>
+                    <p className="text-sm text-muted-foreground">{t('noStatsHint')}</p>
                   </CardContent>
                 </Card>
               )
@@ -916,8 +897,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-2">No detailed analysis available for this match.</p>
-                    <p className="text-sm text-muted-foreground">Enable detailed logging during live scoring to see AI-powered match insights.</p>
+                    <p className="text-muted-foreground mb-2">{t('noAnalysisTitle')}</p>
+                    <p className="text-sm text-muted-foreground">{t('noAnalysisHint')}</p>
                   </CardContent>
                 </Card>
               )
@@ -951,18 +932,18 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             return (
               <div className="space-y-6">
                 {/* Performance Summary */}
-                <Card className="border-gradient-to-r from-blue-200 to-purple-200">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5" />
-                      Match Analysis & Insights
+                      {t('matchAnalysisInsights')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-sm mb-2 text-blue-900">{t('matchSummary')}</h4>
+                          <h4 className="font-semibold text-sm mb-2 text-foreground">{t('matchSummary')}</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('totalPointsPlayed')}</span>
@@ -986,7 +967,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-sm mb-2 text-purple-900">{t('momentumTracker')}</h4>
+                          <h4 className="font-semibold text-sm mb-2 text-foreground">{t('momentumTracker')}</h4>
                           <div className="space-y-2">
                             <div className="text-xs text-muted-foreground mb-1">{t('lastTenPoints')}</div>
                             <div className="flex gap-1 mb-2">
@@ -1019,15 +1000,15 @@ export function MatchDetails({ match }: MatchDetailsProps) {
 
                 {/* Break Point Analysis */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+                  <Card className="border-orange-500/20">
                     <CardHeader>
-                      <CardTitle className="text-orange-900 text-lg">{t('breakPointPressure')}</CardTitle>
+                      <CardTitle className="text-lg">{t('breakPointPressure')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-orange-900">{breakPointConversion.toFixed(0)}%</div>
-                          <div className="text-sm text-orange-600">{t('conversionRate')}</div>
+                          <div className="text-3xl font-bold text-foreground">{breakPointConversion.toFixed(0)}%</div>
+                          <div className="text-sm text-muted-foreground">{t('conversionRate')}</div>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
@@ -1036,31 +1017,31 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('breakPointsConverted')}</span>
-                            <span className="font-semibold text-orange-600">{breakPointsConverted}</span>
+                            <span className="font-semibold text-orange-500">{breakPointsConverted}</span>
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {breakPointConversion > 40 
-                            ? "Excellent conversion rate - efficient in big moments"
+                          {breakPointConversion > 40
+                            ? t('conversionExcellent')
                             : breakPointConversion > 25
-                            ? "Good conversion rate - capitalizing on opportunities"
-                            : "Room for improvement on big points"}
+                            ? t('conversionGood')
+                            : t('conversionImprove')}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+                  <Card className="border-green-500/20">
                     <CardHeader>
-                      <CardTitle className="text-green-900 text-lg">{t('serviceDominance')}</CardTitle>
+                      <CardTitle className="text-lg">{t('serviceDominance')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-green-900">
+                          <div className="text-3xl font-bold text-foreground">
                             {serviceGames > 0 ? ((serviceGames - breaksOfServe) / serviceGames * 100).toFixed(0) : 0}%
                           </div>
-                          <div className="text-sm text-green-600">{t('serviceGamesHeld')}</div>
+                          <div className="text-sm text-muted-foreground">{t('serviceGamesHeld')}</div>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
@@ -1076,8 +1057,8 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                           {breaksOfServe === 0
                             ? t('perfectServiceRecord')
                             : breaksOfServe < serviceGames * 0.2
-                            ? "Strong service games - rarely broken"
-                            : "Service games under pressure"}
+                            ? t('serviceStrong')
+                            : t('serviceUnderPressure')}
                         </div>
                       </div>
                     </CardContent>
@@ -1094,39 +1075,39 @@ export function MatchDetails({ match }: MatchDetailsProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 rounded-lg bg-blue-50">
-                        <div className="text-2xl font-bold text-blue-900">{stats.acesByPlayer[0]}</div>
-                                                    <div className="text-xs text-blue-600">{t('aces')} - {getTeamName("team1")}</div>
+                      <div className="text-center p-4 rounded-lg bg-blue-500/10">
+                        <div className="text-2xl font-bold text-foreground">{stats.acesByPlayer[0]}</div>
+                        <div className="text-xs text-muted-foreground">{t('acesBy', { name: getTeamName("team1") })}</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-red-50">
-                        <div className="text-2xl font-bold text-red-900">{stats.acesByPlayer[1]}</div>
-                                                    <div className="text-xs text-red-600">{t('aces')} - {getTeamName("team2")}</div>
+                      <div className="text-center p-4 rounded-lg bg-red-500/10">
+                        <div className="text-2xl font-bold text-foreground">{stats.acesByPlayer[1]}</div>
+                        <div className="text-xs text-muted-foreground">{t('acesBy', { name: getTeamName("team2") })}</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-yellow-50">
-                        <div className="text-2xl font-bold text-yellow-900">{stats.doubleFaultsByPlayer[0]}</div>
-                        <div className="text-xs text-yellow-600">DFs - {getTeamName("team1")}</div>
+                      <div className="text-center p-4 rounded-lg bg-yellow-500/10">
+                        <div className="text-2xl font-bold text-foreground">{stats.doubleFaultsByPlayer[0]}</div>
+                        <div className="text-xs text-muted-foreground">{t('doubleFaultsBy', { name: getTeamName("team1") })}</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-orange-50">
-                        <div className="text-2xl font-bold text-orange-900">{stats.doubleFaultsByPlayer[1]}</div>
-                        <div className="text-xs text-orange-600">DFs - {getTeamName("team2")}</div>
+                      <div className="text-center p-4 rounded-lg bg-orange-500/10">
+                        <div className="text-2xl font-bold text-foreground">{stats.doubleFaultsByPlayer[1]}</div>
+                        <div className="text-xs text-muted-foreground">{t('doubleFaultsBy', { name: getTeamName("team2") })}</div>
                       </div>
                     </div>
-                    
+
                     <Separator className="my-4" />
-                    
+
                     <div className="text-sm text-muted-foreground">
-                      <p className="mb-2"><strong>Performance Insights:</strong></p>
+                      <p className="mb-2"><strong>{t('performanceInsights')}</strong></p>
                       <ul className="space-y-1 text-xs">
-                        <li>• Service power: {stats.acesByPlayer[0] + stats.acesByPlayer[1]} aces served total</li>
-                        <li>• Pressure points: {breakPointsCreated} break point opportunities created</li>
-                        <li>• Match rhythm: {totalPoints} points over {setsPlayed} sets ({(totalPoints / Math.max(setsPlayed, 1)).toFixed(1)} points per set)</li>
-                        {match.startTime && match.endTime && (
-                          <li>• Playing pace: {(() => {
-                            const durationMs = Date.parse(match.endTime) - Date.parse(match.startTime)
-                            const durationMinutes = durationMs / (1000 * 60)
-                            return (totalPoints / durationMinutes).toFixed(1)
-                          })()} points per minute</li>
-                        )}
+                        <li>• {t('insightServicePower', { count: stats.acesByPlayer[0] + stats.acesByPlayer[1] })}</li>
+                        <li>• {t('insightPressurePoints', { count: breakPointsCreated })}</li>
+                        <li>• {t('insightMatchRhythm', { count: totalPoints, perSet: formatDecimal(totalPoints / Math.max(setsPlayed, 1)) })}</li>
+                        {(() => {
+                          if (!match.startTime || !match.endTime) return null
+                          const durationMinutes = (Date.parse(match.endTime) - Date.parse(match.startTime)) / (1000 * 60)
+                          // A pace over less than a minute of recorded play is noise, not insight
+                          if (!(durationMinutes >= 1)) return null
+                          return <li>• {t('insightPlayingPace', { pace: formatDecimal(totalPoints / durationMinutes) })}</li>
+                        })()}
                       </ul>
                     </div>
                   </CardContent>

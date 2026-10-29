@@ -3,11 +3,15 @@
 import { Sparkles } from "lucide-react"
 import { useLocale, useTranslations } from "@/i18n"
 
-const UPDATES = [
-  { key: 'themes', date: '2026-10-26' },
-  { key: 'offlineSync', date: '2026-10-26' },
+// Newest first
+export const UPDATES = [
+  { key: 'interruptions', date: '2026-10-29' },
+  { key: 'customStats', date: '2026-10-29' },
+  { key: 'historySearch', date: '2026-10-29' },
   { key: 'newFormats', date: '2026-10-27' },
   { key: 'fasterApp', date: '2026-10-27' },
+  { key: 'themes', date: '2026-10-26' },
+  { key: 'offlineSync', date: '2026-10-26' },
 ] as const
 
 export function WhatsNewPanel() {
@@ -23,7 +27,7 @@ export function WhatsNewPanel() {
         <h2 className="text-sm font-semibold tracking-tight text-foreground">{t('whatsNew')}</h2>
       </div>
       <ul>
-        {UPDATES.map(update => (
+        {UPDATES.slice(0, 4).map(update => (
           <li key={update.key} className="rounded-xl px-3 py-3">
             <div className="flex items-baseline justify-between gap-3">
               <h3 className="text-sm font-medium text-foreground">{t(`whatsNewUpdates.${update.key}.title`)}</h3>

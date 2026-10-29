@@ -108,7 +108,7 @@ export function AppShell({ children, user }: AppShellProps) {
     })
 
   const userBlock = (
-    <div className="flex items-center gap-3">
+    <div data-user-block className="flex items-center gap-3">
       <Avatar className="h-9 w-9 border border-border">
         <AvatarImage src="" />
         <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
@@ -116,8 +116,9 @@ export function AppShell({ children, user }: AppShellProps) {
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{user.name || t("defaultUserName")}</p>
-        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+        {/* Accounts without a display name are identified by their email alone */}
+        <p className="truncate text-sm font-medium text-foreground">{user.name || user.email || t("defaultUserName")}</p>
+        {user.name && <p className="truncate text-xs text-muted-foreground">{user.email}</p>}
       </div>
     </div>
   )

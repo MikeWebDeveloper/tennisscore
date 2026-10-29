@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useMatchStore } from "@/stores/matchStore"
 import { useShallow } from "zustand/react/shallow"
 import { Clock } from "lucide-react"
+import { useTranslations } from "@/i18n"
 
 interface MatchTimerDisplayProps {
   className?: string
@@ -12,15 +13,21 @@ interface MatchTimerDisplayProps {
   endTime?: string | null
   setDurations?: number[]
   isMatchComplete?: boolean
+  /** Interrupted matches stop the clock at `pausedAt` (the last recorded point); without it the duration is hidden. */
+  isPaused?: boolean
+  pausedAt?: string | null
 }
 
-export function MatchTimerDisplay({ 
-  className, 
+export function MatchTimerDisplay({
+  className,
   startTime: propStartTime,
   endTime: propEndTime,
   setDurations: propSetDurations,
-  isMatchComplete: propIsMatchComplete
+  isMatchComplete: propIsMatchComplete,
+  isPaused = false,
+  pausedAt = null
 }: MatchTimerDisplayProps) {
+  const t = useTranslations('common')
   // Only the timing fields are needed here — selecting them keeps this
   // (always-mounted, 1s-interval) component from re-rendering on every point.
   const storeData = useMatchStore(
@@ -39,16 +46,18 @@ export function MatchTimerDisplay({
   const setDurations = propSetDurations !== undefined ? propSetDurations : storeData.setDurations
   const isMatchComplete = propIsMatchComplete !== undefined ? propIsMatchComplete : storeData.isMatchComplete
 
+  const isRunning = !isMatchComplete && !isPaused
+
   // Update current time every second for live timer
   useEffect(() => {
-    if (!isMatchComplete && startTime) {
+    if (isRunning && startTime) {
       const interval = setInterval(() => {
         setCurrentTime(new Date().toISOString())
       }, 1000)
 
       return () => clearInterval(interval)
     }
-  }, [isMatchComplete, startTime])
+  }, [isRunning, startTime])
 
   // Helper function to format duration
   const formatDuration = (durationMs: number): string => {
@@ -67,13 +76,13 @@ export function MatchTimerDisplay({
   const getLiveDuration = (): string => {
     if (!startTime) return "0m"
     
-    const endTimeToUse = endTime || currentTime
+    const endTimeToUse = endTime || (isPaused ? pausedAt : null) || currentTime
     const durationMs = Date.parse(endTimeToUse) - Date.parse(startTime)
     return formatDuration(durationMs)
   }
 
-  // Don't show timer if match hasn't started
-  if (!startTime) {
+  // Don't show timer if match hasn't started, or if an interruption has no point to stop the clock at
+  if (!startTime || (isPaused && !endTime && !pausedAt)) {
     return null
   }
 
@@ -85,7 +94,7 @@ export function MatchTimerDisplay({
         <span className="font-mono">
           {getLiveDuration()}
         </span>
-        {!isMatchComplete && (
+        {isRunning && (
           <span className="text-green-500 animate-pulse">●</span>
         )}
       </div>
@@ -93,7 +102,7 @@ export function MatchTimerDisplay({
       {/* Set durations */}
       {setDurations.length > 0 && (
         <div className="flex items-center gap-2">
-          <span className="text-xs">Sets:</span>
+          <span className="text-xs">{t('sets')}:</span>
           {setDurations.map((duration, index) => (
             <span key={index} className="text-xs font-mono bg-muted px-2 py-1 rounded">
               {index + 1}: {formatDuration(duration)}

@@ -371,6 +371,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             endTime={match.endTime}
             setDurations={match.setDurations}
             isMatchComplete={match.status === "Completed"}
+            isPaused={match.status === "In Progress" && Boolean(match.isPaused)}
+            pausedAt={pointLog[pointLog.length - 1]?.timestamp ?? null}
           />
         </motion.div>
 

@@ -43,3 +43,16 @@ it('stops and surfaces an error if a history page does not advance', async () =>
   container.remove()
   silence.mockRestore()
 })
+
+it('hides the page-level match count while a search shows its own filtered count', async () => {
+  jest.mocked(getMatchesByUserPaginated).mockReset().mockResolvedValue({ matches: [], total: 2, hasMore: false })
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => root.render(<PaginatedMatchesClient initialMatches={[match('a'), match('b')]} initialTotal={2} initialHasMore={false} players={[player]} hasError={false} />))
+  expect(container.textContent).toContain('showingMatchesSummary')
+  await act(async () => { Array.from(container.querySelectorAll('button')).find(button => button.textContent === 'search')!.click() })
+  expect(container.textContent).not.toContain('showingMatchesSummary')
+  act(() => root.unmount())
+  container.remove()
+})

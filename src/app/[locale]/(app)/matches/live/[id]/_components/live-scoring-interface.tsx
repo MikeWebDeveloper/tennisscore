@@ -1253,6 +1253,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             endTime={match.endTime}
             setDurations={match.setDurations}
             isMatchComplete={match.status === "Completed"}
+            isPaused={isPaused}
+            pausedAt={pointLog[pointLog.length - 1]?.timestamp ?? null}
           />
 
           {/* Serve selection: large touch targets and a named pressed state. */}
