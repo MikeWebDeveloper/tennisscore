@@ -24,8 +24,10 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  // The main player is one of the user's players, so a single query covers both
-  const players = await getPlayersByUser()
+  // The main player is one of the user's players, so one paged read covers both. Every page is needed:
+  // without it only the newest 100 came back, and an older main player (often the first one created)
+  // went missing on accounts with more players
+  const players = await getPlayersByUser({ all: true })
   const mainPlayer = players.find(player => player.isMainPlayer) ?? null
   
   if (!mainPlayer) {

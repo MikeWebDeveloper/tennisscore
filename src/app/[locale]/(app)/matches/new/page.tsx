@@ -9,7 +9,8 @@ export default async function NewMatchPage() {
     redirect("/login")
   }
 
-  const players = await getPlayersByUser()
+  // Every player can be picked, not only the newest 100
+  const players = await getPlayersByUser({ all: true })
 
   return (
     <div className="w-full h-full grid place-items-center p-4">
