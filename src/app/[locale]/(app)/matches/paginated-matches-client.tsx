@@ -306,10 +306,11 @@ export function PaginatedMatchesClient({
           )}
         </div>
         
-        <div className="flex items-center gap-2">
+        {/* Full width on phones with a shrinking filter, so New Match no longer runs to the screen edge */}
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           {/* Date Filter */}
           <Select value={dateFilter} onValueChange={(value: DateFilter) => handleDateFilterChange(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="min-w-0 flex-1 sm:w-[140px] sm:flex-none">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
