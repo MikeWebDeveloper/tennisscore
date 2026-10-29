@@ -8,7 +8,6 @@ import { useTranslations } from "@/i18n"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { isBreakPoint, isSetPoint, isMatchPoint } from "@/lib/utils/tennis-scoring"
 import { MatchFormat } from "@/stores/matchStore"
-import { Switch } from "@/components/ui/switch"
 import { List } from "lucide-react"
 import { Grid } from "lucide-react"
 import { formatPlayerFromObject, formatDoublesTeam, formatPlayerName } from "@/lib/utils"
@@ -29,6 +28,7 @@ interface PointByPointViewProps {
     p3?: Player
     p4?: Player
   }
+  /** Accepted for callers; what ended each point now shows whenever it was recorded, at any level */
   detailLevel?: "points" | "simple" | "shot-type" | "detailed" | "complex"
 }
 
@@ -60,63 +60,49 @@ const getGameScoreAfterGame = (gamePoints: PointDetail[], allPoints: PointDetail
 // Helper to check if a point has isTiebreak property
 const hasIsTiebreak = (p: unknown): p is PointDetail & { isTiebreak?: boolean } => typeof p === 'object' && p !== null && 'isTiebreak' in p;
 
-// Helper to get detailed point information for detailed mode
-const getDetailedPointInfo = (point: PointDetail, t: (key: string) => string, detailLevel?: string) => {
-  let outcome = ''
-  switch (point.pointOutcome) {
-    case 'winner': outcome = t('winner'); break
-    case 'unforced_error': outcome = t('unforcedError'); break
-    case 'forced_error': outcome = t('forcedError'); break
-    case 'ace': outcome = t('ace'); break
-    case 'double_fault': outcome = t('doubleFault'); break
-    default: outcome = point.pointOutcome
-  }
+const SHOT_KEYS: Record<string, string> = { forehand: 'forehand', backhand: 'backhand', volley: 'volley', overhead: 'overhead' }
+const DIRECTION_KEYS: Record<string, string> = { cross: 'crossCourt', line: 'downTheLine', body: 'bodyShot', long: 'long', wide: 'wide', net: 'net' }
 
-  // Detailed and shot-type modes show the shot type (direction only exists for detailed)
-  if (detailLevel === 'detailed' || detailLevel === 'shot-type') {
-    const details = []
-    
-    // Add shot type if available
-    if (point.lastShotType && point.lastShotType !== 'serve') {
-      let shotType = ''
-      switch (point.lastShotType) {
-        case 'forehand': shotType = t('forehand'); break
-        case 'backhand': shotType = t('backhand'); break
-        case 'volley': shotType = t('volley'); break
-        case 'overhead': shotType = t('overhead'); break
-        default: shotType = point.lastShotType
-      }
-      details.push(shotType)
-    }
-    
-    // Add shot direction if available
-    if (point.shotDirection) {
-      let direction = ''
-      switch (point.shotDirection) {
-        case 'cross': direction = t('crossCourt'); break
-        case 'line': direction = t('downTheLine'); break
-        case 'body': direction = t('bodyShot'); break
-        case 'long': direction = t('long'); break
-        case 'wide': direction = t('wide'); break
-        case 'net': direction = t('net'); break
-        default: direction = point.shotDirection
-      }
-      details.push(direction)
-    }
-    
-    // Add serve placement for aces and double faults
-    if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
-      // Aces use their own wording (net cord, out of the court, on the T)
-      details.push(t(servePlacementLabelKey(point.servePlacement, point.pointOutcome === 'ace')))
-    }
-    
-    // Combine outcome with details
-    if (details.length > 0) {
-      return `${outcome} (${details.join(', ')})`
+/** True when a point records what ended it (shot, direction or serve placement). */
+const hasShotDetail = (point: PointDetail) =>
+  Boolean((point.lastShotType && point.lastShotType !== 'serve') || point.shotDirection || point.servePlacement)
+
+/**
+ * Outcome ("Vítěz") plus what ended the point ("Return forhend · Křížem", "Dotek sítě (prase)").
+ * Shown whenever it was recorded, whatever the match's detail level.
+ */
+const getPointSummary = (point: PointDetail, t: (key: string) => string) => {
+  const outcomeKeys: Record<string, string> = { winner: 'winner', unforced_error: 'unforcedError', forced_error: 'forcedError', ace: 'ace', double_fault: 'doubleFault' }
+  const outcome = outcomeKeys[point.pointOutcome] ? t(outcomeKeys[point.pointOutcome]) : point.pointOutcome
+  const details: string[] = []
+
+  if (point.lastShotType && point.lastShotType !== 'serve') {
+    const isReturn = point.winnerType === 'return'
+    if (isReturn && point.lastShotType === 'forehand') details.push(t('returnForehand'))
+    else if (isReturn && point.lastShotType === 'backhand') details.push(t('returnBackhand'))
+    else {
+      if (isReturn) details.push(t('return'))
+      details.push(SHOT_KEYS[point.lastShotType] ? t(SHOT_KEYS[point.lastShotType]) : point.lastShotType)
     }
   }
-  
-  return outcome
+  if (point.shotDirection) {
+    details.push(DIRECTION_KEYS[point.shotDirection] ? t(DIRECTION_KEYS[point.shotDirection]) : point.shotDirection)
+  }
+  // Aces use their own wording (net cord, out of the court, on the T)
+  if ((point.pointOutcome === 'ace' || point.pointOutcome === 'double_fault') && point.servePlacement) {
+    details.push(t(servePlacementLabelKey(point.servePlacement, point.pointOutcome === 'ace')))
+  }
+  return { outcome, shot: details.join(' · ') }
+}
+
+/** Outcome cell of a point row: the outcome, and below it in grey what ended the point. */
+function PointOutcome({ summary }: { summary: { outcome: string; shot: string } }) {
+  return (
+    <>
+      {summary.outcome}
+      {summary.shot && <div data-point-shot className="text-[11px] font-normal text-muted-foreground">{summary.shot}</div>}
+    </>
+  )
 }
 
 // Helper to determine BP/SP/MP for a given point, reconstructing context up to that point
@@ -242,9 +228,10 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
   return null
 }
 
-export function PointByPointView({ pointLog, playerNames, playerObjects, detailLevel = "simple" }: PointByPointViewProps) {
+export function PointByPointView({ pointLog, playerNames, playerObjects }: PointByPointViewProps) {
   const t = useTranslations('common')
-  const [detailedView, setDetailedView] = React.useState(false)
+  // The list shows what ended each point, so open on it when shots or placements were recorded
+  const [detailedView, setDetailedView] = React.useState(() => pointLog.some(hasShotDetail))
   // Group points by set (moved up for hook order)
   const pointsBySets = pointLog.reduce((acc, point) => {
     const setNumber = point.setNumber
@@ -339,14 +326,22 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
               </TabsTrigger>
             ))}
           </TabsList>
-          {/* Only show toggle for simple or detailed scoring */}
-          {(detailLevel === "simple" || detailLevel === "detailed") && (
-            <div className="flex items-center gap-2 ml-4">
-              <Grid size={18} className={!detailedView ? "text-primary" : "text-muted-foreground"} />
-              <Switch checked={detailedView} onCheckedChange={setDetailedView} />
-              <List size={18} className={detailedView ? "text-primary" : "text-muted-foreground"} />
-            </div>
-          )}
+          {/* Compact (scores per game) or list (every point with what ended it) */}
+          <div className="ml-4 flex shrink-0 items-center gap-1 rounded-lg bg-muted p-[3px]">
+            {([['compact', false, Grid, 'compactView'], ['list', true, List, 'listView']] as const).map(([key, value, Icon, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setDetailedView(value)}
+                aria-label={t(label)}
+                title={t(label)}
+                aria-pressed={detailedView === value}
+                className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${detailedView === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <Icon size={16} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
         </div>
         {setNumbers.map(setNumber => {
           const setPoints = pointsBySets[setNumber]
@@ -540,7 +535,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                           <div className="text-left">{t('score')}</div>
                           <div className="text-center">{t('player')}</div>
                           <div className="text-right">{t('serveType')}</div>
-                          <div className="text-right">{detailLevel === 'detailed' ? t('detailedOutcome') : 'Outcome'}</div>
+                          <div className="text-right">{t('outcome')}</div>
                         </div>
                         <div className="flex flex-col items-center gap-1 mt-2 w-full">
                           {(() => {
@@ -572,8 +567,8 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                 }
                               }
                             }
-                            const serveTypeShort = gameWinningPoint.serveType === 'first' ? '1st' : '2nd'
-                            const outcome = getDetailedPointInfo(gameWinningPoint, t, detailLevel)
+                            const serveTypeShort = t(gameWinningPoint.serveType === 'first' ? 'firstServeShort' : 'secondServeShort')
+                            const summary = getPointSummary(gameWinningPoint, t)
                             return (
                               <>
                                 <div
@@ -590,7 +585,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                     {serveTypeShort}
                                   </div>
                                   <div className="text-xs font-medium w-full text-right md:text-right md:col-span-1">
-                                    {outcome}
+                                    <PointOutcome summary={summary} />
                                   </div>
                                 </div>
                                 {[...pointsInGame]
@@ -624,8 +619,8 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                         }
                                       }
                                     }
-                                    const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
-                                    const outcome = getDetailedPointInfo(point, t, detailLevel)
+                                    const serveTypeShort = t(point.serveType === 'first' ? 'firstServeShort' : 'secondServeShort')
+                                    const summary = getPointSummary(point, t)
                                     // --- BADGE LOGIC ---
                                     const pointIdx = pointLog.findIndex(p => p.id === point.id)
                                     const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
@@ -666,7 +661,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                         </div>
                                         {/* Outcome */}
                                         <div className="text-xs font-medium w-full text-right md:text-right md:col-span-1">
-                                          {outcome}
+                                          <PointOutcome summary={summary} />
                                         </div>
                                       </div>
                                     )
@@ -705,8 +700,8 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                       }
                                     }
                                   }
-                                  const serveTypeShort = point.serveType === 'first' ? '1st' : '2nd'
-                                  const outcome = getDetailedPointInfo(point, t, detailLevel)
+                                  const serveTypeShort = t(point.serveType === 'first' ? 'firstServeShort' : 'secondServeShort')
+                                  const summary = getPointSummary(point, t)
                                   // --- BADGE LOGIC ---
                                   const pointIdx = pointLog.findIndex(p => p.id === point.id)
                                   const badge = getPointBadgeForLogIndex(pointIdx, pointLog)
@@ -747,7 +742,7 @@ export function PointByPointView({ pointLog, playerNames, playerObjects, detailL
                                       </div>
                                       {/* Outcome */}
                                       <div className="text-xs font-medium w-full text-right md:text-right md:col-span-1">
-                                        {outcome}
+                                        <PointOutcome summary={summary} />
                                       </div>
                                     </div>
                                   )

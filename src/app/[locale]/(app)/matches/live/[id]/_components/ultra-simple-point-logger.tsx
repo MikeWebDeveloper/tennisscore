@@ -72,8 +72,8 @@ export function UltraSimplePointLogger({
     setOutcome(selectedOutcome)
     const isServePoint = selectedOutcome === 'ace' || selectedOutcome === 'double_fault'
 
-    // The shot-type level records serve points without placement
-    if (mode === 'shot-type' && isServePoint) {
+    // The shot-type level asks where an ace landed (like the detailed level) but records double faults in one tap
+    if (mode === 'shot-type' && selectedOutcome === 'double_fault') {
       finish({
         serveType: pointContext.serveType,
         serveOutcome: selectedOutcome,

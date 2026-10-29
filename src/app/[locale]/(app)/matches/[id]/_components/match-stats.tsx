@@ -10,6 +10,7 @@ import { Shield } from "lucide-react"
 import { Brain } from "lucide-react"
 import { TrendingUp } from "lucide-react"
 import { Crosshair } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/i18n"
 import { PointDetail } from "@/lib/types"
@@ -98,9 +99,18 @@ function StatRow({
       className="space-y-2"
       layout
     >
+      {/* A row with a breakdown behaves like a button and shows an arrow, so it is clear it can be tapped */}
       <motion.div 
         className={`space-y-2 ${onClick ? 'cursor-pointer hover:bg-muted/50 rounded p-2 -m-2 transition-colors' : ''}`}
         onClick={onClick}
+        {...(onClick && {
+          role: 'button',
+          tabIndex: 0,
+          'aria-expanded': isExpanded,
+          onKeyDown: (event: React.KeyboardEvent) => {
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick() }
+          },
+        })}
         layout
       >
         <div className="flex items-center justify-between text-sm">
@@ -111,8 +121,11 @@ function StatRow({
           >
             {formatValue(value1)}
           </motion.span>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground uppercase tracking-wider">
             {label}
+            {onClick && (
+              <ChevronDown data-expand-icon aria-hidden="true" className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            )}
           </span>
           <motion.span 
             className="font-mono font-semibold"
@@ -723,7 +736,75 @@ export function MatchStatsComponentSimpleFixed({
           {/* Return Winners */}
           {renderReturnBreakdown(t('winnerType'))}
 
-          {/* Shot Types */}
+          {/* Shot Types (only when recorded) */}
+          {Object.keys(player1ShotTypes).length + Object.keys(player2ShotTypes).length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
+              <div className="space-y-1">
+                {Object.entries(player1ShotTypes).map(([shotType, count]) => (
+                  <div key={shotType} className="flex items-center justify-between text-sm">
+                    <span className="text-blue-600">{count}</span>
+                    <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                    <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
+                  </div>
+                ))}
+                {Object.entries(player2ShotTypes).map(([shotType, count]) => {
+                  if (player1ShotTypes[shotType]) return null
+                  return (
+                    <div key={shotType} className="flex items-center justify-between text-sm">
+                      <span className="text-blue-600">0</span>
+                      <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
+                      <span className="text-red-600">{count}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Shot Directions (only when recorded) */}
+          {Object.keys(player1ShotDirections).length + Object.keys(player2ShotDirections).length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
+              <div className="space-y-1">
+                {Object.entries(player1ShotDirections).map(([direction, count]) => (
+                  <div key={direction} className="flex items-center justify-between text-sm">
+                    <span className="text-blue-600">{count}</span>
+                    <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                    <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
+                  </div>
+                ))}
+                {Object.entries(player2ShotDirections).map(([direction, count]) => {
+                  if (player1ShotDirections[direction]) return null
+                  return (
+                    <div key={direction} className="flex items-center justify-between text-sm">
+                      <span className="text-blue-600">0</span>
+                      <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
+                      <span className="text-red-600">{count}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Default handling for other stats (unforcedErrors, forcedErrors)
+    const player1ShotTypes = getShotTypeBreakdown(player1Points)
+    const player2ShotTypes = getShotTypeBreakdown(player2Points)
+    
+    const player1ShotDirections = getShotDirectionBreakdown(player1Points)
+    const player2ShotDirections = getShotDirectionBreakdown(player2Points)
+
+    return (
+      <div className="space-y-4">
+        {/* A missed return counts as an error too */}
+        {renderReturnBreakdown(t('returnOrRegular'))}
+
+        {/* Shot Types (only when recorded) */}
+        {Object.keys(player1ShotTypes).length + Object.keys(player2ShotTypes).length > 0 && (
           <div>
             <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
             <div className="space-y-1">
@@ -746,8 +827,10 @@ export function MatchStatsComponentSimpleFixed({
               })}
             </div>
           </div>
+        )}
 
-          {/* Shot Directions */}
+        {/* Shot Directions (only when recorded) */}
+        {Object.keys(player1ShotDirections).length + Object.keys(player2ShotDirections).length > 0 && (
           <div>
             <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
             <div className="space-y-1">
@@ -770,69 +853,7 @@ export function MatchStatsComponentSimpleFixed({
               })}
             </div>
           </div>
-        </div>
-      )
-    }
-
-    // Default handling for other stats (unforcedErrors, forcedErrors)
-    const player1ShotTypes = getShotTypeBreakdown(player1Points)
-    const player2ShotTypes = getShotTypeBreakdown(player2Points)
-    
-    const player1ShotDirections = getShotDirectionBreakdown(player1Points)
-    const player2ShotDirections = getShotDirectionBreakdown(player2Points)
-
-    return (
-      <div className="space-y-4">
-        {/* A missed return counts as an error too */}
-        {renderReturnBreakdown(t('returnOrRegular'))}
-
-        {/* Shot Types */}
-        <div>
-          <h4 className="text-sm font-medium mb-2">{t('shotTypes')}</h4>
-          <div className="space-y-1">
-            {Object.entries(player1ShotTypes).map(([shotType, count]) => (
-              <div key={shotType} className="flex items-center justify-between text-sm">
-                <span className="text-blue-600">{count}</span>
-                <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                <span className="text-red-600">{player2ShotTypes[shotType] || 0}</span>
-              </div>
-            ))}
-            {Object.entries(player2ShotTypes).map(([shotType, count]) => {
-              if (player1ShotTypes[shotType]) return null
-              return (
-                <div key={shotType} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">0</span>
-                  <span className="text-xs text-muted-foreground">{shotTypeTranslations[shotType] || shotType}</span>
-                  <span className="text-red-600">{count}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Shot Directions */}
-        <div>
-          <h4 className="text-sm font-medium mb-2">{t('shotDirections')}</h4>
-          <div className="space-y-1">
-            {Object.entries(player1ShotDirections).map(([direction, count]) => (
-              <div key={direction} className="flex items-center justify-between text-sm">
-                <span className="text-blue-600">{count}</span>
-                <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                <span className="text-red-600">{player2ShotDirections[direction] || 0}</span>
-              </div>
-            ))}
-            {Object.entries(player2ShotDirections).map(([direction, count]) => {
-              if (player1ShotDirections[direction]) return null
-              return (
-                <div key={direction} className="flex items-center justify-between text-sm">
-                  <span className="text-blue-600">0</span>
-                  <span className="text-xs text-muted-foreground">{shotDirectionTranslations[direction] || direction}</span>
-                  <span className="text-red-600">{count}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        )}
       </div>
     )
   }

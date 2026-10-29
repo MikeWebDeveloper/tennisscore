@@ -67,10 +67,19 @@ describe('shot-type level', () => {
     expect(saved.shotDirection).toBeUndefined()
   })
 
-  it('saves an ace straight away without serve placement', () => {
+  // Ace placement is asked at this level too; double faults stay one tap
+  it('asks where an ace landed and saves it', () => {
     const onSave = open({ winner: 'p1', server: 'p1' }, { mode: 'shot-type' })
     click('common.aces')
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ pointOutcome: 'ace', lastShotType: 'serve' }))
+    expect(labels()).toEqual(['common.serveNetCord', 'common.serveOutOfCourt', 'common.serveOnTheT'])
+    click('common.serveOnTheT')
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ pointOutcome: 'ace', lastShotType: 'serve', servePlacement: 't' }))
+  })
+
+  it('saves a double fault straight away without serve placement', () => {
+    const onSave = open({ winner: 'p2', server: 'p1', serveType: 'second' }, { mode: 'shot-type' })
+    click('common.doubleFaults')
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ pointOutcome: 'double_fault', lastShotType: 'serve' }))
     expect(onSave.mock.calls[0][0].servePlacement).toBeUndefined()
   })
 })

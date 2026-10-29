@@ -874,7 +874,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
-  const handleSimpleStatsOutcome = (outcome: SimplePointOutcome) => {
+  const handleSimpleStatsOutcome = (outcome: SimplePointOutcome, extra?: { servePlacement: StorePointDetail['servePlacement'] }) => {
     if (pendingPointWinner) {
       let lastShotPlayer: "p1" | "p2";
 
@@ -899,6 +899,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         rallyLength: outcome === 'ace' || outcome === 'double_fault' ? 1 : 2,
         lastShotType: 'serve',
         lastShotPlayer: lastShotPlayer,
+        // Where an ace landed, asked at this level too
+        ...(extra?.servePlacement && { servePlacement: extra.servePlacement }),
       }
 
       handleAwardPoint(pendingPointWinner, storePointDetail)
