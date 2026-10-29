@@ -126,6 +126,7 @@ export interface Match extends Models.Document {
   matchDate: string
   matchFormat: string
   status: 'pending' | 'in-progress' | 'completed' | 'retired'
+  isPaused?: boolean
   winnerId?: string
   score: string
   pointLog?: string[]
@@ -282,4 +283,4 @@ export interface PlayerStats {
   // Net Stats
   netPointsAttempted: number
   netPointsWon: number
-} 
+}

@@ -43,6 +43,7 @@ interface PublicLiveMatchProps {
     matchFormatParsed: MatchFormat
     detailLevel?: "points" | "simple" | "complex"
     status: "In Progress" | "Completed"
+    isPaused?: boolean
     pointLog?: string[]
     winnerId?: string
     matchDate: string
@@ -112,6 +113,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
       setMatch(prev => ({
         ...prev,
         status: lastUpdate.status || prev.status,
+        isPaused: lastUpdate.isPaused ?? prev.isPaused,
         pointLog: lastUpdate.pointLog || prev.pointLog,
         winnerId: lastUpdate.winnerId || prev.winnerId,
       }))
@@ -291,8 +293,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
 
         {/* Status badges and connection info (unchanged) */}
         <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-          <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className="bg-green-500 text-white text-xs sm:text-sm">
-            {match.status === "In Progress" ? t('live') : t('completed')}
+          <Badge variant={match.status === "In Progress" ? "default" : "secondary"} className={`${match.isPaused ? 'bg-amber-600' : 'bg-green-500'} text-white text-xs sm:text-sm`}>
+            {match.status === "In Progress" ? t(match.isPaused ? 'matchPaused' : 'live') : t('completed')}
           </Badge>
           {/* Connection Status - only show if match is in progress */}
           {match.status === "In Progress" && (

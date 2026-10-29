@@ -18,14 +18,15 @@ interface Props {
   playerFourId?: string
   initialScore: string
   initialStatus: string
+  initialIsPaused?: boolean
   initialWinnerId?: string
   initialPointLog: string[]
   format: string
-  labels: { live: string; finished: string }
+  labels: { live: string; finished: string; paused?: string }
 }
 
 export function CompactLiveScoreboard(props: Props) {
-  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, pointLog: props.initialPointLog })
+  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, pointLog: props.initialPointLog, isPaused: props.initialIsPaused ?? false })
   const lastUpdate = usePublicMatchPolling(data.status === 'Completed' ? '' : props.matchId)
   useEffect(() => {
     if (!lastUpdate) return
@@ -34,6 +35,7 @@ export function CompactLiveScoreboard(props: Props) {
       status: lastUpdate.status ?? previous.status,
       winnerId: lastUpdate.winnerId ?? previous.winnerId,
       pointLog: lastUpdate.pointLog ?? previous.pointLog,
+      isPaused: lastUpdate.isPaused ?? previous.isPaused,
     }))
   }, [lastUpdate])
 
@@ -51,5 +53,5 @@ export function CompactLiveScoreboard(props: Props) {
     { names: [...props.teams[1].names], ids: [...props.teams[1].ids] },
   ]
 
-  return <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={props.labels} />
+  return <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={props.labels} />
 }

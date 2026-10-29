@@ -18,6 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ mat
       pointLog: match.pointLog,
       status: match.status,
       winnerId: match.winnerId,
+      isPaused: match.isPaused,
     }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     const status = (error as { code?: number }).code === 404 ? 404 : 503

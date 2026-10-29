@@ -14,10 +14,11 @@ interface LiteScoreboardProps {
   score: Score
   noAd?: boolean
   inProgress: boolean
+  paused?: boolean
   servingTeam?: "p1" | "p2"
   servingPlayer?: LitePlayerId | null
   winner?: "p1" | "p2" | null
-  labels: { live: string; finished: string }
+  labels: { live: string; finished: string; paused?: string }
 }
 
 /** Tennis point text for a player: 0, 15, 30, 40, or Ad. */
@@ -38,6 +39,7 @@ export function LiteScoreboard({
   score,
   noAd,
   inProgress,
+  paused,
   servingTeam,
   servingPlayer,
   winner,
@@ -48,9 +50,9 @@ export function LiteScoreboard({
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-2 text-xs font-medium">
-        <span className={`inline-flex items-center gap-1.5 ${inProgress ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+        <span className={`inline-flex items-center gap-1.5 ${inProgress ? paused ? "text-amber-600 dark:text-amber-400" : "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
           {inProgress && <span aria-hidden="true" className="h-2 w-2 rounded-full bg-current" />}
-          {inProgress ? labels.live : labels.finished}
+          {inProgress ? (paused ? labels.paused ?? labels.live : labels.live) : labels.finished}
         </span>
       </div>
 

@@ -7,6 +7,7 @@ export interface PublicMatchUpdate {
   status?: string
   winnerId?: string
   pointLog?: string[]
+  isPaused?: boolean
 }
 
 // Lightweight spectator mode intentionally avoids loading the Appwrite SDK.

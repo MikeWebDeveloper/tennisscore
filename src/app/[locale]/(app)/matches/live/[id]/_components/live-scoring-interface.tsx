@@ -18,6 +18,7 @@ import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
+import { setMatchPaused } from "@/lib/actions/match-pause"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { useStoreHydrated } from "@/hooks/use-store-hydrated"
 import { useSyncStatus } from "@/hooks/use-sync-status"
@@ -112,6 +113,7 @@ interface LiveScoringInterfaceProps {
     score: string
     pointLog?: string[]
     status: string
+    isPaused?: boolean
     startTime?: string
     endTime?: string
     setDurations?: number[]
@@ -397,6 +399,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const router = useRouter()
   const t = useTranslations('match')
   const tCommon = useTranslations('common')
+  const [isPaused, setIsPaused] = useState(Boolean(match.isPaused))
+  const [pausePending, setPausePending] = useState(false)
   
   // Use match store with a shallow selector so this component only re-renders
   // when the fields it actually uses change (not on every unrelated store write).
@@ -421,7 +425,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     undoLastPoint: state.undoLastPoint,
     setServer: state.setServer,
   })))
-  useWakeLock(match.status === "In Progress")
+  useWakeLock(match.status === "In Progress" && !isPaused)
   const isDoublesMatch = !!(match.playerThree && match.playerFour)
   // The persisted match loads asynchronously; initializing before it would overwrite unsent local points
   const storeHydrated = useStoreHydrated(useMatchStore.persist)
@@ -740,6 +744,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handlePointWin = async (winner: "p1" | "p2") => {
+    if (isPaused || pausePending) return
     if (!currentServer || !score) {
       console.error("Match not properly initialized - missing server or score")
       toast.error(t('matchNotReady'))
@@ -793,6 +798,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     winner: "p1" | "p2",
     pointDetails?: Partial<StorePointDetail>
   ) => {
+    if (isPaused || pausePending) return
     try {
       const result = awardPoint(winner, {
         ...(pointDetails || {}),
@@ -928,7 +934,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   }
 
   const handleUndo = async () => {
-    if (pointLog.length === 0) return
+    if (pointLog.length === 0 || isPaused || pausePending) return
 
     try {
       const result = undoLastPoint()
@@ -947,6 +953,21 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       console.error("Failed to undo point:", error)
       playSound('error')
       toast.error(t('failedToUndoPoint'))
+    }
+  }
+
+  const togglePause = async () => {
+    if (pausePending || syncState !== 'synced' || !storeHydrated || !isMatchInitialized) return
+    setPausePending(true)
+    try {
+      const next = !isPaused
+      const result = await setMatchPaused(match.$id, next)
+      if (!result.success) throw new Error(result.error)
+      setIsPaused(next)
+    } catch {
+      toast.error(t('pauseUpdateFailed'))
+    } finally {
+      setPausePending(false)
     }
   }
 
@@ -1155,6 +1176,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <SyncStatusBadge state={syncState} />
         </div>
 
+        {isPaused && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm font-semibold">{t('matchPaused')}</p>}
+
         {/* Live Scoreboard */}
         <LiveScoreboard
           playerOneName={playerNames.p1}
@@ -1188,6 +1211,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         />
 
         {/* Point Entry Interface */}
+        <fieldset disabled={isPaused || pausePending}>
         <PointEntry
           onPointWin={handlePointWin}
           score={score}
@@ -1198,13 +1222,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           p1Streak={p1Streak}
           p2Streak={p2Streak}
         />
+        </fieldset>
 
         {/* Controls */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
             variant="outline"
             onClick={handleUndo}
-            disabled={pointLog.length === 0}
+            disabled={pointLog.length === 0 || isPaused || pausePending}
             className="min-h-11 flex items-center gap-2"
           >
             <Undo className="h-4 w-4" />
@@ -1289,6 +1314,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
         {/* End Match Button */}
         <div className="mt-8 pb-20">
+          <Button variant="outline" className="mb-3 h-12 w-full" onClick={togglePause} disabled={pausePending || syncState !== 'synced' || !storeHydrated || !isMatchInitialized || match.status === 'Completed'}>
+            {t(isPaused ? 'resumeInterruptedMatch' : 'pauseMatch')}
+          </Button>
           <Button
             variant="outline"
             className="w-full h-12"

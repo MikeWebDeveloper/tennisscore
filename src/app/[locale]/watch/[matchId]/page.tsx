@@ -77,10 +77,11 @@ export default async function WatchMatchPage({ params }: PageProps) {
         playerFourId={match.playerFourId}
         initialScore={match.score}
         initialStatus={match.status}
+        initialIsPaused={Boolean(match.isPaused)}
         initialWinnerId={match.winnerId}
         initialPointLog={match.pointLog || []}
         format={match.matchFormat}
-        labels={{ live: t("watchLive"), finished: t("watchFinished") }}
+        labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused") }}
       />
 
       <footer className="space-y-2 text-center text-xs text-muted-foreground">

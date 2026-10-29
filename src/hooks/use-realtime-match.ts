@@ -9,6 +9,7 @@ interface RealtimeMatchData {
   events?: string[]
   status?: "In Progress" | "Completed"
   winnerId?: string
+  isPaused?: boolean
 }
 
 const isDev = process.env.NODE_ENV !== "production"
@@ -127,6 +128,7 @@ export function useRealtimeMatch(matchId: string) {
               events: payload.events as string[],
               status: payload.status as "In Progress" | "Completed",
               winnerId: payload.winnerId as string | undefined,
+              isPaused: payload.isPaused as boolean | undefined,
             })
             retryAttemptsRef.current = 0
             if (mountedRef.current) {
