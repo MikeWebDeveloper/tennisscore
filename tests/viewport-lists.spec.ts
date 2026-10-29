@@ -37,3 +37,19 @@ test('desktop keeps compact form typography', async ({ page }) => {
   await page.goto('/en/players')
   await expect(page.locator('main input[role="searchbox"]:visible').first()).toHaveCSS('font-size', '14px')
 })
+
+// The body is a scroll container (overflow-x: hidden); overscroll-behavior on it stopped the
+// mouse wheel from ever reaching the page, so on a PC only dragging the scrollbar worked
+test.describe('desktop mouse wheel', () => {
+  test.use({ viewport: { width: 1280, height: 600 } })
+  for (const path of ['/en/dashboard', '/cs/statistics', '/en/matches/match3']) {
+    test(`scrolls ${path} with the mouse wheel`, async ({ page }) => {
+      await page.goto(path)
+      // Wait for content tall enough to scroll (networkidle can hang on pages that keep polling)
+      await expect.poll(() => page.evaluate(() => document.scrollingElement!.scrollHeight > innerHeight + 50)).toBe(true)
+      await page.mouse.move(700, 350)
+      await page.mouse.wheel(0, 400)
+      await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0)
+    })
+  }
+})
