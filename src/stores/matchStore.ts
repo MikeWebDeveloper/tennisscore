@@ -154,6 +154,11 @@ export interface PointDetail {
   customFields?: { serveSpeed?: 'slow' | 'medium' | 'fast'; returnQuality?: 'defensive' | 'neutral' | 'offensive'; rallyLength?: number }
   lastShotType?: 'forehand' | 'backhand' | 'serve' | 'volley' | 'overhead' | 'other'
   lastShotPlayer?: 'p1' | 'p2'
+  /** Receiver's winner: straight off the return, or later in the rally */
+  winnerType?: 'regular' | 'return'
+  serveSpeed?: number
+  actionPlayer?: 'p1' | 'p2'
+  atNet?: 'p1' | 'p2' | 'both'
   notes?: string
   courtPosition?: CourtPosition
   
@@ -576,8 +581,11 @@ export const updateMatchConditions = (
 
 // Helper function to ensure backward compatibility for existing PointDetail objects
 export const normalizePointDetail = (point: Partial<PointDetail> & { winner: 'p1' | 'p2'; server: 'p1' | 'p2' }): PointDetail => {
-  // Ensure all required fields exist with defaults
+  // Ensure all required fields exist with defaults. Start from the saved point so fields not listed
+  // here survive: the live page reloads the log after every point, and a dropped winnerType
+  // used to turn every earlier return winner into a regular one
   const normalizedPoint: PointDetail = {
+    ...point,
     // Core required fields
     id: point.id || `point-${Date.now()}`,
     timestamp: point.timestamp || new Date().toISOString(),

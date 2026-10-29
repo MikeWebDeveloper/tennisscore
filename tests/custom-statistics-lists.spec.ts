@@ -82,3 +82,31 @@ test('records all selected categories and shows only recorded values', async ({ 
     await request.get('http://localhost:4100/__reset')
   }
 })
+
+// The live page reloads the match after every save; that reload used to strip winnerType,
+// so only the latest return winner stayed a return and the earlier ones turned regular
+test('every return winner stays a return after the page reloads the match', async ({ page, request }) => {
+  await request.get('http://localhost:4100/__reset')
+  try {
+    await request.patch('http://localhost:4100/v1/databases/d/collections/m/documents/match4', { data: { data: { detailLevel: 'detailed' } } })
+    await page.goto('/en/matches/live/match4')
+    const dialog = page.getByRole('dialog')
+    const pointCount = async () => (await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog.length
+    for (let i = 1; i <= 3; i++) {
+      // Player one serves, so player two's winner is the receiver's
+      await page.getByTestId('score-point').nth(1).click()
+      await dialog.getByRole('button', { name: /^Winner/ }).click()
+      await dialog.getByRole('button', { name: 'Return forehand', exact: true }).click()
+      await dialog.getByRole('button', { name: 'Cross Court', exact: true }).click()
+      await expect.poll(pointCount).toBe(i)
+      await expect(dialog).toHaveCount(0)
+    }
+    // Let the post-save reload finish before reading what is stored
+    await page.waitForTimeout(1500)
+    const saved = (await (await request.get('http://localhost:4100/__doc/m/match4')).json()).pointLog.map((point: string) => JSON.parse(point))
+    expect(saved.map((point: { winnerType?: string }) => point.winnerType)).toEqual(['return', 'return', 'return'])
+    expect(saved.map((point: { lastShotType?: string }) => point.lastShotType)).toEqual(['forehand', 'forehand', 'forehand'])
+  } finally {
+    await request.get('http://localhost:4100/__reset')
+  }
+})
