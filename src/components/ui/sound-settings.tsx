@@ -38,9 +38,12 @@ export function SoundSettings() {
   }, [])
 
   const updateSetting = (key: keyof SoundSettings, value: boolean | number) => {
-    const newSettings = { ...settings, [key]: value }
-    setSettings(newSettings)
-    soundManager.updateSettings({ [key]: value })
+    updateSettings({ [key]: value })
+  }
+
+  const updateSettings = (changes: Partial<SoundSettings>) => {
+    setSettings(previous => ({ ...previous, ...changes }))
+    soundManager.updateSettings(changes)
   }
 
   const testSound = async (event: SoundEvent) => {
@@ -51,8 +54,10 @@ export function SoundSettings() {
     }
   }
 
+  // Sounds start muted on a new device, so the slider stays usable: turning the volume up means "I want sound"
   const handleVolumeChange = (value: number[]) => {
-    updateSetting('volume', value[0])
+    const volume = Math.round(value[0] * 10) / 10
+    updateSettings(volume > 0 && !settings.enabled ? { volume, enabled: true } : { volume })
   }
 
   return (
@@ -95,7 +100,6 @@ export function SoundSettings() {
               min={0}
               step={0.1}
               className="flex-1"
-              disabled={!settings.enabled}
             />
             <Volume2 className="h-4 w-4 text-muted-foreground" />
           </div>

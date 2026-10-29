@@ -31,7 +31,8 @@ function Slider({
       min={min}
       max={max}
       className={cn(
-        "relative flex w-full touch-none select-none items-center py-4",
+        // A disabled slider must look disabled, or a mouse drag that does nothing reads as broken
+        "relative flex w-full touch-none select-none items-center py-4 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         className
       )}
       {...props}
