@@ -1041,6 +1041,18 @@
       "componentQualityFixes": {
         "title": "Opravy kvality komponentů",
         "description": "Vyřešeny různé nekonzistence v UI a vylepšena spolehlivost komponentů v celé aplikaci."
+      },
+      "matchOverview": {
+        "title": "Nový přehled zápasu",
+        "description": "Graf průběhu, hra po hře, klíčové chvíle, velké body, podání a return i série – vše na jedné stránce zápasu. Nová záložka Průběh ukazuje každou hru."
+      },
+      "pdfReport": {
+        "title": "PDF report zápasu",
+        "description": "Přehledný PDF report se statistikami, průběhem zápasu a všemi hrami. Na telefonu ho rovnou sdílíte."
+      },
+      "liveInsights": {
+        "title": "Živé statistiky během zápasu",
+        "description": "Pod lištou momenta uvidíte sérii bodů, poslední klíčovou chvíli, hlavní čísla a hry aktuálního setu."
       }
     }
   },

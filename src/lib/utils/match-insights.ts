@@ -515,8 +515,8 @@ function findMoments(insights: MatchInsights, gamesPerSet: number): Moment[] {
   if (longest && longest.length >= 4) {
     const start = games[longest.start]
     const before: [number, number] = start.game === 1 ? [0, 0] : games[longest.start - 1].set === start.set ? games[longest.start - 1].gamesAfter : [0, 0]
-    const end = games[longest.start + longest.length - 1]
-    moments.push({ kind: 'gameRun', side: longest.side, length: longest.length, set: start.set, fromScore: before, at: end.lastPoint + 1 })
+    // Placed where the run began, so the list reads in match order
+    moments.push({ kind: 'gameRun', side: longest.side, length: longest.length, set: start.set, fromScore: before, at: start.firstPoint })
   }
 
   for (const s of sets) {

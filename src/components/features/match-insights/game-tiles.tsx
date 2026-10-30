@@ -24,7 +24,7 @@ const tileClass = (game: GameSummary) => {
 export function GameTiles({ games, names, size = "md" }: { games: GameSummary[]; names: Record<Side, string>; size?: "md" | "sm" }) {
   const t = useTranslations("insights")
   return (
-    <div className="flex flex-wrap gap-1.5" data-game-tiles>
+    <div className="flex flex-wrap gap-1" data-game-tiles>
       {games.map((game) => {
         const label = game.tiebreak ? t("tiebreakShort") : game.winner ? `${game.gamesAfter[0]}:${game.gamesAfter[1]}` : t("gameNow")
         const description = game.winner
@@ -39,7 +39,7 @@ export function GameTiles({ games, names, size = "md" }: { games: GameSummary[];
             data-game-tile={game.isBreak ? "break" : game.winner ? "hold" : "open"}
             className={cn(
               "flex items-center justify-center rounded-[10px] border font-mono font-bold tabular-nums",
-              size === "sm" ? "h-8 min-w-9 px-1 text-[11px]" : "h-9 min-w-9 px-1 text-xs",
+              size === "sm" ? "h-8 min-w-[34px] px-1 text-[11px]" : "h-9 min-w-[36px] px-1 text-xs",
               tileClass(game)
             )}
           >

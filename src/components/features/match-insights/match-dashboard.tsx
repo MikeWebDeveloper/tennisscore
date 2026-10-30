@@ -68,11 +68,11 @@ function Pair({ a, b, sep = ":" }: { a: ReactNode; b: ReactNode; sep?: string })
   )
 }
 
-function Tile({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
+function Tile({ label, value, sub, small = false }: { label: string; value: ReactNode; sub?: ReactNode; small?: boolean }) {
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-2xl border bg-card p-3.5">
       <span className="text-[10.5px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <span className="text-2xl">{value}</span>
+      <span className={cn("whitespace-nowrap", small ? "text-lg leading-8 sm:text-xl" : "text-2xl")}>{value}</span>
       {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
     </div>
   )
@@ -214,6 +214,7 @@ export function MatchDashboard(props: MatchDashboardProps) {
             <Tile label={t("tilePoints")} value={<Pair a={p1.points} b={p2.points} />} sub={t("tilePointsSub", { name: shortNames[focus], pct: percent(f.points, totalPoints) ?? 0 })} />
             <Tile label={t("tileBreaks")} value={<Pair a={p1.breaks} b={p2.breaks} />} sub={f.breakPointChances ? t("tileBreaksSub", { won: f.breakPointsWon, chances: f.breakPointChances }) : undefined} />
             <Tile
+              small
               label={t("tileHolds")}
               value={<Pair a={`${p1.serviceGamesHeld}/${p1.serviceGames}`} b={`${p2.serviceGamesHeld}/${p2.serviceGames}`} sep=" · " />}
               sub={f.serviceGames && f.serviceGamesHeld === f.serviceGames ? t("tileHoldsAll", { name: shortNames[focus] }) : undefined}
@@ -262,7 +263,7 @@ export function MatchDashboard(props: MatchDashboardProps) {
                   const text = momentText(m, shortNames, tr, locale)
                   return (
                     <li key={`${m.kind}-${m.at}`} className="flex items-start gap-3">
-                      <span className="min-w-[64px] shrink-0 rounded-lg bg-amber-400/15 px-1.5 py-1 text-center font-mono text-[11px] font-bold text-amber-700 dark:text-amber-300">{text.when}</span>
+                      <span className="w-24 shrink-0 rounded-lg bg-amber-400/15 px-1.5 py-1 text-center font-mono text-[11px] font-bold text-amber-700 dark:text-amber-300">{text.when}</span>
                       <div className="flex min-w-0 flex-col gap-0.5">
                         <span className="flex items-center gap-1.5 text-[13.5px] font-bold">
                           <span className={cn("h-2 w-2 shrink-0 rounded-full", m.side === "p1" ? "bg-blue-500" : "bg-red-500")} aria-hidden />
@@ -330,10 +331,10 @@ export function MatchDashboard(props: MatchDashboardProps) {
                   )
                 })}
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11.5px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-slate-400" />{t("legendOwn")}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-slate-400 opacity-60" />{t("legendUnforced")}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-slate-400 opacity-40" />{t("legendForced")}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-slate-400 opacity-20" />{t("legendDoubleFaults")}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-slate-400" />{t("legendOwn")}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-slate-400 opacity-60" />{t("legendUnforced")}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-slate-400 opacity-40" />{t("legendForced")}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-slate-400 opacity-20" />{t("legendDoubleFaults")}</span>
                 </div>
                 {sourceNote && <p className="text-xs leading-relaxed text-muted-foreground">{sourceNote}</p>}
               </Section>

@@ -35,7 +35,7 @@ import { DynamicPointLogger } from "./dynamic-point-logger"
 import { SimpleStatsPopup, SimplePointOutcome } from "./simple-stats-popup"
 import { LiveScoreboard as SharedLiveScoreboard } from "@/components/shared/live-scoreboard"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useTranslations } from "@/i18n"
+import { useLocale, useTranslations } from "@/i18n"
 import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id]/_components/match-stats"
@@ -498,6 +498,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     p2: playerNames.p4 ? `${playerNames.p2} / ${playerNames.p4}` : playerNames.p2,
   }
   const liveShortNames = shortSideNames(sidePlayers, sideFullNames)
+  const locale = useLocale()
   const liveReport = () => {
     const meta = (people: (Player | undefined)[]) => people
       .filter((person): person is Player => Boolean(person))
@@ -515,7 +516,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         current: match.status !== "Completed" ? score.games : undefined,
       },
       completed: match.status === "Completed",
-      dateLabel: new Date(match.startTime || Date.now()).toLocaleDateString(undefined, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Prague" }),
+      dateLabel: new Date(match.startTime || Date.now()).toLocaleDateString(locale, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Prague" }),
       tournamentName: match.tournamentName,
     }
   }

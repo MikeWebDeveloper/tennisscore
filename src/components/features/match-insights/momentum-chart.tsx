@@ -138,10 +138,10 @@ export function MomentumChart({ insights, names, set, compact = false, height }:
       </svg>
       {!compact && (
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />{t("chartLeads", { name: names.p1 })}</span>
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-500" />{t("chartLeads", { name: names.p2 })}</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-blue-500" />{t("chartLeads", { name: names.p1 })}</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-red-500" />{t("chartLeads", { name: names.p2 })}</span>
           {breaks.length > 0 && (
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-blue-500" />{t("chartBreak")}</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-full border-2 border-blue-500" />{t("chartBreak")}</span>
           )}
         </div>
       )}

@@ -45,9 +45,9 @@ export function MatchFlow({ insights, names }: { insights: MatchInsights; names:
                   if (g.deuce) tags.push(t("tagDeuce"))
                   return (
                     <li key={g.game} data-flow-game className="flex items-center gap-3 border-b py-2.5 last:border-b-0">
-                      <div className="flex w-[4.5rem] shrink-0 flex-col">
+                      <div className="flex w-24 shrink-0 flex-col">
                         <span className="text-[13px] font-bold">{g.tiebreak ? (s.superTiebreak ? t("flowSuperTiebreak") : t("flowTiebreak")) : t("flowGame", { game: g.game })}</span>
-                        <span className="truncate text-[11px] text-muted-foreground">{t("flowServing", { name: names[g.server] })}</span>
+                        <span className="break-words text-[11px] leading-snug text-muted-foreground">{t("flowServing", { name: names[g.server] })}</span>
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <div className="flex flex-wrap gap-[3px]" aria-hidden>

@@ -131,7 +131,8 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.com",
-      "connect-src 'self' https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.live wss: ws:",
+      // data: lets the PDF report's layout engine load its WebAssembly without a console error
+      "connect-src 'self' data: https://fra.cloud.appwrite.io https://cloud.appwrite.io https://vercel.live wss: ws:",
       "media-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",

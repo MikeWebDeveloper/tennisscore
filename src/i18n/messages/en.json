@@ -1012,6 +1012,18 @@
       "componentQualityFixes": {
         "title": "Component Quality Fixes",
         "description": "Resolved various UI inconsistencies and improved component reliability across the application."
+      },
+      "matchOverview": {
+        "title": "New match overview",
+        "description": "A flow chart, game by game, key moments, big points, serve and return and runs – all on the match page. The new Flow tab lists every game."
+      },
+      "pdfReport": {
+        "title": "Match PDF report",
+        "description": "A clear PDF report with the statistics, how the match went and every game. Share it straight from your phone."
+      },
+      "liveInsights": {
+        "title": "Live statistics during the match",
+        "description": "Under the momentum bar: the current run, the latest key moment, the key numbers and this set’s games."
       }
     }
   },

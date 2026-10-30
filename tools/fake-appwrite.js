@@ -48,8 +48,40 @@ const history = () => {
   })
   return out
 }
+// A full made-up match (6:3 6:4) with a point log, for the match overview, flow tab and PDF report.
+// Another user's match, so lists and statistics of the test user stay as they are.
+const insightsMatch = () => {
+  // Per game: who served and who won each point ("s" server, "r" receiver)
+  const games = [
+    [1, 'p1', 'ssss'], [1, 'p2', 'ssss'], [1, 'p1', 'rrrsssss'], [1, 'p2', 'rrrr'], [1, 'p1', 'ssss'], [1, 'p2', 'ssss'], [1, 'p1', 'ssrss'], [1, 'p2', 'ssss'], [1, 'p1', 'ssss'],
+    [2, 'p2', 'ssss'], [2, 'p1', 'ssss'], [2, 'p2', 'rrrr'], [2, 'p1', 'ssss'], [2, 'p2', 'ssss'], [2, 'p1', 'rrrr'], [2, 'p2', 'rrrr'], [2, 'p1', 'ssss'], [2, 'p2', 'ssss'], [2, 'p1', 'ssss'],
+  ]
+  const start = Date.parse('2026-10-26T09:00:00.000Z')
+  const log = []
+  let gameNumber = 0, set = 0
+  for (const [setNumber, server, seq] of games) {
+    gameNumber = setNumber === set ? gameNumber + 1 : 1
+    set = setNumber
+    for (const c of seq) {
+      const i = log.length
+      log.push(JSON.stringify({
+        id: String(i), pointNumber: i + 1, setNumber, gameNumber, server, isTiebreak: false,
+        winner: c === 's' ? server : server === 'p1' ? 'p2' : 'p1',
+        serveType: i % 4 === 3 ? 'second' : 'first',
+        pointOutcome: ['winner', 'unforced_error', 'forced_error', 'unforced_error'][i % 4],
+        timestamp: new Date(start + i * 35000).toISOString(),
+      }))
+    }
+  }
+  return {
+    'm/insights1': { ...base, $id: 'insights1', userId: 'other-user', playerOneId: 'pl1', playerTwoId: 'pl3', status: 'Completed', winnerId: 'pl1', detailLevel: 'simple',
+      score: JSON.stringify({ sets: [[6, 3], [6, 4]], games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }),
+      matchFormat: fmt(), pointLog: log, startTime: new Date(start - 35000).toISOString(), endTime: new Date(start + (log.length - 1) * 35000).toISOString() },
+  }
+}
 Object.assign(samples, {})
-let docs = { ...samples(), ...history() }
+const withInsights = () => ({ ...samples(), ...insightsMatch() })
+let docs = { ...withInsights(), ...history() }
 let failSaves = false
 let failPlayerCreate = false
 // Match attributes mirror the preview collection, including optional attributes absent
@@ -60,13 +92,13 @@ const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'a
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost')
   if (url.pathname === '/__reset') {
-    docs = { ...samples(), ...history() }; failSaves = false; failPlayerCreate = false
+    docs = { ...withInsights(), ...history() }; failSaves = false; failPlayerCreate = false
     const marker = url.searchParams.get('marker')
     if (marker && /^[A-Za-z0-9]{1,40}$/.test(marker)) docs['p/pl1'].lastName = marker
     return json(res, 200, { ok: true })
   }
   if (url.pathname === '/__seed-search') {
-    docs = { ...samples(), ...history() }
+    docs = { ...withInsights(), ...history() }
     docs['p/old-player'] = { $id: 'old-player', userId: 'test-user', firstName: 'Old', lastName: 'Opponent', isMainPlayer: false }
     for (let i = 0; i < 35; i++) {
       const id = `search-new-${i}`
