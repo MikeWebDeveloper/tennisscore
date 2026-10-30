@@ -110,6 +110,7 @@ export function analysisSystemPrompt(locale: string): string {
     "The statistics are already counted: quote those numbers rather than recounting from the point list. The point list is for patterns and context.",
     "Be specific, honest and encouraging; the players are children, so no harsh language.",
     "Write about the focus player; mention the opponent only for context. Scores in the data are written focus player first.",
+    "match.type says singles or doubles: in singles never call the player a team or a pair.",
     "Training tips must be concrete drills (what, how many repetitions, what to focus on) aimed at the weakest areas the numbers show.",
     "Keep it compact: the summary 4–6 sentences, every list item one or two sentences.",
   ].join("\n")
