@@ -36,12 +36,60 @@ describe('analysisPrompt', () => {
 })
 
 describe('analysisSystemPrompt', () => {
-  it('asks for Czech tennis words and forbids claims the data cannot support', () => {
+  it('asks for Czech tennis words, all recorded data and nothing that was not recorded', () => {
     const prompt = analysisSystemPrompt('cs')
     expect(prompt).toContain('Czech')
     expect(prompt).toContain('"hra"')
-    expect(prompt).toMatch(/no shot types/)
+    expect(prompt).toContain('forhend, bekhend')
+    expect(prompt).toMatch(/notRecorded/)
+    expect(prompt).toMatch(/shotStats/)
     expect(analysisSystemPrompt('en')).toContain('Write in English')
+  })
+})
+
+describe('analysisPrompt with shot data', () => {
+  // Game 1: p1 serves; forehand winner, backhand return error by p2, p1 forehand unforced error,
+  // then two more p1 points: p1 holds. Game 2: p2 serves at 0:40 and loses on a p2 backhand error.
+  const shotPoints = [
+    { winner: 'p1', server: 'p1', serveType: 'first', pointOutcome: 'winner', lastShotType: 'forehand', lastShotPlayer: 'p1', setNumber: 1, gameNumber: 1 },
+    { winner: 'p1', server: 'p1', serveType: 'second', pointOutcome: 'unforced_error', lastShotType: 'backhand', lastShotPlayer: 'p2', winnerType: 'return', setNumber: 1, gameNumber: 1 },
+    { winner: 'p2', server: 'p1', serveType: 'first', pointOutcome: 'unforced_error', lastShotType: 'forehand', lastShotPlayer: 'p1', setNumber: 1, gameNumber: 1 },
+    { winner: 'p1', server: 'p1', serveType: 'first', pointOutcome: 'ace', lastShotType: 'serve', servePlacement: 't', setNumber: 1, gameNumber: 1 },
+    { winner: 'p1', server: 'p1', serveType: 'first', pointOutcome: 'winner', lastShotType: 'volley', lastShotPlayer: 'p1', setNumber: 1, gameNumber: 1 },
+    ...[0, 1, 2].map(() => ({ winner: 'p1', server: 'p2', serveType: 'first', pointOutcome: 'winner', lastShotType: 'forehand', lastShotPlayer: 'p1', setNumber: 1, gameNumber: 2 })),
+    { winner: 'p1', server: 'p2', serveType: 'second', pointOutcome: 'unforced_error', lastShotType: 'backhand', lastShotPlayer: 'p2', setNumber: 1, gameNumber: 2 },
+  ] as const
+  const input = (detailLevel: string) => ({
+    locale: 'cs', insights: buildMatchInsights(shotPoints as never, { detailLevel }), players, focus: 'p1' as const,
+    points: shotPoints as never, detailLevel,
+  })
+
+  it('passes the shot statistics, returns and ace placement when the match recorded them', () => {
+    const data = dataOf(analysisPrompt(input('shot-type')))
+    expect(data.recorded.join(' ')).toMatch(/forehand, backhand/)
+    expect(data.notRecorded.join(' ')).toMatch(/rally length/)
+    expect(data.shotStats.focusPlayer.pointEndingShots).toEqual({
+      forehand: { winners: 4, unforcedErrors: 1, forcedErrors: 0 },
+      volley: { winners: 1, unforcedErrors: 0, forcedErrors: 0 },
+    })
+    expect(data.shotStats.opponent.pointEndingShots).toEqual({ backhand: { winners: 0, unforcedErrors: 2, forcedErrors: 0 } })
+    expect(data.shotStats.opponent.returnsThatEndedThePoint).toEqual({ winners: 0, unforcedErrors: 1, forcedErrors: 0 })
+    expect(data.shotStats.focusPlayer.acesByPlacement).toEqual({ t: 1 })
+    expect(data.points[1]).toMatchObject({ server: 'F', w: 'F', serve: 2, end: 'unforced error', shot: 'backhand', by: 'O', return: true })
+  })
+
+  it('lists every break point with how it ended and the shot', () => {
+    const data = dataOf(analysisPrompt(input('shot-type')))
+    expect(data.breakPoints).toEqual([
+      { set: 1, game: 2, server: 'Eva Malá', score: '40:0', won: true, how: 'unforced error (backhand) by Eva Malá' },
+    ])
+  })
+
+  it('says shots were not recorded at the simple level, and passes no shot statistics', () => {
+    const data = dataOf(analysisPrompt(input('simple')))
+    expect(data.shotStats).toBeUndefined()
+    expect(data.notRecorded.join(' ')).toMatch(/forehand, backhand/)
+    expect(data.points[0]).not.toHaveProperty('shot')
   })
 })
 

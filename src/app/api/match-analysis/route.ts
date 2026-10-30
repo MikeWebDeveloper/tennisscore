@@ -124,6 +124,10 @@ export async function POST(request: Request) {
           durationMinutes: duration && duration > 0 ? duration : null,
           endReason: match.retirementReason || null,
           doubles: Boolean(match.playerThreeId && match.playerFourId),
+          // Everything the match recorded (shots, returns, placements, custom statistics) goes in
+          points,
+          detailLevel: match.detailLevel,
+          noAd: normalizeMatchFormat(match.matchFormat).noAd,
         }),
         schema: ANALYSIS_SCHEMA,
       })
