@@ -1936,6 +1936,16 @@
     "momentumHas": "{name} má navrch",
     "momentumEven": "Vyrovnané",
     "muteSounds": "Vypnout zvuky",
-    "unmuteSounds": "Zapnout zvuky"
+    "unmuteSounds": "Zapnout zvuky",
+    "aiPending": "AI rozbor se připravuje…",
+    "aiPendingHint": "Můžete odejít – za 2–3 minuty bude hotový. Až se sem vrátíte, rozbor tu najdete; pokud stránka zůstane otevřená, objeví se sám.",
+    "aiReadyToast": "AI rozbor je hotový",
+    "aiTimedOut": "Rozbor se nedokončil. Zkuste ho vytvořit znovu.",
+    "exportStats": "Statistiky zápasu",
+    "exportStatsHint": "Přehled, statistiky po setech a všechny hry",
+    "exportWithAi": "Statistiky + AI rozbor",
+    "exportWithAiHint": "Stejné PDF s uloženým AI rozborem",
+    "exportAiPending": "AI rozbor se ještě připravuje",
+    "exportAiMissing": "Nejdřív vytvořte AI rozbor"
   }
 }

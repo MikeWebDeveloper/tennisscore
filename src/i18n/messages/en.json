@@ -1907,6 +1907,16 @@
     "momentumHas": "{name} has momentum",
     "momentumEven": "Even",
     "muteSounds": "Mute sounds",
-    "unmuteSounds": "Unmute sounds"
+    "unmuteSounds": "Unmute sounds",
+    "aiPending": "Writing the AI analysis…",
+    "aiPendingHint": "You can leave – it will be ready in 2–3 minutes. It will be here when you come back, and it appears by itself if the page stays open.",
+    "aiReadyToast": "The AI analysis is ready",
+    "aiTimedOut": "The analysis didn’t finish. Please create it again.",
+    "exportStats": "Match statistics",
+    "exportStatsHint": "Overview, statistics by set and every game",
+    "exportWithAi": "Statistics + AI analysis",
+    "exportWithAiHint": "The same PDF with the saved AI analysis",
+    "exportAiPending": "The AI analysis is still being written",
+    "exportAiMissing": "Create the AI analysis first"
   }
 }

@@ -1,5 +1,5 @@
 import { buildMatchInsights, type InsightPoint } from '@/lib/utils/match-insights'
-import { analysisPrompt, analysisSystemPrompt, parseAnalysis } from './match-analysis'
+import { analysisPrompt, analysisState, analysisSystemPrompt, parseAnalysis } from './match-analysis'
 
 // p1 holds to love, then breaks p2 to love: 2:0 for p1
 const points: InsightPoint[] = [
@@ -54,5 +54,28 @@ describe('parseAnalysis', () => {
   it('rejects answers without a summary or that are not JSON', () => {
     expect(parseAnalysis('{"strengths":["x"]}')).toBeNull()
     expect(parseAnalysis('Sorry, I cannot help')).toBeNull()
+  })
+})
+
+describe('analysisState', () => {
+  const ready = (summary: string, at: string) => ({ content: JSON.stringify({ summary }), model: 'm', status: 'ready', $createdAt: at })
+  const now = Date.parse('2026-10-30T12:10:00Z')
+
+  it('is idle with nothing saved, and shows the newest finished analysis', () => {
+    expect(analysisState([], now)).toEqual({ saved: null, job: { status: 'idle' } })
+    expect(analysisState([ready('Nový', '2026-10-30T12:00:00Z'), ready('Starý', '2026-10-29T12:00:00Z')], now).saved?.analysis.summary).toBe('Nový')
+  })
+
+  it('keeps the last analysis on show while a new one is written', () => {
+    const state = analysisState([{ content: '{}', model: '', status: 'pending', $createdAt: '2026-10-30T12:08:00Z' }, ready('Starý', '2026-10-29T12:00:00Z')], now)
+    expect(state).toMatchObject({ saved: { analysis: { summary: 'Starý' } }, job: { status: 'pending', startedAt: '2026-10-30T12:08:00Z' } })
+  })
+
+  it('gives up on an analysis that has been "pending" for over five minutes', () => {
+    expect(analysisState([{ content: '{}', model: '', status: 'pending', $createdAt: '2026-10-30T12:00:00Z' }], now).job).toEqual({ status: 'failed', reason: 'timeout' })
+  })
+
+  it('treats documents saved before the status field as finished', () => {
+    expect(analysisState([{ content: '{"summary":"Bez stavu"}', model: 'm', $createdAt: '2026-10-30T12:00:00Z' }], now).saved?.analysis.summary).toBe('Bez stavu')
   })
 })

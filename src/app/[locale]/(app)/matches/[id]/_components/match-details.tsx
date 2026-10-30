@@ -31,15 +31,18 @@ import { formatMatchDuration } from "@/lib/utils/statistics-summary"
 import { endReasonMessageKey } from "@/lib/utils/end-reasons"
 import { MatchDashboard } from "@/components/features/match-insights/match-dashboard"
 import { MatchFlow } from "@/components/features/match-insights/match-flow"
-import { AiAnalysisCard } from "@/components/features/match-insights/ai-analysis-card"
+import { AiAnalysisCard, type AnalysisStatus } from "@/components/features/match-insights/ai-analysis-card"
 import { PdfExportButton } from "@/components/features/match-insights/pdf-export-button"
+import dynamic from "next/dynamic"
 import { focusSide, shortSideNames } from "@/components/features/match-insights/labels"
 import { buildMatchInsights, type Side } from "@/lib/utils/match-insights"
 import { formatPlayerRating } from "@/lib/utils/player-rating"
-import type { SavedAnalysis } from "@/lib/ai/match-analysis"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { parseDbScore } from "@/lib/utils/db-score"
+
+// Only the AI accounts get the two-option PDF menu, so its dropdown code loads only for them
+const PdfExportMenu = dynamic(() => import("@/components/features/match-insights/pdf-export-menu").then((m) => m.PdfExportMenu))
 
 interface MatchDetailsProps {
   match: {
@@ -104,7 +107,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     () => buildMatchInsights(pointDetails, { format: normalizeMatchFormat(match.matchFormat), detailLevel: match.detailLevel }),
     [pointDetails, match.matchFormat, match.detailLevel]
   )
-  const [analysis, setAnalysis] = useState<SavedAnalysis | null>(null)
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus | null>(null)
 
   const handleShareMatch = () => {
     const shareUrl = `${window.location.origin}/live/${match.$id}`
@@ -208,7 +211,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     sets: storedScore.sets,
     current: !isCompleted && (storedScore.games[0] > 0 || storedScore.games[1] > 0 || storedScore.sets.length === 0) ? storedScore.games : undefined,
   }
-  const buildReport = () => ({
+  const buildReport = (withAnalysis = false) => ({
     insights,
     fullNames,
     shortNames,
@@ -220,9 +223,14 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     dateLabel,
     tournamentName: match.tournamentName,
     durationText,
-    analysis,
+    analysis: withAnalysis ? analysisStatus?.saved ?? null : null,
   })
   const reportFileParts = [shortNames.p1, shortNames.p2, match.matchDate.slice(0, 10)]
+  // The AI accounts choose between the statistics PDF and the one with the AI analysis
+  const aiState = analysisStatus?.saved ? "ready" : analysisStatus?.job.status === "pending" ? "pending" : "missing"
+  const pdfButton = (look: { size?: "lg" | "sm" | "icon"; variant?: "default" | "outline"; className?: string }) => canUseAi
+    ? <PdfExportMenu report={buildReport} filenameParts={reportFileParts} aiState={aiState} {...look} />
+    : <PdfExportButton report={() => buildReport()} filenameParts={reportFileParts} {...look} />
   // The details card: the played time, the time so far, or at least how many points were logged
   const matchDurationText = durationText
     ?? (match.startTime && !isCompleted ? `${formatDuration((Date.now() - Date.parse(match.startTime)) / 60000)} (${t('ongoing')})` : null)
@@ -244,7 +252,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
             </Button>
             <div className="flex items-center gap-2">
               {insights.hasPoints && (
-                <PdfExportButton report={buildReport} filenameParts={reportFileParts} size="icon" variant="outline" className="h-11 w-11" />
+                pdfButton({ size: "icon", variant: "outline", className: "h-11 w-11" })
               )}
               <ShareScoreCardButton
                 compact
@@ -343,7 +351,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
             </Button>
             <div className="flex flex-wrap items-center justify-end gap-2">
               {insights.hasPoints && (
-                <PdfExportButton report={buildReport} filenameParts={reportFileParts} size="sm" variant="outline" />
+                pdfButton({ size: "sm", variant: "outline" })
               )}
               <Button 
                 variant="outline" 
@@ -412,10 +420,10 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
             dateLabel={dateLabel}
             tournamentName={match.tournamentName}
             durationText={durationText}
-            aiCard={canUseAi && insights.hasPoints ? <AiAnalysisCard matchId={match.$id} onChange={setAnalysis} /> : undefined}
+            aiCard={canUseAi && insights.hasPoints ? <AiAnalysisCard matchId={match.$id} onChange={setAnalysisStatus} /> : undefined}
             actions={insights.hasPoints ? (
               <div className="flex gap-2.5">
-                <PdfExportButton report={buildReport} filenameParts={reportFileParts} className="h-12 flex-1 rounded-xl" />
+                {pdfButton({ className: "h-12 flex-1 rounded-xl" })}
                 <Button variant="outline" size="lg" className="h-12 flex-1 rounded-xl" onClick={handleShareMatch}>
                   <Share2 className="h-4 w-4" />
                   {copiedLink ? t('copied') : isCompleted ? t('shareResults') : t('shareLive')}

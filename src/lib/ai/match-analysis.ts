@@ -37,6 +37,41 @@ export interface SavedAnalysis {
   createdAt: string
 }
 
+/** One stored analysis document: a finished analysis, one being written, or one that failed */
+export interface StoredAnalysis {
+  content: string
+  model: string
+  status?: string | null
+  error?: string | null
+  $createdAt: string
+}
+
+export type AnalysisJob =
+  | { status: "idle" }
+  | { status: "pending"; startedAt: string }
+  | { status: "failed"; reason: string }
+
+/** An analysis being written longer than this has died with its server function */
+export const ANALYSIS_STALE_MS = 5 * 60_000
+
+/**
+ * What the AI card shows: the newest finished analysis (kept while a new one is written or after
+ * a later attempt failed) and the state of the newest attempt. Documents come newest first.
+ */
+export function analysisState(docs: StoredAnalysis[], now = Date.now()): { saved: SavedAnalysis | null; job: AnalysisJob } {
+  const ready = docs.find((doc) => (doc.status ?? "ready") === "ready" && parseAnalysis(doc.content))
+  const saved = ready ? { analysis: parseAnalysis(ready.content)!, model: ready.model, createdAt: ready.$createdAt } : null
+  const latest = docs[0]
+  if (!latest || latest === ready) return { saved, job: { status: "idle" } }
+  if (latest.status === "pending") {
+    return now - Date.parse(latest.$createdAt) < ANALYSIS_STALE_MS
+      ? { saved, job: { status: "pending", startedAt: latest.$createdAt } }
+      : { saved, job: { status: "failed", reason: "timeout" } }
+  }
+  if (latest.status === "failed") return { saved, job: { status: "failed", reason: latest.error || "failed" } }
+  return { saved, job: { status: "idle" } }
+}
+
 /** Gemini structured output: the answer must be exactly this shape */
 export const ANALYSIS_SCHEMA = {
   type: "OBJECT",
