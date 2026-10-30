@@ -398,28 +398,32 @@ export function MatchReportDocument(props: MatchReportProps) {
             )}
           </View>
 
-          {props.analysis && (
-            <View style={{ marginTop: 16 }}>
-              <Text style={[styles.headline, { marginBottom: 6 }]}>{t("pdfAiTitle")}</Text>
-              <View style={[styles.box, { backgroundColor: "#f6f3ff", borderColor: "#ddd6fe" }]}>
-                <Text style={{ fontSize: 9.5, lineHeight: 1.5, marginBottom: 8 }}>{props.analysis.analysis.summary}</Text>
-                {([
-                  [t("aiStrengths"), props.analysis.analysis.strengths],
-                  [t("aiImprovements"), props.analysis.analysis.improvements],
-                  [t("aiTraining"), props.analysis.analysis.trainingTips],
-                ] as [string, string[]][]).filter(([, items]) => items.length).map(([title, items]) => (
-                  <View key={title} style={{ marginBottom: 6 }} wrap={false}>
-                    <Text style={[styles.label, { color: "#6d28d9", marginBottom: 2 }]}>{title}</Text>
-                    {items.map((item, i) => <Text key={i} style={{ fontSize: 9, lineHeight: 1.45, marginBottom: 1.5 }}>{`•  ${item}`}</Text>)}
-                  </View>
-                ))}
-                <Text style={{ fontSize: 7, color: FAINT, marginTop: 2 }}>{`${t("aiDisclaimer")} (${props.analysis.model})`}</Text>
-              </View>
-            </View>
-          )}
         </View>
         <Footer t={t} generatedLabel={props.generatedLabel} />
       </Page>
+
+      {props.analysis && (
+        <Page size="A4" style={[styles.page, { paddingTop: 28 }]}>
+          <View style={styles.body}>
+            <Text style={[styles.headline, { marginBottom: 6 }]}>{t("pdfAiTitle")}</Text>
+            <View style={[styles.box, { backgroundColor: "#f6f3ff", borderColor: "#ddd6fe" }]}>
+              <Text style={{ fontSize: 9.5, lineHeight: 1.5, marginBottom: 8 }}>{props.analysis.analysis.summary}</Text>
+              {([
+                [t("aiStrengths"), props.analysis.analysis.strengths],
+                [t("aiImprovements"), props.analysis.analysis.improvements],
+                [t("aiTraining"), props.analysis.analysis.trainingTips],
+              ] as [string, string[]][]).filter(([, items]) => items.length).map(([title, items]) => (
+                <View key={title} style={{ marginBottom: 6 }} wrap={false}>
+                  <Text style={[styles.label, { color: "#6d28d9", marginBottom: 2 }]}>{title}</Text>
+                  {items.map((item, i) => <Text key={i} style={{ fontSize: 9, lineHeight: 1.45, marginBottom: 1.5 }}>{`•  ${item}`}</Text>)}
+                </View>
+              ))}
+              <Text style={{ fontSize: 7, color: FAINT, marginTop: 2 }}>{`${t("aiDisclaimer")} (${props.analysis.model})`}</Text>
+            </View>
+          </View>
+          <Footer t={t} generatedLabel={props.generatedLabel} />
+        </Page>
+      )}
 
       <Page size="A4" style={[styles.page, { paddingTop: 28 }]}>
         <View style={styles.body}>
