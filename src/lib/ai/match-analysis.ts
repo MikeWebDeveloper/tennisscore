@@ -14,6 +14,8 @@ export interface AnalysisInput {
   players: Record<Side, AnalysisPlayer>
   /** Whose coach the analysis is written for */
   focus: Side
+  /** The stored winner; after a retirement it can be the side that was behind */
+  winner?: Side | null
   matchDate?: string
   tournamentName?: string
   durationMinutes?: number | null
@@ -100,7 +102,10 @@ export function analysisPrompt(input: AnalysisInput): string {
   const other: Side = focus === "p1" ? "p2" : "p1"
   const pair = (score: [number, number]) => (focus === "p1" ? `${score[0]}:${score[1]}` : `${score[1]}:${score[0]}`)
   const who = (side: Side | null) => (side ? players[side].name : null)
-  const resultFor = insights.complete ? (insights.leader === focus ? "won" : "lost") : input.endReason ? "match ended early" : "in progress"
+  const decided = input.winner ?? (insights.complete ? insights.leader : null)
+  const resultFor = decided
+    ? `${decided === focus ? "won" : "lost"}${insights.complete ? "" : " (the match ended early)"}`
+    : input.endReason ? "match ended early" : "in progress"
 
   const data = {
     match: {

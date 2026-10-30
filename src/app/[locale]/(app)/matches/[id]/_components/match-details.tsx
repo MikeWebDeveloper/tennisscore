@@ -189,6 +189,10 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
   const shortNames = shortSideNames(sidePlayers, fullNames)
   const focus = focusSide(sidePlayers, insights.leader)
   const isCompleted = match.status === "Completed"
+  // The stored winner decides the trophy: after a retirement the loser may have been ahead
+  const winnerSide: Side | null = !match.winnerId ? null
+    : match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId ? "p1"
+    : match.winnerId === match.playerTwoId || match.winnerId === match.playerFourId ? "p2" : null
   const statusLabel = isCompleted ? `${t('completed')}${endReason ? ` — ${endReason}` : ''}` : t('inProgress')
   // A fixed time zone so the server and the browser print the same date
   const dateLabel = new Date(match.matchDate).toLocaleDateString(locale, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Prague" })
@@ -210,6 +214,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     shortNames,
     metaLines: { p1: metaLine([match.playerOne, match.playerThree]), p2: metaLine([match.playerTwo, match.playerFour]) },
     focus,
+    winner: winnerSide,
     scoreboard,
     completed: isCompleted,
     dateLabel,
@@ -400,6 +405,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
             fullNames={fullNames}
             shortNames={shortNames}
             focus={focus}
+            winner={winnerSide}
             scoreboard={scoreboard}
             completed={isCompleted}
             statusLabel={statusLabel}

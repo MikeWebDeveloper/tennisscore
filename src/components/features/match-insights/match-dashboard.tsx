@@ -33,6 +33,8 @@ interface MatchDashboardProps {
   /** For legends and stat rows ("Sofie") */
   shortNames: Record<Side, string>
   focus: Side
+  /** The stored winner (a retirement can leave the loser ahead on the court) */
+  winner?: Side | null
   /** The official score as stored (what every other screen shows); the open set last while playing */
   scoreboard: { sets: [number, number][]; current?: [number, number] }
   completed: boolean
@@ -130,10 +132,10 @@ export function MatchDashboard(props: MatchDashboardProps) {
   const f = insights.totals[focus]
   const o = insights.totals[other]
   const totalPoints = p1.points + p2.points
-  const winner = completed ? insights.leader : null
+  const winner = props.winner ?? (completed ? insights.leader : null)
   const detail = insights.hasServeDetail
 
-  const title = headlineTitle(insights, shortNames, tr)
+  const title = headlineTitle(insights, shortNames, tr, props.winner)
   const detailLine = headlineDetail(insights, focus, shortNames, tr, props.durationText)
 
   const rows: { side: Side; members: (Player | undefined)[] }[] = [

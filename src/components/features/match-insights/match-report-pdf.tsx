@@ -68,6 +68,8 @@ export interface MatchReportProps {
   /** "2015 · 45 BH • 39 CŽ · SK Hamr" per side */
   metaLines: Record<Side, string>
   focus: Side
+  /** The stored winner (a retirement can leave the loser ahead on the court) */
+  winner?: Side | null
   /** The official score as stored; the open set last while playing */
   scoreboard: { sets: [number, number][]; current?: [number, number] }
   completed: boolean
@@ -185,7 +187,7 @@ export function MatchReportDocument(props: MatchReportProps) {
   const { insights, t, locale, fullNames, shortNames, focus, completed } = props
   const { p1, p2 } = insights.totals
   const detail = insights.hasServeDetail
-  const winner = completed ? insights.leader : null
+  const winner = props.winner ?? (completed ? insights.leader : null)
   const totalPoints = p1.points + p2.points
   const f = insights.totals[focus]
   const pressure = pressureShares(insights, focus)
@@ -219,7 +221,7 @@ export function MatchReportDocument(props: MatchReportProps) {
         </View>
 
         <View style={styles.body}>
-          <Text style={styles.headline}>{headlineTitle(insights, shortNames, t)}</Text>
+          <Text style={styles.headline}>{headlineTitle(insights, shortNames, t, props.winner)}</Text>
           <Text style={[styles.sub, { marginBottom: 10 }]}>{headlineDetail(insights, focus, shortNames, t, props.durationText)}</Text>
 
           <View style={[styles.row, { marginBottom: 10 }]}>

@@ -23,8 +23,15 @@ function factText(fact: HeadlineFact, t: Translate): string {
   }
 }
 
-/** "Bez ztráty podání, 10 her v řadě" — or who won / leads when nothing stands out */
-export function headlineTitle(insights: MatchInsights, names: Record<Side, string>, t: Translate): string {
+/**
+ * "Bez ztráty podání, 10 her v řadě" — or who won / leads when nothing stands out. `winner` is the
+ * stored result: after a retirement it can differ from whoever was ahead, and then it wins the say.
+ */
+export function headlineTitle(insights: MatchInsights, names: Record<Side, string>, t: Translate, winner?: Side | null): string {
+  if (winner) {
+    if (insights.leader === winner && insights.headline.length) return capitalize(insights.headline.map((fact) => factText(fact, t)).join(", "))
+    return t("headlineWins", { name: names[winner] })
+  }
   if (!insights.leader) return t("headlineEven")
   if (!insights.headline.length) {
     return t(insights.complete ? "headlineWins" : "headlineLeads", { name: names[insights.leader] })

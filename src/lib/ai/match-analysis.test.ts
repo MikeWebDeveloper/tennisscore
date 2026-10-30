@@ -21,6 +21,11 @@ describe('analysisPrompt', () => {
     expect(data.focusPlayerStats.doubleFaults).toBe(4)
   })
 
+  it('reports the stored result when the match ended early, not who was ahead', () => {
+    const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(points), players, focus: 'p2', winner: 'p2', endReason: 'retired' }))
+    expect(data.match.result).toBe('won (the match ended early)')
+  })
+
   it('leaves serve and outcome numbers out when the match was scored at the points level', () => {
     const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(points, { detailLevel: 'points' }), players, focus: 'p1' }))
 

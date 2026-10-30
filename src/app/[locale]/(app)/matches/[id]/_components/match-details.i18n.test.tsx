@@ -70,6 +70,16 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('gives the trophy to the stored winner after a retirement, even if the other side was ahead', async () => {
+    // Dvořák won 8 of the 12 logged points, then retired: Mike is the winner
+    const { container, cleanup } = await renderDetails({ winnerId: 'p1', retirementReason: 'retired' } as never)
+    const card = container.querySelector('[data-match-dashboard]')?.firstElementChild
+    const trophy = card?.querySelector('svg[aria-label="Vítězství"]')
+    expect(trophy?.parentElement?.textContent).toBe('Mike God')
+    expect(container.querySelector('[data-headline]')?.textContent).toContain('God vyhrává')
+    cleanup()
+  })
+
   it('writes the match duration in Czech units, with seconds for very short matches', async () => {
     const { container, cleanup } = await renderDetails()
     expect(container.textContent).toContain('30 s')

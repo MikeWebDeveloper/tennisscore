@@ -92,6 +92,9 @@ export async function POST(request: Request) {
   const format = normalizeMatchFormat(match.matchFormat)
   const insights = buildMatchInsights(points, { format, detailLevel: match.detailLevel })
   const focus: Side = p2?.isMainPlayer || p4?.isMainPlayer ? "p2" : p1?.isMainPlayer || p3?.isMainPlayer ? "p1" : insights.leader ?? "p1"
+  const winner: Side | null = !match.winnerId ? null
+    : match.winnerId === match.playerOneId || match.winnerId === match.playerThreeId ? "p1"
+    : match.winnerId === match.playerTwoId || match.winnerId === match.playerFourId ? "p2" : null
   const duration = match.startTime && match.endTime ? Math.round((Date.parse(match.endTime) - Date.parse(match.startTime)) / 60000) : null
 
   try {
@@ -102,6 +105,7 @@ export async function POST(request: Request) {
         insights,
         players: { p1: playerInfo([p1, p3], "Player 1"), p2: playerInfo([p2, p4], "Player 2") },
         focus,
+        winner,
         matchDate: match.matchDate?.slice(0, 10),
         tournamentName: match.tournamentName || undefined,
         durationMinutes: duration && duration > 0 ? duration : null,
