@@ -65,8 +65,9 @@ export function CompactPlayersStep({
       value: "create-new",
       label: t('createNewPlayer'),
       group: t('actions'),
-      icon: <Plus className="h-4 w-4 text-primary" />, 
+      icon: <Plus className="h-4 w-4 text-primary" />,
       disabled: false,
+      pinned: true,
     })
 
     if (players.length > 0) {
@@ -158,7 +159,9 @@ export function CompactPlayersStep({
           value={value}
           onValueChange={onChange}
           placeholder={t('searchOrSelectPlayer')}
-          emptyText={t('noPlayersFound')}
+          searchPlaceholder={t('playerSearchPlaceholder')}
+          emptyText={t('noPlayerMatches')}
+          emptyHint={t('noPlayerMatchesHint')}
         />
       ) : (
         <div className="flex items-center gap-2 p-2.5 text-xs border rounded-md bg-muted/50 text-muted-foreground">

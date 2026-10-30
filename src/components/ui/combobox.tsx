@@ -4,11 +4,11 @@ import * as React from "react"
 import { Check } from "lucide-react"
 import { ChevronsUpDown } from "lucide-react"
 
-import { cn, normalizeTextForSearch } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { nameMatchesSearch, searchRank } from "@/lib/utils/player-name-search"
 import { Button } from "@/components/ui/button"
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -26,6 +26,8 @@ export interface ComboboxOption {
   group?: string
   icon?: React.ReactNode
   disabled?: boolean
+  /** Always listed, whatever is typed (an action such as "Create new player") */
+  pinned?: boolean
 }
 
 interface ComboboxProps {
@@ -33,7 +35,10 @@ interface ComboboxProps {
   value?: string
   onValueChange?: (value: string) => void
   placeholder?: string
+  searchPlaceholder?: string
   emptyText?: string
+  /** Second line of the empty state, e.g. what to try instead */
+  emptyHint?: string
   className?: string
   disabled?: boolean
 }
@@ -43,31 +48,44 @@ export function Combobox({
   value,
   onValueChange,
   placeholder = "Select an option...",
+  searchPlaceholder,
   emptyText = "No option found.",
+  emptyHint,
   className,
   disabled = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+  const searching = search.trim() !== ""
 
-  // Group options by their group property
-  const groupedOptions = React.useMemo(() => {
-    const groups: Record<string, ComboboxOption[]> = {}
-    
-    options.forEach(option => {
-      const group = option.group || "default"
-      if (!groups[group]) {
-        groups[group] = []
-      }
-      groups[group].push(option)
-    })
-    
-    return groups
-  }, [options])
+  // Our own filter, not cmdk's fuzzy one: that matched letters scattered across the label and the
+  // record id, so "Nikola" listed nearly every player. Only labels containing the typed words stay.
+  const visibleGroups = React.useMemo(() => {
+    const groups = new Map<string, ComboboxOption[]>()
+    options
+      .filter(option => option.pinned || nameMatchesSearch(option.label, search))
+      .forEach(option => {
+        const group = option.group || "default"
+        groups.set(group, [...(groups.get(group) ?? []), option])
+      })
+    const entries = [...groups.entries()]
+    if (!searching) return entries
+    // While searching, results lead: closest names first, pinned actions after them
+    return entries
+      .map(([group, groupOptions]) => [group, [...groupOptions].sort((a, b) => searchRank(a.label, search) - searchRank(b.label, search))] as const)
+      .sort(([, a], [, b]) => Number(a.every(option => option.pinned)) - Number(b.every(option => option.pinned)))
+  }, [options, search, searching])
 
+  const hasMatches = visibleGroups.some(([, groupOptions]) => groupOptions.some(option => !option.pinned))
   const selectedOption = options.find(option => option.value === value)
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) setSearch("")
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -84,11 +102,16 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-sm p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search..." className="h-8" />
+        <Command shouldFilter={false}>
+          <CommandInput value={search} onValueChange={setSearch} placeholder={searchPlaceholder ?? placeholder} className="h-8" />
           <CommandList className="max-h-48">
-            <CommandEmpty>{emptyText}</CommandEmpty>
-            {Object.entries(groupedOptions).map(([groupName, groupOptions]) => (
+            {searching && !hasMatches && (
+              <div data-combobox-empty className="px-3 py-5 text-center">
+                <p className="text-sm font-medium">{emptyText}</p>
+                {emptyHint && <p className="mt-1 text-xs text-muted-foreground">{emptyHint}</p>}
+              </div>
+            )}
+            {visibleGroups.map(([groupName, groupOptions]) => (
               <CommandGroup
                 key={groupName}
                 heading={groupName !== "default" ? groupName : undefined}
@@ -96,12 +119,12 @@ export function Combobox({
                 {groupOptions.map((option) => (
                   <CommandItem
                     key={option.value}
-                    value={`${normalizeTextForSearch(option.label)} ${normalizeTextForSearch(option.value)} ${option.label} ${option.value}`} // Include normalized and original for diacritic-insensitive search
+                    value={option.value}
                     disabled={option.disabled}
                     onSelect={() => {
                       if (!option.disabled) {
                         onValueChange?.(option.value)
-                        setOpen(false)
+                        handleOpenChange(false)
                       }
                     }}
                     className={cn(
