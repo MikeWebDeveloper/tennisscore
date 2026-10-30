@@ -17,7 +17,6 @@ jest.mock('@/i18n', () => {
   }
 })
 jest.mock('@/i18n/navigation', () => ({ Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => <a href={href} {...rest}>{children}</a> }))
-jest.mock('@/components/features/lazy-match-export', () => ({ LazyFullMatchExportButton: () => null }))
 jest.mock('@/components/shared/share-score-card-button', () => ({ ShareScoreCardButton: () => null }))
 jest.mock('./point-by-point-view', () => ({ PointByPointView: () => null }))
 
@@ -49,14 +48,25 @@ async function openTab(container: HTMLElement, index: number) {
 }
 
 describe('MatchDetails in Czech', () => {
-  it('shows the overview without English text or English dates', async () => {
+  it('shows the overview dashboard without English text or English dates', async () => {
     const { container, cleanup } = await renderDetails()
     const text = container.textContent ?? ''
-    expect(text).toContain('Sety: 6-0, 0-6, 0-6')
-    expect(text).toContain('Dvořák Petr vyhrává!')
-    expect(text).toContain('Průběh po setech')
+    const dashboard = container.querySelector('[data-match-dashboard]')
+    expect(dashboard).not.toBeNull()
+    expect(dashboard?.textContent).toContain('2. 7. 2025')
+    expect(text).toContain('Průběh zápasu')
+    expect(text).toContain('Hra po hře')
     expect(text).toContain('1. set')
-    for (const english of ['Sets:', 'Wins!', 'Set by Set Breakdown', 'Format', 'Type', 'Jul', 'July', 'PM', 'Wed']) expect(text).not.toContain(english)
+    // 8 of the 12 points went to Dvořák: the headline says so
+    expect(container.querySelector('[data-headline]')?.textContent).toContain('67 % všech bodů')
+    for (const english of ['Sets:', 'Wins!', 'Set by Set Breakdown', 'Format', 'Type', 'Jul', 'July', 'PM', 'Wed', 'points']) expect(text).not.toContain(english)
+    cleanup()
+  })
+
+  it('shows the stored set scores on the result card', async () => {
+    const { container, cleanup } = await renderDetails()
+    const card = container.querySelector('[data-match-dashboard]')?.firstElementChild
+    expect(card?.textContent).toMatch(/Mike God600[\s\S]*Dvořák Petr066/)
     cleanup()
   })
 
@@ -78,13 +88,15 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
-  it('translates the analysis tab and omits pace for sub-minute matches', async () => {
+  it('lists every game in Czech on the flow tab', async () => {
     const { container, cleanup } = await renderDetails()
-    await openTab(container, 3)
-    const text = container.textContent ?? ''
-    expect(text).toContain('Analýza a poznatky ze zápasu')
-    for (const english of ['Match Analysis & Insights', 'Performance Insights', 'Service power', 'Match rhythm', 'DFs', 'conversion rate', 'Service games']) expect(text).not.toContain(english)
-    expect(text).not.toMatch(/Tempo hry|Playing pace/)
+    await openTab(container, 1)
+    const games = container.querySelectorAll('[data-flow-game]')
+    expect(games).toHaveLength(1)
+    expect(games[0].textContent).toContain('1. hra')
+    expect(games[0].textContent).toContain('podává God')
+    expect(games[0].textContent).toContain('brejk')
+    for (const english of ['Game 1', 'serving', 'break']) expect(container.textContent).not.toContain(english)
     cleanup()
   })
 
@@ -120,7 +132,7 @@ describe('MatchDetails in Czech', () => {
   it('labels every tab on phones instead of showing bare icons', async () => {
     const { container, cleanup } = await renderDetails()
     const tabs = Array.from(container.querySelectorAll('[role="tab"]'))
-    expect(tabs.map(tab => tab.textContent)).toEqual(['Přehled', 'Záznam bodů', 'Statistiky', 'Analýza'])
+    expect(tabs.map(tab => tab.textContent)).toEqual(['Přehled', 'Průběh', 'Statistiky', 'Záznam bodů'])
     for (const tab of tabs) expect(tab.querySelector('.hidden')).toBeNull()
     cleanup()
   })
@@ -134,7 +146,7 @@ describe('MatchDetails in Czech', () => {
 
   it('translates the point log heading', async () => {
     const { container, cleanup } = await renderDetails()
-    await openTab(container, 1)
+    await openTab(container, 3)
     expect(container.textContent).toContain('Bod po bodu (12 bodů)')
     expect(container.textContent).not.toContain('Point-by-Point Analysis')
     cleanup()

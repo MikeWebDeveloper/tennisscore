@@ -53,7 +53,10 @@ import { MomentumBar } from "@/components/ui/momentum-bar"
 import { playSound } from "@/lib/sounds"
 import { MatchSettingsDialog } from "./match-settings-dialog"
 import { CustomModeDialog } from "@/components/features/custom-mode-dialog"
-import { LazyLiveSetExportButton as LiveSetExportButton } from "@/components/features/lazy-match-export"
+import { LiveInsights } from "@/components/features/match-insights/live-insights"
+import { PdfExportButton } from "@/components/features/match-insights/pdf-export-button"
+import { focusSide, shortSideNames } from "@/components/features/match-insights/labels"
+import { buildMatchInsights } from "@/lib/utils/match-insights"
 
 // Confetti celebration function — canvas-confetti is loaded on demand so it
 // stays out of the initial live-scoring bundle (only fires on a match win).
@@ -483,6 +486,39 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   // Get detailLevel directly from match object (not from parsed format)
   const detailLevel = match.detailLevel || "simple"
+
+  // Live insights (run, key moment, set games, set chart) follow the point log, so an undo corrects them too
+  const liveInsights = useMemo(
+    () => buildMatchInsights(pointLog, { format: parsedMatchFormat, detailLevel }),
+    [pointLog, parsedMatchFormat, detailLevel]
+  )
+  const sidePlayers = { p1: match.playerOne, p2: match.playerTwo, p3: match.playerThree, p4: match.playerFour }
+  const sideFullNames = {
+    p1: playerNames.p3 ? `${playerNames.p1} / ${playerNames.p3}` : playerNames.p1,
+    p2: playerNames.p4 ? `${playerNames.p2} / ${playerNames.p4}` : playerNames.p2,
+  }
+  const liveShortNames = shortSideNames(sidePlayers, sideFullNames)
+  const liveReport = () => {
+    const meta = (people: (Player | undefined)[]) => people
+      .filter((person): person is Player => Boolean(person))
+      .map(person => [person.yearOfBirth, formatPlayerRating(person), person.club].filter(Boolean).join(" · "))
+      .filter(Boolean)
+      .join(" / ")
+    return {
+      insights: liveInsights,
+      fullNames: sideFullNames,
+      shortNames: liveShortNames,
+      metaLines: { p1: meta([match.playerOne, match.playerThree]), p2: meta([match.playerTwo, match.playerFour]) },
+      focus: focusSide(sidePlayers, liveInsights.leader),
+      scoreboard: {
+        sets: score.sets,
+        current: match.status !== "Completed" ? score.games : undefined,
+      },
+      completed: match.status === "Completed",
+      dateLabel: new Date(match.startTime || Date.now()).toLocaleDateString(undefined, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Prague" }),
+      tournamentName: match.tournamentName,
+    }
+  }
   const isTiebreak = score.isTiebreak || false
 
   // Calculate current breakpoint status
@@ -1104,26 +1140,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                 <BarChart3 className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate min-w-0 hidden xs:block">{t('advancedStats')}</span>
               </Button>}
-              {/* Export Button - Show after first set is completed (icon + text) */}
-              {score.sets.length > 0 && (
-                <LiveSetExportButton
-                  match={{
-                    $id: match.$id,
-                    userId: match.playerOne.userId || '',
-                    playerOneId: match.playerOne.$id,
-                    playerTwoId: match.playerTwo.$id,
-                    matchDate: new Date().toISOString(),
-                    matchFormat: parsedMatchFormat,
-                    status: match.status as 'In Progress' | 'Completed',
-                    score,
-                    pointLog,
-                    startTime: match.startTime,
-                    endTime: match.endTime,
-                    setDurations: match.setDurations,
-                    events: []
-                  }}
-                  playerNames={[playerNames.p1, playerNames.p2]}
-                  setNumber={score.sets.length}
+              {/* PDF report of the match so far */}
+              {pointLog.length > 0 && (
+                <PdfExportButton
+                  report={liveReport}
+                  filenameParts={[liveShortNames.p1, liveShortNames.p2]}
+                  size="sm"
+                  variant="outline"
                   className="hidden sm:flex"
                 />
               )}
@@ -1262,6 +1285,9 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             maxPoints={10}
           />
         )}
+
+        {/* Run, latest key moment, key numbers, this set's games and how the set has gone */}
+        <LiveInsights insights={liveInsights} names={liveShortNames} matchOver={match.status === "Completed"} />
 
         {/* Tabs */}
         <Tabs defaultValue="stats" className="w-full">

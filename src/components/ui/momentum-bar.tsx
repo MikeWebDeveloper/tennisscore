@@ -9,6 +9,7 @@ import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { playSound } from "@/lib/sounds"
+import { useTranslations } from "@/i18n"
 
 interface PointDetail {
   winner: 'p1' | 'p2'
@@ -31,6 +32,7 @@ export function MomentumBar({
   maxPoints = 12,
   compact = false
 }: MomentumBarProps) {
+  const t = useTranslations('insights')
   const [isMuted, setIsMuted] = useState(true) // Start muted by default
   const [lastPointCount, setLastPointCount] = useState(0)
 
@@ -95,11 +97,11 @@ export function MomentumBar({
 
   const getMomentumText = () => {
     if (leadingPlayer === 'p1') {
-      return `${playerNames.p1.split(' ')[0]} has momentum`
+      return t('momentumHas', { name: playerNames.p1.split(' ')[0] })
     } else if (leadingPlayer === 'p2') {
-      return `${playerNames.p2.split(' ')[0]} has momentum`
+      return t('momentumHas', { name: playerNames.p2.split(' ')[0] })
     }
-    return "Even momentum"
+    return t('momentumEven')
   }
 
   return (
@@ -115,7 +117,7 @@ export function MomentumBar({
             "font-medium text-muted-foreground",
             compact ? "text-xs" : "text-sm"
           )}>
-            {compact ? "Momentum" : "Match Momentum"}
+            {t('momentum')}
           </span>
           {getTrendIcon()}
         </div>
@@ -124,6 +126,7 @@ export function MomentumBar({
             variant="ghost"
             size="sm"
             onClick={() => setIsMuted(!isMuted)}
+            aria-label={isMuted ? t('unmuteSounds') : t('muteSounds')}
             className={cn(
               "text-muted-foreground hover:text-foreground",
               compact ? "h-5 w-5 p-0" : "h-6 w-6 p-0"
@@ -136,7 +139,7 @@ export function MomentumBar({
             )}
           </Button>
           <span className="text-xs text-muted-foreground">
-            {compact ? `${recentPoints.length}pts` : `Last ${recentPoints.length} points`}
+            {t('momentumLast', { count: recentPoints.length })}
           </span>
         </div>
       </div>

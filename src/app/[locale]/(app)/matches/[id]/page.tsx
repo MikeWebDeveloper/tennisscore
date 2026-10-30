@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isAdmin } from "@/lib/auth"
 import { getMatch } from "@/lib/actions/matches"
 import { getPlayersByIds } from "@/lib/actions/players"
 import { MatchDetails } from "./_components/match-details"
@@ -123,5 +123,5 @@ export default async function MatchPage({
     tournamentName: match.tournamentName || undefined,
   }
 
-  return <MatchDetails match={enhancedMatch} />
+  return <MatchDetails match={enhancedMatch} canUseAi={isAdmin(user.email)} />
 }

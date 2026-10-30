@@ -17,6 +17,7 @@ export const TRANSLATION_NAMESPACES = [
   'auth', 
   'common',
   'dashboard',
+  'insights',
   'match',
   'navigation',
   'player',

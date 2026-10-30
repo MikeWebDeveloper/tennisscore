@@ -312,6 +312,8 @@ export interface Messages {
   }
 
   // Statistics namespace
+  // Match overview, live insights, PDF report and AI analysis; keys are checked by message-keys.test.ts
+  insights: Record<string, string>
   statistics: {
     statistics: string
     totalPoints: string

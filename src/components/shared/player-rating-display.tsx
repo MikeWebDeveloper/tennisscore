@@ -1,22 +1,15 @@
 "use client"
 
 import { Player } from "@/lib/types"
+import { formatPlayerRating, getBhRating, getCzRanking } from "@/lib/utils/player-rating"
+
+export { formatPlayerRating }
 
 interface PlayerRatingDisplayProps {
   player: Player
   className?: string
   size?: 'sm' | 'md' | 'lg'
 }
-
-/** Always "12 BH": the profile field may hold "12" or an older "12BH", and older profiles kept it in the combined rating text. */
-function getBhRating(player: Player): string | undefined {
-  const raw = player.bhRating || player.rating?.match(/\b\d+\s*BH\b/i)?.[0]
-  const value = raw?.replace(/\s*BH\s*$/i, '').trim()
-  return value ? `${value} BH` : undefined
-}
-
-/** Always "260 CŽ", matching how BH is written. */
-const getCzRanking = (player: Player) => player.czRanking ? `${player.czRanking} CŽ` : undefined
 
 export function PlayerRatingDisplay({ player, className = "", size = 'md' }: PlayerRatingDisplayProps) {
   const bhRating = getBhRating(player)
@@ -50,9 +43,4 @@ export function PlayerRatingDisplay({ player, className = "", size = 'md' }: Pla
       )}
     </div>
   )
-}
-
-// Utility function for legacy components that expect a single rating string
-export function formatPlayerRating(player: Player): string {
-  return [getBhRating(player), getCzRanking(player)].filter(Boolean).join(' • ')
 }
