@@ -13,3 +13,12 @@ const MESSAGE_KEYS: Record<string, 'playerRetired' | 'injury' | 'weatherConditio
 export function endReasonMessageKey(reason: string | undefined | null) {
   return (reason && MESSAGE_KEYS[reason]) || null
 }
+
+/**
+ * When an ended match finished: its last point, not the moment the scorer confirms the ending. A match
+ * closed days later (Sofie Látalová vs Mondoková, 6 Sep → 30 Oct) otherwise counts those days as play.
+ */
+export function matchEndTime(pointLog: ReadonlyArray<{ timestamp?: string }>, now = new Date()): string {
+  const times = pointLog.map((point) => Date.parse(point.timestamp ?? '')).filter((time) => !Number.isNaN(time))
+  return times.length > 0 ? new Date(Math.max(...times)).toISOString() : now.toISOString()
+}

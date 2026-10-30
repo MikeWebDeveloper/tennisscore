@@ -18,7 +18,7 @@ import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
-import type { EndReason } from "@/lib/utils/end-reasons"
+import { matchEndTime, type EndReason } from "@/lib/utils/end-reasons"
 import { parseDbScore } from "@/lib/utils/db-score"
 import { setMatchPaused } from "@/lib/actions/match-pause"
 import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
@@ -974,6 +974,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       // Keep the score reached on court (finished sets plus the game score of the set in play);
       // the saved reason says why it ended, e.g. "6:3 2:1 retired"
       const retiredScore: Score = score
+      // The match ended with its last point, even when the scorer only closes it later
+      const endTime = matchEndTime(pointLog)
 
       const updateData: {
         status: "Completed"
@@ -985,12 +987,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         status: "Completed",
         winnerId,
         retirementReason: reason,
-        endTime: new Date().toISOString()
+        endTime
       }
 
       // Calculate duration if we have a start time
       if (startTime) {
-        updateData.duration = Math.round((new Date().getTime() - new Date(startTime).getTime()) / 60000)
+        updateData.duration = Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000)
       }
 
       await runSync(() => syncMatchScore(match.$id, {

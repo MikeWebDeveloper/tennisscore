@@ -52,6 +52,8 @@ test('ending a match after a retirement keeps the court score and shows the reas
       await scorer.getByTestId('score-point').first().click()
       await expect.poll(pointsSaved).toBe(i)
     }
+    // Some time passes before the scorer ends the match; it must not count as play
+    await scorer.waitForTimeout(2500)
     await scorer.getByRole('button', { name: 'End Match' }).click()
     const dialog = scorer.getByRole('dialog')
     await expect(dialog.getByRole('radio', { name: 'Weather conditions' })).toHaveCount(0)
@@ -69,6 +71,10 @@ test('ending a match after a retirement keeps the court score and shows the reas
     expect(score.games).toEqual([1, 0])
     expect(score.points).toEqual([2, 0])
     expect(ended.pointLog).toHaveLength(6)
+    // The match ended with its last point, not when End Match was confirmed
+    const lastPoint = ended.pointLog[5]
+    const lastPointTime = (typeof lastPoint === 'string' ? JSON.parse(lastPoint) : lastPoint).timestamp
+    expect(new Date(ended.endTime).toISOString()).toBe(new Date(lastPointTime).toISOString())
     const viewer = await scorerContext.newPage()
     await viewer.goto('http://localhost:3100/en/live/match4')
     await expect(viewer.getByText('Completed — Player retired')).toBeVisible()
