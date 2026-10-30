@@ -29,3 +29,24 @@ describe('parseDbScore', () => {
     for (const raw of [undefined, '', 'not json', 'null', '42']) expect(parseDbScore(raw as any)).toEqual(empty)
   })
 })
+
+describe('serve indicator in the stored score', () => {
+  it('reads a second serve and treats anything else as the first', async () => {
+    const { serveIndicator } = await import('./db-score')
+    expect(serveIndicator('{"points":[1,0],"serve":"second"}')).toBe('second')
+    expect(serveIndicator('{"points":[1,0]}')).toBe('first')
+    expect(serveIndicator('not json')).toBe('first')
+    expect(serveIndicator(undefined)).toBe('first')
+  })
+
+  it('sets and clears the serve without touching the rest of the score', async () => {
+    const { withServeIndicator, parseDbScore } = await import('./db-score')
+    const stored = '{"sets":[[6,4]],"games":[2,1],"points":[1,2]}'
+    const second = withServeIndicator(stored, 'second')
+    expect(JSON.parse(second)).toEqual({ sets: [[6, 4]], games: [2, 1], points: [1, 2], serve: 'second' })
+    expect(withServeIndicator(second, 'second')).toBe(second)
+    expect(JSON.parse(withServeIndicator(second, 'first'))).toEqual(JSON.parse(stored))
+    // The scoring store never sees it, so a later point cannot write a stale second serve back
+    expect(parseDbScore(second)).not.toHaveProperty('serve')
+  })
+})

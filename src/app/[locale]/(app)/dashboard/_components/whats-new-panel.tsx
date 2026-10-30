@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "@/i18n"
 
 // Newest first
 export const UPDATES = [
+  { key: 'serveIndicator', date: '2026-10-30' },
   { key: 'matchOverview', date: '2026-10-30' },
   { key: 'pdfReport', date: '2026-10-30' },
   { key: 'liveInsights', date: '2026-10-30' },

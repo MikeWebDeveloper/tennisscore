@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { LiteScoreboard, type LitePlayerId } from '@/components/shared/lite-scoreboard'
 import { usePublicMatchPolling } from '@/hooks/use-public-match-polling'
-import { parseDbScore } from '@/lib/utils/db-score'
+import { parseDbScore, serveIndicator } from '@/lib/utils/db-score'
 import { snapshotFrom, useSpectatorSounds } from '@/lib/utils/spectator-sounds'
 import { SpectatorSoundToggle } from '@/components/shared/spectator-sound-toggle'
 import { deriveCurrentServer } from '@/lib/utils/current-server'
@@ -26,7 +26,7 @@ interface Props {
   initialWinnerId?: string
   initialPointLog: string[]
   format: string
-  labels: { live: string; finished: string; paused?: string }
+  labels: { live: string; finished: string; paused?: string; firstServe?: string; secondServe?: string }
   reasonLabels?: Record<string, string>
   /** Mute/unmute labels; the toggle only appears while the match is in progress */
   soundLabels?: { on: string; off: string }
@@ -64,7 +64,7 @@ export function CompactLiveScoreboard(props: Props) {
 
   const paused = data.isPaused && isPauseReason(data.pauseReason) && props.reasonLabels?.[data.pauseReason]
     ? `${props.labels.paused} — ${props.reasonLabels[data.pauseReason]}` : props.labels.paused
-  const board = <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} labels={{ ...props.labels, paused }} />
+  const board = <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} serve={inProgress ? serveIndicator(data.score) : undefined} labels={{ ...props.labels, paused }} />
   if (!inProgress || !props.soundLabels) return board
   return (
     <div className="space-y-2">

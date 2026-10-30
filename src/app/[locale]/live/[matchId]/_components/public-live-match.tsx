@@ -29,7 +29,7 @@ import { snapshotFrom, useSpectatorSounds } from "@/lib/utils/spectator-sounds"
 import { SpectatorSoundToggle } from "@/components/shared/spectator-sound-toggle"
 import { getNextDoublesServer, startsNewServeTurn } from "@/lib/utils/doubles-serving"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
-import { parseDbScore } from "@/lib/utils/db-score"
+import { parseDbScore, serveIndicator } from "@/lib/utils/db-score"
 import { useTranslations, useLocale } from "@/i18n"
 import { isPauseReason } from '@/lib/utils/pause-reasons'
 import { endReasonMessageKey } from '@/lib/utils/end-reasons'
@@ -83,6 +83,8 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const locale = useLocale()
   const [match, setMatch] = useState(initialMatch)
   const [score, setScore] = useState<Score>(() => parseDbScore(initialMatch.score))
+  // Which serve the server is on, as the scorer set it
+  const [serve, setServe] = useState(() => serveIndicator(initialMatch.score))
   const [pointLog, setPointLog] = useState<PointDetail[]>([])
   const [mounted, setMounted] = useState(false)
   
@@ -114,7 +116,10 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   useEffect(() => {
     if (lastUpdate && mounted) {
       console.log("🔄 Real-time update received:", lastUpdate)
-      if (typeof lastUpdate.score === 'string') setScore(parseDbScore(lastUpdate.score))
+      if (typeof lastUpdate.score === 'string') {
+        setScore(parseDbScore(lastUpdate.score))
+        setServe(serveIndicator(lastUpdate.score))
+      }
 
       setMatch(prev => ({
         ...prev,
@@ -368,6 +373,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
             playerOneId={match.playerOne.$id}
             playerTwoId={match.playerTwo.$id}
             currentServer={currentServer}
+            serve={serve}
             servingPlayer={servingPlayer}
             matchFormat={{
               ...normalizeMatchFormat(match.matchFormatParsed),

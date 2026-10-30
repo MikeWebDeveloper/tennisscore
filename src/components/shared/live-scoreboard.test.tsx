@@ -72,3 +72,17 @@ describe('LiveScoreboard server selection', () => {
     expect(c.querySelectorAll('h3 [role="button"]').length).toBe(0)
   })
 })
+
+describe('LiveScoreboard serve chip', () => {
+  const chips = (c: HTMLElement) => Array.from(c.querySelectorAll('[data-serve-chip]')).map((e) => [e.closest('.p-2')?.querySelector('h3')?.textContent, e.getAttribute('data-serve-chip')])
+
+  it('shows which serve it is beside the server only', () => {
+    expect(chips(render({ serve: 'second' }))).toEqual([['Ann', 'second']])
+    expect(chips(render({ serve: 'first', currentServer: 'p2' }))).toEqual([['Bob', 'first']])
+  })
+
+  it('hides it once the match is over or when nobody is serving', () => {
+    expect(chips(render({ serve: 'second', status: 'Completed' }))).toEqual([])
+    expect(chips(render({ serve: 'second', currentServer: null }))).toEqual([])
+  })
+})

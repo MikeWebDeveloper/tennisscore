@@ -39,22 +39,30 @@ test('keeps the screen awake while a match is in progress', async ({ page }) => 
   await expect.poll(() => page.evaluate(() => (window as any).__wakeLocks)).toBeGreaterThanOrEqual(1)
 })
 
-for (const [locale, first, second] of [
-  ['en', 'First Serve', 'Second Serve'],
-  ['cs', 'První servis', 'Druhý servis'],
+for (const [locale, caption, first, second] of [
+  ['en', 'Serve', '1st serve', '2nd serve'],
+  ['cs', 'Podání', '1. podání', '2. podání'],
 ] as const) {
-  test(`${locale}: serve buttons are labelled, selectable and at least 44px tall`, async ({ page }) => {
+  test(`${locale}: serve buttons are labelled "${caption}", selectable, at least 44px tall and shown in the score`, async ({ page, request }) => {
     await page.goto(`/${locale}/matches/live/match4`, { waitUntil: 'networkidle' })
     const firstButton = page.getByRole('button', { name: first, exact: true })
     const secondButton = page.getByRole('button', { name: second, exact: true })
+    const chip = page.locator('main [data-serve-chip]')
+    await expect(page.getByRole('group', { name: caption, exact: true })).toBeVisible()
     await expect(firstButton).toHaveAttribute('aria-pressed', 'true')
+    await expect(chip).toHaveText(first)
     expect((await firstButton.boundingBox())?.height).toBeGreaterThanOrEqual(44)
     expect((await secondButton.boundingBox())?.height).toBeGreaterThanOrEqual(44)
     await secondButton.click()
     await expect(secondButton).toHaveAttribute('aria-pressed', 'true')
     await expect(firstButton).toHaveAttribute('aria-pressed', 'false')
+    await expect(chip).toHaveText(second)
+    // Spectators see it too: the second serve is saved into the stored score
+    await expect.poll(async () => JSON.parse((await (await request.get(`${FAKE}/__doc/m/match4`)).json()).score).serve, { timeout: 5000 }).toBe('second')
     await firstButton.click()
     await expect(firstButton).toHaveAttribute('aria-pressed', 'true')
+    await expect(chip).toHaveText(first)
+    await expect.poll(async () => JSON.parse((await (await request.get(`${FAKE}/__doc/m/match4`)).json()).score).serve, { timeout: 5000 }).toBeUndefined()
   })
 }
 

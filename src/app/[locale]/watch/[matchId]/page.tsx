@@ -83,7 +83,7 @@ export default async function WatchMatchPage({ params }: PageProps) {
         initialWinnerId={match.winnerId}
         initialPointLog={match.pointLog || []}
         format={match.matchFormat}
-        labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused") }}
+        labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused"), firstServe: tCommon("firstServeShort"), secondServe: tCommon("secondServeShort") }}
         reasonLabels={Object.fromEntries(PAUSE_REASONS.map(reason => [reason, t(`pauseReason_${reason}`)]))}
         soundLabels={{ on: tCommon("soundOn"), off: tCommon("soundOff") }}
       />

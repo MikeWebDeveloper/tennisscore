@@ -100,3 +100,32 @@ export function parseDbScore(scoreString: string | undefined): Score {
     return defaultScore
   }
 }
+
+export type ServeIndicator = 'first' | 'second'
+
+/**
+ * Which serve the server is on, as the scorer last set it (kept in the stored score JSON so
+ * spectators see it). Kept out of parseDbScore on purpose: the scoring store must never carry it,
+ * or the next point would write a stale "second serve" back.
+ */
+export function serveIndicator(scoreString: string | undefined): ServeIndicator {
+  try {
+    return JSON.parse(scoreString || '{}')?.serve === 'second' ? 'second' : 'first'
+  } catch {
+    return 'first'
+  }
+}
+
+/** The stored score JSON with the serve set; unchanged text when it already says so (or is not JSON) */
+export function withServeIndicator(scoreString: string | undefined, serve: ServeIndicator): string {
+  try {
+    const score = JSON.parse(scoreString || '{}')
+    if (!score || typeof score !== 'object' || Array.isArray(score)) return scoreString ?? ''
+    if (serveIndicator(scoreString) === serve) return scoreString ?? ''
+    if (serve === 'second') score.serve = 'second'
+    else delete score.serve
+    return JSON.stringify(score)
+  } catch {
+    return scoreString ?? ''
+  }
+}

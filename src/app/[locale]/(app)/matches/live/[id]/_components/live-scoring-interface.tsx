@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from '@/lib/framer-motion-config'
 import confetti from "canvas-confetti"
@@ -19,7 +19,8 @@ import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
 import { matchEndTime, type EndReason } from "@/lib/utils/end-reasons"
-import { parseDbScore } from "@/lib/utils/db-score"
+import { parseDbScore, serveIndicator } from "@/lib/utils/db-score"
+import { setCurrentServe } from "@/lib/actions/match-serve"
 import { setMatchPaused } from "@/lib/actions/match-pause"
 import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
@@ -451,7 +452,11 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
   const [retireReason, setRetireReason] = useState<'completed' | EndReason | ''>('')
   const [selectedWinner, setSelectedWinner] = useState<'p1' | 'p2' | ''>('')
   const [pendingPointWinner, setPendingPointWinner] = useState<'p1' | 'p2' | null>(null)
-  const [serveType, setServeType] = useState<'first' | 'second'>('first')
+  // Which serve the server is on; starts from what spectators were last shown (e.g. after a reload)
+  const [serveType, setServeType] = useState<'first' | 'second'>(() => match.status === 'In Progress' ? serveIndicator(match.score) : 'first')
+  const serveSync = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // A pending serve save must not fire after leaving the page
+  useEffect(() => () => { if (serveSync.current) clearTimeout(serveSync.current) }, [])
   const [isInGame, setIsInGame] = useState(false)
   const [isMatchInitialized, setIsMatchInitialized] = useState(false)
   const [startTime, setStartTime] = useState<string | null>(null)
@@ -855,7 +860,8 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         }
       }
 
-      // Reset serve type back to first serve for next point
+      // Reset serve type back to first serve for next point; the point's own sync clears it for spectators
+      if (serveSync.current) clearTimeout(serveSync.current)
       setServeType('first')
 
       // Include timing data in the update payload
@@ -959,10 +965,23 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     }
   }
 
+  // Tapping 1./2. also shows spectators which serve it is (a light save, after a short pause so
+  // a quick correction sends one update)
+  const chooseServe = (type: 'first' | 'second') => {
+    setServeType(type)
+    if (match.status !== 'In Progress') return
+    if (serveSync.current) clearTimeout(serveSync.current)
+    const pointCount = pointLog.length
+    serveSync.current = setTimeout(() => {
+      setCurrentServe(match.$id, type, pointCount).catch(() => undefined)
+    }, 350)
+  }
   const handleUndo = async () => {
     if (pointLog.length === 0 || isPaused || pausePending) return
 
     try {
+      if (serveSync.current) clearTimeout(serveSync.current)
+      setServeType('first')
       const result = undoLastPoint()
       
       await runSync(() => syncMatchScore(match.$id, {
@@ -1210,6 +1229,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           playerFourClub={match.playerFour?.club}
           score={score}
           currentServer={currentServer}
+          serve={serveType}
           servingPlayer={servingPlayer}
           onSelectServingPlayer={canPickServer ? setServerOverride : undefined}
           status={match.status}
@@ -1256,23 +1276,28 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             pausedAt={pointLog[pointLog.length - 1]?.timestamp ?? null}
           />
 
-          {/* Serve selection: large touch targets and a named pressed state. */}
-          <div role="group" aria-label={tCommon('serveType')} className="flex items-center rounded-lg bg-muted/50 p-1">
-            {(['first', 'second'] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                aria-label={tCommon(type === 'first' ? 'firstServe' : 'secondServe')}
-                aria-pressed={serveType === type}
-                onClick={() => setServeType(type)}
-                className={cn(
-                  "min-h-11 min-w-11 rounded-md px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                  serveType === type ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t(type === 'first' ? 'firstServe' : 'secondServe')}
-              </button>
-            ))}
+          {/* Serve selection, labelled "Podání": large touch targets, a named pressed state, amber on a second serve */}
+          <div className="flex flex-col items-center gap-1">
+            <span id="serve-type-label" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('serveLabel')}</span>
+            <div role="group" aria-labelledby="serve-type-label" className="flex items-center rounded-lg bg-muted/50 p-1" data-serve-switch>
+              {(['first', 'second'] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  aria-label={tCommon(type === 'first' ? 'firstServeShort' : 'secondServeShort')}
+                  aria-pressed={serveType === type}
+                  onClick={() => chooseServe(type)}
+                  className={cn(
+                    "min-h-11 min-w-11 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                    serveType === type
+                      ? type === 'second' ? "bg-amber-400 text-amber-950 shadow-sm" : "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t(type === 'first' ? 'firstServe' : 'secondServe')}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

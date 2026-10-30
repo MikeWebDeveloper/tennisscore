@@ -1,4 +1,6 @@
 import type { Score } from "@/stores/matchStore"
+import type { ServeIndicator } from "@/lib/utils/db-score"
+import { ServeChip } from "./serve-chip"
 
 export type LitePlayerId = "p1" | "p2" | "p3" | "p4"
 
@@ -18,7 +20,9 @@ interface LiteScoreboardProps {
   servingTeam?: "p1" | "p2"
   servingPlayer?: LitePlayerId | null
   winner?: "p1" | "p2" | null
-  labels: { live: string; finished: string; paused?: string }
+  /** First or second serve, shown beside the server while the match is in progress */
+  serve?: ServeIndicator
+  labels: { live: string; finished: string; paused?: string; firstServe?: string; secondServe?: string }
 }
 
 /** Tennis point text for a player: 0, 15, 30, 40, or Ad. */
@@ -43,6 +47,7 @@ export function LiteScoreboard({
   servingTeam,
   servingPlayer,
   winner,
+  serve,
   labels,
 }: LiteScoreboardProps) {
   const sides = ["p1", "p2"] as const
@@ -72,12 +77,17 @@ export function LiteScoreboard({
               aria-hidden="true"
               className={`h-2.5 w-2.5 shrink-0 rounded-full ${inProgress && servingTeam === side ? "bg-green-500" : "bg-transparent"}`}
             />
-            <div className={`min-w-0 flex-1 text-base ${won ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
-              {team.names.map((name, n) => (
-                <div key={n} className={servingPlayer === team.ids[n] ? "truncate underline decoration-2 underline-offset-2" : "truncate"}>
-                  {name}
-                </div>
-              ))}
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <div className={`min-w-0 text-base ${won ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
+                {team.names.map((name, n) => (
+                  <div key={n} className={servingPlayer === team.ids[n] ? "truncate underline decoration-2 underline-offset-2" : "truncate"}>
+                    {name}
+                  </div>
+                ))}
+              </div>
+              {inProgress && servingTeam === side && serve && labels.firstServe && labels.secondServe && (
+                <ServeChip serve={serve} label={serve === "second" ? labels.secondServe : labels.firstServe} />
+              )}
             </div>
             <div className="flex items-center gap-3 font-mono text-xl tabular-nums" data-sets>
               {score.sets.map((set, s) => (

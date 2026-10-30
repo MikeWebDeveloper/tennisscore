@@ -7,6 +7,9 @@ import { Score, MatchFormat } from "@/stores/matchStore"
 import { cn } from "@/lib/utils"
 import { isBreakPoint, isSetPoint, isMatchPoint } from "@/lib/utils/tennis-scoring"
 import { useEffect } from "react"
+import { useTranslations } from "@/i18n"
+import type { ServeIndicator } from "@/lib/utils/db-score"
+import { ServeChip } from "./serve-chip"
 
 interface LiveScoreboardProps {
   playerOneName: string
@@ -29,6 +32,8 @@ interface LiveScoreboardProps {
   playerFourClub?: string
   score: Score
   currentServer?: "p1" | "p2" | null
+  /** First or second serve, shown beside the server while the match is in progress */
+  serve?: ServeIndicator | null
   /** Doubles only: the individual serving player, highlighted in the team name. */
   servingPlayer?: "p1" | "p2" | "p3" | "p4" | null
   /** Doubles: when provided, the serving team's partner names are tappable to choose who serves. */
@@ -64,6 +69,7 @@ export function LiveScoreboard({
   playerFourClub,
   score,
   currentServer,
+  serve,
   servingPlayer,
   onSelectServingPlayer,
   status = "In Progress",
@@ -86,8 +92,12 @@ export function LiveScoreboard({
     return () => clearTimeout(timer)
   }, [])
   
+  const tCommon = useTranslations('common')
   const isTiebreak = score.isTiebreak || false
   const server = currentServer
+  const serveChip = (side: "p1" | "p2") => status === "In Progress" && server === side && serve
+    ? <ServeChip serve={serve} label={tCommon(serve === "second" ? "secondServeShort" : "firstServeShort")} />
+    : null
   
   // Check if this is a doubles match
   const isDoubles = !!(playerThreeName && playerFourName)
@@ -322,6 +332,7 @@ export function LiveScoreboard({
                       </Badge>
                     </motion.div>
                   )}
+                  {serveChip("p1")}
                 </div>
                 {/* Tiny player details */}
                 <div className="space-y-0.5">
@@ -505,6 +516,7 @@ export function LiveScoreboard({
                       </Badge>
                     </motion.div>
                   )}
+                  {serveChip("p2")}
                 </div>
                 {/* Tiny player details */}
                 <div className="space-y-0.5">

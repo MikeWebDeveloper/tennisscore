@@ -1053,6 +1053,10 @@
       "liveInsights": {
         "title": "Živé statistiky během zápasu",
         "description": "Pod lištou momenta uvidíte sérii bodů, poslední klíčovou chvíli, hlavní čísla a hry aktuálního setu."
+      },
+      "serveIndicator": {
+        "title": "Ukazatel 1. a 2. podání",
+        "description": "Přepínač podání při zápisu je nově popsaný a ve skóre – i u diváků – je hned vidět, jestli jde o 1. nebo 2. podání."
       }
     }
   },
@@ -1315,7 +1319,8 @@
     "serve": "Servis",
     "serviceWinner": "Vítězný servis",
     "unforcedError": "Nevynucená chyba",
-    "volley": "Volej"
+    "volley": "Volej",
+    "serveLabel": "Podání"
   },
   "navigation": {
     "dashboard": "Nástěnka",

@@ -1024,6 +1024,10 @@
       "liveInsights": {
         "title": "Live statistics during the match",
         "description": "Under the momentum bar: the current run, the latest key moment, the key numbers and this set’s games."
+      },
+      "serveIndicator": {
+        "title": "1st and 2nd serve indicator",
+        "description": "The serve switch while scoring is now labelled, and the score shows everyone – spectators too – whether it is a first or a second serve."
       }
     }
   },
@@ -1286,7 +1290,8 @@
     "serve": "Serve",
     "serviceWinner": "Service Winner",
     "unforcedError": "Unforced Error",
-    "volley": "Volley"
+    "volley": "Volley",
+    "serveLabel": "Serve"
   },
   "navigation": {
     "dashboard": "Dashboard",
