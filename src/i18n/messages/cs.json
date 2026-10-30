@@ -1946,6 +1946,7 @@
     "exportWithAi": "Statistiky + AI rozbor",
     "exportWithAiHint": "Stejné PDF s uloženým AI rozborem",
     "exportAiPending": "AI rozbor se ještě připravuje",
-    "exportAiMissing": "Nejdřív vytvořte AI rozbor"
+    "exportAiMissing": "Nejdřív vytvořte AI rozbor",
+    "pdfVs": "vs"
   }
 }

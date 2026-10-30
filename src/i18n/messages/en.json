@@ -1917,6 +1917,7 @@
     "exportWithAi": "Statistics + AI analysis",
     "exportWithAiHint": "The same PDF with the saved AI analysis",
     "exportAiPending": "The AI analysis is still being written",
-    "exportAiMissing": "Create the AI analysis first"
+    "exportAiMissing": "Create the AI analysis first",
+    "pdfVs": "vs"
   }
 }
