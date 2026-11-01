@@ -19,7 +19,7 @@ import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
 import { matchEndTime, type EndReason } from "@/lib/utils/end-reasons"
-import { parseDbScore, serveIndicator } from "@/lib/utils/db-score"
+import { openSet, parseDbScore, serveIndicator } from "@/lib/utils/db-score"
 import { setCurrentServe } from "@/lib/actions/match-serve"
 import { setMatchPaused } from "@/lib/actions/match-pause"
 import { PAUSE_REASONS, isPauseReason, type PauseReason } from '@/lib/utils/pause-reasons'
@@ -516,10 +516,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       shortNames: liveShortNames,
       metaLines: { p1: meta([match.playerOne, match.playerThree]), p2: meta([match.playerTwo, match.playerFour]) },
       focus: focusSide(sidePlayers, liveInsights.leader),
-      scoreboard: {
-        sets: score.sets,
-        current: match.status !== "Completed" ? score.games : undefined,
-      },
+      scoreboard: { sets: score.sets, open: openSet(score, match.status === "Completed") },
       completed: match.status === "Completed",
       dateLabel: new Date(match.startTime || Date.now()).toLocaleDateString(locale, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Prague" }),
       tournamentName: match.tournamentName,

@@ -50,3 +50,32 @@ describe('serve indicator in the stored score', () => {
     expect(parseDbScore(second)).not.toHaveProperty('serve')
   })
 })
+
+describe('openSet: the set a result shows after the finished ones', () => {
+  const score = (sets: [number, number][], games: [number, number], extra: object = {}) => ({ sets, games, points: [0, 0] as [number, number], isTiebreak: false, tiebreakPoints: [0, 0] as [number, number], ...extra })
+
+  it('shows the set a retirement cut short, from the games the stored score kept', async () => {
+    const { openSet } = await import('./db-score')
+    expect(openSet(score([[4, 6]], [2, 1]), true)).toEqual({ games: [2, 1], live: false })
+  })
+
+  it('shows nothing extra for a match won in full or ended before the next set began', async () => {
+    const { openSet } = await import('./db-score')
+    expect(openSet(score([[6, 4], [6, 3]], [0, 0]), true)).toBeNull()
+    expect(openSet(score([[6, 4]], [0, 0], { points: [2, 1] }), true)).toBeNull()
+    // Old retirements stored only a "1:0" set
+    expect(openSet(score([[1, 0]], [0, 0]), true)).toBeNull()
+  })
+
+  it('shows the match tiebreak a retirement cut short by its points', async () => {
+    const { openSet } = await import('./db-score')
+    expect(openSet(score([[6, 4], [3, 6]], [0, 0], { isTiebreak: true, tiebreakPoints: [5, 3] }), true)).toEqual({ games: [5, 3], live: false })
+  })
+
+  it('keeps the set in play live while the match goes on', async () => {
+    const { openSet } = await import('./db-score')
+    expect(openSet(score([[6, 4]], [2, 1]), false)).toEqual({ games: [2, 1], live: true })
+    expect(openSet(score([], [0, 0]), false)).toEqual({ games: [0, 0], live: true })
+    expect(openSet(score([[6, 4]], [0, 0]), false)).toBeNull()
+  })
+})

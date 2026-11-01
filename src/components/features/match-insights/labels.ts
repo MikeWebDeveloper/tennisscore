@@ -1,9 +1,9 @@
 import type { Player } from "@/lib/types"
 import type { SetSummary, Side } from "@/lib/utils/match-insights"
 
-/** "6:2"; a match tiebreak shows its points ("10:7"), as the scoreboard does */
-export function setScoreLabel(set: Pick<SetSummary, "games" | "superTiebreak" | "tiebreakPoints">): string {
-  const [a, b] = set.superTiebreak && set.tiebreakPoints ? set.tiebreakPoints : set.games
+/** "6:2"; a match tiebreak shows its points ("10:7"), as the scoreboard does, also when cut short */
+export function setScoreLabel(set: Pick<SetSummary, "games" | "superTiebreak" | "tiebreakPoints"> & Partial<Pick<SetSummary, "points">>): string {
+  const [a, b] = set.superTiebreak ? set.tiebreakPoints ?? set.points ?? set.games : set.games
   return `${a}:${b}`
 }
 

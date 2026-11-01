@@ -26,6 +26,24 @@ describe('analysisPrompt', () => {
     expect(data.match.result).toBe('won (the match ended early)')
   })
 
+  it('covers the whole match after a retirement, the set it cut short included and marked', () => {
+    type S = 'p1' | 'p2'
+    const game = (set: number, n: number, server: S, winner: S) => Array.from({ length: 4 }, () => ({ winner, server, setNumber: set, gameNumber: n }))
+    // p2 wins the first set 6:0, p1 leads 2:1 in the second when p2 retires
+    const retired: InsightPoint[] = [
+      ...[1, 2, 3, 4, 5, 6].flatMap((n) => game(1, n, n % 2 ? 'p1' : 'p2', 'p2')),
+      ...game(2, 1, 'p1', 'p1'), ...game(2, 2, 'p2', 'p1'), ...game(2, 3, 'p1', 'p2'),
+      { winner: 'p1', server: 'p2', setNumber: 2, gameNumber: 4 },
+    ]
+    const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(retired), players, focus: 'p1', winner: 'p1', endReason: 'retired' }))
+    expect(data.match.score).toBe('0:6 2:1')
+    expect(data.match.endReason).toBe('a player retired')
+    expect(data.match.sets[0]).not.toHaveProperty('unfinished')
+    expect(data.match.sets[1]).toMatchObject({ set: 2, score: '2:1', unfinished: true })
+    expect(data.setStats[1]).toMatchObject({ set: 2, unfinished: true })
+    expect(data.setStats[1].focusPlayer.gamesWon).toBe(2)
+  })
+
   it('leaves serve and outcome numbers out when the match was scored at the points level', () => {
     const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(points, { detailLevel: 'points' }), players, focus: 'p1' }))
 
@@ -36,6 +54,10 @@ describe('analysisPrompt', () => {
 })
 
 describe('analysisSystemPrompt', () => {
+  it('asks to analyse an unfinished last set like the others', () => {
+    expect(analysisSystemPrompt('cs')).toMatch(/unfinished/)
+  })
+
   it('asks for Czech tennis words, all recorded data and nothing that was not recorded', () => {
     const prompt = analysisSystemPrompt('cs')
     expect(prompt).toContain('Czech')

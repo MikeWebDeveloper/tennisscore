@@ -14,6 +14,7 @@ import { Player } from "@/lib/types"
 import { DeleteMatchButton } from "../[id]/_components/delete-match-button"
 import { PlayerMeta } from "@/components/shared/player-meta"
 import { endReasonMessageKey } from "@/lib/utils/end-reasons"
+import { openSet } from "@/lib/utils/db-score"
 import { toast } from "sonner"
 import { useTranslations } from "@/i18n"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -238,6 +239,11 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                       const isLoser = match.status === "Completed" && !!match.winnerId && !isWinner
                       const sets = match.scoreParsed?.sets ?? []
                       const live = match.status !== "Completed" ? match.scoreParsed?.games : undefined
+                      // The set a retirement cut short ("4-6 2-1"), kept in the stored games
+                      const storedGames = match.scoreParsed?.games
+                      const cut = match.status === "Completed" && storedGames && storedGames.length >= 2
+                        ? openSet({ sets: sets.map((set) => [set.p1, set.p2] as [number, number]), games: [storedGames[0], storedGames[1]] }, true)?.games
+                        : undefined
                       return (
                         <div key={side} data-side={side} className="flex items-center justify-between gap-3 py-2">
                           {/* The loser is dimmed so the winner still stands out */}
@@ -256,6 +262,9 @@ export function MatchesList({ matches, onMatchDeleted, onSearchChange, searching
                             })}
                             {live && live.length >= 2 && (
                               <span className="w-6 rounded-md bg-brand/15 py-0.5 text-center font-semibold text-brand">{live[side - 1]}</span>
+                            )}
+                            {cut && (
+                              <span data-set-cut title={t("unfinishedSet")} className="w-6 rounded-md border border-dashed border-border py-0.5 text-center text-muted-foreground">{cut[side - 1]}</span>
                             )}
                           </span>
                         </div>

@@ -1291,7 +1291,8 @@
     "serviceWinner": "Service Winner",
     "unforcedError": "Unforced Error",
     "volley": "Volley",
-    "serveLabel": "Serve"
+    "serveLabel": "Serve",
+    "unfinishedSet": "Unfinished set"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -1923,6 +1924,9 @@
     "exportWithAiHint": "The same PDF with the saved AI analysis",
     "exportAiPending": "The AI analysis is still being written",
     "exportAiMissing": "Create the AI analysis first",
-    "pdfVs": "vs"
+    "pdfVs": "vs",
+    "setCutShort": "Unfinished set",
+    "setTitleCutShort": "Set {set} · {score} · unfinished",
+    "pdfEndedEarly": "Unfinished · {reason}"
   }
 }

@@ -129,3 +129,25 @@ export function withServeIndicator(scoreString: string | undefined, serve: Serve
     return scoreString ?? ''
   }
 }
+
+/** The set a result shows after the finished ones; `live` while it is still being played */
+export interface OpenSet {
+  games: [number, number]
+  live: boolean
+}
+
+/**
+ * The set still open in a stored score: the set in play while the match goes on, or the set an early
+ * end (retirement, injury) cut short, so a result reads "4:6 2:1" and not just "4:6". The retirement
+ * keeps that set's games in the stored score; a match won in full resets them to 0:0. A match
+ * tiebreak shows its points, as finished ones do.
+ */
+export function openSet(score: Pick<Score, 'sets' | 'games'> & Partial<Pick<Score, 'isTiebreak' | 'tiebreakPoints'>>, completed: boolean): OpenSet | null {
+  const [a, b] = score.games
+  const started = a > 0 || b > 0
+  if (!completed) return started || score.sets.length === 0 ? { games: [a, b], live: true } : null
+  if (started) return { games: [a, b], live: false }
+  const tb = score.tiebreakPoints
+  if (score.isTiebreak && tb && (tb[0] > 0 || tb[1] > 0)) return { games: [tb[0], tb[1]], live: false }
+  return null
+}

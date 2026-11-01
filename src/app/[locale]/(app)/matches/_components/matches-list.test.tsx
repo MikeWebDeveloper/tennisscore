@@ -41,3 +41,16 @@ it('names an early ending on the card status chip', async () => {
   act(() => root.unmount())
   container.remove()
 })
+
+it('shows the set a retirement cut short beside the finished sets', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const retired = { ...doublesMatch, retirementReason: 'retired', scoreParsed: { sets: [{ p1: 4, p2: 6 }], games: [2, 1], points: [0, 0] } }
+  await act(async () => root.render(<MatchesList matches={[retired]} />))
+  const rows = container.querySelectorAll('[data-side]')
+  expect(rows[0].querySelector('[data-set-cut]')?.textContent).toBe('2')
+  expect(rows[1].querySelector('[data-set-cut]')?.textContent).toBe('1')
+  act(() => root.unmount())
+  container.remove()
+})

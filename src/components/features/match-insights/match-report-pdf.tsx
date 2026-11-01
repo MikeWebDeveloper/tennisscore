@@ -1,7 +1,8 @@
 import { Circle, Defs, Document, Font, Line, LinearGradient, Page, Path, Polygon, Polyline, Rect, Stop, StyleSheet, Svg, Text, View } from "@react-pdf/renderer"
 import type { ReactNode } from "react"
 import type { SavedAnalysis } from "@/lib/ai/match-analysis"
-import { percent, type MatchInsights, type Side, type SideTotals } from "@/lib/utils/match-insights"
+import type { OpenSet } from "@/lib/utils/db-score"
+import { percent, type MatchInsights, type SetSummary, type Side, type SideTotals } from "@/lib/utils/match-insights"
 import { formatSeconds, setScoreLabel } from "./labels"
 import { headlineDetail, headlineTitle, momentText, pointSources, pressureShares, type Translate } from "./texts"
 
@@ -74,9 +75,11 @@ export interface MatchReportProps {
   focus: Side
   /** The stored winner (a retirement can leave the loser ahead on the court) */
   winner?: Side | null
-  /** The official score as stored; the open set last while playing */
-  scoreboard: { sets: [number, number][]; current?: [number, number] }
+  /** The official score as stored; the open set last: in play, or cut short by a retirement */
+  scoreboard: { sets: [number, number][]; open?: OpenSet | null }
   completed: boolean
+  /** Why a finished match ended early ("Hráč odstoupil"), shown under the cover score */
+  endReason?: string
   dateLabel: string
   tournamentName?: string
   durationText?: string
@@ -310,6 +313,10 @@ export function MatchReportDocument(props: MatchReportProps) {
   const contentWidth = pageWidth - 2 * PAGE_X
   const matchTitle = `${fullNames.p1} ${t("pdfVs")} ${fullNames.p2} · ${props.dateLabel}`
   const meta = [props.tournamentName, props.dateLabel, props.durationText].filter(Boolean).join("  ·  ")
+  // "2. set · 2:1 · nedohráno" for the set an early end cut short
+  const setHeading = (st: SetSummary) => st.superTiebreak
+    ? t("superTiebreakTitle", { score: setScoreLabel(st) })
+    : t(completed && !st.winner ? "setTitleCutShort" : "setTitle", { set: st.set, score: setScoreLabel(st) })
 
   const kpis = [
     { label: t("tilePoints"), a: p1.points, b: p2.points, bar: [p1.points, p2.points], sub: t("tilePointsSub", { name: shortNames[focus], pct: percent(f.points, totalPoints) ?? 0 }) },
@@ -357,15 +364,23 @@ export function MatchReportDocument(props: MatchReportProps) {
                       </View>
                     )
                   })}
-                  {props.scoreboard.current && (
-                    <View style={{ width: 30, height: 30, borderRadius: 7, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#f59e0b" }}>
-                      <Text style={{ fontSize: 15, fontWeight: 800, color: "#fbbf24" }}>{s === "p1" ? props.scoreboard.current[0] : props.scoreboard.current[1]}</Text>
+                  {/* The open set: amber while in play, dashed when a retirement cut it short */}
+                  {props.scoreboard.open && (
+                    <View style={{ width: 30, height: 30, borderRadius: 7, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: props.scoreboard.open.live ? "#f59e0b" : NIGHT_MUTED, borderStyle: props.scoreboard.open.live ? "solid" : "dashed" }}>
+                      <Text style={{ fontSize: 15, fontWeight: 800, color: props.scoreboard.open.live ? "#fbbf24" : NIGHT_MUTED }}>{props.scoreboard.open.games[s === "p1" ? 0 : 1]}</Text>
                     </View>
                   )}
                 </View>
               </View>
             )
           })}
+          {completed && props.endReason ? (
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 4 }}>
+              <Text style={{ fontSize: 7, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: NIGHT_MUTED, borderWidth: 1, borderStyle: "dashed", borderColor: NIGHT_MUTED, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 2 }}>
+                {t("pdfEndedEarly", { reason: props.endReason })}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={[styles.inner, { paddingTop: 16 }]}>
@@ -426,7 +441,7 @@ export function MatchReportDocument(props: MatchReportProps) {
               {sets.map((st) => (
                 <View key={st.set} style={{ marginBottom: 7 }}>
                   <Text style={{ fontSize: 7, color: MUTED, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 3 }}>
-                    {st.superTiebreak ? t("superTiebreakTitle", { score: setScoreLabel(st) }) : t("setTitle", { set: st.set, score: setScoreLabel(st) })}
+                    {setHeading(st)}
                   </Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 3 }}>
                     {insights.games.filter((g) => g.set === st.set).map((g) => {
@@ -638,7 +653,7 @@ export function MatchReportDocument(props: MatchReportProps) {
             <View key={st.set} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 5 }} wrap={false} minPresenceAhead={60}>
                 <Text style={{ fontSize: 9.5, fontWeight: 800, color: NIGHT, backgroundColor: LIME, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  {st.superTiebreak ? t("superTiebreakTitle", { score: setScoreLabel(st) }) : t("setTitle", { set: st.set, score: setScoreLabel(st) })}
+                  {setHeading(st)}
                 </Text>
                 {st.durationSec ? <Text style={{ fontSize: 8, color: MUTED }}>{formatSeconds(Math.round(st.durationSec / 60) * 60, locale)}</Text> : null}
               </View>

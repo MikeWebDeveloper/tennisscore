@@ -12,6 +12,7 @@ import { PlayerMeta } from "@/components/shared/player-meta"
 import { useLocale, useTranslations } from "@/i18n"
 import { cn } from "@/lib/utils"
 import type { Player } from "@/lib/types"
+import type { OpenSet } from "@/lib/utils/db-score"
 import { percent, type MatchInsights, type Side } from "@/lib/utils/match-insights"
 import { MomentumChart } from "./momentum-chart"
 import { GameTiles } from "./game-tiles"
@@ -35,8 +36,8 @@ interface MatchDashboardProps {
   focus: Side
   /** The stored winner (a retirement can leave the loser ahead on the court) */
   winner?: Side | null
-  /** The official score as stored (what every other screen shows); the open set last while playing */
-  scoreboard: { sets: [number, number][]; current?: [number, number] }
+  /** The official score as stored; the open set last: in play, or cut short by a retirement */
+  scoreboard: { sets: [number, number][]; open?: OpenSet | null }
   completed: boolean
   statusLabel: string
   dateLabel: string
@@ -192,9 +193,15 @@ export function MatchDashboard(props: MatchDashboardProps) {
                   </span>
                 )
               })}
-              {props.scoreboard.current && (
+              {props.scoreboard.open?.live && (
                 <span className="w-9 text-center font-mono text-2xl font-extrabold tabular-nums text-amber-500">
-                  {side === "p1" ? props.scoreboard.current[0] : props.scoreboard.current[1]}
+                  {side === "p1" ? props.scoreboard.open.games[0] : props.scoreboard.open.games[1]}
+                </span>
+              )}
+              {/* A set a retirement cut short: dashed, so it never reads as a set won */}
+              {props.scoreboard.open && !props.scoreboard.open.live && (
+                <span data-set-cut title={t("setCutShort")} className="w-9 rounded-lg border border-dashed border-border text-center font-mono text-2xl font-extrabold tabular-nums text-muted-foreground">
+                  {side === "p1" ? props.scoreboard.open.games[0] : props.scoreboard.open.games[1]}
                 </span>
               )}
             </div>

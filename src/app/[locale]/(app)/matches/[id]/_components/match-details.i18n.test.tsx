@@ -17,7 +17,9 @@ jest.mock('@/i18n', () => {
   }
 })
 jest.mock('@/i18n/navigation', () => ({ Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => <a href={href} {...rest}>{children}</a> }))
-jest.mock('@/components/shared/share-score-card-button', () => ({ ShareScoreCardButton: () => null }))
+// The share image's input is checked, the canvas drawing is not
+const mockShareInputs: { sets: unknown; subtitle?: string }[] = []
+jest.mock('@/components/shared/share-score-card-button', () => ({ ShareScoreCardButton: ({ input }: { input: { sets: unknown; subtitle?: string } }) => { mockShareInputs.push(input); return null } }))
 jest.mock('./point-by-point-view', () => ({ PointByPointView: () => null }))
 
 const player = (id: string, firstName: string, lastName: string) => ({ $id: id, firstName, lastName, userId: 'u1', isMainPlayer: false })
@@ -159,6 +161,23 @@ describe('MatchDetails in Czech', () => {
     await openTab(container, 3)
     expect(container.textContent).toContain('Bod po bodu (12 bodů)')
     expect(container.textContent).not.toContain('Point-by-Point Analysis')
+    cleanup()
+  })
+
+  it('shows the whole score after a retirement: the finished sets and the set it cut short', async () => {
+    mockShareInputs.length = 0
+    const { container, cleanup } = await renderDetails({
+      winnerId: 'p1', retirementReason: 'retired',
+      score: JSON.stringify({ sets: [[4, 6]], games: [2, 1], points: [1, 2] }),
+    } as never)
+    const card = container.querySelector('[data-match-dashboard]')?.firstElementChild
+    expect(card?.textContent).toMatch(/Mike God[\s\S]*42[\s\S]*Dvořák Petr[\s\S]*61/)
+    const cut = card?.querySelectorAll('[data-set-cut]')
+    expect(cut).toHaveLength(2)
+    expect(cut?.[0].getAttribute('title')).toBe('Nedohraný set')
+    // The share image gets the same whole score (the stored sets are [a, b] pairs, not {p1, p2})
+    expect(mockShareInputs.at(-1)?.sets).toEqual([{ p1: 4, p2: 6 }, { p1: 2, p2: 1 }])
+    expect(mockShareInputs.at(-1)?.subtitle).toContain('Hráč odstoupil')
     cleanup()
   })
 })

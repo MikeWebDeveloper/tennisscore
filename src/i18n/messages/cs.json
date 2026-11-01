@@ -1320,7 +1320,8 @@
     "serviceWinner": "Vítězný servis",
     "unforcedError": "Nevynucená chyba",
     "volley": "Volej",
-    "serveLabel": "Podání"
+    "serveLabel": "Podání",
+    "unfinishedSet": "Nedohraný set"
   },
   "navigation": {
     "dashboard": "Nástěnka",
@@ -1952,6 +1953,9 @@
     "exportWithAiHint": "Stejné PDF s uloženým AI rozborem",
     "exportAiPending": "AI rozbor se ještě připravuje",
     "exportAiMissing": "Nejdřív vytvořte AI rozbor",
-    "pdfVs": "vs"
+    "pdfVs": "vs",
+    "setCutShort": "Nedohraný set",
+    "setTitleCutShort": "{set}. set · {score} · nedohráno",
+    "pdfEndedEarly": "Nedohráno · {reason}"
   }
 }

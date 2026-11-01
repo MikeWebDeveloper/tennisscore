@@ -107,6 +107,7 @@ export function analysisSystemPrompt(locale: string): string {
     "The data says under \"recorded\" exactly what was tracked in this match and under \"notRecorded\" what was not. Use everything that was recorded and nothing else: never guess about anything listed as not recorded.",
     "When \"shotStats\" is present, analyse the shots explicitly: which shot (forehand, backhand, volley, overhead, drop shot, lob) produced winners, which leaked unforced or forced errors, the forehand against the backhand, how returns ended, where aces and serves landed, directions and net play when given. Compare the focus player with the opponent.",
     "Use \"breakPoints\" to say how the big points were won or lost, with the shot when it is known, and \"setStats\" to say how the match changed from set to set.",
+    "A set marked \"unfinished\" was cut short (a retirement, an injury) or is still being played: it counts like the others, its points are in every statistic, and match.score is the whole score. Analyse the whole match, never only the finished sets.",
     "The statistics are already counted: quote those numbers rather than recounting from the point list. The point list is for patterns and context.",
     "Be specific, honest and encouraging; the players are children, so no harsh language.",
     "Write about the focus player; mention the opponent only for context. Scores in the data are written focus player first.",
@@ -148,6 +149,9 @@ function sideStats(t: SideTotals, hasServeDetail: boolean) {
     } : {}),
   }
 }
+
+/** Why a match ended early, in words (the stored reason is a code) */
+const END_REASONS: Record<string, string> = { retired: "a player retired", injury: "a player retired injured", weather: "stopped by the weather" }
 
 const SHOT_NAMES: Record<string, string> = { forehand: "forehand", backhand: "backhand", volley: "volley", overhead: "overhead", drop_shot: "drop shot", lob: "lob" }
 const OUTCOME_NAMES: Record<string, string> = { winner: "winner", ace: "ace", unforced_error: "unforced error", forced_error: "forced error", double_fault: "double fault" }
@@ -241,6 +245,9 @@ export function analysisPrompt(input: AnalysisInput): string {
     })
   }
 
+  // A match tiebreak shows its points; one cut short has no tiebreak score yet, only its points
+  const setScore = (s: MatchInsights["sets"][number]) => (s.superTiebreak ? `match tiebreak ${pair(s.tiebreakPoints ?? s.points)}` : pair(s.games))
+
   const data = {
     match: {
       date: input.matchDate,
@@ -248,10 +255,13 @@ export function analysisPrompt(input: AnalysisInput): string {
       type: input.doubles ? "doubles" : "singles",
       detailLevel: input.detailLevel,
       result: resultFor,
-      endReason: input.endReason ?? undefined,
+      // The whole score, the set an early end cut short included: "4:6 2:1"
+      score: insights.sets.map(setScore).join(" "),
+      endReason: input.endReason ? END_REASONS[input.endReason] ?? input.endReason : undefined,
       sets: insights.sets.map((s) => ({
         set: s.set,
-        score: s.superTiebreak && s.tiebreakPoints ? `match tiebreak ${pair(s.tiebreakPoints)}` : pair(s.games),
+        score: setScore(s),
+        unfinished: s.winner ? undefined : true,
         tiebreak: s.tiebreakPoints && !s.superTiebreak ? pair(s.tiebreakPoints) : undefined,
         minutes: s.durationSec ? Math.round(s.durationSec / 60) : undefined,
         breaks: pair(s.breaks),
@@ -277,7 +287,7 @@ export function analysisPrompt(input: AnalysisInput): string {
     } : undefined,
     setStats: insights.sets.map((s) => {
       const t = insights.totalsBySet[s.set]
-      return t ? { set: s.set, focusPlayer: sideStats(t[focus], insights.hasServeDetail), opponent: sideStats(t[other], insights.hasServeDetail) } : null
+      return t ? { set: s.set, unfinished: s.winner ? undefined : true, focusPlayer: sideStats(t[focus], insights.hasServeDetail), opponent: sideStats(t[other], insights.hasServeDetail) } : null
     }).filter(Boolean),
     breakPoints,
     keyMoments: insights.moments.map((m) => ({ ...m, side: who(m.side) })),

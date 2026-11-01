@@ -39,7 +39,7 @@ import { buildMatchInsights, type Side } from "@/lib/utils/match-insights"
 import { formatPlayerRating } from "@/lib/utils/player-rating"
 import { ShareScoreCardButton } from "@/components/shared/share-score-card-button"
 import { normalizeMatchFormat } from "@/lib/utils/match-format"
-import { parseDbScore } from "@/lib/utils/db-score"
+import { openSet, parseDbScore } from "@/lib/utils/db-score"
 
 // Only the AI accounts get the two-option PDF menu, so its dropdown code loads only for them
 const PdfExportMenu = dynamic(() => import("@/components/features/match-insights/pdf-export-menu").then((m) => m.PdfExportMenu))
@@ -207,10 +207,9 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     .filter(Boolean)
     .join(" / ")
   const storedScore = parseDbScore(match.score)
-  const scoreboard = {
-    sets: storedScore.sets,
-    current: !isCompleted && (storedScore.games[0] > 0 || storedScore.games[1] > 0 || storedScore.sets.length === 0) ? storedScore.games : undefined,
-  }
+  // The whole score everywhere (page, PDF, share image): a retirement's cut-short set included
+  const scoreboard = { sets: storedScore.sets, open: openSet(storedScore, isCompleted) }
+  const shareSets = [...scoreboard.sets, ...(scoreboard.open ? [scoreboard.open.games] : [])].map(([p1, p2]) => ({ p1, p2 }))
   const buildReport = (withAnalysis = false) => ({
     insights,
     fullNames,
@@ -220,6 +219,7 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
     winner: winnerSide,
     scoreboard,
     completed: isCompleted,
+    endReason: isCompleted ? endReason ?? undefined : undefined,
     dateLabel,
     tournamentName: match.tournamentName,
     durationText,
@@ -264,11 +264,11 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
                   teamTwo: isDoubles
                     ? `${match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')} / ${match.playerFour ? formatPlayerFromObject(match.playerFour) : t('unknownPlayer')}`
                     : (match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer')),
-                  sets: match.scoreParsed?.sets ?? [],
+                  sets: shareSets,
                   winner: match.status === "Completed"
                     ? (match.winnerId && match.winnerId === match.playerOne?.$id ? 'p1' : match.winnerId && match.winnerId === match.playerTwo?.$id ? 'p2' : null)
                     : null,
-                  subtitle: new Date(match.matchDate).toLocaleDateString(locale),
+                  subtitle: [new Date(match.matchDate).toLocaleDateString(locale), isCompleted ? endReason : null].filter(Boolean).join(" · "),
                 }}
               />
               <Button
