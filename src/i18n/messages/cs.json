@@ -1358,7 +1358,15 @@
     "pointEditEndsEarly": "Po této opravě by zápas skončil dřív, než přijde poslední bod. Nejdřív smažte pozdější body.",
     "pointEditCompletesMatch": "Touto opravou by zápas skončil. Poslední bod zapište běžným způsobem.",
     "pointEditFailed": "Opravu se nepodařilo uložit",
-    "scanToWatch": "Naskenujte a sledujte zápas živě"
+    "scanToWatch": "Naskenujte a sledujte zápas živě",
+    "tournamentsView": "Turnaje",
+    "matchesView": "Zápasy",
+    "tournamentDates": "{from} – {to}",
+    "tournamentRecord": "{count, plural, one {# zápas} few {# zápasy} other {# zápasů}} · {wins}:{losses}",
+    "noTournaments": "Zatím žádný zápas s názvem turnaje. Turnaj zadáte při zakládání zápasu.",
+    "tournamentFilterActive": "Turnaj: {name}",
+    "clearTournament": "Zrušit filtr turnaje",
+    "tournamentsLoadFailed": "Turnaje se nepodařilo načíst"
   },
   "navigation": {
     "dashboard": "Nástěnka",
@@ -1816,7 +1824,10 @@
     "slightMomentum": "Mírná převaha",
     "slightlyBehind": "Mírně pozadu",
     "strongMomentum": "Silná převaha",
-    "stronglyBehind": "Výrazně pozadu"
+    "stronglyBehind": "Výrazně pozadu",
+    "tournamentFilter": "Turnaj",
+    "allTournaments": "Všechny zápasy",
+    "tournamentOption": "{name} ({count})"
   },
   "insights": {
     "winner": "Vítězství",

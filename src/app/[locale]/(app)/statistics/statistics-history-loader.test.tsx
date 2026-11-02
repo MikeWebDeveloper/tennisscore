@@ -35,3 +35,22 @@ it('makes an incomplete history visible when loading older matches fails', async
   expect(container.textContent).toContain('historyLoadFailed')
   expect(container.querySelector('[data-testid="count"]')?.textContent).toBe('50')
 })
+
+it('narrows every statistic to one tournament', async () => {
+  const matches = [
+    { $id: 'a', tournamentName: 'Zimní liga', matchDate: '2026-01-10T10:00:00Z' },
+    { $id: 'b', tournamentName: 'Zimní liga', matchDate: '2026-01-24T10:00:00Z' },
+    { $id: 'c', tournamentName: 'MČR U12', matchDate: '2026-03-14T10:00:00Z' },
+    { $id: 'd', matchDate: '2026-04-01T10:00:00Z' },
+  ] as Match[]
+  await act(async () => { root.render(<StatisticsHistoryLoader mainPlayer={player} initialMatches={matches} />) })
+  const count = () => container.querySelector('[data-testid="count"]')?.textContent
+  expect(count()).toBe('4')
+  const select = container.querySelector('select') as HTMLSelectElement
+  expect([...select.options].map(o => o.value)).toEqual(['', 'mčr u12', 'zimní liga'])
+  await act(async () => {
+    select.value = 'zimní liga'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  expect(count()).toBe('2')
+})

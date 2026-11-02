@@ -1329,7 +1329,15 @@
     "pointEditEndsEarly": "After this correction the match would be over before its last point. Delete the later points first.",
     "pointEditCompletesMatch": "This correction would finish the match. Score the last point the usual way.",
     "pointEditFailed": "The correction could not be saved",
-    "scanToWatch": "Scan to watch the match live"
+    "scanToWatch": "Scan to watch the match live",
+    "tournamentsView": "Tournaments",
+    "matchesView": "Matches",
+    "tournamentDates": "{from} – {to}",
+    "tournamentRecord": "{count, plural, one {# match} other {# matches}} · {wins}–{losses}",
+    "noTournaments": "No match with a tournament name yet. Add one when you set up a match.",
+    "tournamentFilterActive": "Tournament: {name}",
+    "clearTournament": "Clear tournament filter",
+    "tournamentsLoadFailed": "Could not load the tournaments"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -1787,7 +1795,10 @@
     "slightMomentum": "Slight momentum",
     "slightlyBehind": "Slightly behind",
     "strongMomentum": "Strong momentum",
-    "stronglyBehind": "Strongly behind"
+    "stronglyBehind": "Strongly behind",
+    "tournamentFilter": "Tournament",
+    "allTournaments": "All matches",
+    "tournamentOption": "{name} ({count})"
   },
   "insights": {
     "winner": "Winner",

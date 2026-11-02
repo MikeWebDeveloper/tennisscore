@@ -13,6 +13,9 @@ import { ConnectionError } from "@/components/connection-error"
 import { Match, Player } from "@/lib/types"
 import { useTranslations } from "@/i18n"
 import { MatchesList } from "./_components/matches-list"
+import { TournamentsPanel } from "./_components/tournaments-panel"
+import { matchesInTournament, type TournamentSummary } from "@/lib/utils/tournaments"
+import { X } from "lucide-react"
 import { getMatchesByUserPaginated } from "@/lib/actions/matches"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { toast } from "sonner"
@@ -165,7 +168,11 @@ export function PaginatedMatchesClient({
   hasError 
 }: PaginatedMatchesClientProps) {
   const t = useTranslations('common')
+  const tMatch = useTranslations('match')
   const [matches, setMatches] = useState<EnhancedMatch[]>(initialMatches)
+  // The list, or the account's tournaments; picking one shows only its matches
+  const [view, setView] = useState<'matches' | 'tournaments'>('matches')
+  const [tournament, setTournament] = useState<TournamentSummary | null>(null)
   const [total, setTotal] = useState(initialTotal)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [isLoading, setIsLoading] = useState(false)
@@ -188,9 +195,10 @@ export function PaginatedMatchesClient({
   }
 
   const sortedMatches = useMemo(() => {
-    if (sortOrder === 'none') return matches
+    const shown = tournament ? matchesInTournament(matches, tournament.key) : matches
+    if (sortOrder === 'none') return shown
 
-    const sorted = [...matches].sort((a, b) => {
+    const sorted = [...shown].sort((a, b) => {
       const dateA = new Date(a.matchDate).getTime()
       const dateB = new Date(b.matchDate).getTime()
       
@@ -202,7 +210,7 @@ export function PaginatedMatchesClient({
     })
 
     return sorted
-  }, [matches, sortOrder])
+  }, [matches, sortOrder, tournament])
 
   const handleSortToggle = () => {
     setSortOrder(current => {
@@ -280,9 +288,11 @@ export function PaginatedMatchesClient({
 
   // Search must include older pages, not just the visible 15. Keep existing
   // results on screen while bounded pages load; stop on error rather than loop.
+  // The same goes for a tournament: its older matches may sit on later pages
+  const findingHistory = searchActive || tournament !== null
   useEffect(() => {
-    if (searchActive && hasMore && !isLoading && !historyError) void loadMoreMatches(100)
-  }, [searchActive, hasMore, isLoading, historyError, loadMoreMatches])
+    if (findingHistory && hasMore && !isLoading && !historyError) void loadMoreMatches(100)
+  }, [findingHistory, hasMore, isLoading, historyError, loadMoreMatches])
 
   const getDateFilterLabel = (filter: DateFilter) => {
     switch (filter) {
@@ -299,7 +309,7 @@ export function PaginatedMatchesClient({
         <div>
           <h1 className="text-2xl font-bold">{t("yourMatches")}</h1>
           {/* While searching, the list shows the filtered count; two counters would contradict each other */}
-          {total > 0 && !searchActive && (
+          {total > 0 && !findingHistory && view === 'matches' && (
             <p className="text-sm text-muted-foreground mt-1">
               {t("showingMatchesSummary", { shown: matches.length, total })}
             </p>
@@ -345,7 +355,17 @@ export function PaginatedMatchesClient({
         </div>
       </div>
       
-      {hasError && matches.length === 0 ? (
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:w-72" role="group">
+        {(['matches', 'tournaments'] as const).map((value) => (
+          <Button key={value} type="button" variant={view === value ? 'default' : 'ghost'} className="h-10" aria-pressed={view === value} onClick={() => setView(value)}>
+            {tMatch(value === 'matches' ? 'matchesView' : 'tournamentsView')}
+          </Button>
+        ))}
+      </div>
+
+      {view === 'tournaments' ? (
+        <TournamentsPanel onPick={(picked) => { setHistoryError(false); setTournament(picked); setView('matches') }} />
+      ) : hasError && matches.length === 0 ? (
         <ConnectionError 
           title={t("unableToLoadMatches")}
           description={t("matchesConnectivityIssue")}
@@ -354,12 +374,20 @@ export function PaginatedMatchesClient({
         />
       ) : (
         <>
+          {tournament && (
+            <div className="mb-3 flex items-center gap-2">
+              <span className="inline-flex min-h-9 items-center rounded-full border border-border bg-card px-3 text-sm font-medium">{tMatch('tournamentFilterActive', { name: tournament.name })}</span>
+              <Button type="button" variant="ghost" size="icon" className="h-9 w-9" aria-label={tMatch('clearTournament')} title={tMatch('clearTournament')} onClick={() => setTournament(null)}>
+                <X className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+          )}
           <MatchesList matches={sortedMatches} onMatchDeleted={handleMatchDeleted} onSearchChange={value => {
             const active = Boolean(value.trim())
             if (active && !searchActive) setHistoryError(false)
             setSearchActive(active)
-          }} searchingHistory={searchActive && hasMore} />
-          {searchActive && hasMore && <p role="status" className="mt-3 text-sm text-muted-foreground">{t(historyError ? 'unableToLoadMatches' : 'searchingMatchHistory')}</p>}
+          }} searchingHistory={findingHistory && hasMore} />
+          {findingHistory && hasMore && <p role="status" className="mt-3 text-sm text-muted-foreground">{t(historyError ? 'unableToLoadMatches' : 'searchingMatchHistory')}</p>}
           
           {/* Load More Button */}
           {hasMore && (

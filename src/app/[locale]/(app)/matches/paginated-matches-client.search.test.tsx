@@ -8,6 +8,7 @@ import type { Match, Player } from '@/lib/types'
 jest.mock('@/lib/actions/matches', () => ({ getMatchesByUserPaginated: jest.fn() }))
 jest.mock('@/i18n', () => ({ useTranslations: () => (key: string) => key }))
 jest.mock('@/i18n/navigation', () => ({ Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a> }))
+jest.mock('./_components/tournaments-panel', () => ({ TournamentsPanel: () => null }))
 jest.mock('./_components/matches-list', () => ({ MatchesList: ({ matches, onSearchChange }: { matches: { $id: string }[]; onSearchChange: (value: string) => void }) => <div><button onClick={() => onSearchChange('older')}>search</button>{matches.map(match => match.$id).join(',')}</div> }))
 
 const player = { $id: 'player', firstName: 'Jan', lastName: 'Novak' } as Player
