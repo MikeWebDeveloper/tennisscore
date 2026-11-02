@@ -82,6 +82,16 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('gives nobody the trophy for a match stopped unfinished, and says so', async () => {
+    // A training set stopped when the court time ran out: Dvořák was ahead but did not win
+    const { container, cleanup } = await renderDetails({ winnerId: undefined, winner: undefined, retirementReason: 'unfinished' } as never)
+    const card = container.querySelector('[data-match-dashboard]')?.firstElementChild
+    expect(card?.querySelector('svg[aria-label="Vítězství"]')).toBeNull()
+    expect(container.textContent).toContain('Nedohráno')
+    expect(container.querySelector('[data-headline]')?.textContent).not.toContain('vyhrává')
+    cleanup()
+  })
+
   it('writes the match duration in Czech units, with seconds for very short matches', async () => {
     const { container, cleanup } = await renderDetails()
     expect(container.textContent).toContain('30 s')

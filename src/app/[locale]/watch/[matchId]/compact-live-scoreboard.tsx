@@ -24,16 +24,19 @@ interface Props {
   initialIsPaused?: boolean
   initialPauseReason?: string
   initialWinnerId?: string
+  initialRetirementReason?: string
   initialPointLog: string[]
   format: string
   labels: { live: string; finished: string; paused?: string; firstServe?: string; secondServe?: string }
   reasonLabels?: Record<string, string>
+  /** Labels for why a match ended early, keyed by retirementReason */
+  endLabels?: Record<string, string>
   /** Mute/unmute labels; the toggle only appears while the match is in progress */
   soundLabels?: { on: string; off: string }
 }
 
 export function CompactLiveScoreboard(props: Props) {
-  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, pointLog: props.initialPointLog, isPaused: props.initialIsPaused ?? false, pauseReason: props.initialPauseReason })
+  const [data, setData] = useState({ score: props.initialScore, status: props.initialStatus, winnerId: props.initialWinnerId, retirementReason: props.initialRetirementReason, pointLog: props.initialPointLog, isPaused: props.initialIsPaused ?? false, pauseReason: props.initialPauseReason })
   const lastUpdate = usePublicMatchPolling(data.status === 'Completed' ? '' : props.matchId)
   useEffect(() => {
     if (!lastUpdate) return
@@ -41,6 +44,7 @@ export function CompactLiveScoreboard(props: Props) {
       score: lastUpdate.score ?? previous.score,
       status: lastUpdate.status ?? previous.status,
       winnerId: lastUpdate.winnerId ?? previous.winnerId,
+      retirementReason: lastUpdate.retirementReason ?? previous.retirementReason,
       pointLog: lastUpdate.pointLog ?? previous.pointLog,
       isPaused: lastUpdate.isPaused ?? previous.isPaused,
       pauseReason: lastUpdate.pauseReason ?? previous.pauseReason,
@@ -64,7 +68,9 @@ export function CompactLiveScoreboard(props: Props) {
 
   const paused = data.isPaused && isPauseReason(data.pauseReason) && props.reasonLabels?.[data.pauseReason]
     ? `${props.labels.paused} — ${props.reasonLabels[data.pauseReason]}` : props.labels.paused
-  const board = <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} serve={inProgress ? serveIndicator(data.score) : undefined} labels={{ ...props.labels, paused }} />
+  const endLabel = data.retirementReason ? props.endLabels?.[data.retirementReason] : undefined
+  const finished = endLabel ? `${props.labels.finished} — ${endLabel}` : props.labels.finished
+  const board = <LiteScoreboard teams={teams} score={score} noAd={format.noAd} inProgress={inProgress} paused={data.isPaused} servingTeam={servingTeam} servingPlayer={servingPlayer} winner={winner} serve={inProgress ? serveIndicator(data.score) : undefined} labels={{ ...props.labels, paused, finished }} />
   if (!inProgress || !props.soundLabels) return board
   return (
     <div className="space-y-2">

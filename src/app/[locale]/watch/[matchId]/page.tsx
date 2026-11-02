@@ -4,6 +4,7 @@ import { getServerTranslator } from "@/i18n/server-translator"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { CompactLiveScoreboard } from "./compact-live-scoreboard"
 import { PAUSE_REASONS } from '@/lib/utils/pause-reasons'
+import { endReasonMessageKey } from '@/lib/utils/end-reasons'
 import { formatPlayerFromObject } from "@/lib/utils"
 import type { Player } from "@/lib/types"
 
@@ -81,10 +82,15 @@ export default async function WatchMatchPage({ params }: PageProps) {
         initialIsPaused={Boolean(match.isPaused)}
         initialPauseReason={match.pauseReason}
         initialWinnerId={match.winnerId}
+        initialRetirementReason={match.retirementReason || undefined}
         initialPointLog={match.pointLog || []}
         format={match.matchFormat}
         labels={{ live: t("watchLive"), finished: t("watchFinished"), paused: t("matchPaused"), firstServe: tCommon("firstServeShort"), secondServe: tCommon("secondServeShort") }}
         reasonLabels={Object.fromEntries(PAUSE_REASONS.map(reason => [reason, t(`pauseReason_${reason}`)]))}
+        endLabels={Object.fromEntries(["retired", "injury", "walkover", "unfinished", "weather"].flatMap(reason => {
+          const key = endReasonMessageKey(reason)
+          return key ? [[reason, t(key)]] : []
+        }))}
         soundLabels={{ on: tCommon("soundOn"), off: tCommon("soundOff") }}
       />
 

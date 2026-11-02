@@ -18,7 +18,7 @@ import { Settings } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { syncMatchScore, buildScorePayload } from "@/lib/utils/sync-match-score"
-import { matchEndTime, type EndReason } from "@/lib/utils/end-reasons"
+import { END_REASONS, endReasonHasWinner, endReasonMessageKey, matchEndTime, type EndReason } from "@/lib/utils/end-reasons"
 import { openSet, parseDbScore, serveIndicator } from "@/lib/utils/db-score"
 import { setCurrentServe } from "@/lib/actions/match-serve"
 import { setMatchPaused } from "@/lib/actions/match-pause"
@@ -1016,13 +1016,14 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
   const handleRetireMatch = async (reason: EndReason) => {
     try {
-      if (!selectedWinner) {
+      // A match stopped unfinished has no winner; every other early ending names one
+      const hasWinner = endReasonHasWinner(reason)
+      if (hasWinner && !selectedWinner) {
         toast.error(t('pleaseSelectWinner'))
         return
       }
 
-      // Determine winner ID based on selection
-      const winnerId = selectedWinner === 'p1' ? match.playerOne.$id : match.playerTwo.$id
+      const winnerId = !hasWinner ? undefined : selectedWinner === 'p1' ? match.playerOne.$id : match.playerTwo.$id
 
       // Keep the score reached on court (finished sets plus the game score of the set in play);
       // the saved reason says why it ended, e.g. "6:3 2:1 retired"
@@ -1032,7 +1033,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
 
       const updateData: {
         status: "Completed"
-        winnerId: string
+        winnerId?: string
         retirementReason: string
         endTime: string
         duration?: number
@@ -1054,13 +1055,13 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
         ...updateData
       }))
 
-      const reasonText = reason === 'retired' ? t('retirement') : t('injury')
-      const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
-
-      // Trigger celebratory confetti for match completion
-      triggerMatchWinConfetti()
-
-      toast.success(t('matchEndedDueToReason', { reason: reasonText, winner: winnerName }))
+      if (hasWinner) {
+        const winnerName = selectedWinner === 'p1' ? playerNames.p1 : playerNames.p2
+        triggerMatchWinConfetti()
+        toast.success(t('matchEndedDueToReason', { reason: t(endReasonMessageKey(reason) ?? 'playerRetired'), winner: winnerName }))
+      } else {
+        toast.success(t('matchEndedUnfinished'))
+      }
       setShowRetireDialog(false)
       setRetireReason('')
       setSelectedWinner('')
@@ -1454,47 +1455,27 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               </p>
 
               <div className="space-y-2">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="retireReason"
-                    value="completed"
-                    checked={retireReason === 'completed'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
-                    className="text-primary"
-                  />
-                  <span>{t('matchCompletedNormally')}</span>
-                </label>
-
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="retireReason"
-                    value="retired"
-                    checked={retireReason === 'retired'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
-                    className="text-primary"
-                  />
-                  <span>{t('playerRetired')}</span>
-                </label>
-
-
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="retireReason"
-                    value="injury"
-                    checked={retireReason === 'injury'}
-                    onChange={(e) => setRetireReason(e.target.value as 'completed' | EndReason)}
-                    className="text-primary"
-                  />
-                  <span>{t('injury')}</span>
-                </label>
+                {(['completed', ...END_REASONS] as const).map((reason) => (
+                  <label key={reason} className="flex items-start space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="retireReason"
+                      value={reason}
+                      checked={retireReason === reason}
+                      onChange={() => setRetireReason(reason)}
+                      className="mt-1 text-primary"
+                    />
+                    <span>
+                      {reason === 'completed' ? t('matchCompletedNormally') : t(endReasonMessageKey(reason) ?? 'playerRetired')}
+                      {reason === 'unfinished' && <span className="block text-xs text-muted-foreground">{t('matchUnfinishedHint')}</span>}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
 
             {/* Winner Selection - only show for early endings */}
-            {retireReason && retireReason !== 'completed' && (
+            {retireReason && retireReason !== 'completed' && endReasonHasWinner(retireReason) && (
               <div>
                 <p className="text-muted-foreground mb-4">
                   {t('whichPlayerWon')}
@@ -1547,7 +1528,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
               onClick={() => {
                 if (retireReason === 'completed') {
                   router.push(`/matches/${match.$id}`)
-                } else if (retireReason && selectedWinner) {
+                } else if (retireReason && (selectedWinner || !endReasonHasWinner(retireReason))) {
                   handleRetireMatch(retireReason)
                 } else if (retireReason && !selectedWinner) {
                   toast.error(t('pleaseSelectWinner'))
@@ -1559,7 +1540,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
                   setSelectedWinner('')
                 }
               }}
-              disabled={!retireReason || (retireReason !== 'completed' && !selectedWinner)}
+              disabled={!retireReason || (retireReason !== 'completed' && endReasonHasWinner(retireReason) && !selectedWinner)}
             >
               {t('endMatch')}
             </Button>

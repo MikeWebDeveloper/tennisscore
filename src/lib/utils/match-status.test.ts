@@ -1,4 +1,4 @@
-import { normalizeMatchStatus, withNormalizedStatus } from './match-status'
+import { matchStatusKey, normalizeMatchStatus, withNormalizedStatus } from './match-status'
 
 describe('normalizeMatchStatus', () => {
   it('maps the stored labels to the keys the stats screens use', () => {
@@ -15,6 +15,25 @@ describe('normalizeMatchStatus', () => {
   })
 
   it('keeps every other field when normalising a match', () => {
-    expect(withNormalizedStatus({ status: 'Completed', score: '{}' })).toEqual({ status: 'completed', score: '{}' })
+    expect(withNormalizedStatus({ status: 'Completed', winnerId: 'a', score: '{}' })).toEqual({ status: 'completed', winnerId: 'a', score: '{}' })
+  })
+})
+
+describe('matchStatusKey: an ended match without a result stays out of every win rate', () => {
+  it('counts a match won in full or after a retirement or walkover as completed', () => {
+    expect(matchStatusKey({ status: 'Completed', winnerId: 'a' })).toBe('completed')
+    expect(matchStatusKey({ status: 'Completed', winnerId: 'a', retirementReason: 'retired' })).toBe('completed')
+    expect(matchStatusKey({ status: 'Completed', winnerId: 'a', retirementReason: 'walkover' })).toBe('completed')
+  })
+
+  it('marks a match stopped unfinished, or ended with no winner, as unfinished', () => {
+    expect(matchStatusKey({ status: 'Completed', retirementReason: 'unfinished' })).toBe('unfinished')
+    expect(matchStatusKey({ status: 'Completed', winnerId: 'a', retirementReason: 'unfinished' })).toBe('unfinished')
+    expect(matchStatusKey({ status: 'Completed' })).toBe('unfinished')
+    expect(withNormalizedStatus({ status: 'Completed', retirementReason: 'unfinished' }).status).toBe('unfinished')
+  })
+
+  it('leaves matches in play alone', () => {
+    expect(matchStatusKey({ status: 'In Progress' })).toBe('in-progress')
   })
 })

@@ -24,6 +24,21 @@ test('dashboard counts completed matches (status casing) instead of showing zero
   await expect(page.getByRole('main').getByText('View detailed statistics')).toBeVisible()
 })
 
+test('dashboard offers to close a match nobody has scored for weeks', async ({ page }) => {
+  await fetch('http://localhost:4100/__reset')
+  await page.goto('/en/dashboard', { waitUntil: 'load' })
+  const card = page.locator('section', { has: page.getByRole('heading', { name: 'Unfinished matches' }) })
+  await expect(card).toBeVisible(T)
+  await expect(card.getByText('Novotný Karel')).toBeVisible()
+  await expect(card.getByRole('link', { name: 'Continue' })).toHaveAttribute('href', /\/matches\/live\/stale1/)
+  await card.getByRole('button', { name: 'Unfinished', exact: true }).click()
+  await expect(page.getByText('Saved as an unfinished match')).toBeVisible(T)
+  await expect(card).toHaveCount(0)
+  const saved = await (await fetch('http://localhost:4100/__doc/m/stale1')).json()
+  expect(saved).toMatchObject({ status: 'Completed', retirementReason: 'unfinished' })
+  expect(saved.winnerId).toBeFalsy()
+})
+
 test('filtering an already loaded match list does not replace results with loading skeletons', async ({ page }) => {
   await page.goto('/en/matches', { waitUntil: 'load' })
   await expect(page.getByText('Latal Michal').first()).toBeVisible(T)

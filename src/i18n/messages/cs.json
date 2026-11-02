@@ -1058,7 +1058,15 @@
         "title": "Ukazatel 1. a 2. podání",
         "description": "Přepínač podání při zápisu je nově popsaný a ve skóre – i u diváků – je hned vidět, jestli jde o 1. nebo 2. podání."
       }
-    }
+    },
+    "staleMatchesTitle": "Nedokončené zápasy",
+    "staleMatchesDescription": "{count, plural, one {# zápas čeká} few {# zápasy čekají} other {# zápasů čeká}} na dokončení déle než 7 dní. Dohrajte, uložte jako nedohrané, nebo smažte.",
+    "staleLastScored": "Naposledy {date}",
+    "staleContinue": "Dohrát",
+    "staleMarkUnfinished": "Nedohráno",
+    "staleMarkedUnfinished": "Uloženo jako nedohraný zápas",
+    "staleCloseFailed": "Zápas se nepodařilo uložit",
+    "staleShowAll": "Zobrazit všechny ({count})"
   },
   "match": {
     "newMatch": "Nový zápas",
@@ -1231,7 +1239,7 @@
     "whichPlayerWon": "Který hráč má být prohlášen vítězem?",
     "finalScoreKeptOnCourt": "Skóre zůstane tak, jak bylo dosaženo na kurtu, s důvodem (např. 6:3 2:1 skreč).",
     "pleaseSelectWinner": "Vyberte prosím, který hráč vyhrál",
-    "matchEndedDueToReason": "Zápas skončil kvůli {reason}. {winner} vyhrává 1-0.",
+    "matchEndedDueToReason": "Zápas skončil: {reason}. Vítěz: {winner}.",
     "retirement": "odstoupení",
     "weatherConditionsReason": "povětrnostní podmínky",
     "failedToEndMatch": "Nepodařilo se ukončit zápas",
@@ -1321,7 +1329,11 @@
     "unforcedError": "Nevynucená chyba",
     "volley": "Volej",
     "serveLabel": "Podání",
-    "unfinishedSet": "Nedohraný set"
+    "unfinishedSet": "Nedohraný set",
+    "walkover": "Kontumace (w.o.)",
+    "matchUnfinished": "Nedohráno",
+    "matchUnfinishedHint": "Došel čas nebo tréninkový set – bez vítěze",
+    "matchEndedUnfinished": "Zápas je uložen jako nedohraný."
   },
   "navigation": {
     "dashboard": "Nástěnka",

@@ -1,13 +1,19 @@
-import { END_REASONS, endReasonMessageKey, matchEndTime } from './end-reasons'
+import { END_REASONS, endReasonHasWinner, endReasonMessageKey, matchEndTime } from './end-reasons'
 
-it('offers retirement and injury as reasons to end a match early (weather belongs to interruptions)', () => {
-  expect(END_REASONS).toEqual(['retired', 'injury'])
+it('offers retirement, injury, walkover and unfinished as reasons to end a match early (weather belongs to interruptions)', () => {
+  expect(END_REASONS).toEqual(['retired', 'injury', 'walkover', 'unfinished'])
+})
+
+it('asks who won for every early ending except a match stopped unfinished', () => {
+  expect(END_REASONS.filter(endReasonHasWinner)).toEqual(['retired', 'injury', 'walkover'])
 })
 
 it('maps saved reasons to match messages, keeping older weather endings readable', () => {
   expect(endReasonMessageKey('retired')).toBe('playerRetired')
   expect(endReasonMessageKey('injury')).toBe('injury')
   expect(endReasonMessageKey('weather')).toBe('weatherConditions')
+  expect(endReasonMessageKey('walkover')).toBe('walkover')
+  expect(endReasonMessageKey('unfinished')).toBe('matchUnfinished')
   expect(endReasonMessageKey(undefined)).toBeNull()
   expect(endReasonMessageKey('')).toBeNull()
   expect(endReasonMessageKey('something-else')).toBeNull()

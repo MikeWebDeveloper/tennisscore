@@ -40,3 +40,19 @@ it('shows spectators a second serve beside the server, and drops it when the nex
   act(() => root.unmount())
   container.remove()
 })
+
+it('says why a match ended early, also when it ends while someone is watching', async () => {
+  const useLive = jest.mocked(usePublicMatchPolling)
+  useLive.mockReturnValue(null)
+  const props = { matchId: 'match1', teams: [{ names: ['Alice'], ids: ['p1'] }, { names: ['Bob'], ids: ['p2'] }] as const, playerOneId: 'a', playerTwoId: 'b', initialScore: JSON.stringify({ sets: [[6, 2]], games: [3, 1], points: [0, 0] }), initialStatus: 'In Progress', initialPointLog: [], format: '{}', labels: { live: 'Živě', finished: 'Konec' }, endLabels: { unfinished: 'Nedohráno', retired: 'Hráč odstoupil' } }
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => root.render(<CompactLiveScoreboard {...props} />))
+  expect(container.textContent).not.toContain('Nedohráno')
+  useLive.mockReturnValue({ status: 'Completed', retirementReason: 'unfinished' })
+  await act(async () => root.render(<CompactLiveScoreboard {...props} />))
+  expect(container.textContent).toContain('Konec — Nedohráno')
+  act(() => root.unmount())
+  container.remove()
+})

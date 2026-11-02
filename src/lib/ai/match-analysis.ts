@@ -151,7 +151,13 @@ function sideStats(t: SideTotals, hasServeDetail: boolean) {
 }
 
 /** Why a match ended early, in words (the stored reason is a code) */
-const END_REASONS: Record<string, string> = { retired: "a player retired", injury: "a player retired injured", weather: "stopped by the weather" }
+const END_REASONS: Record<string, string> = {
+  retired: "a player retired",
+  injury: "a player retired injured",
+  walkover: "a walkover",
+  unfinished: "stopped unfinished with no winner (time ran out or a practice set)",
+  weather: "stopped by the weather",
+}
 
 const SHOT_NAMES: Record<string, string> = { forehand: "forehand", backhand: "backhand", volley: "volley", overhead: "overhead", drop_shot: "drop shot", lob: "lob" }
 const OUTCOME_NAMES: Record<string, string> = { winner: "winner", ace: "ace", unforced_error: "unforced error", forced_error: "forced error", double_fault: "double fault" }
@@ -205,8 +211,8 @@ export function analysisPrompt(input: AnalysisInput): string {
   const who = (side: Side | null | undefined) => (side ? players[side].name : null)
   const fo = (side: Side | null | undefined) => (side ? (side === focus ? "F" : "O") : undefined)
   const decided = input.winner ?? (insights.complete ? insights.leader : null)
-  const resultFor = decided
-    ? `${decided === focus ? "won" : "lost"}${insights.complete ? "" : " (the match ended early)"}`
+  const resultFor = input.endReason === "unfinished" ? "no result: stopped unfinished"
+    : decided ? `${decided === focus ? "won" : "lost"}${insights.complete ? "" : " (the match ended early)"}`
     : input.endReason ? "match ended early" : "in progress"
   const points = input.points ?? []
   const shots = buildShotStats(points, input.detailLevel)

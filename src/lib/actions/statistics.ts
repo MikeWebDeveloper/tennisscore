@@ -1,6 +1,6 @@
 "use server"
 
-import { normalizeMatchStatus } from "@/lib/utils/match-status"
+import { matchStatusKey, normalizeMatchStatus } from "@/lib/utils/match-status"
 import { getCurrentUser } from "@/lib/auth"
 import { createAdminClient } from "@/lib/appwrite-server"
 import { Query } from "node-appwrite"
@@ -91,9 +91,9 @@ export async function getMatchesWithStats(playerId: string, options: {
     // Map matches with player data. The status filter is applied here because the database
     // stores "Completed" / "In Progress" and a query would need the exact casing.
     const wanted = status ? normalizeMatchStatus(status) : null
-    return matchesResponse.documents.filter(match => !wanted || normalizeMatchStatus(match.status) === wanted).map(match => ({
+    return matchesResponse.documents.filter(match => !wanted || matchStatusKey(match) === wanted).map(match => ({
       ...match,
-      status: normalizeMatchStatus(match.status),
+      status: matchStatusKey(match),
       playerOne: match.playerOneId ? playersMap.get(match.playerOneId) : undefined,
       playerTwo: match.playerTwoId ? playersMap.get(match.playerTwoId) : undefined,
       playerThree: match.playerThreeId ? playersMap.get(match.playerThreeId) : undefined,

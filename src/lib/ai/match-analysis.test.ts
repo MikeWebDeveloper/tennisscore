@@ -44,6 +44,16 @@ describe('analysisPrompt', () => {
     expect(data.setStats[1].focusPlayer.gamesWon).toBe(2)
   })
 
+  it('tells the AI a match stopped unfinished has no winner, even if one side was ahead', () => {
+    type S = 'p1' | 'p2'
+    const game = (n: number, server: S, winner: S) => Array.from({ length: 4 }, () => ({ winner, server, setNumber: 1, gameNumber: n }))
+    // A practice set stopped at 3:1 when the court time ran out
+    const stopped: InsightPoint[] = [...game(1, 'p1', 'p1'), ...game(2, 'p2', 'p1'), ...game(3, 'p1', 'p1'), ...game(4, 'p2', 'p2')]
+    const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(stopped), players, focus: 'p1', winner: null, endReason: 'unfinished' }))
+    expect(data.match.result).toBe('no result: stopped unfinished')
+    expect(data.match.endReason).toMatch(/no winner/)
+  })
+
   it('leaves serve and outcome numbers out when the match was scored at the points level', () => {
     const data = dataOf(analysisPrompt({ locale: 'cs', insights: buildMatchInsights(points, { detailLevel: 'points' }), players, focus: 'p1' }))
 

@@ -12,11 +12,12 @@ const base = { $id: '', $createdAt: '2026-10-26T10:00:00.000Z', $updatedAt: '202
 const fmt = (extra = {}) => JSON.stringify({ sets: 3, noAd: false, tiebreak: true, finalSetTiebreak: 'standard', gamesPerSet: 6, tiebreakAt: 6, ...extra })
 const emptyScore = JSON.stringify({ sets: [], games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] })
 
-const samples = () => ({
-  'm/match1': { ...base, $id: 'match1', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress',
+// Matches being scored were saved just now; one left untouched since September is offered for clean-up
+const samples = (now = new Date().toISOString()) => ({
+  'm/match1': { ...base, $updatedAt: now, $id: 'match1', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress',
     score: JSON.stringify({ sets: [[6, 4]], games: [2, 1], points: [2, 3], isTiebreak: false, tiebreakPoints: [0, 0] }),
     matchFormat: fmt(), pointLog: pts([{ g: 1, w: 'p1', s: 'p1' }, { g: 1, w: 'p1', s: 'p1' }]) },
-  'm/match2': { ...base, $id: 'match2', playerOneId: 'pl1', playerTwoId: 'pl2', playerThreeId: 'pl3', playerFourId: 'pl4', status: 'In Progress',
+  'm/match2': { ...base, $updatedAt: now, $id: 'match2', playerOneId: 'pl1', playerTwoId: 'pl2', playerThreeId: 'pl3', playerFourId: 'pl4', status: 'In Progress',
     score: JSON.stringify({ sets: [], games: [1, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }),
     matchFormat: fmt({ doublesServeOrder: { p1: 'p3', p2: 'p4' } }),
     pointLog: pts([{ g: 1, w: 'p1', s: 'p1', sp: 'p3' }, { g: 1, w: 'p1', s: 'p1', sp: 'p3' }, { g: 1, w: 'p1', s: 'p1', sp: 'p3' }, { g: 1, w: 'p1', s: 'p1', sp: 'p3' }]) },
@@ -24,8 +25,12 @@ const samples = () => ({
     score: JSON.stringify({ sets: [[4, 6], [3, 6]], games: [0, 0], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }),
     matchFormat: fmt(), pointLog: [] },
   // Fresh "points only" match for live-scoring scenarios
-  'm/match4': { ...base, $id: 'match4', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress', detailLevel: 'points',
+  'm/match4': { ...base, $updatedAt: now, $id: 'match4', playerOneId: 'pl1', playerTwoId: 'pl2', status: 'In Progress', detailLevel: 'points',
     score: emptyScore, matchFormat: fmt(), pointLog: [] },
+  'm/stale1': { ...base, $id: 'stale1', $createdAt: '2026-09-06T09:50:00.000Z', $updatedAt: '2026-09-06T10:34:50.000Z', matchDate: '2026-09-06T09:50:00.000Z',
+    playerOneId: 'pl1', playerTwoId: 'pl3', status: 'In Progress',
+    score: JSON.stringify({ sets: [[6, 4]], games: [1, 2], points: [0, 0], isTiebreak: false, tiebreakPoints: [0, 0] }),
+    matchFormat: fmt(), pointLog: pts([{ g: 1, w: 'p1', s: 'p1' }]) },
   'p/pl1': { $id: 'pl1', userId: 'test-user', firstName: 'Michal', lastName: 'Latal', isMainPlayer: true, $createdAt: '2026-10-01T10:00:00.000Z' },
   'p/pl2': { $id: 'pl2', userId: 'test-user', isMainPlayer: false, firstName: 'Petr', lastName: 'Dvořák' },
   'p/pl3': { $id: 'pl3', userId: 'test-user', isMainPlayer: false, firstName: 'Karel', lastName: 'Novotný' },

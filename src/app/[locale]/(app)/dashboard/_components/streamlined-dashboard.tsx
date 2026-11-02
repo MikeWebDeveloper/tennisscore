@@ -9,7 +9,8 @@ import { PWAInstallationBanner } from "./pwa-installation-banner"
 import { WhatsNewPanel } from "./whats-new-panel"
 import { RecentMatchesOverview } from "./recent-matches-overview"
 import { CreateNewMatchButton } from "./create-new-match-button"
-import { findResumeMatch } from "@/lib/utils/resume-match"
+import { findResumeMatch, findStaleMatches } from "@/lib/utils/resume-match"
+import { StaleMatchesCard } from "./stale-matches-card"
 import { getDashboardHighlights } from "@/lib/utils/dashboard-highlights"
 import { Link } from "@/i18n/navigation"
 import { Plus, UserPlus, Users } from "lucide-react"
@@ -30,6 +31,7 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
   const [createPlayerOpen, setCreatePlayerOpen] = useState(false)
   const firstName = user?.name?.split(' ')[0] || mainPlayer?.firstName || 'User'
   const resume = findResumeMatch(matches)
+  const stale = findStaleMatches(matches)
   const highlights = getDashboardHighlights(matches, mainPlayer.$id)
 
   return (
@@ -48,6 +50,7 @@ export function StreamlinedDashboard({ user, mainPlayer, matches, playersMap }: 
         <button type="button" onClick={() => setCreatePlayerOpen(true)} className={actionTile}><UserPlus className="h-5 w-5" aria-hidden="true" />{t('addPlayer')}</button>
         <Link href="/players" className={actionTile}><Users className="h-5 w-5" aria-hidden="true" />{t('yourPlayers')}</Link>
       </div>
+      {stale.length > 0 && <StaleMatchesCard matches={stale} mainPlayerId={mainPlayer.$id} playersMap={playersMap} />}
       <StreamlinedStatsCards matches={matches} mainPlayer={mainPlayer} />
 
       <details className="surface rounded-2xl px-4 py-3">

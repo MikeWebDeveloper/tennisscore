@@ -1,10 +1,20 @@
-/** Reasons a scorer can pick to end a match early; rain and darkness are interruptions, not endings. */
-export const END_REASONS = ['retired', 'injury'] as const
+/**
+ * Reasons a scorer can pick to end a match early; rain and darkness are interruptions, not endings.
+ * "unfinished" is a match stopped without a result (time ran out, a training set).
+ */
+export const END_REASONS = ['retired', 'injury', 'walkover', 'unfinished'] as const
 export type EndReason = typeof END_REASONS[number]
 
-const MESSAGE_KEYS: Record<string, 'playerRetired' | 'injury' | 'weatherConditions'> = {
+/** Every early ending names a winner except a match stopped unfinished */
+export function endReasonHasWinner(reason: EndReason) {
+  return reason !== 'unfinished'
+}
+
+const MESSAGE_KEYS: Record<string, 'playerRetired' | 'injury' | 'walkover' | 'matchUnfinished' | 'weatherConditions'> = {
   retired: 'playerRetired',
   injury: 'injury',
+  walkover: 'walkover',
+  unfinished: 'matchUnfinished',
   // Matches ended for weather before it became an interruption reason
   weather: 'weatherConditions',
 }

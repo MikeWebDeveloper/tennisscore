@@ -125,7 +125,7 @@ export interface Match extends Models.Document {
   playerFourData?: Pick<Player, 'firstName' | 'lastName' | '$id'>
   matchDate: string
   matchFormat: string
-  status: 'pending' | 'in-progress' | 'completed' | 'retired'
+  status: 'pending' | 'in-progress' | 'completed' | 'retired' | 'unfinished'
   isPaused?: boolean
   pauseReason?: string
   winnerId?: string

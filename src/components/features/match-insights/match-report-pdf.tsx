@@ -304,7 +304,8 @@ export function MatchReportDocument(props: MatchReportProps) {
   const { insights, t, locale, fullNames, shortNames, focus, completed } = props
   const { p1, p2 } = insights.totals
   const detail = insights.hasServeDetail
-  const winner = props.winner ?? (completed ? insights.leader : null)
+  // null = no winner (a match stopped unfinished); only an unknown winner falls back to the leader
+  const winner = props.winner !== undefined ? props.winner : completed ? insights.leader : null
   const totalPoints = p1.points + p2.points
   const f = insights.totals[focus]
   const pressure = pressureShares(insights, focus)

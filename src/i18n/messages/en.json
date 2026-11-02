@@ -1029,7 +1029,15 @@
         "title": "1st and 2nd serve indicator",
         "description": "The serve switch while scoring is now labelled, and the score shows everyone – spectators too – whether it is a first or a second serve."
       }
-    }
+    },
+    "staleMatchesTitle": "Unfinished matches",
+    "staleMatchesDescription": "{count, plural, one {# match has} other {# matches have}} not been scored for over 7 days. Finish, save as unfinished, or delete.",
+    "staleLastScored": "Last scored {date}",
+    "staleContinue": "Continue",
+    "staleMarkUnfinished": "Unfinished",
+    "staleMarkedUnfinished": "Saved as an unfinished match",
+    "staleCloseFailed": "Could not save the match",
+    "staleShowAll": "Show all ({count})"
   },
   "match": {
     "newMatch": "New Match",
@@ -1202,7 +1210,7 @@
     "whichPlayerWon": "Which player should be declared the winner?",
     "finalScoreKeptOnCourt": "The score stays as played on court, with the reason (e.g. 6:3 2:1 ret.).",
     "pleaseSelectWinner": "Please select which player won",
-    "matchEndedDueToReason": "Match ended due to {reason}. {winner} wins 1-0.",
+    "matchEndedDueToReason": "Match ended: {reason}. Winner: {winner}.",
     "retirement": "retirement",
     "weatherConditionsReason": "weather conditions",
     "failedToEndMatch": "Failed to end match",
@@ -1292,7 +1300,11 @@
     "unforcedError": "Unforced Error",
     "volley": "Volley",
     "serveLabel": "Serve",
-    "unfinishedSet": "Unfinished set"
+    "unfinishedSet": "Unfinished set",
+    "walkover": "Walkover",
+    "matchUnfinished": "Unfinished",
+    "matchUnfinishedHint": "Time ran out or a practice set – no winner",
+    "matchEndedUnfinished": "The match is saved as unfinished."
   },
   "navigation": {
     "dashboard": "Dashboard",
