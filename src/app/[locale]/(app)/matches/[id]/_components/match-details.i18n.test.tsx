@@ -103,6 +103,23 @@ describe('MatchDetails in Czech', () => {
     live.cleanup()
   })
 
+  it('shows each doubles partner\'s own service games when the match recorded who served', async () => {
+    const serve = (n: number, serverPlayer: string, server: 'p1' | 'p2', winner: 'p1' | 'p2', gameNumber: number, isGameWinning = false) =>
+      JSON.stringify({ id: String(n), pointNumber: n, setNumber: 1, gameNumber, winner, server, serverPlayer, isTiebreak: false, isGameWinning, timestamp: '2025-07-02T16:19:00.000Z' })
+    const pointLog = [
+      ...[1, 2, 3, 4].map(n => serve(n, 'p1', 'p1', 'p1', 1, n === 4)),
+      ...[5, 6, 7, 8].map(n => serve(n, 'p2', 'p2', 'p1', 2, n === 8)),
+    ]
+    const { container, cleanup } = await renderDetails({
+      playerThreeId: 'p3', playerFourId: 'p4', playerThree: player('p3', 'Anna', 'Malá'), playerFour: player('p4', 'Bára', 'Velká'), pointLog,
+    } as never)
+    const rows = container.querySelectorAll('[data-doubles-serve-row]')
+    expect([...rows].map(row => row.querySelector('p')?.textContent)).toEqual(['Mike God', 'Dvořák Petr'])
+    expect(rows[0].textContent).toContain('Udržená podání 1/1')
+    expect(rows[1].textContent).toContain('Udržená podání 0/1')
+    cleanup()
+  })
+
   it('writes the match duration in Czech units, with seconds for very short matches', async () => {
     const { container, cleanup } = await renderDetails()
     expect(container.textContent).toContain('30 s')

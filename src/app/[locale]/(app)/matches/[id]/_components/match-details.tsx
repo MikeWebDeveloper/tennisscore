@@ -43,6 +43,8 @@ import { normalizeMatchFormat } from "@/lib/utils/match-format"
 import { openSet, parseDbScore } from "@/lib/utils/db-score"
 
 // Only the AI accounts get the two-option PDF menu, so its dropdown code loads only for them
+import { DoublesServeCard } from "@/components/features/match-insights/doubles-serve-card"
+import { doublesServeStats } from "@/lib/utils/doubles-serve-stats"
 const PdfExportMenu = dynamic(() => import("@/components/features/match-insights/pdf-export-menu").then((m) => m.PdfExportMenu))
 
 interface MatchDetailsProps {
@@ -447,6 +449,18 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
               </div>
             ) : undefined}
           />
+
+        {isDoubles && (
+          <DoublesServeCard
+            rows={doublesServeStats(pointDetails, match.detailLevel !== "points")}
+            names={{
+              p1: match.playerOne ? formatPlayerFromObject(match.playerOne) : t('unknownPlayer'),
+              p2: match.playerTwo ? formatPlayerFromObject(match.playerTwo) : t('unknownPlayer'),
+              p3: match.playerThree ? formatPlayerFromObject(match.playerThree) : t('unknownPlayer'),
+              p4: match.playerFour ? formatPlayerFromObject(match.playerFour) : t('unknownPlayer'),
+            }}
+          />
+        )}
 
         {/* Match Information & Players */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

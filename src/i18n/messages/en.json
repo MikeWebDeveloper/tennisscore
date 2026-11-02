@@ -1997,6 +1997,13 @@
     "pdfVs": "vs",
     "setCutShort": "Unfinished set",
     "setTitleCutShort": "Set {set} · {score} · unfinished",
-    "pdfEndedEarly": "Unfinished · {reason}"
+    "pdfEndedEarly": "Unfinished · {reason}",
+    "doublesServeTitle": "Serve by player",
+    "doublesServeHint": "Who serves is recorded since 26 Oct 2026.",
+    "doublesServeHeld": "Service games held {held}/{games}",
+    "doublesServePoints": "Points on serve {won}/{served} ({percent} %)",
+    "doublesServeSecond": "On second serve {count}×",
+    "doublesServeAces": "Aces {count}",
+    "doublesServeDoubleFaults": "Double faults {count}"
   }
 }

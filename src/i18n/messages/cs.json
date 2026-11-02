@@ -2026,6 +2026,13 @@
     "pdfVs": "vs",
     "setCutShort": "Nedohraný set",
     "setTitleCutShort": "{set}. set · {score} · nedohráno",
-    "pdfEndedEarly": "Nedohráno · {reason}"
+    "pdfEndedEarly": "Nedohráno · {reason}",
+    "doublesServeTitle": "Podání jednotlivých hráčů",
+    "doublesServeHint": "Kdo podává, se zapisuje od 26. 10. 2026.",
+    "doublesServeHeld": "Udržená podání {held}/{games}",
+    "doublesServePoints": "Body na podání {won}/{served} ({percent} %)",
+    "doublesServeSecond": "Na 2. podání {count}×",
+    "doublesServeAces": "Esa {count}",
+    "doublesServeDoubleFaults": "Dvojchyby {count}"
   }
 }
