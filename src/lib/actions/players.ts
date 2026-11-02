@@ -37,6 +37,14 @@ const playerSchema = z.object({
   rating: z.string().max(50).optional(), // Deprecated: maintained for backward compatibility
 })
 
+/** Server actions write with the admin key, so each write checks the player belongs to the caller */
+async function ownsPlayer(databases: Awaited<ReturnType<typeof createAdminClient>>["databases"], playerId: string, userId: string) {
+  const player = await withRetry(() => databases.getDocument<Player>(
+    env.APPWRITE_DATABASE_ID, env.APPWRITE_PLAYERS_COLLECTION_ID, playerId, [Query.select(["userId"])]
+  ))
+  return player.userId === userId
+}
+
 export async function createPlayer(formData: FormData): Promise<{ success?: boolean; player?: Player; error?: string }> {
   try {
     const user = await getCurrentUser()
@@ -442,6 +450,9 @@ export async function updatePlayer(playerId: string, formData: FormData) {
     const validatedData = playerSchema.parse(data)
 
     const { databases, storage } = await createAdminClient()
+    if (!(await ownsPlayer(databases, playerId, user.$id))) {
+      return { error: "Player unavailable" }
+    }
 
     // Handle profile picture upload
     let profilePictureId: string | undefined
@@ -595,6 +606,9 @@ export async function updatePlayerProfilePicture(
   const { databases } = await createAdminClient()
 
   try {
+    if (!(await ownsPlayer(databases, playerId, user.$id))) {
+      return { error: "Player unavailable" }
+    }
     const player = await databases.updateDocument(
       env.APPWRITE_DATABASE_ID,
       env.APPWRITE_PLAYERS_COLLECTION_ID,
@@ -647,6 +661,9 @@ export async function removePlayerProfilePicture(playerId: string) {
       env.APPWRITE_PLAYERS_COLLECTION_ID,
       playerId
     )
+    if (player.userId !== user.$id) {
+      return { error: "Player unavailable" }
+    }
 
     const fileId = player.profilePictureId
     let deleteResult = null
