@@ -1,0 +1,30 @@
+name: Health check
+
+# Fails, and GitHub emails about the failed run, when tenis.click or test.tenis.click
+# cannot read the database (the 27 October outage went unnoticed for hours).
+# GitHub only runs schedules from the default branch, so this starts once it is on main.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [https://tenis.click, https://test.tenis.click]
+    steps:
+      - name: Database reachable from ${{ matrix.site }}
+        run: |
+          for attempt in 1 2 3; do
+            status=$(curl -s -o body.json -w '%{http_code}' --max-time 20 "${{ matrix.site }}/api/health" || true)
+            if [ "$status" = "200" ]; then cat body.json; exit 0; fi
+            echo "Attempt $attempt: HTTP $status $(cat body.json 2>/dev/null)"
+            sleep 30
+          done
+          exit 1

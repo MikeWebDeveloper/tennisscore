@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
+import { startTransition, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/i18n/navigation"
 import { useTranslations } from "@/i18n"
@@ -18,6 +19,13 @@ interface RouteErrorProps {
  */
 export function RouteError({ error, reset, showHomeLink = true }: RouteErrorProps) {
   const t = useTranslations("common")
+  const router = useRouter()
+
+  // reset() alone re-renders the same failed server data; refresh asks the server again
+  const retry = () => startTransition(() => {
+    router.refresh()
+    reset()
+  })
 
   useEffect(() => {
     // Surface the error for debugging/monitoring.
@@ -36,7 +44,7 @@ export function RouteError({ error, reset, showHomeLink = true }: RouteErrorProp
         {t("errorBoundaryDescription")}
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-        <Button onClick={reset}>{t("tryAgain")}</Button>
+        <Button onClick={retry}>{t("tryAgain")}</Button>
         {showHomeLink && (
           <Button variant="outline" asChild>
             <Link href="/dashboard">{t("backToDashboard")}</Link>

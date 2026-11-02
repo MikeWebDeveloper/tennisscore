@@ -1,19 +1,8 @@
 name: Performance Monitoring
 
+# Manual only: it calls perf:* scripts that no longer exist, so the daily schedule
+# failed every night and its emails would bury a real alert from health.yml
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'next.config.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-  push:
-    branches: [main]
-  schedule:
-    # Run performance tests daily at 2 AM UTC
-    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       test_url:

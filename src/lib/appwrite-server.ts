@@ -33,7 +33,7 @@ export async function withRetry<T>(
 ): Promise<T> {
   // Handle both config object and config name
   const retryConfig = typeof config === 'string' ? RETRY_CONFIGS[config] : config
-  const { maxRetries, baseDelay, maxTimeout } = retryConfig
+  const { maxRetries, baseDelay, maxTimeout, attemptTimeout } = retryConfig
 
   let lastError: Error | null = null
   const startTime = Date.now()
@@ -49,7 +49,7 @@ export async function withRetry<T>(
       let timeoutId: ReturnType<typeof setTimeout> | undefined
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => reject(new Error('Request timeout')),
-          Math.min(5000, maxTimeout - (Date.now() - startTime)))
+          Math.min(attemptTimeout, maxTimeout - (Date.now() - startTime)))
       })
 
       // Race between operation and timeout
