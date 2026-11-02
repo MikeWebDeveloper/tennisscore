@@ -899,7 +899,8 @@
     "importFromCzechRankings": "Importovat z českého žebříčku",
     "viewOnCztenis": "Zobrazit na cztenis.cz",
     "errorBoundaryDescription": "Došlo k neočekávané chybě. Zkuste to znovu nebo se vraťte na přehled.",
-    "backToDashboard": "Zpět na přehled"
+    "backToDashboard": "Zpět na přehled",
+    "editPoint": "Opravit bod"
   },
   "dashboard": {
     "resumeMatch": "Pokračovat v zápase",
@@ -1333,7 +1334,21 @@
     "walkover": "Kontumace (w.o.)",
     "matchUnfinished": "Nedohráno",
     "matchUnfinishedHint": "Došel čas nebo tréninkový set – bez vítěze",
-    "matchEndedUnfinished": "Zápas je uložen jako nedohraný."
+    "matchEndedUnfinished": "Zápas je uložen jako nedohraný.",
+    "pointEditTitle": "Oprava bodu č. {number}",
+    "pointEditSummary": "{score} · bod vyhrává {name}",
+    "pointEditChangeWinner": "Jiný vítěz",
+    "pointEditInsert": "Chybějící bod",
+    "pointEditDelete": "Smazat",
+    "pointEditWonBy": "Bod vyhrává {name}",
+    "pointEditInsertWinner": "Kdo vyhrává bod, který chybí před tímto?",
+    "pointEditHowEnded": "Jak bod skončil?",
+    "pointEditDeleteHint": "Bod se smaže a skóre i statistiky se přepočítají.",
+    "pointEditSave": "Uložit opravu",
+    "pointCorrected": "Bod opraven, skóre přepočítáno",
+    "pointEditEndsEarly": "Po této opravě by zápas skončil dřív, než přijde poslední bod. Nejdřív smažte pozdější body.",
+    "pointEditCompletesMatch": "Touto opravou by zápas skončil. Poslední bod zapište běžným způsobem.",
+    "pointEditFailed": "Opravu se nepodařilo uložit"
   },
   "navigation": {
     "dashboard": "Nástěnka",

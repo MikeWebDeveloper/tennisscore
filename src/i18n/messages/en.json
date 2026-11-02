@@ -870,7 +870,8 @@
     "importFromCzechRankings": "Import from Czech Rankings",
     "viewOnCztenis": "View on cztenis.cz",
     "errorBoundaryDescription": "An unexpected error occurred. You can try again or go back to the dashboard.",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "editPoint": "Correct point"
   },
   "dashboard": {
     "resumeMatch": "Resume Match",
@@ -1304,7 +1305,21 @@
     "walkover": "Walkover",
     "matchUnfinished": "Unfinished",
     "matchUnfinishedHint": "Time ran out or a practice set – no winner",
-    "matchEndedUnfinished": "The match is saved as unfinished."
+    "matchEndedUnfinished": "The match is saved as unfinished.",
+    "pointEditTitle": "Correct point {number}",
+    "pointEditSummary": "{score} · won by {name}",
+    "pointEditChangeWinner": "Other winner",
+    "pointEditInsert": "Missing point",
+    "pointEditDelete": "Delete",
+    "pointEditWonBy": "Point won by {name}",
+    "pointEditInsertWinner": "Who won the point missing before this one?",
+    "pointEditHowEnded": "How did the point end?",
+    "pointEditDeleteHint": "The point is deleted and the score and statistics are recalculated.",
+    "pointEditSave": "Save correction",
+    "pointCorrected": "Point corrected, score recalculated",
+    "pointEditEndsEarly": "After this correction the match would be over before its last point. Delete the later points first.",
+    "pointEditCompletesMatch": "This correction would finish the match. Score the last point the usual way.",
+    "pointEditFailed": "The correction could not be saved"
   },
   "navigation": {
     "dashboard": "Dashboard",

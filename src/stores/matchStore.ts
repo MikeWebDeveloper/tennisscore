@@ -1,4 +1,5 @@
-import { create } from 'zustand'
+import { create, type StateCreator } from 'zustand'
+import { createStore } from 'zustand/vanilla'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { idbStorage } from '@/lib/utils/idb-storage'
 import { 
@@ -290,6 +291,8 @@ interface MatchState {
   
   // Reset function for new match
   resetMatch: () => void
+  /** Takes a corrected point log from editPointLog */
+  replacePointLog: (edited: EditedPointLog) => void
 }
 
 const initialScore: Score = {
@@ -663,7 +666,7 @@ export const getMatchDataEnhancementLevel = (pointLog: PointDetail[]): 'basic' |
 // The calculateScoreFromPointLog function is being moved to tennis-scoring.ts
 // to centralize scoring logic. It will be removed from this file.
 
-export const useMatchStore = create<MatchState>()(persist((set, get) => ({
+const matchStoreState: StateCreator<MatchState> = (set, get) => ({
   currentMatch: null,
   setCurrentMatch: (match) => set({ currentMatch: match }),
 
@@ -1189,6 +1192,18 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
     }
   },
   
+  replacePointLog: (edited) => {
+    const streaks = calculateStreaks(edited.pointLog)
+    set({
+      score: edited.score,
+      pointLog: edited.pointLog,
+      currentServer: edited.currentServer,
+      initialTiebreakServer: edited.initialTiebreakServer,
+      p1Streak: streaks.p1Streak,
+      p2Streak: streaks.p2Streak,
+    })
+  },
+
   resetMatch: () => set({
     currentMatch: null,
     score: initialScore,
@@ -1210,7 +1225,9 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
     },
     needsResync: false,
   }),
-}), {
+})
+
+export const useMatchStore = create<MatchState>()(persist(matchStoreState, {
   name: 'tennis-match-progress',
   // IndexedDB (with localStorage fallback + migration): roomier and not blocking the main thread.
   // Hydration is async, so screens that read persisted progress must wait for it (see useStoreHydrated).
@@ -1238,6 +1255,66 @@ export const useMatchStore = create<MatchState>()(persist((set, get) => ({
     events: state.events,
   }),
 }))
+
+/** outcome: how the corrected point ended, at levels that record it */
+export type PointLogEdit =
+  | { kind: 'change-winner'; index: number; outcome?: PointDetail['pointOutcome'] }
+  | { kind: 'delete'; index: number }
+  | { kind: 'insert'; index: number; winner: 'p1' | 'p2'; outcome?: PointDetail['pointOutcome'] }
+
+export interface EditedPointLog {
+  pointLog: PointDetail[]
+  score: Score
+  currentServer: 'p1' | 'p2'
+  initialTiebreakServer: 'p1' | 'p2' | null
+}
+
+export class PointLogEditError extends Error {
+  constructor(readonly reason: 'ends-early' | 'completes-match') {
+    super(reason === 'ends-early' ? 'The match would be over before its last point' : 'The correction would finish the match')
+  }
+}
+
+/**
+ * Keeps only the time and serve of a point whose winner changes (how it ended described the other
+ * player's shot), plus the outcome the scorer picks for it now
+ */
+const pointWonBy = (point: PointDetail, winner: 'p1' | 'p2', outcome?: PointDetail['pointOutcome']): PointDetail =>
+  ({ id: point.id, timestamp: point.timestamp, serveType: point.serveType, winner, ...(outcome ? { pointOutcome: outcome } : {}) } as PointDetail)
+
+/**
+ * Corrects an earlier point (another winner, deleted, or a missed one inserted) and replays the
+ * whole log through the scoring code on a throwaway store, so set and game numbers, servers,
+ * game scores and break/set/match points after the change are worked out again. Points keep the
+ * time they were played; the points before the change keep the server the scorer chose.
+ */
+export function editPointLog(match: Match, pointLog: PointDetail[], edit: PointLogEdit): EditedPointLog {
+  const points = [...pointLog]
+  if (edit.kind === 'change-winner') points[edit.index] = pointWonBy(points[edit.index], points[edit.index].winner === 'p1' ? 'p2' : 'p1', edit.outcome)
+  else if (edit.kind === 'delete') points.splice(edit.index, 1)
+  else points.splice(edit.index, 0, pointWonBy({ timestamp: (pointLog[edit.index - 1] ?? pointLog[edit.index])?.timestamp } as PointDetail, edit.winner, edit.outcome))
+
+  const store = createStore<MatchState>()(matchStoreState)
+  const replay = store.getState()
+  replay.initializeMatch({ ...match, status: 'In Progress', winnerId: undefined, pointLog: [], score: initialScore })
+  replay.setServer(pointLog[0]?.server ?? 'p1')
+  points.forEach((point, i) => {
+    if (store.getState().isMatchComplete) throw new PointLogEditError('ends-early')
+    if (i < edit.index) store.getState().setServer(point.server)
+    store.getState().awardPoint(point.winner, point)
+    store.setState((state) => ({
+      pointLog: state.pointLog.map((saved, n) => (n === i ? { ...saved, timestamp: point.timestamp ?? saved.timestamp } : saved)),
+    }))
+  })
+  const result = store.getState()
+  if (result.isMatchComplete) throw new PointLogEditError('completes-match')
+  return {
+    pointLog: result.pointLog,
+    score: result.score,
+    currentServer: result.currentServer ?? 'p1',
+    initialTiebreakServer: result.initialTiebreakServer,
+  }
+}
 
 // Test function to verify break point logic
 function testBreakPointLogic() {

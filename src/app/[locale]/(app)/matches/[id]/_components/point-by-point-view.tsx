@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { isBreakPoint, isSetPoint, isMatchPoint } from "@/lib/utils/tennis-scoring"
 import { MatchFormat } from "@/stores/matchStore"
 import { List } from "lucide-react"
-import { Grid } from "lucide-react"
+import { Grid, Pencil } from "lucide-react"
 import { formatPlayerFromObject, formatDoublesTeam, formatPlayerName } from "@/lib/utils"
 import { Player } from "@/lib/types"
 import { servePlacementLabelKey } from "@/lib/utils/serve-placement"
@@ -28,6 +28,8 @@ interface PointByPointViewProps {
     p3?: Player
     p4?: Player
   }
+  /** Scorer only: each row gets a button that opens the correction for that point (its index in pointLog) */
+  onEditPoint?: (index: number) => void
   /** Accepted for callers; what ended each point now shows whenever it was recorded, at any level */
   detailLevel?: "points" | "simple" | "shot-type" | "detailed" | "complex"
 }
@@ -107,7 +109,7 @@ const getPointSummary = (point: PointDetail, t: (key: string) => string) => {
 }
 
 /** One point in the list: score, player and coloured outcome; below, the serve and the shot that ended it. */
-function PointRow({ score, badge, name, nameClass, serveLabel, summary, highlight }: {
+function PointRow({ score, badge, name, nameClass, serveLabel, summary, highlight, onEdit, editLabel }: {
   score: string
   badge?: React.ReactNode
   name: string
@@ -115,11 +117,14 @@ function PointRow({ score, badge, name, nameClass, serveLabel, summary, highligh
   serveLabel: string
   summary: ReturnType<typeof getPointSummary>
   highlight?: boolean
+  /** Scorer only: opens the correction dialog for this point */
+  onEdit?: () => void
+  editLabel?: string
 }) {
   return (
     <div
       data-point-row
-      className={`grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-start gap-x-3 rounded-lg px-2 py-2 text-left ${highlight ? 'bg-muted/50' : ''}`}
+      className={`grid w-full ${onEdit ? 'grid-cols-[3.5rem_minmax(0,1fr)_auto_auto]' : 'grid-cols-[3.5rem_minmax(0,1fr)_auto]'} items-start gap-x-3 rounded-lg px-2 py-2 text-left ${highlight ? 'bg-muted/50' : ''}`}
     >
       <div className="flex items-center gap-1 pt-0.5 font-mono text-xs tabular-nums text-muted-foreground">
         <span className={highlight ? 'text-sm font-bold text-foreground' : ''}>{score}</span>
@@ -133,6 +138,12 @@ function PointRow({ score, badge, name, nameClass, serveLabel, summary, highligh
         {summary.outcome}
         {summary.shot && <div data-point-shot className="text-[11px] font-normal text-muted-foreground">{summary.shot}</div>}
       </div>
+      {onEdit && (
+        <button type="button" data-edit-point onClick={onEdit} aria-label={editLabel} title={editLabel}
+          className="-my-1 flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
     </div>
   )
 }
@@ -260,10 +271,11 @@ function getPointBadgeForLogIndex(pointIdx: number, pointLog: PointDetail[]) {
   return null
 }
 
-export function PointByPointView({ pointLog, playerNames, playerObjects }: PointByPointViewProps) {
+export function PointByPointView({ pointLog, playerNames, playerObjects, onEditPoint }: PointByPointViewProps) {
   const t = useTranslations('common')
-  // The list shows what ended each point, so open on it when shots or placements were recorded
-  const [detailedView, setDetailedView] = React.useState(() => pointLog.some(hasShotDetail))
+  // The list shows what ended each point, so open on it when shots or placements were recorded,
+  // and in the scorer, where each row can be corrected
+  const [detailedView, setDetailedView] = React.useState(() => Boolean(onEditPoint) || pointLog.some(hasShotDetail))
   // Group points by set (moved up for hook order)
   const pointsBySets = pointLog.reduce((acc, point) => {
     const setNumber = point.setNumber
@@ -567,7 +579,8 @@ export function PointByPointView({ pointLog, playerNames, playerObjects }: Point
                         )}
                         <div className="divide-y divide-border/30">
                           {[...pointsInGame].reverse().map(point => {
-                            const badge = getPointBadgeForLogIndex(pointLog.findIndex(p => p.id === point.id), pointLog)
+                            const logIndex = pointLog.findIndex(p => p.id === point.id)
+                            const badge = getPointBadgeForLogIndex(logIndex, pointLog)
                             return (
                               <PointRow
                                 key={point.id}
@@ -578,6 +591,8 @@ export function PointByPointView({ pointLog, playerNames, playerObjects }: Point
                                 serveLabel={t(point.serveType === 'first' ? 'firstServeShort' : 'secondServeShort')}
                                 summary={getPointSummary(point, t)}
                                 highlight={point.isGameWinning && isGameComplete}
+                                onEdit={onEditPoint ? () => onEditPoint(logIndex) : undefined}
+                                editLabel={t('editPoint')}
                               />
                             )
                           })}

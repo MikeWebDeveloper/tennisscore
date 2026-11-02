@@ -127,3 +127,23 @@ test('server outage + page reload: unsent points survive in the browser and are 
   await expect.poll(() => savedPoints(request), { timeout: 40_000 }).toBe(3)
   await expect(badge(page)).toHaveAttribute('data-sync-state', 'synced', { timeout: 30_000 })
 })
+
+test('corrects a point scored for the wrong player, and the score and saved log follow', async ({ page, request }) => {
+  await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
+  // Player one wins three points, but the scorer tapped the wrong side for the first one
+  for (let i = 0; i < 3; i++) {
+    await pointButtons(page).first().click()
+    await expect.poll(() => savedPoints(request)).toBe(i + 1)
+  }
+  await page.getByRole('tab', { name: 'Points' }).click()
+  await page.locator('button[data-edit-point]').last().click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Correct point 1' })).toBeVisible()
+  await dialog.getByRole('button', { name: 'Save correction' }).click()
+  await expect(page.getByText('Point corrected, score recalculated')).toBeVisible()
+  await expect.poll(async () => {
+    const doc = await (await request.get(`${FAKE}/__doc/m/match4`)).json()
+    return (doc.pointLog as string[]).map(point => JSON.parse(point).winner).join(',')
+  }).toBe('p2,p1,p1')
+  await expect.poll(async () => JSON.parse((await (await request.get(`${FAKE}/__doc/m/match4`)).json()).score).points).toEqual([2, 1])
+})

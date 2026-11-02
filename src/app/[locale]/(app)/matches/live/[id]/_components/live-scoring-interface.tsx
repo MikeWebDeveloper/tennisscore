@@ -41,7 +41,8 @@ import { cn, formatPlayerFromObject } from "@/lib/utils"
 
 import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id]/_components/match-stats"
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
-import { useMatchStore, PointDetail as StorePointDetail, Score } from "@/stores/matchStore"
+import { useMatchStore, PointDetail as StorePointDetail, Score, editPointLog, PointLogEditError, type PointLogEdit } from "@/stores/matchStore"
+import { PointEditDialog } from "./point-edit-dialog"
 import { useShallow } from "zustand/react/shallow"
 import { useWakeLock } from "@/hooks/use-wake-lock"
 import { useDoublesServingPlayer } from "@/hooks/use-doubles-serving-player"
@@ -413,6 +414,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     initializeMatch,
     awardPoint,
     undoLastPoint,
+    replacePointLog,
     setServer
   } = useMatchStore(useShallow((state) => ({
     score: state.score,
@@ -423,8 +425,12 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
     initializeMatch: state.initializeMatch,
     awardPoint: state.awardPoint,
     undoLastPoint: state.undoLastPoint,
+    replacePointLog: state.replacePointLog,
     setServer: state.setServer,
   })))
+  // Index in the point log of the point being corrected
+  const [editingPoint, setEditingPoint] = useState<number | null>(null)
+  const [editPending, setEditPending] = useState(false)
   useWakeLock(match.status === "In Progress" && !isPaused)
   const isDoublesMatch = !!(match.playerThree && match.playerFour)
   // The persisted match loads asynchronously; initializing before it would overwrite unsent local points
@@ -973,6 +979,31 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
       setCurrentServe(match.$id, type, pointCount).catch(() => undefined)
     }, 350)
   }
+  const handleEditPoint = async (edit: PointLogEdit) => {
+    const current = useMatchStore.getState()
+    if (!current.currentMatch || isPaused || editPending) return
+    setEditPending(true)
+    try {
+      const edited = editPointLog(current.currentMatch, current.pointLog, edit)
+      if (serveSync.current) clearTimeout(serveSync.current)
+      setServeType('first')
+      replacePointLog(edited)
+      await runSync(() => syncMatchScore(match.$id, { score: edited.score, pointLog: edited.pointLog }))
+      setIsInGame(edited.pointLog.length > 0)
+      setEditingPoint(null)
+      toast.success(t('pointCorrected'))
+    } catch (error) {
+      if (error instanceof PointLogEditError) {
+        toast.error(t(error.reason === 'ends-early' ? 'pointEditEndsEarly' : 'pointEditCompletesMatch'))
+      } else {
+        console.error("Failed to correct point:", error)
+        toast.error(t('pointEditFailed'))
+      }
+    } finally {
+      setEditPending(false)
+    }
+  }
+
   const handleUndo = async () => {
     if (pointLog.length === 0 || isPaused || pausePending) return
 
@@ -1335,6 +1366,7 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
           <TabsContent value="points" className="mt-4">
             <PointByPointView
               pointLog={convertedPointLog}
+              onEditPoint={match.status !== "Completed" && !isPaused ? setEditingPoint : undefined}
               playerObjects={{
                 p1: match.playerOne,
                 p2: match.playerTwo,
@@ -1440,6 +1472,18 @@ export function LiveScoringInterface({ match }: LiveScoringInterfaceProps) {
             isMatchPoint: Boolean(pointSituation && pointSituation.type === 'matchPoint'),
             playerNames
           }}
+        />
+      )}
+
+      {editingPoint !== null && pointLog[editingPoint] && (
+        <PointEditDialog
+          key={editingPoint}
+          point={{ index: editingPoint, ...pointLog[editingPoint] }}
+          names={{ p1: playerNames.p1, p2: playerNames.p2 }}
+          recordsOutcome={detailLevel !== "points"}
+          pending={editPending}
+          onApply={(edit) => void handleEditPoint(edit)}
+          onClose={() => setEditingPoint(null)}
         />
       )}
 
