@@ -93,3 +93,12 @@ it('fills the rules of the last match with one tap on the format step', () => {
   expect(container.textContent).toContain('Detail step')
   act(() => root.unmount())
 })
+
+it('opens with both players filled in when started from a player profile', () => {
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  act(() => root.render(createElement(LazyMotion, { features }, createElement(CompactMatchWizard, { players: [], startWith: { one: 'me', two: 'eva' } }))))
+  act(() => Array.from(container.querySelectorAll('button')).find(b => b.textContent?.trim() === 'Choose type')!.click())
+  expect(container.textContent).toContain('Player: me')
+  act(() => root.unmount())
+})

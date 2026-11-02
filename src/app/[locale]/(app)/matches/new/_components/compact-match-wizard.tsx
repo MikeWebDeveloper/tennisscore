@@ -33,9 +33,11 @@ interface CompactMatchWizardProps {
   lastPreset?: MatchPreset
   /** Players of the latest matches, listed first in the player picker */
   recentPlayerIds?: string[]
+  /** Players filled in from a player profile ("new match against this player") */
+  startWith?: { one: string; two: string }
 }
 
-export function CompactMatchWizard({ players, rematch, lastPreset, recentPlayerIds }: CompactMatchWizardProps) {
+export function CompactMatchWizard({ players, rematch, lastPreset, recentPlayerIds, startWith }: CompactMatchWizardProps) {
   const router = useRouter()
   const t = useTranslations('common')
 
@@ -45,8 +47,8 @@ export function CompactMatchWizard({ players, rematch, lastPreset, recentPlayerI
 
   // Form state
   const [matchType, setMatchType] = useState<"singles" | "doubles">(rematch?.matchType ?? "singles")
-  const [playerOne, setPlayerOne] = useState(rematch?.players.one ?? "")
-  const [playerTwo, setPlayerTwo] = useState(rematch?.players.two ?? "")
+  const [playerOne, setPlayerOne] = useState(rematch?.players.one ?? startWith?.one ?? "")
+  const [playerTwo, setPlayerTwo] = useState(rematch?.players.two ?? startWith?.two ?? "")
   const [playerThree, setPlayerThree] = useState(rematch?.players.three ?? "")
   const [playerFour, setPlayerFour] = useState(rematch?.players.four ?? "")
   const [tournamentName, setTournamentName] = useState(rematch?.tournamentName ?? "")

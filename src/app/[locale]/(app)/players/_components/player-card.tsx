@@ -12,6 +12,7 @@ import { PlayerAvatar } from "@/components/shared/player-avatar"
 import { PlayerMeta } from "@/components/shared/player-meta"
 import { formatPlayerFromObject } from "@/lib/utils"
 import { useTranslations } from "@/i18n"
+import { Link } from "@/i18n/navigation"
 
 interface PlayerCardProps {
   player: Player
@@ -34,7 +35,8 @@ export function PlayerCard({ player, onEdit, onDelete }: PlayerCardProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-1.5 mb-1">
               <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
-                <span className="name-gradient">{formatPlayerFromObject(player)}</span>
+                {/* The name opens the profile: head-to-head and month-by-month progress */}
+                <Link href={`/players/${player.$id}`} className="name-gradient hover:underline underline-offset-2">{formatPlayerFromObject(player)}</Link>
               </h3>
               {player.isMainPlayer && (
                 <Star className="h-3 w-3 text-amber-500 flex-shrink-0" fill="currentColor" />

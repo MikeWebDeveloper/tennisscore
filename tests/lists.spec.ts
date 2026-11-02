@@ -39,6 +39,32 @@ test('dashboard offers to close a match nobody has scored for weeks', async ({ p
   expect(saved.winnerId).toBeFalsy()
 })
 
+test('matches page lists the tournaments and shows one tournament\'s matches on tap', async ({ page }) => {
+  await fetch('http://localhost:4100/__reset')
+  await page.goto('/en/matches', { waitUntil: 'load' })
+  const main = page.locator('main')
+  await main.getByRole('button', { name: 'Tournaments', exact: true }).click()
+  const cup = main.getByRole('button', { name: /Club Cup/ })
+  await expect(cup).toBeVisible(T)
+  await cup.click()
+  await expect(main.getByText('Tournament: Club Cup')).toBeVisible()
+  await expect(main.getByText('Latal Michal').first()).toBeVisible(T)
+  await main.getByRole('button', { name: 'Clear tournament filter' }).click()
+  await expect(main.getByText('Tournament: Club Cup')).toHaveCount(0)
+})
+
+test('a player profile shows the head-to-head with the main player and starts a match against them', async ({ page }) => {
+  await fetch('http://localhost:4100/__reset')
+  await page.goto('/en/players', { waitUntil: 'load' })
+  await page.locator('main').getByRole('link', { name: 'Dvořák Petr' }).first().click()
+  await expect(page).toHaveURL(/\/en\/players\/pl2$/)
+  const main = page.locator('main')
+  await expect(main.getByRole('heading', { name: 'Dvořák Petr' })).toBeVisible(T)
+  await expect(main.locator('[data-head-to-head]')).toHaveText(/Michal \d+–\d+ Petr/)
+  await main.getByRole('link', { name: 'New match against this player' }).click()
+  await expect(page).toHaveURL(/\/en\/matches\/new\?opponent=pl2/)
+})
+
 test('filtering an already loaded match list does not replace results with loading skeletons', async ({ page }) => {
   await page.goto('/en/matches', { waitUntil: 'load' })
   await expect(page.getByText('Latal Michal').first()).toBeVisible(T)

@@ -62,3 +62,8 @@ it('starts a rematch from the earlier match, with the latest players first in th
   expect(findProp(page, 'lastPreset')).toMatchObject({ scoring: 'no-ad' })
   expect(findProp(page, 'recentPlayerIds')).toEqual(['p7'])
 })
+
+it('starts a new match against a player picked on their profile', async () => {
+  const page = await NewMatchPage({ searchParams: Promise.resolve({ opponent: 'p7' }) })
+  expect(findProp(page, 'startWith')).toEqual({ one: 'sofie', two: 'p7' })
+})

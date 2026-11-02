@@ -1,3 +1,5 @@
+"use client"
+
 import { Fragment } from "react"
 import { Player } from "@/lib/types"
 import { cn } from "@/lib/utils"
