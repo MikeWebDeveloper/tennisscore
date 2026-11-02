@@ -900,7 +900,12 @@
     "viewOnCztenis": "Zobrazit na cztenis.cz",
     "errorBoundaryDescription": "Došlo k neočekávané chybě. Zkuste to znovu nebo se vraťte na přehled.",
     "backToDashboard": "Zpět na přehled",
-    "editPoint": "Opravit bod"
+    "editPoint": "Opravit bod",
+    "rematchTitle": "Odveta",
+    "rematchHint": "Stejní hráči a stejná pravidla jako minule. Zápas začne hned, nebo nastavení nejdřív upravte.",
+    "sameAsLastTime": "Jako minule",
+    "recentPlayers": "Nedávno vybraní",
+    "rematch": "Odveta"
   },
   "dashboard": {
     "resumeMatch": "Pokračovat v zápase",

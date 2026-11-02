@@ -7,7 +7,11 @@ import { getMatchesByPlayer } from '@/lib/actions/matches'
 
 jest.mock('@/lib/auth', () => ({ getCurrentUser: async () => ({ $id: 'owner' }) }))
 jest.mock('@/lib/actions/players', () => ({ getPlayersByUser: jest.fn() }))
-jest.mock('@/lib/actions/matches', () => ({ getMatchesByPlayer: jest.fn().mockResolvedValue([]) }))
+jest.mock('@/lib/actions/matches', () => ({
+  getMatchesByPlayer: jest.fn().mockResolvedValue([]),
+  getMatchesByUserPaginated: jest.fn().mockResolvedValue({ matches: [], total: 0, hasMore: false }),
+  getMatchById: jest.fn().mockResolvedValue(null),
+}))
 jest.mock('./dashboard-client', () => () => null)
 jest.mock('../matches/new/_components/compact-match-wizard', () => ({ CompactMatchWizard: () => null }))
 
@@ -45,6 +49,16 @@ it('gives the dashboard every player, so opponents older than the newest 100 kee
 })
 
 it('offers every player when starting a new match', async () => {
-  const page = await NewMatchPage()
+  const page = await NewMatchPage({ searchParams: Promise.resolve({}) })
   expect(findProp(page, 'players')).toHaveLength(176)
+})
+
+it('starts a rematch from the earlier match, with the latest players first in the picker', async () => {
+  const { getMatchesByUserPaginated } = jest.requireMock('@/lib/actions/matches') as { getMatchesByUserPaginated: jest.Mock }
+  const earlier = { $id: 'm1', playerOneId: 'sofie', playerTwoId: 'p7', matchFormat: JSON.stringify({ sets: 3, noAd: true }), detailLevel: 'simple' }
+  getMatchesByUserPaginated.mockResolvedValueOnce({ matches: [earlier], total: 1, hasMore: false })
+  const page = await NewMatchPage({ searchParams: Promise.resolve({ rematch: 'm1' }) })
+  expect(findProp(page, 'rematch')).toMatchObject({ players: { one: 'sofie', two: 'p7' }, scoring: 'no-ad' })
+  expect(findProp(page, 'lastPreset')).toMatchObject({ scoring: 'no-ad' })
+  expect(findProp(page, 'recentPlayerIds')).toEqual(['p7'])
 })

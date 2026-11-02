@@ -31,6 +31,8 @@ interface CompactPlayersStepProps {
   onPlayerChange: (player: "one" | "two" | "three" | "four", value: string) => void
   onAnonymousChange: (player: "one" | "two" | "three" | "four", checked: boolean) => void
   onComplete: () => void
+  /** Players of the latest matches, listed right after the main player */
+  recentPlayerIds?: string[]
 }
 
 export function CompactPlayersStep({
@@ -46,7 +48,8 @@ export function CompactPlayersStep({
   playerFourAnonymous,
   onPlayerChange,
   onAnonymousChange,
-  onComplete
+  onComplete,
+  recentPlayerIds = []
 }: CompactPlayersStepProps) {
   const t = useTranslations('common')
   const { mainPlayerId } = useUserStore()
@@ -75,8 +78,12 @@ export function CompactPlayersStep({
       const mainPlayer = availablePlayers.find(player => 
         player.$id === mainPlayerId || player.isMainPlayer === true
       )
+      const recentPlayers = recentPlayerIds
+        .filter(id => id !== mainPlayer?.$id)
+        .map(id => availablePlayers.find(player => player.$id === id))
+        .filter((player): player is Player => Boolean(player))
       const otherPlayers = availablePlayers.filter(player => 
-        player.$id !== mainPlayer?.$id
+        player.$id !== mainPlayer?.$id && !recentPlayers.includes(player)
       )
       const sortedOtherPlayers = otherPlayers.sort((a, b) => {
         const nameA = formatPlayerFromObject(a).toLowerCase()
@@ -98,6 +105,15 @@ export function CompactPlayersStep({
           disabled: excludeIds.includes(mainPlayer.$id),
         })
       }
+      recentPlayers.forEach(player => {
+        options.push({
+          value: player.$id,
+          label: formatPlayerFromObject(player),
+          group: t('recentPlayers'),
+          icon: <PlayerAvatar player={player} className="h-5 w-5" />,
+          disabled: excludeIds.includes(player.$id),
+        })
+      })
       if (sortedOtherPlayers.length > 0) {
         sortedOtherPlayers.forEach(player => {
           const label = formatPlayerFromObject(player)

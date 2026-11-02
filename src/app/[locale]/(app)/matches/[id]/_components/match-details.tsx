@@ -12,6 +12,7 @@ import { Calendar } from "lucide-react"
 import { Trophy } from "lucide-react"
 import { Share2 } from "lucide-react"
 import { Play } from "lucide-react"
+import { RotateCcw } from "lucide-react"
 import { TrendingUp } from "lucide-react"
 import { BarChart3 } from "lucide-react"
 import { Activity } from "lucide-react"
@@ -251,6 +252,13 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
               </Link>
             </Button>
             <div className="flex items-center gap-2">
+              {isCompleted && (
+                <Button variant="outline" size="icon" asChild className="h-11 w-11">
+                  <Link href={`/matches/new?rematch=${match.$id}`} aria-label={t('rematch')} title={t('rematch')}>
+                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </Button>
+              )}
               {insights.hasPoints && (
                 pdfButton({ size: "icon", variant: "outline", className: "h-11 w-11" })
               )}
@@ -350,6 +358,14 @@ export function MatchDetails({ match, canUseAi = false }: MatchDetailsProps) {
               </Link>
             </Button>
             <div className="flex flex-wrap items-center justify-end gap-2">
+              {isCompleted && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/matches/new?rematch=${match.$id}`}>
+                    <RotateCcw className="h-4 w-4 mr-2" aria-hidden="true" />
+                    {t('rematch')}
+                  </Link>
+                </Button>
+              )}
               {insights.hasPoints && (
                 pdfButton({ size: "sm", variant: "outline" })
               )}

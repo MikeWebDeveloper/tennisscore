@@ -871,7 +871,12 @@
     "viewOnCztenis": "View on cztenis.cz",
     "errorBoundaryDescription": "An unexpected error occurred. You can try again or go back to the dashboard.",
     "backToDashboard": "Back to dashboard",
-    "editPoint": "Correct point"
+    "editPoint": "Correct point",
+    "rematchTitle": "Rematch",
+    "rematchHint": "Same players and rules as last time. Start right away, or adjust the settings first.",
+    "sameAsLastTime": "Same as last time",
+    "recentPlayers": "Recently picked",
+    "rematch": "Rematch"
   },
   "dashboard": {
     "resumeMatch": "Resume Match",

@@ -56,3 +56,40 @@ it('returns to completed format choices and allows changes before continuing', (
   act(() => root.unmount())
   jest.useRealTimers()
 })
+
+const preset = {
+  matchType: 'singles', players: { one: 'me', two: 'eva', three: '', four: '' }, anonymous: { one: false, two: false, three: false, four: false },
+  tournamentName: 'Zimní liga', sets: 3, setFormat: 'standard', scoring: 'no-ad', finalSet: 'super-tb', serveOrder: { p1: 'p1', p2: 'p2' }, detailLevel: 'simple', customCategories: [],
+} as const
+
+it('opens a rematch on a summary and starts it with one tap', async () => {
+  const { createMatch } = jest.requireMock('@/lib/actions/matches') as { createMatch: jest.Mock }
+  createMatch.mockResolvedValue({ matchId: 'new1' })
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  const players = [{ $id: 'me', firstName: 'Sofie', lastName: 'Látalová' }, { $id: 'eva', firstName: 'Eva', lastName: 'Nová' }] as never
+  act(() => root.render(createElement(LazyMotion, { features }, createElement(CompactMatchWizard, { players, rematch: preset as never }))))
+  expect(container.textContent).toContain('common.rematchTitle')
+  expect(container.textContent).toContain('Látalová Sofie')
+  expect(container.textContent).toContain('Nová Eva')
+  const start = Array.from(container.querySelectorAll('button')).find(b => b.textContent?.trim() === 'common.startMatch')!
+  await act(async () => start.click())
+  expect(createMatch).toHaveBeenCalledWith(expect.objectContaining({
+    playerOneId: 'me', playerTwoId: 'eva', tournamentName: 'Zimní liga',
+    matchFormat: expect.objectContaining({ sets: 3, noAd: true, finalSetTiebreak: 'super', detailLevel: 'simple' }),
+  }))
+  act(() => root.unmount())
+})
+
+it('fills the rules of the last match with one tap on the format step', () => {
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  act(() => root.render(createElement(LazyMotion, { features }, createElement(CompactMatchWizard, { players: [], lastPreset: preset as never }))))
+  const click = (text: string) => act(() => Array.from(container.querySelectorAll('button')).find(b => b.textContent?.trim().startsWith(text))!.click())
+  click('Choose type')
+  click('Continue players')
+  click('Continue tournament')
+  click('common.sameAsLastTime')
+  expect(container.textContent).toContain('Detail step')
+  act(() => root.unmount())
+})

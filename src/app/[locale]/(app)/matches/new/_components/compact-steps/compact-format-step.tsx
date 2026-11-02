@@ -14,6 +14,9 @@ interface CompactFormatStepProps {
   onSetsChange: (value: 1 | 3 | 5) => void
   onScoringChange: (value: "ad" | "no-ad") => void
   onFinalSetChange: (value: "full" | "super-tb") => void
+  /** The latest match's rules, offered as one tap ("same as last time") */
+  lastLabel?: string
+  onUseLast?: () => void
   onComplete: () => void
 }
 
@@ -26,6 +29,8 @@ export function CompactFormatStep({
   onSetsChange,
   onScoringChange,
   onFinalSetChange,
+  lastLabel,
+  onUseLast,
   onComplete
 }: CompactFormatStepProps) {
   const t = useTranslations('common')
@@ -47,6 +52,13 @@ export function CompactFormatStep({
         <h2 className="text-base font-semibold">{t("matchFormat")}</h2>
         <p className="text-xs text-muted-foreground">{t("selectMatchRules")}</p>
       </div>
+
+      {lastLabel && onUseLast && (
+        <Button type="button" variant="outline" className="mb-3 h-auto min-h-12 w-full flex-col items-start gap-0.5 whitespace-normal py-2 text-left" onClick={onUseLast}>
+          <span className="text-sm font-semibold">{t("sameAsLastTime")}</span>
+          <span className="text-xs font-normal text-muted-foreground">{lastLabel}</span>
+        </Button>
+      )}
 
       <div className="space-y-3">
         {/* Set length defaults to Standard. */}

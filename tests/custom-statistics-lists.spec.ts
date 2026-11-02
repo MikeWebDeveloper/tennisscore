@@ -13,7 +13,7 @@ test('match setup saves the selected custom statistics', async ({ page, request 
     await page.getByRole('button', { name: /Skip tournament/ }).click()
     await page.getByRole('button', { name: 'Best of 1' }).click()
     await page.getByRole('button', { name: 'Advantage', exact: true }).click()
-    await page.getByRole('button', { name: 'Full set' }).click()
+    await page.getByRole('button', { name: 'Full set', exact: true }).click()
     await page.getByRole('button', { name: 'Continue' }).click()
     await page.getByRole('button', { name: /Custom statistics/ }).click()
     await page.getByRole('checkbox', { name: 'Serve placement' }).check()

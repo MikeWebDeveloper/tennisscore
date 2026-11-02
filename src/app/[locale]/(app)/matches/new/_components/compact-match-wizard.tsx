@@ -19,43 +19,64 @@ import { CompactPlayersStep } from "./compact-steps/compact-players-step"
 import { CompactTournamentStep } from "./compact-steps/compact-tournament-step"
 import { CompactFormatStep } from "./compact-steps/compact-format-step"
 import { CompactDetailStep } from "./compact-steps/compact-detail-step"
+import { CompactRematchStep } from "./compact-steps/compact-rematch-step"
 import { SET_FORMATS, type SetFormat } from "@/lib/utils/match-format"
 import { formatPlayerFromObject } from "@/lib/utils"
+import type { MatchPreset } from "@/lib/utils/match-preset"
+import { presetDetailLabel, presetFormatLabel } from "@/lib/utils/match-preset-labels"
 
 interface CompactMatchWizardProps {
   players: Player[]
+  /** A rematch: everything filled in from the earlier match, opening on a summary to start with one tap */
+  rematch?: MatchPreset
+  /** The account's latest match, offered as "same as last time" on the rules step */
+  lastPreset?: MatchPreset
+  /** Players of the latest matches, listed first in the player picker */
+  recentPlayerIds?: string[]
 }
 
-export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
+export function CompactMatchWizard({ players, rematch, lastPreset, recentPlayerIds }: CompactMatchWizardProps) {
   const router = useRouter()
   const t = useTranslations('common')
 
-  // Wizard state
-  const [currentStep, setCurrentStep] = useState(1)
+  // Wizard state; step 0 is the rematch summary
+  const [currentStep, setCurrentStep] = useState(rematch ? 0 : 1)
   const [loading, setLoading] = useState(false)
 
   // Form state
-  const [matchType, setMatchType] = useState<"singles" | "doubles">("singles")
-  const [playerOne, setPlayerOne] = useState("")
-  const [playerTwo, setPlayerTwo] = useState("")
-  const [playerThree, setPlayerThree] = useState("")
-  const [playerFour, setPlayerFour] = useState("")
-  const [tournamentName, setTournamentName] = useState("")
+  const [matchType, setMatchType] = useState<"singles" | "doubles">(rematch?.matchType ?? "singles")
+  const [playerOne, setPlayerOne] = useState(rematch?.players.one ?? "")
+  const [playerTwo, setPlayerTwo] = useState(rematch?.players.two ?? "")
+  const [playerThree, setPlayerThree] = useState(rematch?.players.three ?? "")
+  const [playerFour, setPlayerFour] = useState(rematch?.players.four ?? "")
+  const [tournamentName, setTournamentName] = useState(rematch?.tournamentName ?? "")
 
   // Anonymous player tracking
-  const [playerOneAnonymous, setPlayerOneAnonymous] = useState(false)
-  const [playerTwoAnonymous, setPlayerTwoAnonymous] = useState(false)
-  const [playerThreeAnonymous, setPlayerThreeAnonymous] = useState(false)
-  const [playerFourAnonymous, setPlayerFourAnonymous] = useState(false)
+  const [playerOneAnonymous, setPlayerOneAnonymous] = useState(rematch?.anonymous.one ?? false)
+  const [playerTwoAnonymous, setPlayerTwoAnonymous] = useState(rematch?.anonymous.two ?? false)
+  const [playerThreeAnonymous, setPlayerThreeAnonymous] = useState(rematch?.anonymous.three ?? false)
+  const [playerFourAnonymous, setPlayerFourAnonymous] = useState(rematch?.anonymous.four ?? false)
 
-  const [sets, setSets] = useState<1 | 3 | 5 | null>(null)
-  const [setFormat, setSetFormat] = useState<SetFormat>("standard")
+  const [sets, setSets] = useState<1 | 3 | 5 | null>(rematch?.sets ?? null)
+  const [setFormat, setSetFormat] = useState<SetFormat>(rematch?.setFormat ?? "standard")
   // Doubles: which partner of each pair serves first (defaults: player 1 and player 2)
-  const [serveOrder, setServeOrder] = useState<{ p1: "p1" | "p3"; p2: "p2" | "p4" }>({ p1: "p1", p2: "p2" })
-  const [scoring, setScoring] = useState<"ad" | "no-ad" | "">("")
-  const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">("")
-  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "shot-type" | "detailed" | "complex" | "custom" | "">("")
-  const [customCategories, setCustomCategories] = useState<string[]>([])
+  const [serveOrder, setServeOrder] = useState<{ p1: "p1" | "p3"; p2: "p2" | "p4" }>(rematch?.serveOrder ?? { p1: "p1", p2: "p2" })
+  const [scoring, setScoring] = useState<"ad" | "no-ad" | "">(rematch?.scoring ?? "")
+  const [finalSet, setFinalSet] = useState<"full" | "super-tb" | "">(rematch?.finalSet ?? "")
+  const [detailLevel, setDetailLevel] = useState<"points" | "simple" | "shot-type" | "detailed" | "complex" | "custom" | "">(rematch?.detailLevel ?? "")
+  const [customCategories, setCustomCategories] = useState<string[]>(rematch?.customCategories ?? [])
+
+  // "Same as last time": the rules and detail level of the latest match, then straight to the last step
+  const useLastRules = () => {
+    if (!lastPreset) return
+    setSets(lastPreset.sets)
+    setSetFormat(lastPreset.setFormat)
+    setScoring(lastPreset.scoring)
+    setFinalSet(lastPreset.finalSet)
+    setDetailLevel(lastPreset.detailLevel)
+    setCustomCategories(lastPreset.customCategories)
+    setCurrentStep(5)
+  }
 
   const totalSteps = 5
 
@@ -66,7 +87,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
     return player ? formatPlayerFromObject(player) : fallback
   }
 
-  const goToBack = () => setCurrentStep(step => Math.max(1, step - 1))
+  const goToBack = () => setCurrentStep(step => Math.max(rematch ? 0 : 1, step - 1))
 
   const handlePlayerChange = (player: "one" | "two" | "three" | "four", value: string) => {
     switch (player) {
@@ -163,9 +184,26 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
     }
   }
 
+  const teamName = (first: string, second: string, doubles: boolean) => doubles ? `${first} / ${second}` : first
+
   // Render current step content
   const renderStepContent = () => {
     switch (currentStep) {
+      case 0:
+        return rematch && (
+          <CompactRematchStep
+            teams={[
+              teamName(nameOf(playerOne, playerOneAnonymous, t('player1')), nameOf(playerThree, playerThreeAnonymous, t('player3')), matchType === "doubles"),
+              teamName(nameOf(playerTwo, playerTwoAnonymous, t('player2')), nameOf(playerFour, playerFourAnonymous, t('player4')), matchType === "doubles"),
+            ]}
+            tournamentName={tournamentName}
+            formatLabel={presetFormatLabel(rematch, t)}
+            detailLabel={presetDetailLabel(rematch, t)}
+            loading={loading}
+            onStart={() => void handleCreateMatch(rematch.detailLevel)}
+            onEdit={() => setCurrentStep(1)}
+          />
+        )
       case 1:
         return (
           <CompactMatchTypeStep
@@ -186,6 +224,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
             playerTwoAnonymous={playerTwoAnonymous}
             playerThreeAnonymous={playerThreeAnonymous}
             playerFourAnonymous={playerFourAnonymous}
+            recentPlayerIds={recentPlayerIds}
             onPlayerChange={handlePlayerChange}
             onAnonymousChange={handleAnonymousChange}
             onComplete={handlePlayersStepComplete}
@@ -218,6 +257,8 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
             onSetsChange={setSets}
             onScoringChange={setScoring}
             onFinalSetChange={setFinalSet}
+            lastLabel={lastPreset ? `${presetFormatLabel(lastPreset, t)} · ${presetDetailLabel(lastPreset, t)}` : undefined}
+            onUseLast={useLastRules}
             onComplete={() => setCurrentStep(prev => prev + 1)}
           />
         )
@@ -258,7 +299,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
           </Link>
           <div className="min-w-0">
             <h1 className="text-lg font-semibold tracking-tight">{t("newMatch")}</h1>
-            <p className="text-xs text-muted-foreground">{t("step")} {currentStep}/{totalSteps}</p>
+            {currentStep > 0 && <p className="text-xs text-muted-foreground">{t("step")} {currentStep}/{totalSteps}</p>}
           </div>
         </div>
 
@@ -279,7 +320,7 @@ export function CompactMatchWizard({ players }: CompactMatchWizardProps) {
         <div className="w-full max-w-md mt-4 md:mt-0 md:flex-1 md:flex md:flex-col md:justify-center">
           <div className="w-full">
             {renderStepContent()}
-            {currentStep > 1 && (
+            {currentStep > (rematch ? 0 : 1) && (
               <div className="flex justify-start mt-4">
                 <Button
                   variant="ghost"

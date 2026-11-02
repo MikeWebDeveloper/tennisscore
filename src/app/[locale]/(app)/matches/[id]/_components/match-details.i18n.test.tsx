@@ -92,6 +92,17 @@ describe('MatchDetails in Czech', () => {
     cleanup()
   })
 
+  it('offers a rematch of a finished match, but not of one still being played', async () => {
+    const finished = await renderDetails()
+    const links = [...finished.container.querySelectorAll('a[href="/matches/new?rematch=m1"]')]
+    expect(links.length).toBeGreaterThan(0)
+    expect(links.some(link => link.getAttribute('aria-label') === 'Odveta' || link.textContent?.includes('Odveta'))).toBe(true)
+    finished.cleanup()
+    const live = await renderDetails({ status: 'In Progress' } as never)
+    expect(live.container.querySelector('a[href^="/matches/new?rematch"]')).toBeNull()
+    live.cleanup()
+  })
+
   it('writes the match duration in Czech units, with seconds for very short matches', async () => {
     const { container, cleanup } = await renderDetails()
     expect(container.textContent).toContain('30 s')
