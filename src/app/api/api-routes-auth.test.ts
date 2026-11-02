@@ -10,9 +10,10 @@ const routes = (dir: string): string[] =>
     return entry.name === 'route.ts' ? [path] : []
   })
 
-const writes = /export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)\b/
+const writes = /export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)\b|\.(createDocument|updateDocument|deleteDocument)\(/
 const adminKey = /createAdminClient/
-const callerCheck = /getCurrentUser|isAdmin|createSessionClient|getSession/
+// A signed-in caller, or a scheduled job's secret (Vercel cron sends it as a bearer token)
+const callerCheck = /getCurrentUser|isAdmin|createSessionClient|getSession|CRON_SECRET/
 
 describe('API routes', () => {
   const files = routes(__dirname).map((file) => [relative(__dirname, file), readFileSync(file, 'utf8')])

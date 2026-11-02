@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Settings } from "lucide-react"
 import { Database } from "lucide-react"
 import { Volume2 } from "lucide-react"
+import { FileDown } from "lucide-react"
+import { DataExportCard, TrashCard } from "./_components/data-cards"
 import { useTranslations } from "@/i18n"
 
 export function SettingsClient() {
@@ -37,6 +39,18 @@ export function SettingsClient() {
         <div className="max-w-4xl">
           <CacheManager />
         </div>
+      </div>
+
+      {/* Your data: export everything, and the trash of deleted matches */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <FileDown className="h-6 w-6 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">
+            {t('yourData')}
+          </h2>
+        </div>
+        <DataExportCard />
+        <TrashCard />
       </div>
 
       {/* Sound Settings Section */}
