@@ -5,6 +5,14 @@ import { useLocale, useTranslations } from "@/i18n"
 
 // Newest first
 export const UPDATES = [
+  { key: 'pointCorrection', date: '2026-11-02' },
+  { key: 'rematch', date: '2026-11-02' },
+  { key: 'playerProfile', date: '2026-11-02' },
+  { key: 'tournaments', date: '2026-11-02' },
+  { key: 'matchEndings', date: '2026-11-02' },
+  { key: 'qrCode', date: '2026-11-02' },
+  { key: 'doublesServe', date: '2026-11-02' },
+  { key: 'yourData', date: '2026-11-02' },
   { key: 'serveIndicator', date: '2026-10-30' },
   { key: 'matchOverview', date: '2026-10-30' },
   { key: 'pdfReport', date: '2026-10-30' },

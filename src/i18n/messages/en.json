@@ -1038,6 +1038,38 @@
       "serveIndicator": {
         "title": "1st and 2nd serve indicator",
         "description": "The serve switch while scoring is now labelled, and the score shows everyone – spectators too – whether it is a first or a second serve."
+      },
+      "pointCorrection": {
+        "title": "Correct any point",
+        "description": "In the Points tab, every point can get another winner, a missing point before it, or be deleted. Score and statistics are recalculated."
+      },
+      "rematch": {
+        "title": "Rematch and \"Same as last time\"",
+        "description": "A one-tap rematch with the same players and rules, last match's rules in one tap, and recent players first."
+      },
+      "playerProfile": {
+        "title": "Player profile",
+        "description": "Tap a name for the head-to-head record and month-by-month service holds, breaks and points."
+      },
+      "tournaments": {
+        "title": "Tournaments",
+        "description": "Matches grouped by tournament, and a tournament filter on Statistics."
+      },
+      "matchEndings": {
+        "title": "Unfinished and walkover",
+        "description": "New end reasons. An unfinished practice has no winner and stays out of win rates. Stuck matches can be closed from the dashboard."
+      },
+      "qrCode": {
+        "title": "QR code for spectators",
+        "description": "Sharing shows a QR code, and the spectator page says honestly whether it is live or refreshing every 5 s."
+      },
+      "doublesServe": {
+        "title": "Doubles serve by player",
+        "description": "Serve statistics for each doubles partner."
+      },
+      "yourData": {
+        "title": "Export and trash",
+        "description": "Settings can download every match (CSV, JSON) and restore deleted matches from the trash."
       }
     },
     "staleMatchesTitle": "Unfinished matches",

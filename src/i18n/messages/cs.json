@@ -1067,6 +1067,38 @@
       "serveIndicator": {
         "title": "Ukazatel 1. a 2. podání",
         "description": "Přepínač podání při zápisu je nově popsaný a ve skóre – i u diváků – je hned vidět, jestli jde o 1. nebo 2. podání."
+      },
+      "pointCorrection": {
+        "title": "Oprava kteréhokoli bodu",
+        "description": "V záložce Body u každého bodu: jiný vítěz, chybějící bod nebo smazání. Skóre i statistiky se přepočítají."
+      },
+      "rematch": {
+        "title": "Odveta a „Jako minule“",
+        "description": "Odveta jedním klepnutím se stejnými hráči a pravidly, pravidla posledního zápasu jedním tlačítkem a nedávní hráči nahoře."
+      },
+      "playerProfile": {
+        "title": "Profil hráče",
+        "description": "Klepnutím na jméno: vzájemné zápasy a vývoj po měsících – udržená podání, brejky a body."
+      },
+      "tournaments": {
+        "title": "Turnaje",
+        "description": "Zápasy seskupené podle turnajů a filtr turnaje ve statistikách."
+      },
+      "matchEndings": {
+        "title": "Nedohráno a kontumace",
+        "description": "Nové důvody ukončení. Nedohraný trénink nemá vítěze a nepočítá se do úspěšnosti. Zaseknuté zápasy jdou na přehledu uzavřít."
+      },
+      "qrCode": {
+        "title": "QR kód pro diváky",
+        "description": "Sdílení zápasu ukazuje QR kód a divácká stránka poctivě píše, jestli jde živě, nebo se obnovuje každých 5 s."
+      },
+      "doublesServe": {
+        "title": "Podání ve čtyřhře",
+        "description": "U čtyřhry statistiky podání každého hráče zvlášť."
+      },
+      "yourData": {
+        "title": "Export a koš",
+        "description": "V Nastavení stažení všech zápasů (CSV, JSON) a koš smazaných zápasů s obnovením."
       }
     },
     "staleMatchesTitle": "Nedokončené zápasy",
