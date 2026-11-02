@@ -89,7 +89,7 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
   const [mounted, setMounted] = useState(false)
   
   // Only start real-time connection after component mounts to prevent hydration issues
-  const { connected, lastUpdate, error, retryCount } = useRealtimeMatch(mounted ? match.$id : "")
+  const { lastUpdate, error, status: liveSync, lastSyncedAt } = useRealtimeMatch(mounted ? match.$id : "")
 
   // Handle mounting
   useEffect(() => {
@@ -187,31 +187,26 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
     }
   }, [mounted])
 
-  // Detect Safari mobile for UI adjustments
-  const isSafariMobile = typeof navigator !== 'undefined' && 
-    /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
-    /iPhone|iPad|iPod/i.test(navigator.userAgent)
-
   // Detect Vercel preview URL
   const isVercelPreview = typeof window !== 'undefined' && 
     (window.location.hostname.includes('vercel.app') || 
      window.location.hostname.includes('-git-'))
 
-  // Enhanced connection status for Safari mobile
-  const getConnectionStatus = () => {
-    if (!mounted) return { status: "connecting", message: t('loading') }
-    
-    if (isVercelPreview) {
-      return { 
-        status: "preview", 
-        message: t('previewModeStatus')
+  // Say only what is true: "live" while pushed updates arrive, otherwise the 5-second refresh or offline
+  const getConnectionStatus = (): { status: "connected" | "polling" | "reconnecting" | "error"; message: string } => {
+    if (!mounted) return { status: "reconnecting", message: t('loading') }
+    if (isVercelPreview) return { status: "polling", message: t('previewModeStatus') }
+    switch (liveSync) {
+      case "live": return { status: "connected", message: tCommon('spectatorLive') }
+      case "polling": return { status: "polling", message: tCommon('spectatorPolling') }
+      case "offline": return {
+        status: "error",
+        message: lastSyncedAt
+          ? tCommon('spectatorOffline', { time: new Date(lastSyncedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) })
+          : tCommon('spectatorOfflineNever'),
       }
+      default: return { status: "reconnecting", message: tCommon('connecting') }
     }
-    
-    if (error) return { status: "error", message: `${tCommon('connectionError')}: ${error}` }
-    if (!connected && retryCount > 0) return { status: "reconnecting", message: tCommon('reconnectingAttempt', { attempt: retryCount, max: 3 }) }
-    if (!connected) return { status: "disconnected", message: isSafariMobile ? t('tapRefreshIfScoresNoUpdate') : tCommon('connecting') }
-    return { status: "connected", message: t('liveUpdatesActive') }
   }
 
   const connectionStatus = getConnectionStatus()
@@ -320,18 +315,15 @@ export function PublicLiveMatch({ match: initialMatch }: PublicLiveMatchProps) {
           </a>
           {/* Connection Status - only show if match is in progress */}
           {match.status === "In Progress" && (
-            <Badge variant={connectionStatus.status === "connected" ? "outline" : connectionStatus.status === "reconnecting" ? "outline" : "destructive"} className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}>
-              {connectionStatus.status === "connected" ? (
-                <>
-                  <Wifi className="w-3 h-3 mr-1" />
-                  <span className="hidden sm:inline">{connectionStatus.message}</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-3 h-3 mr-1" />
-                  <span className="hidden sm:inline">{connectionStatus.message}</span>
-                </>
-              )}
+            <Badge
+              variant="outline"
+              data-live-status={connectionStatus.status}
+              className={`border text-xs sm:text-sm ${connectionStatus.status === "connected" ? 'border-green-500 text-green-500' : connectionStatus.status === "polling" ? 'border-border text-muted-foreground' : connectionStatus.status === "reconnecting" ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'}`}
+            >
+              {connectionStatus.status === "error"
+                ? <WifiOff className="w-3 h-3 mr-1" aria-hidden="true" />
+                : <Wifi className="w-3 h-3 mr-1" aria-hidden="true" />}
+              <span>{connectionStatus.message}</span>
             </Badge>
           )}
         </div>

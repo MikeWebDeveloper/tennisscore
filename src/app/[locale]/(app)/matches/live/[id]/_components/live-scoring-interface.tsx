@@ -43,6 +43,7 @@ import { MatchStatsComponentSimpleFixed } from "@/app/[locale]/(app)/matches/[id
 import { calculateMatchStatsByLevel } from "@/lib/utils/match-stats"
 import { useMatchStore, PointDetail as StorePointDetail, Score, editPointLog, PointLogEditError, type PointLogEdit } from "@/stores/matchStore"
 import { PointEditDialog } from "./point-edit-dialog"
+import { LinkQrCode } from "@/components/shared/link-qr-code"
 import { useShallow } from "zustand/react/shallow"
 import { useWakeLock } from "@/hooks/use-wake-lock"
 import { useDoublesServingPlayer } from "@/hooks/use-doubles-serving-player"
@@ -193,6 +194,9 @@ function ShareDialog({ open, onOpenChange, matchId, playerNames }: {
           <DialogTitle>{t('shareLiveMatch')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {/* Family at the court scans the code instead of typing the link */}
+          <LinkQrCode url={shareUrl} label={t('scanToWatch')} />
+          <p className="text-center text-xs text-muted-foreground">{t('scanToWatch')}</p>
           <div className="text-sm text-foreground bg-muted dark:bg-gray-800 dark:text-gray-300 text-center p-3 rounded-lg break-all">
             {shareUrl}
           </div>

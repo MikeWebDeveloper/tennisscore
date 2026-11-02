@@ -905,7 +905,11 @@
     "rematchHint": "Stejní hráči a stejná pravidla jako minule. Zápas začne hned, nebo nastavení nejdřív upravte.",
     "sameAsLastTime": "Jako minule",
     "recentPlayers": "Nedávno vybraní",
-    "rematch": "Odveta"
+    "rematch": "Odveta",
+    "spectatorLive": "Živě",
+    "spectatorPolling": "Aktualizuje se každých 5 s",
+    "spectatorOffline": "Bez spojení · poslední aktualizace {time}",
+    "spectatorOfflineNever": "Bez spojení"
   },
   "dashboard": {
     "resumeMatch": "Pokračovat v zápase",
@@ -1353,7 +1357,8 @@
     "pointCorrected": "Bod opraven, skóre přepočítáno",
     "pointEditEndsEarly": "Po této opravě by zápas skončil dřív, než přijde poslední bod. Nejdřív smažte pozdější body.",
     "pointEditCompletesMatch": "Touto opravou by zápas skončil. Poslední bod zapište běžným způsobem.",
-    "pointEditFailed": "Opravu se nepodařilo uložit"
+    "pointEditFailed": "Opravu se nepodařilo uložit",
+    "scanToWatch": "Naskenujte a sledujte zápas živě"
   },
   "navigation": {
     "dashboard": "Nástěnka",

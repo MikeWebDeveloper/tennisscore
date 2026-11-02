@@ -147,3 +147,12 @@ test('corrects a point scored for the wrong player, and the score and saved log 
   }).toBe('p2,p1,p1')
   await expect.poll(async () => JSON.parse((await (await request.get(`${FAKE}/__doc/m/match4`)).json()).score).points).toEqual([2, 1])
 })
+
+test('the share dialog shows a QR code of the watch link for people at the court', async ({ page }) => {
+  await page.goto('/en/matches/live/match4', { waitUntil: 'networkidle' })
+  await page.locator('main').getByRole('button', { name: 'Share', exact: true }).click()
+  const code = page.getByRole('dialog').getByRole('img', { name: 'Scan to watch the match live' })
+  await expect(code).toBeVisible()
+  await expect(code).toHaveAttribute('src', /^data:image\/png;base64,/)
+  expect((await code.boundingBox())?.width).toBeGreaterThanOrEqual(150)
+})

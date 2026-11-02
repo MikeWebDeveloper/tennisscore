@@ -35,8 +35,26 @@ const log = (...args: unknown[]) => {
  * - A monotonic sequence guards against a slow REST catch-up overwriting a
  *   newer realtime push (no more score flicker/rollback).
  */
+/** What has actually been reaching the page, for an honest status line */
+export interface SyncTimes {
+  /** Last update pushed over the realtime socket */
+  lastPushAt: number | null
+  /** Last update from any source (push or the 5-second refresh) */
+  lastSyncedAt: number | null
+  /** The latest refresh failed or the browser went offline */
+  failing: boolean
+}
+
+/** Pushed updates within the last minute are "live"; otherwise the 5-second refresh is what keeps the score current */
+export function liveStatus(times: SyncTimes, now = Date.now()): 'connecting' | 'live' | 'polling' | 'offline' {
+  if (times.failing) return 'offline'
+  if (times.lastPushAt !== null && now - times.lastPushAt < 60_000) return 'live'
+  return times.lastSyncedAt !== null ? 'polling' : 'connecting'
+}
+
 export function useRealtimeMatch(matchId: string) {
   const [connected, setConnected] = useState(false)
+  const [syncTimes, setSyncTimes] = useState<SyncTimes>({ lastPushAt: null, lastSyncedAt: null, failing: false })
   const [lastUpdate, setLastUpdate] = useState<RealtimeMatchData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
@@ -54,7 +72,10 @@ export function useRealtimeMatch(matchId: string) {
   // REST fetch knows it has been superseded.
   const applyRealtime = useCallback((data: RealtimeMatchData) => {
     updateSeqRef.current += 1
-    if (mountedRef.current) setLastUpdate(data)
+    if (!mountedRef.current) return
+    setLastUpdate(data)
+    const at = Date.now()
+    setSyncTimes({ lastPushAt: at, lastSyncedAt: at, failing: false })
   }, [])
 
   // Catch-up read. Skips applying its result if a realtime push landed while it
@@ -67,6 +88,7 @@ export function useRealtimeMatch(matchId: string) {
       if (!response.ok) throw new Error(`Live update failed (${response.status})`)
       const data: RealtimeMatchData = await response.json()
       if (!mountedRef.current) return
+      setSyncTimes(times => ({ ...times, lastSyncedAt: Date.now(), failing: false }))
       if (updateSeqRef.current !== seqAtStart) return // a realtime push won
 
       updateSeqRef.current += 1
@@ -75,7 +97,10 @@ export function useRealtimeMatch(matchId: string) {
       setError(null)
     } catch (err) {
       log("❌ Failed to fetch match data:", err)
-      if (mountedRef.current) setConnected(false)
+      if (mountedRef.current) {
+        setConnected(false)
+        setSyncTimes(times => ({ ...times, failing: true }))
+      }
     }
   }, [matchId])
 
@@ -198,6 +223,8 @@ export function useRealtimeMatch(matchId: string) {
     window.addEventListener("pageshow", onPageShow)
     window.addEventListener("focus", scheduleRefresh)
     window.addEventListener("online", scheduleRefresh)
+    const onOffline = () => setSyncTimes(times => ({ ...times, failing: true }))
+    window.addEventListener("offline", onOffline)
 
     // Public viewers may not have Appwrite read permission. Poll the same
     // public match data as the page, even if the WebSocket cannot deliver.
@@ -212,8 +239,9 @@ export function useRealtimeMatch(matchId: string) {
       window.removeEventListener("pageshow", onPageShow)
       window.removeEventListener("focus", scheduleRefresh)
       window.removeEventListener("online", scheduleRefresh)
+      window.removeEventListener("offline", onOffline)
     }
   }, [matchId, fetchMatchData])
 
-  return { connected, lastUpdate, error, retryCount }
+  return { connected, lastUpdate, error, retryCount, status: liveStatus(syncTimes), lastSyncedAt: syncTimes.lastSyncedAt }
 }

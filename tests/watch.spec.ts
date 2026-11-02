@@ -6,6 +6,16 @@ test.skip(!process.env.FAKE_APPWRITE, 'set FAKE_APPWRITE=1 with the fake backend
 
 test.use({ viewport: { width: 390, height: 640 }, isMobile: true })
 
+test('full spectator page says it refreshes every 5 s when no live push arrives, instead of claiming live updates', async ({ page }) => {
+  // The fake backend has no realtime socket: only the 5-second refresh brings scores
+  await page.goto('/en/live/match1')
+  // This page has no <main>; it renders once mounted in the browser
+  const status = page.locator('[data-live-status]:visible')
+  await expect(status).toHaveAttribute('data-live-status', 'polling', { timeout: 15_000 })
+  await expect(status).toHaveText('Refreshing every 5 s')
+  await expect(page.getByText('Live updates active')).toHaveCount(0)
+})
+
 test.describe('lightweight spectator page', () => {
   test('live singles match: names, scores, serve marker, auto refresh', async ({ page }) => {
     await page.goto('/en/watch/match1')

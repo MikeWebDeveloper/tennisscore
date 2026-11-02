@@ -876,7 +876,11 @@
     "rematchHint": "Same players and rules as last time. Start right away, or adjust the settings first.",
     "sameAsLastTime": "Same as last time",
     "recentPlayers": "Recently picked",
-    "rematch": "Rematch"
+    "rematch": "Rematch",
+    "spectatorLive": "Live",
+    "spectatorPolling": "Refreshing every 5 s",
+    "spectatorOffline": "Offline · last update {time}",
+    "spectatorOfflineNever": "Offline"
   },
   "dashboard": {
     "resumeMatch": "Resume Match",
@@ -1324,7 +1328,8 @@
     "pointCorrected": "Point corrected, score recalculated",
     "pointEditEndsEarly": "After this correction the match would be over before its last point. Delete the later points first.",
     "pointEditCompletesMatch": "This correction would finish the match. Score the last point the usual way.",
-    "pointEditFailed": "The correction could not be saved"
+    "pointEditFailed": "The correction could not be saved",
+    "scanToWatch": "Scan to watch the match live"
   },
   "navigation": {
     "dashboard": "Dashboard",
