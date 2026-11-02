@@ -25,7 +25,11 @@ test('dashboard counts completed matches (status casing) instead of showing zero
 })
 
 test('dashboard offers to close a match nobody has scored for weeks', async ({ page }) => {
-  await fetch('http://localhost:4100/__reset')
+  // Reopen the sample instead of resetting everything, which would wipe the other worker's data
+  await fetch('http://localhost:4100/v1/databases/d/collections/m/documents/stale1', {
+    method: 'PATCH', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ data: { status: 'In Progress', retirementReason: '', endTime: '2026-09-06T10:34:50.000Z' } }),
+  })
   await page.goto('/en/dashboard', { waitUntil: 'load' })
   const card = page.locator('section', { has: page.getByRole('heading', { name: 'Unfinished matches' }) })
   await expect(card).toBeVisible(T)
@@ -40,7 +44,6 @@ test('dashboard offers to close a match nobody has scored for weeks', async ({ p
 })
 
 test('matches page lists the tournaments and shows one tournament\'s matches on tap', async ({ page }) => {
-  await fetch('http://localhost:4100/__reset')
   await page.goto('/en/matches', { waitUntil: 'load' })
   const main = page.locator('main')
   await main.getByRole('button', { name: 'Tournaments', exact: true }).click()
@@ -54,7 +57,6 @@ test('matches page lists the tournaments and shows one tournament\'s matches on 
 })
 
 test('a player profile shows the head-to-head with the main player and starts a match against them', async ({ page }) => {
-  await fetch('http://localhost:4100/__reset')
   await page.goto('/en/players', { waitUntil: 'load' })
   await page.locator('main').getByRole('link', { name: 'Dvořák Petr' }).first().click()
   await expect(page).toHaveURL(/\/en\/players\/pl2$/)

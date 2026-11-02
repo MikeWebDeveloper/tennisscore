@@ -4,10 +4,9 @@ import fs from 'node:fs'
 // Settings "Your data" and the doubles serve card, on the fake backend
 test.skip(!process.env.FAKE_APPWRITE, 'requires the fake Appwrite backend')
 
-const FAKE = 'http://localhost:4100'
 
-test('settings exports every match as a CSV and shows the trash', async ({ page, request }) => {
-  await request.get(`${FAKE}/__reset`)
+// Read-only: no reset, which would wipe what tests in the other worker just created
+test('settings exports every match as a CSV and shows the trash', async ({ page }) => {
   await page.goto('/en/settings', { waitUntil: 'load' })
   const main = page.locator('main')
   await expect(main.getByRole('heading', { name: 'Your data' })).toBeVisible()
@@ -22,8 +21,7 @@ test('settings exports every match as a CSV and shows the trash', async ({ page,
   expect(csv).toContain('match3,')
 })
 
-test('a doubles match shows each partner\'s own serve points', async ({ page, request }) => {
-  await request.get(`${FAKE}/__reset`)
+test('a doubles match shows each partner\'s own serve points', async ({ page }) => {
   await page.goto('/en/matches/match2', { waitUntil: 'load' })
   const card = page.locator('main section', { has: page.getByRole('heading', { name: 'Serve by player' }) })
   await expect(card).toBeVisible({ timeout: 15_000 })
